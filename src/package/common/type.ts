@@ -1,0 +1,34 @@
+import type { App } from 'vue'
+
+/**
+ * 声明vue包装
+ */
+export interface AppWrapper {
+  $el: Node,
+
+  unmount(): void
+}
+
+/**
+ * 声明别名
+ */
+export type Rendered = App | AppWrapper;
+
+/**
+ * 文件处理逻辑，用于声明文件处理器
+ * @param buffer 二进制缓存
+ * @param target 目标dom
+ * @param type 目标类型
+ */
+export type FileHandler = (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => Promise<Rendered>;
+
+/**
+ * 文件处理器组合
+ */
+export interface FileHandlerComposite {
+
+  // 可接受的类型
+  accepts: Array<string>;
+  // 处理器
+  handler: FileHandler
+}

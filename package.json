@@ -1,0 +1,49 @@
+{
+  "name": "file-viewer3",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@handsontable/vue3": "^12.3.2",
+    "axios": "^1.3.4",
+    "d3": "^3.5.17",
+    "docx-preview": "^0.1.15",
+    "exceljs": "^4.3.0",
+    "handsontable": "^12.3.2",
+    "jquery": "^3.6.4",
+    "jszip": "^3.10.1",
+    "nvd3": "^1.8.6",
+    "pdfjs-dist": "^3.4.120",
+    "qs": "^6.11.1",
+    "tinycolor2": "^1.6.0",
+    "v-viewer": "^3.0.11",
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.2.0",
+    "@types/jquery": "^3.5.16",
+    "@types/node": "^18.14.2",
+    "@types/qs": "^6.9.7",
+    "@types/tinycolor2": "^1.4.3",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-vue-jsx": "^3.0.0",
+    "@vue/eslint-config-prettier": "^7.1.0",
+    "@vue/eslint-config-typescript": "^11.0.2",
+    "@vue/tsconfig": "^0.1.3",
+    "eslint": "^8.34.0",
+    "eslint-plugin-vue": "^9.9.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.8.4",
+    "typescript": "~4.8.4",
+    "vite": "^4.1.4",
+    "vue-tsc": "^1.2.0"
+  }
+}
