@@ -1,12 +1,13 @@
 import JSZip from 'jszip';
 
 import {
+  Charts,
   genGlobalCSS,
   getContentTypes,
   getSlideSizeAndSetDefaultTextStyle,
   processSingleSlide, readXmlFile,
-  setters,
-} from './support/vendor';
+  setters
+} from './support/vendor'
 
 /**
  * 导出唯一的处理入口，交由worker处置
@@ -131,7 +132,8 @@ export default function process(setOnMessage, postMessage) {
 
     postMessage({
       type: 'ExecutionTime',
-      data: new Date() - dateBefore
+      data: new Date() - dateBefore,
+      charts: Charts,
     });
     return finished;
   }

@@ -2,9 +2,9 @@
 import { onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
-import 'nvd3/build/nv.d3.min.css'
+// import { displayChart } from './support/chart.js';
 
-const workerURL = new URL('./worker/pptx.worker.js', import.meta.url);
+const workerURL = new URL('./worker/pptx.worker.js', import.meta.url)
 
 const props = withDefaults(defineProps<{
   // 二进制数据
@@ -38,9 +38,9 @@ const wrapper = ref<null | HTMLDivElement>(null);
       worker.addEventListener('message', event => {
         console.log(event)
         this.processMessage(event.data)
-      }, false);
+      }, false)
       worker.addEventListener('error', ev => {
-        console.error(ev);
+        console.error(ev)
       }, false)
       // 通知worker开始工作
       worker.postMessage({
@@ -48,7 +48,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
         data: props.data,
         IE11: 'MSInputMethodContext' in window && 'documentMode' in document,
         options: props.options()
-      });
+      })
       // 定时检测执行情况，发现完成则及时关闭
       data.timer = setInterval(this.stopWorker, 500)
     },
@@ -90,7 +90,10 @@ const wrapper = ref<null | HTMLDivElement>(null);
         case 'globalCSS':
           $wrapper.append(`<style>${msg.data}</style>`)
           break
+        case 'ExecutionTime':
         case 'Done':
+          console.log('pptx渲染完成，耗时', msg.data)
+          // displayChart(msg.charts);
           data.isDone = true
           break
         case 'WARN':
