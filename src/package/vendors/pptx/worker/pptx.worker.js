@@ -9,3 +9,7 @@ processPptx(
   },
   msg => self.postMessage(msg)
 )
+
+export default {
+  version: '1.0'
+}

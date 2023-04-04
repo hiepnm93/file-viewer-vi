@@ -3,9 +3,8 @@ import { onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
+import PptxWorker from './worker/pptx.worker.js?worker'
 // import { displayChart } from './support/chart.js';
-
-const workerURL = new URL('./worker/pptx.worker.js', import.meta.url)
 
 const props = withDefaults(defineProps<{
   // 二进制数据
@@ -33,9 +32,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
       // 真实的web worker - 使用该方式，我们必须通过blob的方式进行通信
       if (data.worker) data.worker.terminate()
       if (data.timer) clearInterval(data.timer)
-      const worker = data.worker = new Worker(workerURL, {
-        type: 'module'
-      })
+      const worker = data.worker = new PptxWorker();
       worker.addEventListener('message', event => {
         console.log(event)
         this.processMessage(event.data)

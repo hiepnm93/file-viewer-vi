@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf'
 import { EventBus, PDFViewer, PDFLinkService, PDFFindController, GenericL10n } from 'pdfjs-dist/legacy/web/pdf_viewer'
+import PDFWorker from 'pdfjs-dist/legacy/build/pdf.worker.js?worker'
 
 import './pdf.css'
 
@@ -11,9 +12,6 @@ const props = defineProps<{
 
 // 容器
 const container = ref<HTMLDivElement | null>(null)
-
-// worker url
-const workerURL = new URL('/node_modules/pdfjs-dist/legacy/build/pdf.worker.js', import.meta.url);
 
 // 上下文
 const context = {
@@ -27,9 +25,7 @@ const context = {
 
 // 指定worker端口
 if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker' in window) {
-  GlobalWorkerOptions.workerPort = new Worker(workerURL, {
-    type: 'module',
-  });
+  GlobalWorkerOptions.workerPort = new PDFWorker();
 }
 
 // 私有执行
