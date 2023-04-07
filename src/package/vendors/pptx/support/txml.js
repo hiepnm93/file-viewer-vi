@@ -287,6 +287,8 @@ export function parse(S, options) {
   return out
 }
 
+let order = 1;
+
 /**
  * transform the DomObject to an object that is like the object of PHP`s simple_xmp_load_*() methods.
  * this format helps you to write that is more likely to keep your program working, even if there a small changes in the XML schema.
@@ -294,9 +296,8 @@ export function parse(S, options) {
  * therefore your program will be more flexible and easier to read.
  *
  * @param {tNode[]} children the childrenList
- * @param depth 层级深度，保证每个图层不搞错
  */
-export function simplify(children, depth = 1) {
+export function simplify(children) {
   const out = {}
   if (!children || !children.length) {
     return {}
@@ -312,14 +313,14 @@ export function simplify(children, depth = 1) {
     }
     if (!out[child.tagName])
       out[child.tagName] = []
-    const kids = simplify(child.children, depth + 1)
+    const kids = simplify(child.children)
     out[child.tagName].push(kids)
     if (typeof kids !== 'string') {
       if (Object.keys(child.attributes).length) {
         kids.attrs = child.attributes
       }
       if (!kids.attrs) kids.attrs = {}
-      kids.attrs.order = depth
+      kids.attrs.order = order++
     }
   })
 
@@ -329,22 +330,5 @@ export function simplify(children, depth = 1) {
     }
   }
 
-  return out
-}
-
-/**
- * behaves the same way as Array.filter, if the filter method return true, the element is in the resultList
- * @params children{Array} the children of a node
- * @param f{function} the filter method
- */
-export function filter(children, f, dept = 0, path = '') {
-  var out = []
-  children.forEach(function(child, i) {
-    if (typeof (child) === 'object' && f(child, i, dept, path)) out.push(child)
-    if (child.children) {
-      var kids = filter(child.children, f, dept + 1, (path ? path + '.' : '') + i + '.' + child.tagName)
-      out = out.concat(kids)
-    }
-  })
   return out
 }
