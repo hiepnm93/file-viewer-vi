@@ -1,23 +1,44 @@
 import $ from 'jquery'
 import { format } from 'd3'
+import type { ChartOptions } from 'billboard.js'
 import bb, { area, bar, line, pie, scatter } from 'billboard.js'
 import 'billboard.js/dist/theme/insight.css'
 
 /**
+ * 图表消息
+ */
+interface ChartMessage {
+
+  type: string
+
+  data: ChartData
+}
+
+interface ChartData {
+
+  chartID: string
+
+  chartType: string
+
+  chartData: any
+}
+
+/**
  * 显示图表
  */
-export const displayChart = charts => {
+export const displayChart = (charts: any) => {
   processMsgQueue(charts.MsgQueue)
   setNumericBullets($('.block'))
   setNumericBullets($('table td'))
 }
 
-function processMsgQueue(queue) {
-  queue.forEach(queue => processSingleMsg(queue?.data))
+function processMsgQueue(queues: ChartMessage[]) {
+  queues.forEach((queue: any) => processSingleMsg(queue?.data))
 }
 
-const generalAxis = (data, cb = a => a) => {
-  const modifier = data => {
+const generalAxis = (data: any, cb = (a: object) => {
+}) => {
+  const modifier = (data: object) => {
     cb(data)
     return data
   }
@@ -25,7 +46,7 @@ const generalAxis = (data, cb = a => a) => {
     axis: modifier({
       x: {
         tick: {
-          format(index) {
+          format(index: number) {
             return data[0].xlabels[index] || index
           }
         }
@@ -34,26 +55,17 @@ const generalAxis = (data, cb = a => a) => {
   }
 }
 
-const buildScatterData = data => {
-  return data.reduce((result, item, index) => {
-    result
-  }, [])
-}
-
-function processSingleMsg(d) {
+function processSingleMsg(d: ChartData | undefined) {
   if (!d) return
-
-  const chartID = d.chartID
-  const chartType = d.chartType
-  const chartData = d.chartData
-  const chart = {
+  const { chartID, chartType, chartData } = d
+  const chart: ChartOptions = {
     bindto: `#${chartID}`
   }
   switch (chartType) {
     case 'lineChart':
       Object.assign(chart, {
         data: {
-          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          columns: chartData.map((c: any) => [c.key, ...c.values.map(({ y }: any) => y)]),
           type: line()
         },
         ...generalAxis(chartData),
@@ -63,10 +75,10 @@ function processSingleMsg(d) {
     case 'barChart':
       Object.assign(chart, {
         data: {
-          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          columns: chartData.map((c: any) => [c.key, ...c.values.map(({ y }: any) => y)]),
           type: bar()
         },
-        ...generalAxis(chartData, axis => axis.x.tick.multiline = true)
+        ...generalAxis(chartData, (axis: any) => axis.x.tick.multiline = true)
       })
       break
     case 'pieChart':
@@ -81,7 +93,7 @@ function processSingleMsg(d) {
     case 'areaChart':
       Object.assign(chart, {
         data: {
-          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          columns: chartData.map((c: any) => [c.key, ...c.values.map(({ y }: any) => y)]),
           type: area()
         },
         interaction: { enabled: true },
@@ -94,7 +106,7 @@ function processSingleMsg(d) {
           xs: {
             y: 'x'
           },
-          columns: chartData.map((c, i) => [i ? 'y' : 'x', ...c]),
+          columns: chartData.map((c: any, i: number) => [i ? 'y' : 'x', ...c]),
           type: scatter()
         },
         axis: {
@@ -122,21 +134,21 @@ function processSingleMsg(d) {
   }
 }
 
-function setNumericBullets(elem) {
-  var prgrphs_arry = elem
-  for (var i = 0; i < prgrphs_arry.length; i++) {
-    var buSpan = $(prgrphs_arry[i]).find('.numeric-bullet-style')
+function setNumericBullets(elem: any) {
+  const prgrphs_arry = elem
+  for (let i = 0; i < prgrphs_arry.length; i++) {
+    const buSpan = $(prgrphs_arry[i]).find('.numeric-bullet-style')
     if (buSpan.length > 0) {
       //console.log("DIV-"+i+":");
-      var prevBultTyp = ''
-      var prevBultLvl = ''
-      var buletIndex = 0
-      var tmpArry = new Array()
-      var tmpArryIndx = 0
-      var buletTypSrry = new Array()
-      for (var j = 0; j < buSpan.length; j++) {
-        var bult_typ = $(buSpan[j]).data('bulltname')
-        var bult_lvl = $(buSpan[j]).data('bulltlvl')
+      let prevBultTyp = ''
+      let prevBultLvl = ''
+      let buletIndex = 0
+      const tmpArry = []
+      let tmpArryIndx = 0
+      const buletTypSrry = []
+      for (let j = 0; j < buSpan.length; j++) {
+        const bult_typ = $(buSpan[j]).data('bulltname')
+        const bult_lvl = $(buSpan[j]).data('bulltlvl')
         //console.log(j+" - "+bult_typ+" lvl: "+bult_lvl );
         if (buletIndex == 0) {
           prevBultTyp = bult_typ
@@ -173,15 +185,15 @@ function setNumericBullets(elem) {
           }
         }
         //console.log(buletTypSrry[tmpArryIndx]+" - "+buletIndex);
-        var numIdx = getNumTypeNum(buletTypSrry[tmpArryIndx], buletIndex)
+        const numIdx = getNumTypeNum(buletTypSrry[tmpArryIndx], buletIndex)
         $(buSpan[j]).html(numIdx)
       }
     }
   }
 }
 
-function getNumTypeNum(numTyp, num) {
-  var rtrnNum = ''
+function getNumTypeNum(numTyp: string, num: number): string {
+  let rtrnNum = ''
   switch (numTyp) {
     case 'arabicPeriod':
       rtrnNum = num + '. '
@@ -202,7 +214,6 @@ function getNumTypeNum(numTyp, num) {
     case 'alphaUcPeriod':
       rtrnNum = alphaNumeric(num, 'upperCase') + '. '
       break
-
     case 'romanUcPeriod':
       rtrnNum = romanize(num) + '. '
       break
@@ -213,26 +224,26 @@ function getNumTypeNum(numTyp, num) {
       rtrnNum = hebrew2Minus.format(num) + '-'
       break
     default:
-      rtrnNum = num
+      rtrnNum = String(num)
   }
   return rtrnNum
 }
 
-function romanize(num) {
+function romanize(num: number) {
   if (!+num)
     return false
-  var digits = String(+num).split(''),
+  const digits = String(+num).split(''),
     key = ['', 'C', 'CC', 'CCC', 'CD', 'D', 'DC', 'DCC', 'DCCC', 'CM',
       '', 'X', 'XX', 'XXX', 'XL', 'L', 'LX', 'LXX', 'LXXX', 'XC',
-      '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'],
-    roman = '',
-    i = 3
+      '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']
+  let roman = ''
+  let i = 3
   while (i--)
-    roman = (key[+digits.pop() + (i * 10)] || '') + roman
+    roman = (key[+(digits.pop() ?? '') + (i * 10)] || '') + roman
   return Array(+digits.join('') + 1).join('M') + roman
 }
 
-var hebrew2Minus = archaicNumbers([
+const hebrew2Minus = archaicNumbers([
   [1000, ''],
   [400, 'ת'],
   [300, 'ש'],
@@ -262,16 +273,16 @@ var hebrew2Minus = archaicNumbers([
   [/^([א-ת])$/, '$1׳']
 ])
 
-function archaicNumbers(arr) {
+function archaicNumbers(arr: any) {
   // eslint-disable-next-line no-unused-vars
-  var arrParse = arr.slice().sort(function(a, b) {
+  const arrParse = arr.slice().sort(function(a: any, b: any) {
     return b[1].length - a[1].length
   })
   return {
-    format: function(n) {
-      var ret = ''
+    format: function(n: number) {
+      let ret = ''
       $.each(arr, function() {
-        var num = this[0]
+        const num = this[0]
         if (parseInt(num) > 0) {
           for (; n >= num; n -= num) ret += this[1]
         } else {
@@ -283,9 +294,9 @@ function archaicNumbers(arr) {
   }
 }
 
-function alphaNumeric(num, upperLower) {
+function alphaNumeric(num: number, upperLower: string) {
   num = Number(num) - 1
-  var aNum = ''
+  let aNum = ''
   if (upperLower == 'upperCase') {
     aNum = (((num / 26 >= 1) ? String.fromCharCode(num / 26 + 64) : '') + String.fromCharCode(num % 26 + 65)).toUpperCase()
   } else if (upperLower == 'lowerCase') {

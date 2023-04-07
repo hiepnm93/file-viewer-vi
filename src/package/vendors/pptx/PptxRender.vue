@@ -4,7 +4,7 @@ import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
 import PptxWorker from './worker/pptx.worker.js?worker'
-import { displayChart } from './support/chart.js';
+import { displayChart } from './support/chart';
 
 const props = withDefaults(defineProps<{
   // 二进制数据
