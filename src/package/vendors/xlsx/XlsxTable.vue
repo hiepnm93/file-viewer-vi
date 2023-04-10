@@ -5,6 +5,7 @@ import { HotTable } from '@handsontable/vue3'
 import Handsontable from 'handsontable'
 import { alignToClass, camelCase, captain, fixMatrix, getColor, valueOf, valuesOf } from './util'
 import type { Border, Range, Workbook } from 'exceljs/index.d'
+import ExcelJS from 'exceljs'
 
 // 边框类型
 const borders: string[] = ['left', 'right', 'top', 'bottom']
@@ -12,10 +13,11 @@ const borders: string[] = ['left', 'right', 'top', 'bottom']
 const themeTypes = ['lt1', 'dk1', 'lt2', 'dk2', 'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6'];
 
 const props = defineProps<{
-  workbook: Workbook,
+  data: ArrayBuffer,
 }>()
 
 const table = ref<typeof HotTable | null>(null)
+const workbook = ref<null | Workbook>(null);
 const sheetIndex = ref(0)
 
 // 表格设置，计算属性
@@ -102,18 +104,17 @@ const merge = computed(() => {
 
 // 获取工作表
 const ws = computed(() => {
-  const { workbook: { getWorksheet } = {}, workbook } = props
-  if (getWorksheet) {
+  if (workbook.value?.getWorksheet) {
     const index = sheetIndex.value || sheets.value[0].id
-    return workbook.getWorksheet(index)
+    return workbook.value.getWorksheet(index)
   }
   return null
 })
 
 // 获取所有工作表
 const sheets = computed(() => {
-  if (props.workbook.worksheets) {
-    return props.workbook.worksheets.filter(sheet => sheet.rowCount)
+  if (workbook.value?.worksheets) {
+    return workbook.value?.worksheets.filter(sheet => sheet.rowCount)
   }
   return []
 })
@@ -210,7 +211,8 @@ const methods = {
     })
   },
   parseTheme() {
-    const themes: any = props.workbook.model.themes
+    const themes: any = workbook.value?.model?.themes
+    if (!themes) return;
     const parser = new DOMParser()
     const contents: string[] = Object.values(themes)
     contents.forEach((theme) => {
@@ -243,7 +245,7 @@ const methods = {
 // 闭包块，不暴露
 (() => {
   // 监听工作表的变更
-  watch(() => props.workbook, () => {
+  watch(workbook, () => {
     methods.parseTheme()
     methods.updateTable()
   })
@@ -298,7 +300,8 @@ const methods = {
     })
 })()
 
-onMounted(() => {
+onMounted(async () => {
+  workbook.value = await new ExcelJS.Workbook().xlsx.load(props.data);
   if (!sheetIndex.value) sheetIndex.value = sheets.value[0].id;
   methods.parseTheme()
 })

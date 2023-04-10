@@ -1,5 +1,6 @@
-import { createApp } from 'vue'
-import PptxRender from './PptxRender.vue'
+import { createApp, defineAsyncComponent } from 'vue'
+
+const PptxRender = defineAsyncComponent(() => import('./PptxRender.vue'))
 
 /**
  * pptx渲染逻辑，使用vue组件，重构自pptxjs，感谢大神让我站在巨人的肩膀上

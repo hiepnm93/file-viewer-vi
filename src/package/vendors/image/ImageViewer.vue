@@ -1,5 +1,6 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
+import { component as VueViewer } from 'v-viewer'
 import 'viewerjs/dist/viewer.css'
 
 const props = defineProps<{
@@ -12,9 +13,9 @@ const images = computed(() => {
 </script>
 
 <template>
-  <viewer :images='images' style='height: 800px;'>
+  <vue-viewer :images='images' style='height: 800px;'>
     <img v-for='item in images' alt='图片' :src='item.src' :key='item.index' class='image' />
-  </viewer>
+  </vue-viewer>
 </template>
 
 <style scoped>

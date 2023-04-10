@@ -1,4 +1,4 @@
-import { defaultOptions, renderAsync } from 'docx-preview'
+import renderDocx from './docx'
 import renderPptx from './pptx'
 import renderSheet from './xlsx'
 import renderPdf from './pdf'
@@ -15,17 +15,13 @@ const createWrapper = (el: HTMLDivElement): AppWrapper => ({
   }
 })
 
-
 const handlers: Array<FileHandlerComposite> = [
   // 使用docxjs支持，目前效果最好的渲染器
   {
     accepts: ['docx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      const docxOptions = Object.assign(defaultOptions, {
-        debug: true,
-        experimental: true
-      })
-      await renderAsync(buffer, target, undefined, docxOptions)
+      await renderDocx(buffer, target)
+      window.dispatchEvent(new Event('resize'))
       return createWrapper(target)
     }
   },
@@ -91,4 +87,4 @@ const renders = handlers.reduce((result, { accepts, handler }) => {
   return result
 }, new Map<string, FileHandler>())
 
-export default renders;
+export default renders
