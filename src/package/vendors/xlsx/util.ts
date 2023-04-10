@@ -28,6 +28,10 @@ export function valueOf(value: CellValue): string {
     if (value instanceof Date) {
       return value.toLocaleDateString()
     }
+    if (typeof value === 'object') {
+      if ('text' in value) return value.text;
+      if ('richText' in value) return value.richText.map(text => text.text).join('')
+    }
     return String(value)
   }
   return ''

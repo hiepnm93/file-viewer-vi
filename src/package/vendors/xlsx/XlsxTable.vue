@@ -1,23 +1,18 @@
 <script setup lang='ts'>
 
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { HotTable } from '@handsontable/vue3'
-import Handsontable from 'handsontable'
-import { alignToClass, camelCase, captain, fixMatrix, getColor, valueOf, valuesOf } from './util'
+import { HotColumn, HotTable } from '@handsontable/vue3'
+import { alignToClass, fixMatrix, getColor, valueOf, valuesOf } from './util'
 import type { Border, Range, Workbook } from 'exceljs/index.d'
 import ExcelJS from 'exceljs'
-
-// 边框类型
-const borders: string[] = ['left', 'right', 'top', 'bottom']
-// 主题类型
-const themeTypes = ['lt1', 'dk1', 'lt2', 'dk2', 'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6'];
+import { borders, context, parseTheme } from './render'
 
 const props = defineProps<{
   data: ArrayBuffer,
 }>()
 
 const table = ref<typeof HotTable | null>(null)
-const workbook = ref<null | Workbook>(null);
+const workbook = ref<null | Workbook>(null)
 const sheetIndex = ref(0)
 
 // 表格设置，计算属性
@@ -25,13 +20,11 @@ const hotSettings = computed(() => {
   return {
     language: 'zh-CN',
     readOnly: true,
-    data: data.value,
-    cell: cell.value,
-    mergeCells: merge.value,
-    columns: columns.value,
+    // columns: columns.value,
     colHeaders: true,
     rowHeaders: true,
-    rowHeights: rowHeights.value,
+    autoRowSize: false,
+    autoColumnSize: false,
     height: 'calc(100vh - 107px)',
     // contextMenu: true,
     // manualRowMove: true,
@@ -63,7 +56,7 @@ const data = computed(() => {
   const result: string[][] = wsValue.getRows(1, wsValue.actualRowCount)?.map(row => {
     return valuesOf(row)?.map(valueOf)
   }) || [[]]
-  return fixMatrix(result, cols.value?.length || 0)
+  return fixMatrix(result, columns.value?.length || 0)
 })
 
 // 单元格
@@ -119,11 +112,6 @@ const sheets = computed(() => {
   return []
 })
 
-// 获取所有列
-const cols = computed(() => {
-  return ws.value?.columns.map(item => item.letter)
-})
-
 // 边框设置，设置边框属性
 const border = computed(() => {
   return ws.value?.getRows(1, ws.value.actualRowCount)?.flatMap((row, ri) => {
@@ -138,7 +126,9 @@ const border = computed(() => {
             color: getColor(border.color, context.themeColors) || '#000000'
           }
           return result
-        }, {} as { [key: string]: { width: number, color: string } })
+        }, {
+
+        } as { [key: string]: { width: number, color: string } })
         return {
           row: ri,
           col: ci,
@@ -165,14 +155,11 @@ const rowHeights = computed(() => {
   return rowHeight
 })
 
-// 上下文对象
-const context = {
-  themeColors: [] as string[],
-  selection: {
-    style: {},
-    ranges: []
-  }
-}
+// note excel中列宽以字符长度为单位，1个字符≈7px
+const colWidths = computed(() => {
+  const { colWidth } = defaults.value
+  return ws.value?.columns.map(item => item.width ? item.width * 7 : colWidth)
+})
 
 // 切换sheet
 const handleSheet = (index: number) => {
@@ -185,13 +172,12 @@ const handleSheet = (index: number) => {
 }
 
 // 内部使用的计算属性，列表
-// note excel中列宽以字符长度为单位，1个字符≈7px
 const columns = computed(() => {
-  const { colWidth } = defaults.value
   return ws.value?.columns.map(item => ({
-    ...(item.width ? { width: item.width * 7 } : { width: colWidth }),
+    key: item.number,
+    title: item.letter,
     className: alignToClass(item.alignment || {}),
-    renderer: 'styleRender'
+    renderer: 'styleRender',
   }))
 })
 
@@ -201,109 +187,38 @@ const methods = {
     return table.value?.hotInstance
   },
   updateTable() {
-    this.hotTable().updateSettings({
-      mergeCells: merge.value,
+    this.hotTable()?.updateSettings({
       data: data.value,
-      colHeaders: cols.value,
-      columns: columns.value,
       cell: cell.value,
-      customBorders: border.value
+      columns: columns.value,
+      mergeCells: merge.value,
+      // customBorders: border.value,
+      colWidths: colWidths.value,
+      rowHeights: rowHeights.value
     })
   },
   parseTheme() {
-    const themes: any = workbook.value?.model?.themes
-    if (!themes) return;
-    const parser = new DOMParser()
-    const contents: string[] = Object.values(themes)
-    contents.forEach((theme) => {
-      const doc = parser.parseFromString(theme, 'text/xml')
-      const elements = doc.getElementsByTagName('a:clrScheme')
-      const colorNode = elements.item(0)
-      if (colorNode) {
-        const nodes = colorNode.children
-        const colors: any = {}
-        for (let i = 0; i < nodes.length; i++) {
-          const element = nodes.item(i)
-          if (!element) continue
-          const content = element.children.item(0)
-          if (!content) continue
-          let value: string | null
-          if (content.tagName === 'a:sysClr') {
-            value = content.getAttribute('lastClr')
-          } else {
-            value = content.getAttribute('val')
-          }
-          colors[element.tagName.substring(2)] = value || '000000'
-        }
-        // 使用映射的结果写入
-        context.themeColors = themeTypes.map((name: string) => colors[name]);
-      }
-    })
+    const themes = workbook.value?.model?.themes
+    if (themes) {
+      Object.values(themes).forEach(parseTheme)
+    }
   }
-};
+}
 
-// 闭包块，不暴露
-(() => {
-  // 监听工作表的变更
-  watch(workbook, () => {
-    methods.parseTheme()
-    methods.updateTable()
-  })
-
-  // 注册自定义渲染
-  Handsontable
-    .renderers
-    .registerRenderer('styleRender', (hotInstance, TD, row, col, prop, value, cell) => {
-      Handsontable.renderers.getRenderer('text')(hotInstance, TD, row, col, prop, value, cell)
-      if (ws.value && cell.style) {
-
-        const { style: { border, fill, font } } = cell
-        const style: any = TD.style
-        if (font) {
-          if (font.bold) style.fontWeight = 'bold'
-          if (font.size) style.fontSize = `${font.size}px`
-          if (font.color) {
-            style.color = getColor(font.color, context.themeColors)
-          }
-        }
-        if (fill) {
-          if (fill.bgColor) {
-            style.backgroundColor = getColor(fill.bgColor, context.themeColors)
-          }
-          if (fill.fgColor && !style.backgroundColor) {
-            style.backgroundColor = getColor(fill.fgColor, context.themeColors)
-          }
-        }
-        if (border) {
-          borders.map(key => ({ key, value: border[key] })).filter(v => v.value).forEach(v => {
-            const { key, value: { style: borderStyle } } = v
-            const prefix = `border${captain(key)}`
-            if (borderStyle === 'thin') {
-              style[`${prefix}Width`] = '1px'
-            } else {
-              style[`${prefix}Width`] = '2px'
-            }
-            style[`${prefix}Style`] = 'solid'
-            style[`${prefix}Color`] = '#000'
-          })
-        }
-      }
-      // 启用了内联css，直接赋值
-      if (cell.css) {
-        const style: any = TD.style
-        const { css } = cell
-        Object.keys(css).forEach((key: string) => {
-          const k = camelCase(key)
-          style[k] = css[key]
-        })
-      }
-    })
-})()
-
-onMounted(async () => {
-  workbook.value = await new ExcelJS.Workbook().xlsx.load(props.data);
-  if (!sheetIndex.value) sheetIndex.value = sheets.value[0].id;
+// 监听工作表的变更
+watch(workbook, () => {
   methods.parseTheme()
+  methods.updateTable()
+})
+
+// 挂载完成，加载异步任务
+onMounted(async () => {
+  workbook.value = await new ExcelJS.Workbook().xlsx.load(props.data)
+  methods.parseTheme()
+  methods.updateTable()
+  return nextTick(() => {
+    if (!sheetIndex.value) sheetIndex.value = sheets.value[0].id
+  })
 })
 
 </script>
@@ -311,7 +226,9 @@ onMounted(async () => {
 <template>
   <div>
     <div>
-      <hot-table ref='table' :settings='hotSettings'></hot-table>
+      <hot-table ref='table' :settings='hotSettings'>
+        <hot-column v-for='column in columns' :key='column.key' :title='column.title' />
+      </hot-table>
     </div>
     <div class='btn-group'>
       <button
@@ -329,42 +246,44 @@ onMounted(async () => {
 
 <style>
 .handsontable {
-  font-size: 13px;
-  color: #222
+    font-size: 13px;
+    color: #222
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
 .sheet-btn.active {
-  background-color: aquamarine;
+    background-color: aquamarine;
 }
 
 .btn-group {
-  margin-top: 5px;
-  display: block;
-  border-bottom: 1px solid grey;
-  background-color: lightblue;
+    margin-top: 5px;
+    display: block;
+    border-bottom: 1px solid grey;
+    background-color: lightgray;
 }
 
 .btn-group button {
-  outline: 0;
-  border: 0;
-  border-radius: 0;
-  border-left: 1px solid slategrey;
+    outline: 0;
+    border: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #0c9d0c;
+    border-left: 1px solid slategrey;
 }
 
 .btn-group button:last-child {
-  border-right: 1px solid grey;
+    border-right: 1px solid grey;
 }
 
 .btn-group button.active {
-  background: #408FFF;
-  color: white;
+    background: #0c9d0c;
+    color: white;
 }
 
 .table-tool {
-  padding: 8px 0;
-  border-top: 1px solid black;
+    padding: 8px 0;
+    border-top: 1px solid black;
 }
 </style>
