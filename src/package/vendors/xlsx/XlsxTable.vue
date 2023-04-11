@@ -1,20 +1,23 @@
 <script setup lang='ts'>
 
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HotTable } from '@handsontable/vue3'
-import { alignToClass, fixMatrix, valueOf, valuesOf } from './util'
-import type { Range, Workbook } from 'exceljs/index.d'
-import ExcelJS from 'exceljs'
-import { parseTheme } from './render'
+import { cellKey } from './util'
+import type SheetData from './worker/SheetData'
+import './render'
+import XlsxWorker from './worker/xlsx.worker?worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
 }>()
 
 const table = ref<typeof HotTable | null>(null)
-const workbook = ref<null | Workbook>(null)
+const sheets = ref<any>(null)
 const sheetIndex = ref(0)
 const loading = ref(true)
+
+let sheetData: undefined | SheetData
+let worker: undefined | Worker
 
 // 表格设置，计算属性
 const hotSettings = {
@@ -25,6 +28,32 @@ const hotSettings = {
   autoRowSize: false,
   autoColumnSize: false,
   height: '100%',
+  // 静态设置，提高性能
+  cells(row: number, column: number) {
+    const props = sheetData?.cell
+    if (props) {
+      return props[cellKey(row, column)]
+    }
+    return {}
+  },
+  columns(index: number) {
+    const value = sheetData?.columns
+    return value ? value[index] : {}
+  },
+  colWidths(index: number) {
+    const value = sheetData?.colWidths
+    if (typeof value === 'number') {
+      return value
+    }
+    return value ? value[index] : sheetData?.defaults.colWidth
+  },
+  rowHeights(index: number) {
+    const value = sheetData?.rowHeights
+    if (typeof value === 'number') {
+      return value
+    }
+    return value ? value[index] : sheetData?.defaults.rowHeight
+  },
   // contextMenu: true,
   // manualRowMove: true,
   // 关闭外部点击取消选中时间的行为
@@ -38,198 +67,97 @@ const hotSettings = {
   licenseKey: 'non-commercial-and-evaluation'
 }
 
-// 默认值
-const defaults = computed(() => {
-  const properties = ws.value?.properties
-  return {
-    rowHeight: properties?.defaultRowHeight || 20,
-    colWidth: (properties?.defaultColWidth || 10) * 7
-  }
-})
-
-// 表格数据
-const data = computed(() => {
-  const wsValue = ws.value
-  if (!wsValue) return [[]]
-  const result: string[][] = wsValue.getRows(1, wsValue.actualRowCount)?.map(row => {
-    return valuesOf(row)?.map(valueOf)
-  }) || [[]]
-  return fixMatrix(result, columns.value?.length || 0)
-})
-
-// 单元格
-const cell = computed(() => {
-  const wsValue = ws.value
-  return wsValue?.getRows(1, wsValue.actualRowCount)?.flatMap((row, ri) => {
-    const model = row.model || { cells: [] }
-    return model.cells?.map((cell, ci) => {
-      if (cell.style) {
-        const { alignment } = cell.style
-        return {
-          row: ri,
-          col: ci,
-          ...(alignment ? { className: alignToClass(alignment) } : {}),
-          style: cell.style
-        }
-      }
-    }).filter(i => i)
-  })
-})
-
-// 单元格合并选项
-const merge = computed(() => {
-  const sheet: any = ws.value
-  if (!sheet) return []
-  const { _merges: merges }: { _merges: { string: Range } } = sheet
-  return Object.values(merges).map(merge => {
-    const { top, left, bottom, right } = merge
-    // 构建区域
-    return {
-      row: top - 1,
-      col: left - 1,
-      rowspan: bottom - top + 1,
-      colspan: right - left + 1
-    }
-  })
-})
-
-// 获取工作表
-const ws = computed(() => {
-  if (workbook.value?.getWorksheet) {
-    const index = sheetIndex.value || sheets.value[0].id
-    return workbook.value.getWorksheet(index)
-  }
-  return null
-})
-
-// 获取所有工作表
-const sheets = computed(() => {
-  if (workbook.value?.worksheets) {
-    return workbook.value?.worksheets.filter(sheet => sheet.rowCount)
-  }
-  return []
-})
-
-/*
-// 边框设置，设置边框属性
-const border = computed(() => {
-  return ws.value?.getRows(1, ws.value.actualRowCount)?.flatMap((row, ri) => {
-    const model = row.model || { cells: [] }
-    return model.cells?.map((cell, ci) => {
-      if (cell.style && cell.style.border) {
-        const model: any = cell.style.border
-        const content = borders.filter(key => key in model && model[key]).reduce((result, key) => {
-          const border: Partial<Border> = model[key]
-          result[key] = {
-            width: 1,
-            color: getColor(border.color, context.themeColors) || '#000000'
-          }
-          return result
-        }, {
-
-        } as { [key: string]: { width: number, color: string } })
-        return {
-          row: ri,
-          col: ci,
-          ...content
-        }
-      }
-    }).filter(i => i)
-  })
-})
-*/
-
-// 行高
-const rowHeights = computed(() => {
-  const { rowHeight } = defaults.value
-  const worksheet = ws.value
-  if (worksheet) {
-    const rows = worksheet.getRows(1, worksheet.actualRowCount)
-    const heights = rows?.map(row => row.height || rowHeight) || []
-    if (heights.length === 1) {
-      return heights[0]
-    } else if (heights.length) {
-      return heights
-    }
-  }
-  return rowHeight
-})
-
-// note excel中列宽以字符长度为单位，1个字符≈7px
-const colWidths = computed(() => {
-  const { colWidth } = defaults.value
-  return ws.value?.columns.map(item => item.width ? item.width * 7 : colWidth)
-})
-
 // 切换sheet
 const handleSheet = (index: number) => {
   if (sheetIndex.value !== index) {
     sheetIndex.value = index
-    methods.updateTable()
+    methods.parseSheet()
   }
 }
-
-// 内部使用的计算属性，列表
-const columns = computed(() => {
-  return ws.value?.columns.map(item => ({
-    key: item.number,
-    title: item.letter,
-    editor: false,
-    className: alignToClass(item.alignment || {}),
-    renderer: 'styleRender'
-  }))
-})
 
 // 内部方法
 const methods = {
   hotTable() {
     return table.value?.hotInstance
   },
-  updateTable() {
+  parseWorkbook() {
     loading.value = true;
+    worker?.postMessage({
+      type: 'parseWorkbook',
+      workbook: props.data
+    })
+  },
+  parseSheet() {
+    loading.value = true;
+    worker?.postMessage({
+      type: 'parseSheet',
+      sheet: sheetIndex.value || sheets.value[0].id
+    })
+  },
+  updateTable() {
     nextTick(() => {
       setTimeout(() => {
         this.hotTable()?.updateSettings({
-          data: data.value,
-          cell: cell.value,
-          columns: columns.value,
-          mergeCells: merge.value,
-          // customBorders: border.value,
-          colWidths: colWidths.value,
-          rowHeights: rowHeights.value
+          data: sheetData?.data,
+          mergeCells: sheetData?.merge
+          // customBorders: sheetData?.border,
         })
       }, 0)
     })
-  },
-  parseTheme() {
-    const themes = workbook.value?.model?.themes
-    if (themes) {
-      Object.values(themes).forEach(parseTheme)
-    }
   }
 }
 
 // 监听工作表的变更
-watch(workbook, () => {
-  methods.parseTheme()
-  methods.updateTable()
+watch(() => props.data, () => {
+  methods.parseWorkbook()
 })
 
 // 挂载完成，加载异步任务
 onMounted(async () => {
-  workbook.value = await new ExcelJS.Workbook().xlsx.load(props.data)
-  methods.parseTheme()
+  // 初始化worker
+  worker = new XlsxWorker()
+  worker?.addEventListener('message', event => {
+    const { type, sheetData: ws, sheets } = event.data
+    switch (type) {
+      case 'sheets':
+        // 初次解析得到sheets
+        sheets.value = sheets;
+        if (sheets.length) {
+          // 设定活动表
+          sheetIndex.value = sheets[0].id;
+          // 初次解析，必须保证有活动表
+          methods.parseSheet();
+        }
+        break;
+      case 'parseSheet':
+        sheetData = ws
+        // 当且仅当解析完数据后重绘表格
+        methods.updateTable()
+        break
+    }
+  })
+  worker?.addEventListener('error', event => {
+    console.error(event)
+  })
+  // 添加table回调
   methods.hotTable()?.addHook('afterUpdateSettings', () => loading.value = false)
-  const [{ id = 0 } = {}] = sheets.value || []
-  if (!sheetIndex.value) sheetIndex.value = id
-  return methods.updateTable();
+  // 初次解析，主要是解析工作簿，主题、当前工作表
+  methods.parseWorkbook()
 })
 
+// 挂载结束，销毁worker
+onUnmounted(() => {
+  worker?.terminate()
+})
 </script>
 
 <template>
   <div class='excel-wrapper'>
-    <div class='loading' v-if='loading'>加载中，请耐心等待...</div>
+    <div class='loading' v-if='loading'>
+      <img class='lg' src='./xlsx.png' alt='xlsx' />
+      <img class='sm' src='./loading.gif' alt='loading' />
+      加载中，请耐心等待...
+    </div>
     <div class='table-wrapper'>
       <hot-table ref='table' :settings='hotSettings' />
     </div>
@@ -261,6 +189,21 @@ onMounted(async () => {
     height: 100%;
 }
 
+.excel-wrapper img {
+    height: auto;
+    display: block;
+}
+
+.excel-wrapper img.lg {
+    width: 200px;
+    margin: 20px auto;
+}
+
+.excel-wrapper img.sm {
+    width: 80px;
+    margin: 2px auto;
+}
+
 .table-wrapper {
     position: relative;
     width: 100%;
@@ -284,6 +227,7 @@ onMounted(async () => {
     z-index: 999;
     color: #0c9d0c;
 }
+
 .sheet-btn.active {
     background-color: aquamarine;
 }

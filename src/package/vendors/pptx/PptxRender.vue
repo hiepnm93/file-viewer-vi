@@ -34,7 +34,6 @@ const wrapper = ref<null | HTMLDivElement>(null);
       if (data.timer) clearInterval(data.timer)
       const worker = data.worker = new PptxWorker();
       worker.addEventListener('message', event => {
-        console.log(event)
         this.processMessage(event.data)
       }, false)
       worker.addEventListener('error', ev => {
