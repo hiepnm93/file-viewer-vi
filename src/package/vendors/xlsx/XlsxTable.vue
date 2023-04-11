@@ -117,14 +117,14 @@ onMounted(async () => {
   // 初始化worker
   worker = new XlsxWorker()
   worker?.addEventListener('message', event => {
-    const { type, sheetData: ws, sheets } = event.data
+    const { type, sheetData: ws, sheets: list } = event.data
     switch (type) {
       case 'sheets':
         // 初次解析得到sheets
-        sheets.value = sheets;
-        if (sheets.length) {
+        sheets.value = list;
+        if (list.length) {
           // 设定活动表
-          sheetIndex.value = sheets[0].id;
+          sheetIndex.value = list[0].id;
           // 初次解析，必须保证有活动表
           methods.parseSheet();
         }
