@@ -3,6 +3,7 @@ import renderPptx from './pptx'
 import renderSheet from './xlsx'
 import renderPdf from './pdf'
 import renderImage from './image'
+import renderMd from './md'
 import renderText from './text'
 import renderMp4 from './mp4'
 import type { AppWrapper, FileHandler, FileHandlerComposite } from '@/package/common/type'
@@ -55,9 +56,15 @@ const handlers: Array<FileHandlerComposite> = [
       return renderImage(buffer, target)
     }
   },
+  {
+    accepts: ['md', 'markdown'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      return renderMd(buffer, target)
+    }
+  },
   // 纯文本预览
   {
-    accepts: ['txt', 'json', 'js', 'css', 'java', 'py', 'html', 'jsx', 'ts', 'tsx', 'xml', 'md', 'log'],
+    accepts: ['txt', 'json', 'js', 'css', 'java', 'py', 'html', 'jsx', 'ts', 'tsx', 'xml', 'log'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       return renderText(buffer, target)
     }
