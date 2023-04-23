@@ -60,7 +60,13 @@ if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker'
 
     eventBus.on('pagesinit', () => {
       // We can use pdfViewer now, e.g. let's change default scale.
-      pdfViewer.currentScaleValue = '1'
+      const viewport = pdfViewer.getPageView(0)?.viewport;
+      if (viewport?.width > window.innerWidth) {
+        // 页面太大，不好看，我们直接缩放到50%
+        pdfViewer.currentScaleValue = '0.5'
+      } else {
+        pdfViewer.currentScaleValue = '1'
+      }
 
       // We can try searching for things.
       if (context.search) {
@@ -109,7 +115,7 @@ function scaleD() {
 function scaleX() {
   if (!context.viewer) return
   const scale = context.viewer.currentScale
-  let min = 1.0
+  let min = 0.5
   if (scale <= min) {
     return
   }
