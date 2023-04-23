@@ -135,3 +135,13 @@ var context = {
 4. 具体请参考demo代码，原理是基于`iframe`跨域通信机制。
 
 ![image-20230228161454443](/Users/wangyu/Library/Application Support/typora-user-images/image-20230228161454443.png)
+
+
+
+## 更新日志
+
+####  [feature]`v1.0.6`  `2022年4月23日` 
+
+1. 解决部分pdf字体不显示的问题
+2. 增加pdf预览初始缩放大小，自动适配页面。调整pdf预览缩放下限为0.5
+3. demo增加url预览模式，在请求参数中添加`url=文件地址`，可自动拉取并渲染文件
