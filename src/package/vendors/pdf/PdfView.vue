@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf'
+import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist/legacy/build/pdf'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer'
 import './pdf.css'
 import PDFWorker from './worker'
@@ -70,7 +70,8 @@ if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker'
     // Loading document.
     const loadingTask = getDocument({
       data: props.data,
-      // cMapUrl: resolve('pdfjs-dist/cmaps/'),
+      cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/cmaps/`,
+      useWorkerFetch: true,
       cMapPacked: true,
       enableXfa: true
     })
