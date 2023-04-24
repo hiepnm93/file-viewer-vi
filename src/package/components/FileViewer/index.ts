@@ -1,3 +1,3 @@
-import FileViewer from "./FileViewer.vue";
+import FileViewer from './FileViewer.vue'
 
-export default FileViewer;
+export default FileViewer

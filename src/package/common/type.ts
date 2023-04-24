@@ -15,6 +15,11 @@ export interface AppWrapper {
 export type Rendered = App | AppWrapper;
 
 /**
+ * 文件引用，支持三种
+ */
+export type FileRef = File | Blob | ArrayBuffer;
+
+/**
  * 文件处理逻辑，用于声明文件处理器
  * @param buffer 二进制缓存
  * @param target 目标dom

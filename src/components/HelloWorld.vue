@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
 import { listenForFile } from '@/components/utils'
+import type { FileRef } from '@/package/common/type'
 
 /**
  * 支持嵌入式显示，基于postMessage支持跨域
@@ -16,17 +17,17 @@ const overlay = ref(true)
 // 文件名
 const filename = ref('')
 // 文件实例
-const file = ref<File | null>(null)
+const file = ref<FileRef | undefined>()
 // 网址
 const url = ref('http://flyfish.group/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx')
 // 预览网址
 const preview = ref('')
 
 // 监听文件推送消息，回调后显示
-listenForFile((body, url) => {
+listenForFile((body, target) => {
   hidden.value = true
   if (body) file.value = body
-  if (url) preview.value = url
+  if (target) url.value = target
 })
 
 onMounted(() => {

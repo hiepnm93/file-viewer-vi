@@ -3,10 +3,7 @@ import { getExtend, render } from './util'
 import axios from 'axios'
 import { readBuffer } from '../../common/util'
 import { onMounted, ref, watch } from 'vue'
-import type { Rendered } from '@/package/common/type'
-
-// 文件引用，支持三种
-type FileRef = File | Blob | ArrayBuffer;
+import type { FileRef, Rendered } from '@/package/common/type'
 
 /**
  * 静态定义props
@@ -163,43 +160,43 @@ const output = ref<Node>();
 
 <style scoped>
 .file-viewer {
-  position: relative;
-  width: 100%;
-  height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .content {
-  display: block;
-  background-color: #f2f2f2;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+    display: block;
+    background-color: #f2f2f2;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
 .loading {
-  text-align: center;
-  padding-top: 50px;
+    text-align: center;
+    padding-top: 50px;
 }
 
 .name {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 13px 0;
-  font-size: 20px;
-  text-shadow: 2px 2px #616161;
-  pointer-events: none;
-  color: white;
-  background: rgba(31, 31, 31, 0.22);
-  text-align: center;
-  z-index: 10000;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 13px 0;
+    font-size: 20px;
+    text-shadow: 2px 2px #616161;
+    pointer-events: none;
+    color: white;
+    background: rgba(31, 31, 31, 0.22);
+    text-align: center;
+    z-index: 10000;
 }
 </style>
 
 <style>
 .file-render {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 </style>
