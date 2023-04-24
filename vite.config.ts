@@ -10,7 +10,7 @@ import dts from 'vite-plugin-dts'
 // https://vitejs.dev/config/
 export default defineConfig(ctx => {
   const config: UserConfigExport = {
-    plugins: [vue(), vueJsx(), dts()],
+    plugins: [vue(), vueJsx()],
     base: './',
     resolve: {
       alias: {
@@ -19,6 +19,7 @@ export default defineConfig(ctx => {
     }
   }
   if (ctx.mode === 'lib') {
+    config.plugins?.push(dts());
     config.build = {
       lib: {
         // Could also be a dictionary or array of multiple entry points
