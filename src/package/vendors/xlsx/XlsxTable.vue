@@ -52,7 +52,6 @@ const hotSettings = {
     if (typeof value === 'number') {
       return value
     }
-    console.log(value)
     return value && value[index] || sheetData?.defaults.rowHeight
   },
   // contextMenu: true,
