@@ -59,7 +59,7 @@ npm run lint
 如果您使用了flyfish的私库，请使用以下命令安装依赖即可。
 
 ```
-npm install --save file-viewer3
+npm install --save @flyfish-group/file-viewer3
 ```
 
 常规情况下，请使用`npm link`的方式进行集成。

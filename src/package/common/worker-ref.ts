@@ -1,4 +1,4 @@
-const BASE_PATH = '/node_modules/file-viewer3/dist/worker/'
+const BASE_PATH = `/node_modules/${import.meta.env.VITE_PACKAGE_NAME}/dist/worker/`
 
 const IS_LIB = import.meta.env.MODE === 'lib'
 
