@@ -21,6 +21,7 @@ export default defineConfig(ctx => {
   if (ctx.mode === 'lib') {
     config.plugins?.push(dts());
     config.build = {
+      target: 'es2015',
       lib: {
         // Could also be a dictionary or array of multiple entry points
         entry: fileURLToPath(new URL('src/package/index.ts', import.meta.url)),

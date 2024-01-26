@@ -37,6 +37,7 @@ const parseSheet = (sheet: number) => {
   const sheets = context.sheets
   if (workbook?.getWorksheet && sheets.length) {
     const worksheet = workbook.getWorksheet(sheet)
+    if (!worksheet) return;
     const sheetData = ExcelJsModel.create(worksheet).toObject()
     ctx.postMessage({
       type: 'parseSheet',

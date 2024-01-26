@@ -26,3 +26,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+dist.zip
+
+yarn.lock
