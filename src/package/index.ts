@@ -5,10 +5,15 @@ const components: [[string, Component]] = [
   ['file-viewer', FileViewer]
 ]
 
+declare interface FileViewerInstaller {
+
+  install(app: App): void;
+}
+
 /**
  * 安装器
  */
-class Installer {
+class Installer implements FileViewerInstaller {
 
   private installed: boolean = false
 

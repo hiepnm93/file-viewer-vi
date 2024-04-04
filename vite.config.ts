@@ -19,7 +19,7 @@ export default defineConfig(ctx => {
     }
   }
   if (ctx.mode === 'lib') {
-    config.plugins?.push(dts());
+    config.plugins?.push(dts({ rollupTypes: true }));
     config.build = {
       target: 'es2015',
       lib: {
