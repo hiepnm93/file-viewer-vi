@@ -25,7 +25,11 @@ ctx.onerror = (err) => {
 // 解析工作簿
 const parseWorkbook = async (data: ArrayBuffer) => {
   // 初始化工作薄
-  context.workbook = await new ExcelJS.Workbook().xlsx.load(data)
+  context.workbook = await new ExcelJS.Workbook().xlsx.load(data, {
+    ignoreNodes: [
+      'dataValidations' // ignores the workbook's Data Validations
+    ],
+  })
   // 紧接着初始化sheets
   parseSheets()
   // 然后初始化主题
