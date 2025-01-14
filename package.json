@@ -38,6 +38,7 @@
     "@handsontable/vue3": "^14.1.0",
     "axios": "^1.6.7",
     "billboard.js": "^3.10.3",
+    "buffer": "^6.0.3",
     "d3": "^7.8.5",
     "dingbat-to-unicode": "^1.0.1",
     "docx-preview": "^0.3.0",
@@ -54,6 +55,7 @@
     "v-viewer": "^3.0.13",
     "viewerjs": "^1.11.6",
     "vue": "^3",
+    "word": "^0.4.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -73,6 +75,7 @@
     "eslint-plugin-vue": "^9.9.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.8.4",
+    "sass": "^1.83.3",
     "typescript": "^4.9.3",
     "vite": "^4.5.0",
     "vite-plugin-dts": "^3.6.4",

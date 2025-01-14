@@ -1,4 +1,4 @@
-import renderDocx from './docx'
+import { renderDoc, renderDocx } from './word'
 import renderPptx from './pptx'
 import renderXlsx from './xlsx'
 import renderPdf from './pdf'
@@ -24,6 +24,12 @@ const handlers: Array<FileHandlerComposite> = [
       await renderDocx(buffer, target)
       window.dispatchEvent(new Event('resize'))
       return createWrapper(target)
+    }
+  },
+  {
+    accepts: ['doc'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      return renderDoc(buffer, target)
     }
   },
   // 使用pptx2html，已通过默认值更替

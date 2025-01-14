@@ -17,7 +17,7 @@ const loadLibrary = (() => {
 })()
 
 /**
- * 渲染mp4
+ * 渲染docx文件
  */
 export default async function(buffer: ArrayBuffer, target: HTMLDivElement) {
   const { defaultOptions, renderAsync } = await loadLibrary()

@@ -1,10 +1,8 @@
 import type { App } from 'vue'
 import { createApp, defineAsyncComponent } from 'vue'
 
-
 // 导入异步组件
 const XlsxTable = defineAsyncComponent(() => import('./XlsxTable.vue'))
-
 /**
  * 渲染excel
  */
