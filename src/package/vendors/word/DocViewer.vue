@@ -1,9 +1,8 @@
 <script setup lang='ts'>
-import { write_str as to_text } from 'word/dist/cjs/codecs/TXT/index.js'
 import cfb from 'cfb'
-import { nextTick, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Buffer } from 'buffer'
-import { parse_cfb } from './cfb/index.js'
+import { parse_cfb, to_text } from './cfb'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -18,13 +17,13 @@ const content = ref('')
 const parseTable = (line: string): string => {
     let table = '<table class="doc-table">';
     // 将连续的制表符替换为特殊标记，以便后续处理
-    const processedLine = line.replace(/\t\t/g, '\t@NEWROW\t');
+    const processedLine = line.replace(/\x07\x07/g, '\x07@NEWROW\x07');
     // 按特殊标记分割获取多行数据
     const rows = processedLine.split('@NEWROW');
 
     // 过滤掉空行，并处理每一行
     rows.filter(row => row.trim() !== '').forEach(row => {
-        const cells = row.split('\t').filter(cell => cell !== '');
+        const cells = row.split('\x07').filter(cell => cell !== '');
         if (cells.length > 0) {
             table += '<tr>';
             cells.forEach(cell => {
@@ -47,7 +46,7 @@ const processLineBreaks = (text: string): string => {
 
     for (const line of lines) {
         // 检查是否包含制表符
-        if (line.includes('\t')) {
+        if (line.includes('\x07')) {
             // 处理表格行
             result += parseTable(line);
         } else if (line.trim()) {
@@ -175,7 +174,7 @@ $header-color: #e6e6e6;
         font-weight: 600;
         td {
           background-color: $header-color;
-          color: darken($primary-color, 10%);
+          color: color.adjust($primary-color, $lightness: -10%);
         }
       }
 

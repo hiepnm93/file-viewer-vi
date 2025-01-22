@@ -1,11 +1,14 @@
+import type { FibRgLw97 } from '../types/fib';
+import { Buffer } from 'buffer';
+
 /**
  * [MS-DOC] 2.9.38 Clx
  */
-export const parseClx = (clx) => {
+export function parseClx(clx: Buffer): Buffer {
     /* Skip RgPrc to get Pcdt */
-    let offset = 0;
+    var offset = 0;
     /* [MS-DOC] 2.9.209 Prc */
-    const firstByte = clx.readUInt8(offset);
+    var firstByte = clx.readUInt8(offset);
     if (firstByte !== 0x1 && firstByte !== 0x2) {
         throw Error("Invalid first byte of Clx.");
     }
@@ -13,36 +16,36 @@ export const parseClx = (clx) => {
     while (clx.readUInt8(offset) === 0x1) {
         /* [MS-DOC] 2.9.210 PrcData */
         offset++;
-        const cbGrpGpl = clx.readInt16LE(offset);
+        var cbGrpGpl = clx.readInt16LE(offset);
         offset += 2;
         /* cbGrpGpl must be less than or equal to 0x3fa2 */
         console.assert(cbGrpGpl <= 0x3fa2);
         offset += cbGrpGpl;
     }
     /* [MS-DOC] 2.9.178 Pcdt */
-    const pcdt = clx.slice(offset);
+    var pcdt = clx.slice(offset);
     /* clxt (first byte of Pcdt) must be 0x2 */
     console.assert(pcdt.readUInt8(0) === 0x2);
-    const lcb = pcdt.readUInt32LE(1);
+    var lcb = pcdt.readUInt32LE(1);
     /* [MS-DOC] 2.8.35 PlcPcd */
-    const plcPcd = pcdt.slice(5, 5 + lcb);
-    return plcPcd;
-};
+    return pcdt.slice(5, 5 + lcb);
+}
 
 /**
  * [MS-DOC] 2.8.35 PlcPcd
  */
-const getLastCp = (fibRgLw) => {
-    const [ccpText, ...ccpOther] = Object.values(fibRgLw);
-    const ccpSum = ccpOther.reduce((a, b) => a + b, 0);
+function getLastCp(fibRgLw: FibRgLw97): number {
+    var fibMeta = Object.values(fibRgLw);
+    var [ccpText, ...ccpOther] = fibMeta;
+    var ccpSum = ccpOther.reduce(function(a, b) { return a + b; }, 0);
     return ccpSum !== 0 ? ccpSum + ccpText + 1 : ccpText;
-};
+}
 
-export const getTxt = (fibRgLw, plcPcd, doc) => {
-    const cpSizeBytes = 4;
-    const lastCp = getLastCp(fibRgLw);
-    let offset = 0;
-    let pcdCount = -1;
+export function getTxt(fibRgLw: FibRgLw97, plcPcd: Buffer, doc: Buffer): string {
+    var cpSizeBytes = 4;
+    var lastCp = getLastCp(fibRgLw);
+    var offset = 0;
+    var pcdCount = -1;
 
     while (plcPcd.readUInt32LE(offset) <= lastCp) {
         offset += cpSizeBytes;
@@ -50,37 +53,39 @@ export const getTxt = (fibRgLw, plcPcd, doc) => {
     }
 
     /* [MS-DOC] 2.8.35 PlcPcd */
-    const acp = plcPcd.slice(0, offset);
-    const pcdSizeBytes = 8;
-    const upperBound = offset + pcdCount * pcdSizeBytes;
-    let acpIndex = 0;
-    let finalTxt = "";
+    var acp = plcPcd.slice(0, offset);
+    var pcdSizeBytes = 8;
+    var upperBound = offset + pcdCount * pcdSizeBytes;
+    var acpIndex = 0;
+    var finalTxt = "";
 
     while (offset < upperBound) {
-        const pcd = plcPcd.slice(offset, (offset += pcdSizeBytes));
-        const fcCompressed = pcd.readUInt32LE(2);
-        const fc = fcCompressed & ~(0x1 << 30);
-        const strlen = acp.readUInt32LE((acpIndex + 1) * 4) - acp.readUInt32LE(acpIndex * 4);
+        var pcd = plcPcd.slice(offset, (offset += pcdSizeBytes));
+        var fcCompressed = pcd.readUInt32LE(2);
+        var fc = fcCompressed & ~(0x1 << 30);
+        var strlen = acp.readUInt32LE((acpIndex + 1) * 4) - acp.readUInt32LE(acpIndex * 4);
         
-        finalTxt += (fcCompressed >> 30) & 0x1
-            ? getTxtCompressed(doc, fc, strlen)
-            : getTxtNotCompressed(doc, fc, strlen);
-            
+        if ((fcCompressed >> 30) & 0x1) {
+            finalTxt += getTxtCompressed(doc, fc, strlen);
+        } else {
+            finalTxt += getTxtNotCompressed(doc, fc, strlen);
+        }
         acpIndex++;
     }
+
     return finalTxt;
-};
+}
 
 /* [MS-DOC] 2.9.73 FcCompressed */
-const getTxtCompressed = (doc, fc, strlen) => {
+function getTxtCompressed(doc: Buffer, fc: number, strlen: number): string {
     return fixFcString(doc.slice(fc / 2, fc / 2 + strlen).toString("binary"));
-};
+}
 
-const getTxtNotCompressed = (doc, fc, strlen) => {
+function getTxtNotCompressed(doc: Buffer, fc: number, strlen: number): string {
     return doc.slice(fc, fc + 2 * strlen).toString("utf16le");
-};
+}
 
-const REPLACEMENTS = {
+const REPLACEMENTS: { [key: string]: string } = {
     "\x82": "\u201A", // Single low-9 quotation mark
     "\x83": "\u0192", // Latin small letter f with hook
     "\x84": "\u201E", // Double low-9 quotation mark
@@ -107,7 +112,6 @@ const REPLACEMENTS = {
     "\x9F": "\u0178", // Latin capital letter Y with diaeresis
 };
 
-const fixFcString = (str) => {
-    return str.replace(/[\x82-\x8C\x91-\x9C\x9F]/g, (char) => REPLACEMENTS[char]);
-};
-//# sourceMappingURL=clx.js.map
+function fixFcString(str: string): string {
+    return str.replace(/[\x82-\x8C\x91-\x9C\x9F]/g, function($$) { return REPLACEMENTS[$$]; });
+} 

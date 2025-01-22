@@ -1,7 +1,14 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "src/**/*.d.ts"
+  ],
   "compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "ignoreDeprecations": "5.0",
     "lib": ["DOM", "ES2017", "ScriptHost", "ES2019.Array"],
     "baseUrl": ".",
     "paths": {
