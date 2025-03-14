@@ -5,6 +5,7 @@ import { readFib } from './fib';
 import { getAllTextRuns, getAllParagraphRuns } from './formatting';
 import type { Fib } from '../types/fib';
 import type { WJSPara, WJSDoc, FormattedChar, TextRun } from '../types';
+import { TableBuilder } from '../table';
 
 export { write_str as to_text } from './txt';
 
@@ -86,6 +87,17 @@ FIB 信息:
         // 2. 获取所有文本运行（chpxFkp）
         const textRuns = getAllTextRuns(tableStream, wordStream, fib, clx);
 
+        // 表格构建器唯一实例
+        const tableBuilder = new TableBuilder((table, start, end) => {
+            // 添加表格
+            doc.p.push({
+                elts: [table],
+                formatting: [],
+                startOffset: start,
+                endOffset: end
+            });
+        });
+
         // 3. 按段落组织文档结构
         for (const paragraphRun of paragraphRuns) {
             // 创建新段落
@@ -104,7 +116,6 @@ FIB 信息:
                 run.endOffset <= paragraphRun.endOffset
             );
 
-
             // 5. 处理段落内的文本运行
             if (paragraphTextRuns.length > 0) {
                 // 按照偏移量排序文本运行
@@ -114,10 +125,13 @@ FIB 信息:
 
                 // 添加每个文本运行
                 for (const textRun of paragraphTextRuns) {
+                    const text = textRun.text || "";
+                    const formatting = textRun.formatting || [];
+
                     paragraph.elts.push({
                         t: "s",
-                        v: textRun.text || "", // 即使是空文本也保留
-                        formatting: textRun.formatting || [] // 应用字符格式（会覆盖段落格式）
+                        v: text, // 即使是空文本也保留
+                        formatting // 应用字符格式（会覆盖段落格式）
                     });
                 }
             } else {
@@ -132,6 +146,13 @@ FIB 信息:
                     v: paragraphText || "", // 即使是空文本也保留
                     formatting: [] // 只使用段落格式
                 });
+            }
+
+
+            // 检测段落中的表格，自动尝试构建
+            if (tableBuilder.attempt(paragraphRun.text, paragraph)) {
+                // 表格命中，继续
+                continue;
             }
 
             // 添加段落，无论是否为空

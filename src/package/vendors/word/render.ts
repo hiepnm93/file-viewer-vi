@@ -102,7 +102,7 @@ export const applyFormatting = (
  * 将段落格式信息转换为 HTML 样式
  */
 export const applyParagraphFormatting = (para: WJSPara): string => {
-    let styles = 'margin: 0; padding: 0;'; // 重置默认边距和内边距
+    let styles = 'margin: 0; padding: 0; text-indent: 2em;'; // 添加默认首行缩进
 
     if (para.formatting && para.formatting.length > 0) {
         para.formatting.forEach((format: any) => {
@@ -233,7 +233,7 @@ export const applyParagraphFormatting = (para: WJSPara): string => {
  * 解析表格行，处理连续制表符作为行分隔符
  */
 export const parseTable = (line: string): string => {
-  let table = '<table class="doc-table">';
+  let table = '<table class="doc-table" style="border-collapse: collapse; width: 100%;">';
   // 将连续的制表符替换为特殊标记，以便后续处理
   const processedLine = line.replace(/\x07\x07/g, '\x07@NEWROW\x07');
   // 按特殊标记分割获取多行数据
@@ -245,7 +245,7 @@ export const parseTable = (line: string): string => {
     if (cells.length > 0) {
       table += '<tr>';
       cells.forEach(cell => {
-        table += `<td>${cell.trim() || '&nbsp;'}</td>`;
+        table += `<td style="border: 1px solid #ddd; padding: 8px;">${cell.trim() || '&nbsp;'}</td>`;
       });
       table += '</tr>';
     }
@@ -259,17 +259,77 @@ export const parseTable = (line: string): string => {
  * 将 WJSTable 转换为 HTML 表格
  */
 export const formatTable = (table: WJSTable): string => {
-  let tableHtml = '<table class="doc-table">';
+  let tableHtml = '<table class="doc-table" style="border-collapse: collapse; width: 100%;">';
   
   // 处理表格行
   if (table.r && Array.isArray(table.r)) {
     table.r.forEach((row: WJSTableRow) => {
-      tableHtml += '<tr>';
+      const rowStyles = [];
+      
+      // 处理行属性
+      if (row.height) {
+        rowStyles.push(`height: ${row.height}pt`);
+      }
+      if (row.header) {
+        rowStyles.push('background-color: #f5f5f5');
+        rowStyles.push('font-weight: bold');
+      }
+      
+      tableHtml += rowStyles.length > 0 
+        ? `<tr style="${rowStyles.join('; ')}">`
+        : '<tr>';
       
       // 处理单元格
       if (row.c && Array.isArray(row.c)) {
         row.c.forEach((cell: WJSTableCell) => {
-          tableHtml += '<td>';
+          const cellStyles = [];
+          
+          // 处理单元格属性
+          if (cell.width) {
+            cellStyles.push(`width: ${cell.width}pt`);
+          }
+          
+          // 处理单元格合并
+          if (cell.merge) {
+            if (cell.merge.horizontal > 1) {
+              cellStyles.push(`colspan: ${cell.merge.horizontal}`);
+            }
+            if (cell.merge.vertical > 1) {
+              cellStyles.push(`rowspan: ${cell.merge.vertical}`);
+            }
+          }
+          
+          // 处理单元格边框
+          if (cell.borders) {
+            const { top, left, bottom, right } = cell.borders;
+            if (top) cellStyles.push(`border-top: ${top.width}pt ${top.style} ${COLOR_MAP[top.color] || '#000000'}`);
+            if (left) cellStyles.push(`border-left: ${left.width}pt ${left.style} ${COLOR_MAP[left.color] || '#000000'}`);
+            if (bottom) cellStyles.push(`border-bottom: ${bottom.width}pt ${bottom.style} ${COLOR_MAP[bottom.color] || '#000000'}`);
+            if (right) cellStyles.push(`border-right: ${right.width}pt ${right.style} ${COLOR_MAP[right.color] || '#000000'}`);
+          }
+          
+          // 处理单元格背景色
+          if (cell.shading && cell.shading.color) {
+            cellStyles.push(`background-color: ${COLOR_MAP[cell.shading.color] || '#ffffff'}`);
+          }
+          
+          // 处理单元格对齐方式
+          if (cell.alignment) {
+            cellStyles.push(`text-align: ${cell.alignment}`);
+          }
+          
+          // 处理单元格垂直对齐
+          if (cell.verticalAlignment) {
+            cellStyles.push(`vertical-align: ${cell.verticalAlignment}`);
+          }
+          
+          // 添加默认的单元格样式
+          cellStyles.push('padding: 8px');
+          cellStyles.push('border: 1px solid #ddd');
+          
+          tableHtml += cellStyles.length > 0 
+            ? `<td style="${cellStyles.join('; ')}">`
+            : '<td>';
           
           // 处理单元格内容（可能包含多个段落）
           if (cell.p && Array.isArray(cell.p)) {
@@ -285,7 +345,9 @@ export const formatTable = (table: WJSTable): string => {
                 });
               }
               
-              tableHtml += `<p>${cellContent}</p>`;
+              if (cellContent) {
+                tableHtml += `<p style="margin: 0;">${cellContent}</p>`;
+              }
             });
           }
           
@@ -369,7 +431,6 @@ export const renderWordToHtml = (
     onProgress?: (html: string, progress: number) => void;
   } = {}
 ): Promise<string> => {
-  debugger
   return new Promise((resolve) => {
     if (!doc || !doc.p || !doc.p.length) {
       resolve('');

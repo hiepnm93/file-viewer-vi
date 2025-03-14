@@ -2,6 +2,7 @@ import type { Fib, CharacterFormatting, TextRun, ParagraphRun, Clx } from '../ty
 import { Buffer } from 'buffer';
 import { parseSprmProperty, parseParagraphProperty } from '../types/sprm';
 import { retrieveText } from './clx';
+import { parseTable } from '../render';
 
 // 缓存机制
 const textRunsCache = new Map<string, TextRun[]>();
@@ -103,7 +104,7 @@ function getAllTextRuns(
                     if (runStart === runEnd) continue;
 
                     try {
-                        // 检查压缩标志 (0x40000000)
+                        // 从clx获取文本
                         const text = retrieveText(mainStream, clx, runStart, runEnd);
                       
                         // 跳过空文本
@@ -111,7 +112,6 @@ function getAllTextRuns(
                             continue;
                         }
                  
-
                         // 获取格式信息
                         let formatting: CharacterFormatting[] = [];
                         if (j < chpxFkp.rgb.length && chpxFkp.rgb[j] > 0 && 
@@ -830,69 +830,6 @@ function readSTSH(tableStream: Buffer, offset: number, size: number): STSH | nul
     }
 }
 
-/**
- * 应用字体信息
- */
-function applyFontInfo(stsh: STSH): CharacterFormatting[] {
-    const fontProperties: CharacterFormatting[] = [];
-
-    // 添加ASCII字体
-    if (stsh.ftcAsci !== 0) {
-        fontProperties.push({
-            sprm: {
-                sgc: 2,
-                sprmCode: 'fontFamily'
-            },
-            value: stsh.ftcAsci
-        });
-    }
-
-    // 添加远东字体
-    if (stsh.ftcFE !== 0) {
-        fontProperties.push({
-            sprm: {
-                sgc: 2,
-                sprmCode: 'fontFamilyFE'
-            },
-            value: stsh.ftcFE
-        });
-    }
-
-    // 添加其他字体
-    if (stsh.ftcOther !== 0) {
-        fontProperties.push({
-            sprm: {
-                sgc: 2,
-                sprmCode: 'fontFamilyOther'
-            },
-            value: stsh.ftcOther
-        });
-    }
-
-    return fontProperties;
-}
-
-/**
- * 合并格式化属性
- */
-function mergeFormatting(base: CharacterFormatting[], overlay: CharacterFormatting[]): CharacterFormatting[] {
-    const result = [...base];
-    
-    for (const prop of overlay) {
-        const index = result.findIndex(p => 
-            p.sprm.sgc === prop.sprm.sgc && 
-            p.sprm.sprmCode === prop.sprm.sprmCode
-        );
-        
-        if (index >= 0) {
-            result[index] = prop;  // 覆盖已存在的属性
-        } else {
-            result.push(prop);     // 添加新属性
-        }
-    }
-    
-    return result;
-}
 
 /**
  * 获取操作数大小
@@ -923,6 +860,5 @@ function clearAllCaches(): void {
 export { 
     getAllTextRuns,
     getAllParagraphRuns,
-    mergeFormatting, 
     clearAllCaches 
 };

@@ -15,6 +15,28 @@ export interface WJSTableCell {
     t: "c";
     /** Body */
     p: WJSPara[];
+    /** Width */
+    width?: number;
+    /** Merge cells */
+    merge?: {
+        horizontal: number;
+        vertical: number;
+    };
+    /** Borders */
+    borders?: {
+        top?: { width: number; style: string; color: number };
+        left?: { width: number; style: string; color: number };
+        bottom?: { width: number; style: string; color: number };
+        right?: { width: number; style: string; color: number };
+    };
+    /** Shading */
+    shading?: {
+        color: number;
+    };
+    /** Alignment */
+    alignment?: string;
+    /** Vertical alignment */
+    verticalAlignment?: string;
 }
 
 /** Table Row */
@@ -22,6 +44,10 @@ export interface WJSTableRow {
     t: "r";
     /** Cells */
     c: WJSTableCell[];
+    /** Height */
+    height?: number;
+    /** Is header row */
+    header?: boolean;
 }
 
 /** Table */
