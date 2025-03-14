@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import type { WJSDoc, WJSPara, WJSParaElement, WJSTextRun, WJSTable, FormattedChar, TextRun } from '../types';
+import type { WJSDoc, WJSPara, WJSParaElement } from '../types';
 
 interface WriteOptions {
     RS?: string;

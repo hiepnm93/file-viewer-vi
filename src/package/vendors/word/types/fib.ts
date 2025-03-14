@@ -72,28 +72,36 @@ interface FibRgLw97 {
  */
 interface FibRgFcLcb {
     /**
-     * fcClx (4 bytes):  An unsigned integer that specifies an offset in the
-     * Table Stream. A Clx begins at this offset.
+     * [MS-DOC] 2.9.271 STSH - Stylesheet
+     * fcStshf (4 bytes): 指向样式表在 Table Stream 中的起始位置
+     * lcbStshf (4 bytes): 样式表的大小（以字节为单位）
      */
-    fcClx: number;
+    fcStshf: number;
+    lcbStshf: number;
+
     /**
-     * lcbClx (4 bytes):  An unsigned integer that specifies the size, in bytes,
-     * of the Clx at offset fcClx in the Table Stream. This value MUST be greater
-     * than zero.
-     */
-    lcbClx: number;
-    /**
-     * fcPlcfBtePapx (4 bytes): An unsigned integer that specifies an offset in
-     * the Table Stream. A PlcBtePapx begins at the offset. fcPlcfBtePapx MUST be
-     * greater than zero, and MUST be a valid offset in the Table Stream.
+     * [MS-DOC] 2.9.178 PlcBtePapx
+     * fcPlcfBtePapx (4 bytes): 指向段落属性在 Table Stream 中的起始位置
+     * lcbPlcfBtePapx (4 bytes): 段落属性的大小（以字节为单位）
      */
     fcPlcfBtePapx: number;
-    /**
-     * lcbPlcfBtePapx (4 bytes): An unsigned integer that specifies the size, in
-     * bytes, of the PlcBtePapx at offset fcPlcfBtePapx in the Table Stream.
-     * lcbPlcfBteChpx MUST be greater than zero.
-     */
     lcbPlcfBtePapx: number;
+
+    /**
+     * [MS-DOC] 2.9.177 PlcBteChpx
+     * fcPlcfBteChpx (4 bytes): 指向字符属性在 Table Stream 中的起始位置
+     * lcbPlcfBteChpx (4 bytes): 字符属性的大小（以字节为单位）
+     */
+    fcPlcfBteChpx: number;
+    lcbPlcfBteChpx: number;
+
+    /**
+     * [MS-DOC] 2.9.38 Clx
+     * fcClx (4 bytes): 指向文档内容在 Table Stream 中的起始位置
+     * lcbClx (4 bytes): 文档内容的大小（以字节为单位）
+     */
+    fcClx: number;
+    lcbClx: number;
 }
 /**
  * [MS-DOC] 2.5.11 FibRgCswNew

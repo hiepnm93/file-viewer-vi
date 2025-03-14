@@ -30,3 +30,5 @@ coverage
 dist.zip
 
 yarn.lock
+
+src/cv

@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 import cfb from 'cfb';
-import { parseClx, getTxt } from './clx';
+import { parseClx, getDocumentText } from './clx';
 import { readFib } from './fib';
-import { getCharacterFormatting } from './formatting';
+import { getAllTextRuns, getAllParagraphRuns } from './formatting';
 import type { Fib } from '../types/fib';
 import type { WJSPara, WJSDoc, FormattedChar, TextRun } from '../types';
 
@@ -33,9 +33,29 @@ export function parse_cfb(file: cfb.CFB$Container): WJSDoc {
     }
 
     const tableStream = Buffer.from(table.content as Uint8Array);
-    const clx = tableStream.slice(fib.fibRgFcLcbBlob.fcClx, fib.fibRgFcLcbBlob.fcClx + fib.fibRgFcLcbBlob.lcbClx);
-    const plcPcd = parseClx(clx);
-    const text = getTxt(fib.fibRgLw, plcPcd, wordStream);
+
+    // 添加调试信息
+    console.log(`
+=== 文档流信息 ===
+Main Stream (WordDocument):
+  - 长度: ${wordStream.length} 字节
+  
+Table Stream (${tableName}):
+  - 长度: ${tableStream.length} 字节
+  - 最大页数 (每页 512 字节): ${Math.floor(tableStream.length / 512)}
+  
+FIB 信息:
+  - fcPlcfBtePapx: ${fib.fibRgFcLcbBlob.fcPlcfBtePapx} (Table Stream 中的偏移量)
+  - lcbPlcfBtePapx: ${fib.fibRgFcLcbBlob.lcbPlcfBtePapx} (PlcfBtePapx 的长度)
+  - fcClx: ${fib.fibRgFcLcbBlob.fcClx} (Table Stream 中的偏移量)
+  - lcbClx: ${fib.fibRgFcLcbBlob.lcbClx} (Clx 的长度)
+=== 结束信息 ===
+    `);
+
+    const clxData = tableStream.subarray(fib.fibRgFcLcbBlob.fcClx, fib.fibRgFcLcbBlob.fcClx + fib.fibRgFcLcbBlob.lcbClx);
+    const clx = parseClx(clxData);
+
+    const text = getDocumentText(clx, wordStream);
     if (!text) {
         throw new Error("Invalid Word document: Unable to extract text");
     }
@@ -44,78 +64,104 @@ export function parse_cfb(file: cfb.CFB$Container): WJSDoc {
     const processedText = text
         .replace(/\x13.*?\x14(.*?)\x15/g, "$1")
         .replace(/\x13.*?\x15/g, "")
-        .replace(/[\x01\x08]/g, "")
-        // .replace(/\x07/g, "\t");
+        .replace(/[\x01\x08]/g, "");
 
-    const doc: WJSDoc = { p: [] };
-    const para: WJSPara = { elts: [] };
+    // 添加文本信息
+    console.log(`
+=== 文本信息 ===
+  - 提取的文本长度: ${text.length} 字符
+  - 处理后的文本长度: ${processedText.length} 字符
+=== 结束信息 ===
+    `);
+
+    const doc: WJSDoc = { p: [], clx, fib };
 
     try {
-        // 获取每个字符的格式化信息
-        const formattedText: FormattedChar[] = [];
-        for (let cp = 0; cp < processedText.length; cp++) {
-            const formatting = getCharacterFormatting(cp, fib, wordStream, tableStream);
-            formattedText.push({
-                char: processedText[cp],
-                formatting: formatting || []
-            });
+        // 1. 首先获取所有段落运行（papxFkp）
+        const paragraphRuns = getAllParagraphRuns(wordStream, tableStream, fib);
+        if (!paragraphRuns.length) {
+            throw new Error("No paragraph runs found");
         }
 
-        // 将格式化文本分组
-        let currentRun: TextRun = { text: '', formatting: [] };
-        const runs: TextRun[] = [];
+        // 2. 获取所有文本运行（chpxFkp）
+        const textRuns = getAllTextRuns(tableStream, wordStream, fib, clx);
 
-        formattedText.forEach((char, i) => {
-            const currentFormatting = JSON.stringify(char.formatting);
-            const prevFormatting = JSON.stringify(currentRun.formatting);
-            
-            if (i === 0 || currentFormatting !== prevFormatting) {
-                if (currentRun.text) {
-                    runs.push({ ...currentRun });
+        // 3. 按段落组织文档结构
+        for (const paragraphRun of paragraphRuns) {
+            // 创建新段落
+            const paragraph: WJSPara = {
+                elts: [],
+                startOffset: paragraphRun.startOffset,
+                endOffset: paragraphRun.endOffset,
+                formatting: paragraphRun.formatting || [] // 应用段落格式
+            };
+
+            // 4. 查找属于当前段落的所有文本运行
+            const paragraphTextRuns = textRuns.filter(run => 
+                run.startOffset !== undefined && 
+                run.endOffset !== undefined &&
+                run.startOffset >= paragraphRun.startOffset && 
+                run.endOffset <= paragraphRun.endOffset
+            );
+
+
+            // 5. 处理段落内的文本运行
+            if (paragraphTextRuns.length > 0) {
+                // 按照偏移量排序文本运行
+                paragraphTextRuns.sort((a, b) => 
+                    (a.startOffset || 0) - (b.startOffset || 0)
+                );
+
+                // 添加每个文本运行
+                for (const textRun of paragraphTextRuns) {
+                    paragraph.elts.push({
+                        t: "s",
+                        v: textRun.text || "", // 即使是空文本也保留
+                        formatting: textRun.formatting || [] // 应用字符格式（会覆盖段落格式）
+                    });
                 }
-                currentRun = {
-                    text: char.char,
-                    formatting: char.formatting
-                };
             } else {
-                currentRun.text += char.char;
+                // 如果没有找到文本运行，使用段落范围内的原始文本
+                const paragraphText = processedText.slice(
+                    paragraphRun.startOffset, 
+                    paragraphRun.endOffset
+                );
+                
+                paragraph.elts.push({
+                    t: "s",
+                    v: paragraphText || "", // 即使是空文本也保留
+                    formatting: [] // 只使用段落格式
+                });
             }
-        });
-        
-        if (currentRun.text) {
-            runs.push(currentRun);
+
+            // 添加段落，无论是否为空
+            doc.p.push(paragraph);
         }
 
-        // 将运行添加到段落中
-        if (runs.length > 0) {
-            runs.forEach(run => {
-                para.elts.push({
+        // 6. 如果没有找到任何段落，创建一个默认段落
+        if (doc.p.length === 0) {
+            doc.p.push({
+                elts: [{
                     t: "s",
-                    v: run.text,
-                    formatting: run.formatting
-                });
-            });
-        } else {
-            // 如果没有任何运行，至少添加纯文本
-            para.elts.push({
-                t: "s",
-                v: processedText,
-                formatting: []
+                    v: processedText,
+                    formatting: []
+                }]
             });
         }
 
     } catch (error) {
-        console.error('Error processing character formatting:', error);
-        // 发生错误时，至少返回纯文本
-        para.elts.push({
-            t: "s",
-            v: processedText,
-            formatting: []
+        console.error('Error processing document structure:', error);
+        // 发生错误时，返回纯文本文档
+        doc.p.push({
+            elts: [{
+                t: "s",
+                v: processedText,
+                formatting: []
+            }]
         });
     }
 
-    doc.p.push(para);
     return doc;
 }
 
-export type { Fib }; 
+export type { Fib };

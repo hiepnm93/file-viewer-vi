@@ -4,9 +4,9 @@ import { Buffer } from 'buffer';
 /**
  * [MS-DOC] 2.5.1 Fib
  * The Fib structure contains information about the document and specifies the file pointers to various portions that make up the document.
- * The Fib is a variable length structure. With the exception of the base portion which is fixed in size, 
+ * The Fib is a variable length structure. With the exception of the base portion which is fixed in size,
  * every section is preceded with a count field that specifies the size of the next section.
- * 
+ *
  * 结构布局：
  * base (32 bytes): The FibBase, fixed-length portion of the Fib
  * csw (2 bytes): Count of 16-bit values in fibRgW, MUST be 0x000E
@@ -21,11 +21,11 @@ import { Buffer } from 'buffer';
 export const readFib = (buffer: Buffer): Fib => {
   let offset = 0;
   // 读取 base 部分 (32 bytes)
-  const base = readBase(buffer.slice(offset, offset += 32));
+  const base = readBase(buffer.subarray(offset, offset += 32));
   offset += 32;
 
   // 读取 fibRgLw 部分 (88 bytes)
-  const fibRgLw = readFibRgLw(buffer.slice(offset, offset += 88));
+  const fibRgLw = readFibRgLw(buffer.subarray(offset, offset += 88));
 
   // 读取 cbRgFcLcb (2 bytes)
   // 指定后续 fibRgFcLcbBlob 中 64 位值的数量
@@ -33,7 +33,7 @@ export const readFib = (buffer: Buffer): Fib => {
   offset += 2;
 
   // 读取 fibRgFcLcbBlob (cbRgFcLcb * 8 bytes)
-  const fibRgFcLcbBlob = readFibRgFcLcbBlob(buffer.slice(offset, offset += cbRgFcLcb * 8));
+  const fibRgFcLcbBlob = readFibRgFcLcbBlob(buffer.subarray(offset, offset += cbRgFcLcb * 8));
 
   // 创建基本的 Fib 结构
   const fib: Fib = {
@@ -49,7 +49,7 @@ export const readFib = (buffer: Buffer): Fib => {
 
   // 如果 cswNew 不为 0，读取 fibRgCswNew
   if (cswNew > 0) {
-    fib.fibRgCswNew = readFibRgCswNew(buffer.slice(offset, offset += cswNew * 2));
+    fib.fibRgCswNew = readFibRgCswNew(buffer.subarray(offset, offset += cswNew * 2));
   }
 
   return fib;
@@ -58,7 +58,7 @@ export const readFib = (buffer: Buffer): Fib => {
 /**
  * [MS-DOC] 2.5.2 FibBase
  * The FibBase structure is the fixed-length portion of the Fib.
- * 
+ *
  * 结构布局：
  * nFib (2 bytes): 文件格式版本号，通常为 0x00C1
  * fWhichTblStm (1 bit): 指定使用的 Table Stream
@@ -82,7 +82,7 @@ const readBase = (buffer: Buffer): FibBase => {
 /**
  * [MS-DOC] 2.5.4 FibRgLw97
  * The FibRgLw97 structure contains an array of 4-byte values that specify various document properties.
- * 
+ *
  * 结构布局：
  * ccpText: 主文档中的字符数
  * ccpFtn: 脚注中的字符数
@@ -131,15 +131,35 @@ const readFibRgLw = (buffer: Buffer): FibRgLw97 => {
  * Each entry is a pair of 4-byte values:
  * - fc: 指定在 Table Stream 中的偏移量
  * - lcb: 指定对应结构的大小（以字节为单位）
- * 
+ *
  * 当前实现读取以下结构：
+ * - Stshf: 样式表
  * - PlcBtePapx: 段落属性
+ * - PlcBteChpx: 字符属性
  * - Clx: 文档内容
  */
 const readFibRgFcLcbBlob = (buffer: Buffer): FibRgFcLcb => {
   let offset = 0;
-  // 跳过前 13 个 8 字节结构
-  offset += 8 * 13;
+
+  // 跳过 fcStshfOrig
+  offset += 4
+  // 读取样式表的位置和大小
+  const fcStshf = buffer.readUInt32LE(offset);
+  offset += 4;
+  // 跳过 lcbStshfOrig
+  offset += 4
+  // 读取样式表的大小
+  const lcbStshf = buffer.readUInt32LE(offset);
+  offset += 4;
+
+  // 跳过 9 个 8 字节结构
+  offset += 8 * 10;
+
+  // 读取字符属性的位置和大小
+  const fcPlcfBteChpx = buffer.readUInt32LE(offset);
+  offset += 4;
+  const lcbPlcfBteChpx = buffer.readUInt32LE(offset);
+  offset += 4;
 
   // 读取段落属性的位置和大小
   const fcPlcfBtePapx = buffer.readUInt32LE(offset);
@@ -147,7 +167,7 @@ const readFibRgFcLcbBlob = (buffer: Buffer): FibRgFcLcb => {
   const lcbPlcfBtePapx = buffer.readUInt32LE(offset);
   offset += 4;
 
-  // 跳过接下来的 19 个 8 字节结构
+  // 跳过接下来的 20 个 8 字节结构
   offset += 8 * 19;
 
   // 验证偏移量
@@ -161,8 +181,12 @@ const readFibRgFcLcbBlob = (buffer: Buffer): FibRgFcLcb => {
   const lcbClx = buffer.readUInt32LE(offset);
 
   return {
+    fcStshf,
+    lcbStshf,
     fcPlcfBtePapx,
     lcbPlcfBtePapx,
+    fcPlcfBteChpx,
+    lcbPlcfBteChpx,
     fcClx,
     lcbClx
   };
@@ -171,7 +195,7 @@ const readFibRgFcLcbBlob = (buffer: Buffer): FibRgFcLcb => {
 /**
  * [MS-DOC] 2.5.11 FibRgCswNew
  * The FibRgCswNew structure specifies the new version number of the file format.
- * 
+ *
  * nFibNew (2 bytes): 新的文件格式版本号，必须是以下值之一：
  * - 0x00D9
  * - 0x0101
@@ -183,4 +207,4 @@ const readFibRgCswNew = (buffer: Buffer): FibRgCswNew => {
   return {
     nFibNew
   };
-}; 
+};
