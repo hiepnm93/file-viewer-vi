@@ -47,7 +47,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
         options: props.options()
       })
       // 定时检测执行情况，发现完成则及时关闭
-      data.timer = setInterval(this.stopWorker, 500)
+      data.timer = window.setInterval(this.stopWorker, 500) as unknown as number
     },
     // 停止worker逻辑
     stopWorker(): void {

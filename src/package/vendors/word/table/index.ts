@@ -143,23 +143,3 @@ export class TableBuilder {
         return this.isBuilding;
     }
 }
-
-/**
- * 解析表格文本
- * @param text 包含表格内容的文本
- * @returns 解析后的表格对象
- */
-export const parseTable = (text: string): WJSTable => {
-    const builder = new TableBuilder();
-    const cells = text.split('\x07');
-    
-    cells.forEach(cell => {
-        if (cell.trim()) {
-            builder.attempt(cell.trim());
-            builder.finishCell();
-        }
-    });
-    
-    return builder.finish();
-};
-

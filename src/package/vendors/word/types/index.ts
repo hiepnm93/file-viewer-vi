@@ -118,5 +118,5 @@ export interface ParagraphRun {
    formatting: CharacterFormatting[]; // 格式信息
 }
 
-export type * from './clx';
-export type * from './fib';
+export type { Clx, Pcdt, PlcPcd, Pcd } from './clx';
+export type { Fib } from './fib';

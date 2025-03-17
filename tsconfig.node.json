@@ -8,6 +8,9 @@
     "types": ["node"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "verbatimModuleSyntax": true,
+    "importsNotUsedAsValues": null,
+    "preserveValueImports": null
   }
 }
