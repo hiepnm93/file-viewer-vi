@@ -1,17 +1,83 @@
-import type { App } from 'vue'
-import { createApp, defineAsyncComponent } from 'vue'
+import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
+import type { AppWrapper } from '@/package/common/type'
 
+const PAGE_BREAK_MARKER = '<span class="msdoc-page-break"></span>'
+const EMPTY_PAGE_HTML = '<p class="msdoc-paragraph"><br></p>'
 
-// 导入异步组件
-const DocViewer = defineAsyncComponent(() => import('./DocViewer.vue'))
+const WORD_PAGE_CSS = `
+.msdoc-stage{
+  box-sizing:border-box;
+  min-height:100%;
+  padding:32px 24px 48px;
+  background:#ececec;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:24px;
+}
+.msdoc-page{
+  width:min(100%,794px);
+}
+.msdoc-page > .msdoc-root{
+  width:100%;
+  max-width:none;
+  min-height:1123px;
+  padding:96px 88px;
+  background:#fff;
+  border:1px solid #d9d9d9;
+  box-shadow:0 1px 3px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.12);
+}
+.msdoc-page .msdoc-page-break{
+  display:none;
+}
+@media (max-width: 860px){
+  .msdoc-stage{
+    padding:16px 12px 24px;
+    gap:16px;
+  }
+  .msdoc-page{
+    width:100%;
+  }
+  .msdoc-page > .msdoc-root{
+    min-height:auto;
+    padding:24px 20px;
+    box-shadow:none;
+  }
+}
+`
+
+function injectPageBreakMarkers(html: string): string {
+  return html.replace(
+    /<(p|table|section)([^>]*?)style="([^"]*?\bbreak-before\s*:\s*page;?[^"]*?)"([^>]*)>/gi,
+    (match) => `${PAGE_BREAK_MARKER}${match}`
+  )
+}
+
+function wrapAsWordPages(html: string): string {
+  const normalizedHtml = injectPageBreakMarkers(html)
+  const pages = normalizedHtml.split(PAGE_BREAK_MARKER)
+
+  return `<div class="msdoc-stage">${pages.map(page => (
+    `<section class="msdoc-page"><div class="msdoc-root">${page || EMPTY_PAGE_HTML}</div></section>`
+  )).join('')}</div>`
+}
 
 /**
- * 渲染doc文件
+ * 渲染 doc 文件
  */
-export default async function render(buffer: ArrayBuffer, target: HTMLDivElement): Promise<App> {
-  const app = createApp({
-    render: () => <DocViewer data={buffer} />
+export default async function render(buffer: ArrayBuffer, target: HTMLDivElement): Promise<AppWrapper> {
+  const rendered = await parseMsDocToHtml(buffer, {
+    renderOptions: {
+      css: `${defaultMsDocCss()}\n${WORD_PAGE_CSS}`
+    }
   })
-  app.mount(target)
-  return app
+
+  target.innerHTML = `<style data-msdoc>${rendered.css}</style>${wrapAsWordPages(rendered.html)}`
+
+  return {
+    $el: target,
+    unmount() {
+      target.innerHTML = ''
+    }
+  }
 }

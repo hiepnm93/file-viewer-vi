@@ -55,6 +55,7 @@
     "jquery": "^3.7.1",
     "jszip": "^3.10.1",
     "marked": "^11.1.1",
+    "msdoc-viewer": "^0.2.0",
     "pdfjs-dist": "^3.11.174",
     "qs": "^6.11.2",
     "tinycolor2": "^1.6.0",
@@ -62,7 +63,6 @@
     "v-viewer": "^3.0.13",
     "viewerjs": "^1.11.6",
     "vue": "^3",
-    "word": "^0.4.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

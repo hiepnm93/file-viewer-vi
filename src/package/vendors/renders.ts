@@ -95,7 +95,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持docx, xlsx, pptx, pdf, 以及纯文本格式和各种图片格式的在线预览</div>`
+<div style='text-align: center'>支持doc、docx、xlsx、pptx、pdf，以及纯文本格式和各种图片格式的在线预览</div>`
       return createWrapper(target)
     }
   }
