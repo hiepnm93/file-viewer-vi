@@ -1,0 +1,27 @@
+:root {
+  --vp-c-brand-1: #12b6ff;
+  --vp-c-brand-2: #0e92cc;
+  --vp-c-brand-3: #0b78a6;
+}
+
+.VPHomeHero .image-bg {
+  opacity: 0.08;
+}
+
+.VPHomeHero .image {
+  transform: none;
+}
+
+.VPHomeHero .image img {
+  width: 180px;
+  height: 180px;
+}
+
+.VPHomeFeatures .items {
+  gap: 12px;
+}
+
+.VPNavBar .title {
+  font-weight: 700;
+}
+

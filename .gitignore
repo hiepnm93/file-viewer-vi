@@ -32,3 +32,13 @@ dist.zip
 yarn.lock
 
 cv
+
+# Local workspace artifacts
+.trae/
+docs/.git/
+docs/.idea/
+docs/.vercel/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/.DS_Store
+docs/guide/.DS_Store
