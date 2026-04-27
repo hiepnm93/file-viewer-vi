@@ -1,32 +1,94 @@
 # 支持格式
 
-下表来自项目实际渲染器的 `accepts` 配置（即运行时真实可预览的扩展名）。
+<div class="doc-kicker">Runtime Truth</div>
 
-## Office 文档
+<p class="doc-lead">
+  当前版本内置 <strong>36 个扩展名映射</strong>，覆盖 <strong>8 大类文件</strong>。
+  这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
+</p>
 
-- Word：`docx`、`doc`
-- PowerPoint：`pptx`
-- Excel：
-  - 有样式：`xlsx`
-  - 无样式：`xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers`
+<div class="doc-grid">
+  <div class="doc-card">
+    <h3>36 个扩展名映射</h3>
+    <p>覆盖 Word、Excel、PPT、PDF、Markdown、图片、文本/代码和视频八大类文件。</p>
+  </div>
+  <div class="doc-card">
+    <h3>纯前端渲染</h3>
+    <p>所有解析和展示都在浏览器端完成，不依赖后端转码链路，也不要求 Office 服务端。</p>
+  </div>
+  <div class="doc-card">
+    <h3>两条输入路径</h3>
+    <p>既可以用 <code>url</code> 直接预览，也可以在业务侧拿到文件后二次包装成 <code>File</code> 再传入。</p>
+  </div>
+  <div class="doc-card">
+    <h3>以体验边界为准</h3>
+    <p>不同格式会走不同解析链路，兼容优先的格式与高保真格式在样式还原上并不完全一样。</p>
+  </div>
+</div>
 
-## PDF
+## 当前支持矩阵
 
-- `pdf`
+| 分类 | 扩展名 | 渲染链路 | 当前表现 | 更适合的场景 |
+| --- | --- | --- | --- | --- |
+| Word | `docx` | `docx-preview` | 版式、段落和文档结构还原更完整 | 新生成的 Word 文档、正式公文、模板文档 |
+| Word | `doc` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中 | 存量老文档、历史附件回溯 |
+| Excel | `xlsx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格和常见样式 | 大表格预览、报表、需要保留结构和样式的业务 |
+| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原 | 老表格、跨平台导出的表格、轻量数据查看 |
+| PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，适合浏览幻灯片内容 | 汇报材料、说明文档、培训课件 |
+| PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，适合阅读和缩放 | 合同、票据、版式稳定文件 |
+| Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
+| 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
+| 文本/代码 | `txt`、`json`、`js`、`css`、`java`、`py`、`html`、`jsx`、`ts`、`tsx`、`xml`、`log` | 文本渲染器 | 按纯文本展示内容，不执行脚本 | 配置文件、日志、代码片段、接口响应 |
+| 视频 | `mp4` | 浏览器原生视频播放器 | 原生播放、带控制条 | 演示视频、录屏材料 |
 
-## Markdown
+## 按类型看体验和边界
 
-- `md`、`markdown`
+### Word 文档
 
-## 图片
+- `docx` 使用 `docx-preview`，适合正文、表格、图片和常规版式较多的现代 Word 文档。
+- `doc` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
+- 如果你的业务能控制导出格式，优先推荐 `docx`；如果你面对的是存量老文档，当前 `.doc` 已经可以作为正式能力对外说明。
 
-- `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`
+<div class="doc-shot">
+  <img src="/_images/demo-doc.png" alt="DOC 文档按 Word 风格展示" />
+  <p class="doc-caption">`.doc` 文件现在会显示在灰色工作台中的白色纸张上，页面居中，阅读路径更接近真实 Word 阅读体验。</p>
+</div>
 
-## 纯文本/代码
+### 表格类文件
 
-- `txt`、`json`、`js`、`css`、`java`、`py`、`html`、`jsx`、`ts`、`tsx`、`xml`、`log`
+- 表格类文件统一走 `styled-exceljs` 解析和 `e-virt-table` 虚拟渲染，适合需要保留表格结构、合并单元格和视觉层级的场景。
+- `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` 会读取格式中能表达的数据、尺寸和样式；部分格式本身不包含完整样式时，会按可用信息渐进还原。
+- 如果你正在设计业务导出格式，优先选 `xlsx`；如果你只是需要把历史附件打开看内容，兼容链路已经足够实用。
 
-## 视频
+### 演示文稿与 PDF
 
-- `mp4`
+- `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与。
+- `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。
+- 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf`；如果你需要保留可编辑文件的阅读入口，优先用 `pptx`。
 
+### Markdown、文本与代码
+
+- `md` 和 `markdown` 会按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。
+- `txt`、`json`、`js`、`css`、`java`、`py`、`html`、`jsx`、`ts`、`tsx`、`xml`、`log` 都会按纯文本方式展示。
+- 这里有一个很重要的边界：`html` 文件会被当作文本看，而不是在预览器里当网页执行。这是更安全、也更可控的默认策略。
+
+### 图片与视频
+
+- 图片类支持 `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`。
+- `svg` 会作为图片来展示，很适合拿来放矢量图标、流程图和品牌素材。
+- 视频当前支持 `mp4`，使用浏览器原生播放器，适合最常见的演示和录屏场景。
+
+## 真实业务里怎么选
+
+- 你能控制导出格式：优先使用 `docx`、`xlsx`、`pptx`、`pdf` 这类现代格式。
+- 你要兼容历史附件：`.doc` 与 `xls/xlsm/xlsb/csv/ods` 这一组已经有正式链路，但要接受它们与现代格式在样式上的差异。
+- 你要看日志、配置或代码：直接用文本/代码链路即可，重点是快速打开和检索内容。
+- 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
+
+## 不支持的格式会怎样
+
+如果文件扩展名没有命中已注册渲染器，组件会显示“不支持当前格式在线预览”的提示，引导用户下载后查看或转换格式。
+
+<div class="doc-note">
+  最稳妥的做法，不是只看这张表，而是把你业务里最关键的那几类真实文件各准备一份样本，走一遍本地 Demo 和接入页联调。这样你拿去对外说明时，底气会更足。
+</div>

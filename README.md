@@ -1,149 +1,145 @@
-# 基于Vue3实现的文件在线预览 file-viewer
-本项目作为当前仓库的vue3构建版本，会跟随vue2版本持续更新，敬请期待，欢迎提交issue和交流技术。
+# Flyfish Viewer
 
-注意，当前版本在`v3`分支。如果要使用Vue2版本，请访问
+把 Word、Excel、PPT、PDF 和图片稳稳带进浏览器里。
 
-https://blog.csdn.net/wybaby168/article/details/129264431
+`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付的产品模块。
 
-本项目是本人基于实际工作共享的第一个小项目，诞生于2022年上旬。目前实现了基本格式的预览。
-本项目按计划支持vue3 + vite，并持续优化pptx和word模块。
+- 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
+- 文档站: [doc.flyfish.dev](https://doc.flyfish.dev)
+- npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- 仓库: [git.flyfish.dev/flyfish-group/file-viewer](https://git.flyfish.dev/flyfish-group/file-viewer)
 
-欢迎各位友友们提交工单和P/R，感谢大家！
+![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)
 
+## 为什么值得接入
 
+- 纯前端渲染。文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端或额外转码链路。
+- 多格式覆盖。当前内置 36 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、Markdown、图片、文本/代码和 MP4，能覆盖绝大多数常见附件场景。
+- 接入方式灵活。既支持在 Vue 3 项目里直接作为组件使用，也支持作为独立页面通过 iframe 嵌入到任意系统。
+- `.doc` 体验更像 Word。当前版本使用 `msdoc-viewer` 解析 `.doc`，并提供灰色工作台、白色纸张、页面居中的阅读体验。
+- 适合业务交付。父容器自适应、URL 与二进制双输入、静态站点可部署，便于在真实项目里落地。
 
-> Vue3版本特性：
->
-> 1. 高质量的TypeScript代码重构模块，更加优雅的实现等你发现
-> 2. 使用极速响应的Vite架构，畅快开发
-> 3. 完全重构了部分模块，如Word，Excel，Pptx等组件
-> 4. 优化Excel主题颜色解析，完美还原Excel样式
-> 5. 优化Pptx响应速度，使用重用逻辑
-> 6. 优化Pptx加载项，解耦图表部分，待重构解耦相关NvD3依赖。
-> 7. 使用完全的组合式API构建应用，高性能低占用
-> 8. 解耦了样式依赖，FileViewer组件依赖父节点进行布局，自动填满
+## 支持格式
 
+当前版本内置 36 个扩展名映射，覆盖 8 大类文件。
 
+| 类别 | 扩展名 | 当前表现 | 适合场景 |
+| --- | --- | --- | --- |
+| Word | `docx` | `docx-preview`，更适合保留文档结构和版式 | 新生成的 Word 文档、正式文档 |
+| Word | `doc` | `msdoc-viewer` + Word 风格页面容器 | 历史 `.doc` 老文档 |
+| Excel | `xlsx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并和常见样式 | 需要保留表格结构和样式的业务 |
+| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式 | 老表格、轻量数据查看 |
+| PowerPoint | `pptx` | 浏览幻灯片内容 | 汇报材料、课件、方案 |
+| PDF | `pdf` | 基于 `pdfjs-dist` 预览，版式稳定 | 合同、票据、版式成品 |
+| Markdown | `md`、`markdown` | Markdown 阅读样式 | README、知识文档、说明文档 |
+| 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 原生图片浏览 | 图片附件、设计稿、Logo |
+| 文本/代码 | `txt`、`json`、`js`、`css`、`java`、`py`、`html`、`jsx`、`ts`、`tsx`、`xml`、`log` | 按纯文本显示内容 | 日志、配置、代码片段 |
+| 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
-## 快速开始
+## 两条接入路线
 
-### 1. 项目安装
+### 1. Vue 3 组件集成
 
-```
-npm install
-```
+适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。
 
-### 2. 项目编译以及支持热加载的开发模式
-```
-npm run dev
-```
-
-### 3. 编译生产包并最小化文件资源
-```
-npm run build
-```
-
-### 4. 检测并修复 JavaScript 代码中的问题
-```
-npm run lint
+```bash
+pnpm add @flyfish-group/file-viewer3
 ```
 
-
-
-## 集成指南
-
-### 1. 项目引用集成
-
-> Tips: 本集成方式将会全量引入本项目的所有代码和依赖，所以可能会在您的项目中产生依赖版本冲突，请注意甄别。如果发生很多的依赖冲突，建议立即更换iframe集成方式，更轻量级，且日后能够无缝升级。
-
-如果您使用了flyfish的私库，请使用以下命令安装依赖即可。
-
-```
-npm install --save @flyfish-group/file-viewer3
-```
-
-常规情况下，请使用`npm link`的方式进行集成。
-
-假设您将本项目clone到了`D:\Works\file-viewer`下，接下来请按照下面的步骤进行安装。
-
-首先，打开命令行工具，`cd [你的项目位置]`，然后执行`npm link D:\Works\file-viewer `。最后，在您的项目中引用即可。
-
-```javascript
+```ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import FileViewer from 'file-viewer3'
+import FileViewer from '@flyfish-group/file-viewer3'
 
-createApp(App).use(FileViewer)
-  .mount('#app')
-
+createApp(App).use(FileViewer).mount('#app')
 ```
 
-然后，只需要在您的项目中直接使用组件即可。
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
 
-注意：您需要自己定义好预览器的父元素，预览器默认会占满父元素。
-
-示例如下，该示例定义了一个全屏的预览控件，并传入了一个url用于展示：
-
-```html
-<script setup lang='ts'>
-import { onMounted, ref } from 'vue'
-
-const url = ref<string>()
-
-onMounted(() => {
-  url.value = 'https://flyfish.dev/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx';
-})
+const url = ref('https://example.com/demo.pdf')
 </script>
+
 <template>
-  <div class='simple-view'>
+  <div style="height: 100vh">
     <file-viewer :url="url" />
   </div>
 </template>
-
-<style scoped>
-.simple-view {
-  height: 100vh;
-}
-</style>
-
-
 ```
 
-此外，组件还支持直接传入文件或者二进制进行展示。具体请查看`HelloWord.vue`。
+### 2. Iframe 嵌入
 
-### 2. 使用iframe集成（推荐）
+适合多系统共用一套预览器、想把预览能力独立部署、或者不希望把解析依赖带进业务包的场景。
 
-注：本部分示例代码位于`master`分支。
-
-#### 开发集成：
-
-1. 请按照“快速开始”章节运行您的示例项目
-2. 打开`example`文件夹中的`embedded.html`，修改目标地址为本地调试地址
-
-```javascript
-var context = {
-    // 查看器的源，当前示例为在线，本地测试请改为 http://localhost:8900
-    origin: 'http://localhost:8900',
-    // 目标frame
-    frame: null,
-    // 文件url
-    url: './word.docx'
-};
+```html
+<iframe
+  id="viewer"
+  src="https://viewer.flyfish.dev?url=https%3A%2F%2Fexample.com%2Fdemo.docx"
+  style="width: 100%; height: 100%; border: 0"
+></iframe>
 ```
 
-3. 直接打开该文件或者使用本地web服务访问。
-4. 具体请参考demo代码，原理是基于`iframe`跨域通信机制。
+更完整的二进制推送方案、`from` 安全校验和宿主页面示例，请查看文档站中的 [Iframe 嵌入说明](https://doc.flyfish.dev/guide/iframe)。
 
-![image-20230228161454443](/Users/wangyu/Library/Application Support/typora-user-images/image-20230228161454443.png)
+## 使用说明
 
+- 组件支持两条主要输入路径: `url?: string` 与 `file?: File`
+- 当 `file` 和 `url` 同时存在时，会优先渲染 `file`
+- 如果业务侧拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File`
+- 预览器会填满父容器，请为父容器提供稳定高度
+- 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
+- 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 
+```ts
+const blob = await response.blob()
+const file = new File([blob], 'contract.pdf', { type: blob.type })
+```
 
-## 更新日志
-####  [feature]`v1.0.7`  `2022年4月24日`
-1. 修复基于依赖的项目，无法预览pdf的问题
+## 本地开发
 
-####  [feature]`v1.0.6`  `2022年4月23日` 
+```bash
+pnpm install
+pnpm dev
+```
 
-1. 解决部分pdf字体不显示的问题
-2. 增加pdf预览初始缩放大小，自动适配页面。调整pdf预览缩放下限为0.5
-3. demo增加url预览模式，在请求参数中添加`url=文件地址`，可自动拉取并渲染文件
+常用脚本:
+
+- `pnpm build`: 构建示例站点
+- `pnpm build-lib`: 构建组件库产物
+- `pnpm docs:dev`: 启动 VitePress 文档站
+- `pnpm docs:build`: 构建文档站
+- `pnpm type-check`: 执行 TypeScript 类型检查
+
+## 打包发布
+
+建议在发布前执行下面这组命令:
+
+```bash
+pnpm type-check
+pnpm build
+pnpm build-lib
+pnpm docs:build
+npm pack
+```
+
+其中:
+
+- `dist/` 是应用与库构建产物
+- `docs/.vitepress/dist/` 是文档站静态产物
+- `npm pack` 会生成可直接发布或分发的 npm 包 tarball
+
+## 文档导航
+
+- [文档导览](https://doc.flyfish.dev/guide/)
+- [快速开始](https://doc.flyfish.dev/guide/quickstart)
+- [Demo 说明](https://doc.flyfish.dev/guide/demo)
+- [组件用法](https://doc.flyfish.dev/guide/usage)
+- [支持格式](https://doc.flyfish.dev/guide/formats)
+- [本地开发与打包](https://doc.flyfish.dev/guide/development)
+
+## 开源说明
+
+本项目使用 `Apache-2.0` 许可证。
+
+如果这个项目帮你节省了时间、少走了弯路，欢迎提 issue、提 PR，或者把它分享给也在做文档预览的人。开源世界最动人的地方，往往不是“某个功能终于能用了”，而是大家一起把它打磨到了真的能放心交付。

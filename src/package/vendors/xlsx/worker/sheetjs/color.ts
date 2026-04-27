@@ -11,19 +11,15 @@ export const indexedColors = [
   'FF003366', 'FF339966', 'FF003300', 'FF333300', 'FF993300', 'FF993366', 'FF333399', 'FF333333'  // 56-63
 ]
 
-// '#1F497D' => '#538DD5'  tint 0.39997558519241921
-
-// MS excel's tint function expects that HLS is base 240. see:
-// https://social.msdn.microsoft.com/Forums/en-US/e9d8c136-6d62-4098-9b1b-dac786149f43/excel-color-tint-algorithm-incorrect?forum=os_binaryfile#d3c2ac95-52e0-476b-86f1-e2a697f24969
 const HLSMAX = 240
 const RGBMAX = 0xFF
 
-// rgb转换为hls
+// Excel 主题色的 tint 计算使用微软 HLS 取值范围，和浏览器 HSL 不是同一套刻度。
 function rgb2hls(r: number, g: number, b: number) {
   const maxc = Math.max(r, g, b)
   const minc = Math.min(r, g, b)
-  const sumc = (maxc + minc)
-  const rangec = (maxc - minc)
+  const sumc = maxc + minc
+  const rangec = maxc - minc
   const l = sumc / 2.0
   let h, s
   if (minc == maxc) {
@@ -48,9 +44,6 @@ function rgb2hls(r: number, g: number, b: number) {
   return [h, l, s]
 }
 
-/**
- * rgb转微软hls
- */
 function rgb2MsHls(hex: string): number[] {
   if (hex.length > 6) {
     hex = hex.substring(2)
@@ -70,14 +63,15 @@ function msHls2Rgb(hue: number, lightness: number, saturation: number): string {
 function tintLuminance(tint: number, lum: number): number {
   if (tint <= 0) {
     return Math.round(lum * (1.0 + tint))
-  } else {
-    return Math.round(lum * (1.0 - tint) + (HLSMAX - HLSMAX * (1.0 - tint)))
   }
+  return Math.round(lum * (1.0 - tint) + (HLSMAX - HLSMAX * (1.0 - tint)))
 }
 
-// 计算色度转换后的颜色
+// 根据主题原始色和 tint 还原 Excel 实际显示色。
 export function getTintColor(hex: string, tint: number): string {
-  if (!hex) return hex
+  if (!hex) {
+    return hex
+  }
   const [h, l, s] = rgb2MsHls(hex)
   return `FF${msHls2Rgb(h, tintLuminance(tint, l), s)}`
 }

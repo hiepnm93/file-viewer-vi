@@ -1,14 +1,10 @@
-import ExcelJsWorker from './xlsx'
-import SheetJsWorker from './xls'
-import type SheetJsModel from './xls/SheetJsModel'
-import type ExcelJsModel from './xlsx/ExcelJsModel'
+import SheetJsWorker from './sheetjs'
+import type SheetJsModel from './sheetjs/SheetJsModel'
 
 export {
-  ExcelJsWorker,
   SheetJsWorker
 }
 
 export type {
-  SheetJsModel,
-  ExcelJsModel
+  SheetJsModel
 }

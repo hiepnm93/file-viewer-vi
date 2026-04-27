@@ -22,11 +22,14 @@ export default defineConfig(ctx => {
     config.plugins?.push(dts({ rollupTypes: true }));
     config.build = {
       target: 'es2015',
+      copyPublicDir: false,
+      emptyOutDir: true,
       lib: {
         // Could also be a dictionary or array of multiple entry points
         entry: fileURLToPath(new URL('src/package/index.ts', import.meta.url)),
         name: 'file-viewer3',
-        fileName: 'index'
+        formats: ['es', 'umd'],
+        fileName: format => format === 'es' ? 'index.mjs' : 'index.umd.js'
       },
       rollupOptions: {
         // 确保外部化处理那些你不想打包进库的依赖

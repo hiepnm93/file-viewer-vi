@@ -3,44 +3,58 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '一款纯前端 Serverless 的全能文档预览器（Vue3 + TypeScript + Vite）',
+  description: '一款纯前端Serverless的全能文档预览器',
   cleanUrls: true,
   lastUpdated: true,
+  head: [
+    ['meta', { name: 'theme-color', content: '#0d8bd8' }],
+    ['meta', { property: 'og:title', content: 'Flyfish Viewer' }],
+    ['meta', { property: 'og:description', content: '纯前端多格式文件预览组件，适合业务系统直接接入。' }]
+  ],
   themeConfig: {
     logo: '/_media/logo.svg',
     nav: [
-      { text: '项目主页', link: 'https://viewer.flyfish.dev' },
+      { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
       { text: '快速开始', link: '/guide/quickstart' },
-      { text: '工作室主页', link: 'https://flyfish.dev' },
-      { text: '联系我们', link: 'https://contact.flyfish.dev' }
+      { text: '支持格式', link: '/guide/formats' },
+      { text: 'npm', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
+      { text: 'Git 仓库', link: 'https://git.flyfish.dev/flyfish-group/file-viewer' }
     ],
     sidebar: {
       '/guide/': [
         {
-          text: '入门',
+          text: '开始阅读',
           items: [
+            { text: '文档导览', link: '/guide/' },
             { text: '概述', link: '/guide/overview' },
+            { text: 'Demo 说明', link: '/guide/demo' },
             { text: '快速开始', link: '/guide/quickstart' }
           ]
         },
         {
-          text: '集成',
+          text: '集成方式',
           items: [
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
-            { text: 'Vue2（历史版本）', link: '/guide/quickstart-vue2' },
-            { text: 'Iframe 嵌入（推荐）', link: '/guide/iframe' }
+            { text: 'Iframe 嵌入', link: '/guide/iframe' },
+            { text: '组件用法', link: '/guide/usage' }
           ]
         },
         {
-          text: '使用',
+          text: '能力与边界',
           items: [
-            { text: '组件用法（url / file）', link: '/guide/usage' },
             { text: '支持格式', link: '/guide/formats' },
             { text: '常见问题', link: '/guide/faq' }
           ]
         },
         {
-          text: '其他',
+          text: '开发与发布',
+          items: [
+            { text: '本地开发与打包', link: '/guide/development' },
+            { text: 'Vue2 历史版本', link: '/guide/quickstart-vue2' }
+          ]
+        },
+        {
+          text: '更多信息',
           items: [
             { text: '更新日志', link: '/changelog' },
             { text: '捐赠支持', link: '/donate' }
@@ -48,7 +62,12 @@ export default defineConfig({
         }
       ]
     },
-    outline: { level: [2, 3] },
+    outline: { level: [2, 3], label: '本页导航' },
+    docFooter: {
+      prev: '上一页',
+      next: '下一页'
+    },
+    lastUpdatedText: '最近更新',
     search: {
       provider: 'local',
       options: {
@@ -56,14 +75,14 @@ export default defineConfig({
           root: {
             translations: {
               button: {
-                buttonText: '搜索',
-                buttonAriaLabel: '搜索'
+                buttonText: '搜索文档',
+                buttonAriaLabel: '搜索文档'
               },
               modal: {
                 displayDetails: '显示详情',
                 resetButtonTitle: '清空搜索',
                 backButtonTitle: '返回',
-                noResultsText: '没有结果',
+                noResultsText: '没有找到相关内容',
                 footer: {
                   selectText: '选择',
                   navigateText: '切换',
@@ -82,6 +101,10 @@ export default defineConfig({
         },
         link: 'https://git.flyfish.dev/flyfish-group/file-viewer'
       }
-    ]
+    ],
+    footer: {
+      message: 'Released under the Apache-2.0 License.',
+      copyright: 'Copyright © 2026 Flyfish Viewer'
+    }
   }
 })

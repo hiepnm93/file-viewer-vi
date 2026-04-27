@@ -33,6 +33,12 @@ yarn.lock
 
 cv
 
+# Local verification artifacts
+.codex/
+output/
+outputs/
+public/example/~$*
+
 # Local workspace artifacts
 .trae/
 docs/.git/

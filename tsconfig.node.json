@@ -1,16 +1,12 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.node.json",
+  "extends": "@vue/tsconfig/tsconfig.json",
   "include": ["vite.config.*", "vitest.config.*", "cypress.config.*", "playwright.config.*", "src/**/*.ts"],
   "compilerOptions": {
     "composite": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
     "types": ["node"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "ignoreDeprecations": "5.0",
-    "verbatimModuleSyntax": true,
-    "importsNotUsedAsValues": null,
-    "preserveValueImports": null
+    "ignoreDeprecations": "6.0"
   }
 }

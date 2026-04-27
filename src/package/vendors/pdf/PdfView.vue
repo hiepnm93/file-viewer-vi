@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
-import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist/legacy/build/pdf'
-import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer'
+import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import './pdf.css'
 import PDFWorker from './worker'
 

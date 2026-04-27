@@ -41,18 +41,18 @@ const handlers: Array<FileHandlerComposite> = [
       return createWrapper(target)
     }
   },
-  // 使用exceljs + handsontable，全部样式
+  // 使用 styled-exceljs + e-virt-table，统一处理 XLSX / XLS 的数据和样式读取。
   {
     accepts: ['xlsx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      return renderXlsx(buffer, target, 'xml')
+      return renderXlsx(buffer, target)
     }
   },
-  // 使用js-xlsx + handsontable，无样式
+  // 二进制工作簿也走同一解析链路，避免 XLS / XLSX 出现样式能力差异。
   {
     accepts: ['xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      return renderXlsx(buffer, target, 'binary')
+      return renderXlsx(buffer, target)
     }
   },
   // 使用pdfjs，渲染pdf，效果最好

@@ -1,202 +1,487 @@
 <script setup lang='ts'>
-import { getExtend, render } from './util'
 import axios from 'axios'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { readBuffer } from '../../common/util'
-import { onMounted, ref, watch } from 'vue'
 import type { FileRef, Rendered } from '@/package/common/type'
+import { useLoading } from '@/package/use'
+import { getExtend, render } from './util'
 
-/**
- * 静态定义props
- */
 const props = defineProps<{
-  // 通过文件对象或二进制数据加载文档
   file?: FileRef,
-  // 通过url加载文档
   url?: string
 }>()
 
-// 加载状态跟踪
-const loading = ref<boolean>(false)
-// 存在错误时有值
-const error = ref<string>('')
-// 消息
-const message = ref<string>('')
-// 文件名
-const filename = ref<string>('')
-// 引用output
-const output = ref<Node>();
+const PREVIEW_MESSAGE = {
+  downloading: '正在下载文件资源...',
+  reading: '正在解析文件内容...'
+}
 
-// 使用闭包，不导出
-(() => {
-  // 定义消息结构
-  const messages = {
-    loading: '正在加载中，请耐心等待...',
-    reading: '正在努力解析文件...',
-    errorLoading: (e: Error) => `加载文件异常：${e}`,
-    errorReading: (e: Error) => `读取文件异常：${e}`
+const filename = ref('')
+const output = ref<HTMLDivElement | null>(null)
+
+const displayFilename = computed(() => getSourceFilename())
+const currentExtend = computed(() => {
+  const name = displayFilename.value
+  if (!name || !name.includes('.')) {
+    return ''
+  }
+  return getExtend(name).toLowerCase()
+})
+
+const {
+  loading,
+  error,
+  message,
+  theme: loadingTheme,
+  styleVars: loadingVars,
+  startLoading,
+  setLoadingMessage,
+  stopLoading,
+  showError,
+  clearError,
+  resetLoading
+} = useLoading(currentExtend)
+
+let activeRendered: Rendered | undefined
+let renderVersion = 0
+let pendingDownloadController: AbortController | null = null
+
+const normalizeFilename = (name: string) => {
+  try {
+    return decodeURIComponent(name)
+  } catch {
+    return name
+  }
+}
+
+const getFilenameFromUrl = (url: string) => {
+  const clean = url.split('?')[0]?.split('#')[0] || url
+  const tail = clean.substring(clean.lastIndexOf('/') + 1) || clean
+  return normalizeFilename(tail)
+}
+
+const getSourceFilename = () => {
+  if (filename.value) {
+    return filename.value
+  }
+  if (props.file instanceof File && props.file.name) {
+    return normalizeFilename(props.file.name)
+  }
+  if (typeof props.url === 'string' && props.url) {
+    return getFilenameFromUrl(props.url)
+  }
+  return ''
+}
+
+// 每次开始新的预览任务时都生成一个版本号。
+// 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
+const createRequestVersion = () => {
+  renderVersion += 1
+  pendingDownloadController?.abort()
+  pendingDownloadController = null
+  clearError()
+  return renderVersion
+}
+
+const isCurrentRequest = (version: number) => {
+  return version === renderVersion
+}
+
+const finishLoading = (version: number) => {
+  if (isCurrentRequest(version)) {
+    stopLoading()
+  }
+}
+
+const isAbortError = (nextError: unknown) => {
+  if (axios.isCancel(nextError)) {
+    return true
+  }
+  if (nextError instanceof DOMException && nextError.name === 'AbortError') {
+    return true
+  }
+  return typeof nextError === 'object' &&
+    nextError !== null &&
+    'code' in nextError &&
+    nextError.code === 'ERR_CANCELED'
+}
+
+const formatErrorMessage = (prefix: string, nextError: unknown) => {
+  if (nextError instanceof Error) {
+    return `${prefix}：${nextError.message}`
+  }
+  return `${prefix}：${String(nextError)}`
+}
+
+// 统一把 File、Blob、ArrayBuffer 收敛为 File，
+// 后续读取和扩展名识别都只面对一种输入类型。
+const wrapFileRef = (data: FileRef, nextFilename?: string) => {
+  if (data instanceof File) {
+    return data
   }
 
-  // 上一个节点
-  let last: Rendered | undefined
+  const safeFilename = normalizeFilename(nextFilename || filename.value || 'preview.bin')
 
-  // 内置方法集
-  const methods = {
-    // 从url加载
-    async loadFromUrl(): Promise<any> {
-      // 要预览的文件地址
-      const { url } = props
-      if (!url) return
-      this.startLoading(messages.loading)
-      const filename = url.substring(url.lastIndexOf('/') + 1)
-      // 拼接ajax请求文件内容
-      try {
-        const { data } = await axios({ url, method: 'get', responseType: 'blob' })
-        // 展示错误
-        if (!data) return this.showError('文件下载失败')
-        // 手动构建一个file
-        const file = this.wrap(data, filename)
-        // 解析文件
-        return this.resolveFile(file)
-      } catch (e: Error | any) {
-        this.showError(messages.errorLoading(e))
-      } finally {
-        this.endLoading()
-      }
-    },
-    // 包装file
-    wrap(data: FileRef, filename?: string): File {
-      if (data instanceof File) {
-        return data
-      }
-      if (data instanceof Blob && filename) {
-        return new File([data], filename, {})
-      }
-      if (data instanceof ArrayBuffer) {
-        return this.wrap(new Blob([data]))
-      }
-      throw new Error('不支持的文件类型格式！')
-    },
-    // 处理并解析文件
-    async resolveFile(data: FileRef): Promise<void> {
-      // 停止之前的加载
-      if (loading.value) this.endLoading()
-      // 安全的包装文件
-      const file = this.wrap(data)
-      // 开始加载
-      this.startLoading(messages.reading)
-      try {
-        filename.value = file.name && decodeURIComponent(file.name) || ''
-        const arrayBuffer = await readBuffer(file)
-        if (arrayBuffer instanceof ArrayBuffer) {
-          last = await this.displayResult(arrayBuffer, file)
-        }
-      } catch (e: Error | any) {
-        console.error(e)
-        this.showError(messages.errorReading(e))
-      } finally {
-        this.endLoading()
-      }
-    },
-    // 展示渲染最终效果
-    displayResult(buffer: ArrayBuffer, file: File): Promise<any> {
-      // 取得文件名
-      const { name } = file
-      // 取得扩展名
-      const extend = getExtend(name)
-      // 输出目的地
-      const out = output.value
-      if (!out) return Promise.resolve()
-      // 添加孩子，防止vue实例替换dom元素
-      if (last) {
-        if (out.lastChild) out.removeChild(out.lastChild)
-        last.unmount()
-      }
-      // 生成新的dom
-      const node = document.createElement('div')
-      node.className = 'file-render'
-      const child = out.appendChild(node)
-      // 调用渲染方法进行渲染
-      return new Promise((resolve, reject) => render(buffer, extend, child)
-        .then(resolve).catch(reject))
-    },
-    showError(msg: string): void {
-      error.value = msg
-    },
-    startLoading(msg: string): void {
-      loading.value = true
-      message.value = msg
-      error.value = ''
-    },
-    endLoading(): void {
-      loading.value = false
-      message.value = ''
-    }
+  if (data instanceof Blob) {
+    return new File([data], safeFilename, { type: data.type })
   }
 
-  onMounted(() => {
-    if (props.file) {
-      methods.resolveFile(props.file)
+  if (data instanceof ArrayBuffer) {
+    return new File([data], safeFilename, {})
+  }
+
+  throw new Error('不支持的文件类型格式！')
+}
+
+// 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
+const clearRenderedContent = () => {
+  activeRendered?.unmount?.()
+  activeRendered = undefined
+
+  const out = output.value
+  if (!out) {
+    return
+  }
+
+  while (out.firstChild) {
+    out.removeChild(out.firstChild)
+  }
+}
+
+const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number) => {
+  const out = output.value
+  if (!out || !isCurrentRequest(version)) {
+    return undefined
+  }
+
+  clearRenderedContent()
+
+  const child = document.createElement('div')
+  child.className = 'file-render'
+  out.appendChild(child)
+
+  try {
+    const rendered = await render(buffer, getExtend(file.name), child)
+    if (!isCurrentRequest(version)) {
+      rendered?.unmount?.()
+      if (child.parentNode === out) {
+        out.removeChild(child)
+      }
+      return undefined
     }
-    methods.loadFromUrl()
-  })
+    return rendered
+  } catch (nextError) {
+    if (child.parentNode === out) {
+      out.removeChild(child)
+    }
+    throw nextError
+  }
+}
 
-  // 执行监听逻辑
-  watch(() => props.url, () => methods.loadFromUrl())
-  watch(() => props.file, data => data && methods.resolveFile(data))
-})()
+// 文件读取和渲染拆成一个独立步骤，方便后续给不同来源复用。
+const readAndRenderFile = async (file: File, version: number) => {
+  filename.value = normalizeFilename(file.name || '')
+  const arrayBuffer = await readBuffer(file)
+  if (!(arrayBuffer instanceof ArrayBuffer) || !isCurrentRequest(version)) {
+    return
+  }
 
+  const rendered = await mountRenderedContent(arrayBuffer, file, version)
+  if (!isCurrentRequest(version)) {
+    rendered?.unmount?.()
+    return
+  }
+  activeRendered = rendered
+}
 
+const previewLocalFile = async (source: FileRef, version: number) => {
+  startLoading(PREVIEW_MESSAGE.reading)
+
+  try {
+    await readAndRenderFile(wrapFileRef(source), version)
+  } catch (nextError) {
+    if (!isCurrentRequest(version)) {
+      return
+    }
+    console.error(nextError)
+    showError(formatErrorMessage('读取文件异常', nextError))
+  } finally {
+    finishLoading(version)
+  }
+}
+
+// 远端预览额外管理下载控制器，新的请求进来时可以立即中断旧下载。
+const previewRemoteFile = async (url: string, version: number) => {
+  const nextFilename = getFilenameFromUrl(url)
+  filename.value = nextFilename
+  startLoading(PREVIEW_MESSAGE.downloading)
+
+  const controller = new AbortController()
+  pendingDownloadController = controller
+
+  try {
+    const { data } = await axios({
+      url,
+      method: 'get',
+      responseType: 'blob',
+      signal: controller.signal
+    })
+
+    if (!isCurrentRequest(version)) {
+      return
+    }
+
+    if (!data) {
+      showError('文件下载失败')
+      return
+    }
+
+    setLoadingMessage(PREVIEW_MESSAGE.reading)
+    await readAndRenderFile(wrapFileRef(data, nextFilename), version)
+  } catch (nextError) {
+    if (!isCurrentRequest(version) || isAbortError(nextError)) {
+      return
+    }
+    console.error(nextError)
+    showError(formatErrorMessage('加载文件异常', nextError))
+  } finally {
+    if (pendingDownloadController === controller) {
+      pendingDownloadController = null
+    }
+    finishLoading(version)
+  }
+}
+
+// 没有输入源时回到干净初始态，避免保留上一份文档的残留信息。
+const resetViewer = () => {
+  filename.value = ''
+  clearRenderedContent()
+  resetLoading()
+}
+
+// 统一入口只负责决定“读本地”还是“拉远端”，
+// 具体的下载、读取和挂载细节都下沉到独立 helper。
+const refreshPreview = async () => {
+  const version = createRequestVersion()
+
+  if (props.file) {
+    await previewLocalFile(props.file, version)
+    return
+  }
+
+  if (props.url) {
+    await previewRemoteFile(props.url, version)
+    return
+  }
+
+  resetViewer()
+}
+
+watch([() => props.file, () => props.url], () => {
+  void refreshPreview()
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  createRequestVersion()
+  clearRenderedContent()
+  resetLoading()
+})
 </script>
+
 <template>
-  <div class='file-viewer'>
-    <div class='name'>{{ filename }}</div>
-    <div v-if='error' class='content loading'>{{ error }}</div>
-    <template v-else>
-      <div v-show='loading' class='content loading'>{{ message }}</div>
-      <div v-show='!loading' class='content' ref='output'></div>
-    </template>
+  <div class='file-viewer' :style='loadingVars'>
+    <div class='viewer-stage'>
+      <div ref='output' class='content' :class='{ hidden: loading || !!error }' />
+
+      <div v-if='loading' class='state-panel loading-panel'>
+        <div class='loading-card'>
+          <div class='loading-icon'>{{ loadingTheme.badge }}</div>
+          <div class='loading-copy'>
+            <span class='loading-kicker'>{{ loadingTheme.label }}</span>
+            <strong>{{ message }}</strong>
+            <p>{{ loadingTheme.hint }}</p>
+          </div>
+          <span class='loading-ring' />
+        </div>
+      </div>
+
+      <div v-else-if='error' class='state-panel error-panel'>
+        <div class='error-card'>
+          <strong>预览失败</strong>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+
+      <div v-if='displayFilename' class='viewer-footer'>
+        <span class='name-pill'>{{ displayFilename }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .file-viewer {
-    position: relative;
-    width: 100%;
-    height: 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.viewer-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .content {
-    display: block;
-    background-color: #f2f2f2;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: #f2f2f2;
 }
 
-.loading {
-    text-align: center;
-    padding-top: 50px;
+.content.hidden {
+  visibility: hidden;
 }
 
-.name {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 13px 0;
-    font-size: 20px;
-    text-shadow: 2px 2px #616161;
-    pointer-events: none;
-    color: white;
-    background: rgba(31, 31, 31, 0.22);
-    text-align: center;
-    z-index: 10000;
+.state-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 248, 249, 0.98));
+}
+
+.loading-card,
+.error-card {
+  width: min(100%, 460px);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(19, 36, 55, 0.06);
+  box-shadow: 0 18px 42px rgba(15, 31, 47, 0.12);
+}
+
+.loading-icon {
+  flex-shrink: 0;
+  min-width: 70px;
+  height: 70px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--viewer-accent) 0%, var(--viewer-accent) 100%);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 14px 30px rgba(17, 28, 40, 0.14);
+}
+
+.loading-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.loading-kicker {
+  display: block;
+  color: var(--viewer-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loading-copy strong,
+.error-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #16283b;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.loading-copy p,
+.error-card p {
+  margin: 8px 0 0;
+  color: #6a7d90;
+  line-height: 1.6;
+}
+
+.loading-ring {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 3px solid var(--viewer-soft);
+  border-top-color: var(--viewer-accent);
+  animation: viewer-spin 0.9s linear infinite;
+}
+
+.error-card {
+  display: block;
+  text-align: center;
+}
+
+.error-card strong {
+  color: #b42318;
+}
+
+.viewer-footer {
+  /* 文件名胶囊必须悬浮在文档上方，不能参与布局挤压预览区域。 */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  padding: 0 14px 18px;
+  pointer-events: none;
+}
+
+.name-pill {
+  max-width: 100%;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(22, 33, 44, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(18px);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(18, 28, 40, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 12px 26px rgba(18, 28, 40, 0.12);
+}
+
+@keyframes viewer-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
 
 <style>
 .file-render {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 </style>
