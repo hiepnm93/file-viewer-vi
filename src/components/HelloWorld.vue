@@ -11,6 +11,7 @@ const file = ref<FileRef | undefined>()
 const url = ref('/example/word.docx')
 const preview = ref('')
 const samplePickerOpen = ref(false)
+const expandedSampleGroupIndex = ref<number | null>(0)
 
 type PresetFile = {
   name: string
@@ -303,6 +304,13 @@ async function handleChange(e: Event) {
 
 function toggleSamplePicker() {
   samplePickerOpen.value = !samplePickerOpen.value
+  if (samplePickerOpen.value) {
+    expandedSampleGroupIndex.value = 0
+  }
+}
+
+function toggleSampleGroup(index: number) {
+  expandedSampleGroupIndex.value = expandedSampleGroupIndex.value === index ? null : index
 }
 
 function selectPreset(nextUrl: string) {
@@ -364,7 +372,7 @@ function selectPreset(nextUrl: string) {
                 <button
                   type='button'
                   class='sample-trigger'
-                  :aria-expanded='samplePickerOpen'
+                  :aria-expanded="samplePickerOpen ? 'true' : 'false'"
                   @click='toggleSamplePicker'
                 >
                   <span class='sample-file-icon' :data-family='activeIconMeta.family'>
@@ -380,17 +388,29 @@ function selectPreset(nextUrl: string) {
 
                 <div v-if='samplePickerOpen' class='sample-menu'>
                   <section
-                    v-for='group in sampleGroups'
+                    v-for='(group, groupIndex) in sampleGroups'
                     :key='group.title'
                     class='sample-group'
+                    :class="{ 'sample-group--open': expandedSampleGroupIndex === groupIndex }"
                     :data-family='group.family'
                   >
-                    <div class='sample-group-header'>
-                      <span>{{ group.title }}</span>
+                    <button
+                      type='button'
+                      class='sample-group-header'
+                      :aria-expanded="expandedSampleGroupIndex === groupIndex ? 'true' : 'false'"
+                      :aria-controls='`sample-group-panel-${groupIndex}`'
+                      @click='toggleSampleGroup(groupIndex)'
+                    >
+                      <span class='sample-group-title'>{{ group.title }}</span>
                       <em>{{ group.description }}</em>
                       <strong>{{ group.items.length }}</strong>
-                    </div>
-                    <div class='sample-group-grid'>
+                      <i aria-hidden='true' />
+                    </button>
+                    <div
+                      v-if='expandedSampleGroupIndex === groupIndex'
+                      :id='`sample-group-panel-${groupIndex}`'
+                      class='sample-group-grid'
+                    >
                       <button
                         v-for='item in group.items'
                         :key='item.url'
@@ -826,22 +846,42 @@ function selectPreset(nextUrl: string) {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
+  gap: 0;
+  padding: 6px;
   border-radius: 13px;
   background: rgba(247, 250, 252, 0.76);
   box-shadow: inset 0 0 0 1px rgba(20, 35, 53, 0.05);
 }
 
-.sample-group-header {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 7px;
+.sample-group--open {
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    inset 0 0 0 1px rgba(33, 163, 102, 0.16),
+    0 8px 20px rgba(20, 35, 53, 0.06);
 }
 
-.sample-group-header span {
+.sample-group-header {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sample-group-header:hover {
+  background: rgba(33, 163, 102, 0.08);
+}
+
+.sample-group-header .sample-group-title {
   color: #142335;
   font-size: 12px;
   font-weight: 900;
@@ -868,6 +908,20 @@ function selectPreset(nextUrl: string) {
   color: #526174;
   font-size: 11px;
   font-weight: 900;
+}
+
+.sample-group-header i {
+  width: 8px;
+  height: 8px;
+  justify-self: center;
+  border-right: 2px solid #718193;
+  border-bottom: 2px solid #718193;
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+
+.sample-group--open .sample-group-header i {
+  transform: rotate(-135deg);
 }
 
 .sample-group-grid {
