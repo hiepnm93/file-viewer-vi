@@ -1,3 +1,29 @@
+<script lang='ts'>
+type PdfLoadingTask = {
+  destroy: () => Promise<void>
+}
+
+let pendingLoadingTaskDestroy: Promise<void> = Promise.resolve()
+
+const waitForPendingLoadingTaskDestroy = () => pendingLoadingTaskDestroy.catch(() => undefined)
+
+const queueLoadingTaskDestroy = (loadingTask: PdfLoadingTask | null) => {
+  if (!loadingTask) {
+    return waitForPendingLoadingTaskDestroy()
+  }
+
+  // PDF.js 会在 destroy() 期间给共享 worker 标记 _pendingDestroy。
+  // 新的 getDocument() 必须等这个异步销毁完成，否则会触发 PDFWorker.create 的生命周期告警。
+  pendingLoadingTaskDestroy = waitForPendingLoadingTaskDestroy()
+    .then(() => loadingTask.destroy())
+    .catch(error => {
+      console.warn('PDF 加载任务销毁失败', error)
+    })
+
+  return pendingLoadingTaskDestroy
+}
+</script>
+
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getDocument, GlobalWorkerOptions, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
@@ -35,12 +61,14 @@ const canZoomIn = computed(() => currentScale.value < MAX_SCALE)
 // PDF.js 实例上下文统一保存在这里，便于工具栏和导航窗格操作同一个 viewer。
 const context = {
   viewer: null as null | PDFViewer,
-  loadingTask: null as null | ReturnType<typeof getDocument>,
+  loadingTask: null as null | PdfLoadingTask,
   search: ''
 }
 
 let resizeObserver: ResizeObserver | null = null
 let fitFrame = 0
+let destroyed = false
+let loadVersion = 0
 
 // 指定worker端口
 if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker' in window) {
@@ -49,10 +77,17 @@ if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker'
 
 async function loadFile() {
   if (!container.value) return
+  const requestVersion = ++loadVersion
   loadStatus.value = 'loading'
   errorMessage.value = ''
 
   try {
+    await waitForPendingLoadingTaskDestroy()
+
+    if (destroyed || requestVersion !== loadVersion || !container.value) {
+      return
+    }
+
     // 初始化 PDF.js 的事件、链接和查找服务，保留原生链接跳转与搜索能力。
     const eventBus = new EventBus()
     const pdfLinkService = new PDFLinkService({ eventBus })
@@ -92,21 +127,34 @@ async function loadFile() {
     })
 
     // cMap 使用远程按需加载，保证中文和表单类 PDF 在部署环境中仍能正常显示。
-    context.loadingTask = getDocument({
+    const loadingTask = getDocument({
       data: props.data,
       cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/cmaps/`,
       useWorkerFetch: true,
       cMapPacked: true,
       enableXfa: true
     })
+    context.loadingTask = loadingTask
 
-    const pdfDocument = await context.loadingTask.promise
+    const pdfDocument = await loadingTask.promise
+
+    if (destroyed || requestVersion !== loadVersion || context.loadingTask !== loadingTask) {
+      if (context.loadingTask === loadingTask) {
+        context.loadingTask = null
+        await queueLoadingTaskDestroy(loadingTask)
+      }
+      return
+    }
+
     pageCount.value = pdfDocument.numPages
     currentPage.value = 1
 
     pdfViewer.setDocument(pdfDocument)
     pdfLinkService.setDocument(pdfDocument, null)
   } catch (error) {
+    if (destroyed || requestVersion !== loadVersion) {
+      return
+    }
     loadStatus.value = 'error'
     errorMessage.value = error instanceof Error ? error.message : 'PDF 加载失败'
   }
@@ -210,10 +258,15 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  destroyed = true
+  loadVersion += 1
   window.cancelAnimationFrame(fitFrame)
   resizeObserver?.disconnect()
   resizeObserver = null
-  context.loadingTask?.destroy()
+  context.viewer = null
+  const loadingTask = context.loadingTask
+  context.loadingTask = null
+  void queueLoadingTaskDestroy(loadingTask)
 })
 
 </script>
