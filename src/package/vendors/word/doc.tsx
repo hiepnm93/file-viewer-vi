@@ -17,15 +17,18 @@ const WORD_PAGE_CSS = `
 }
 .msdoc-page{
   width:min(100%,794px);
+  box-sizing:border-box;
 }
 .msdoc-page > .msdoc-root{
+  box-sizing:border-box;
   width:100%;
   max-width:none;
   min-height:1123px;
-  padding:96px 88px;
+  padding:clamp(24px,7%,96px) clamp(20px,6%,88px);
   background:#fff;
   border:1px solid #d9d9d9;
   box-shadow:0 1px 3px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.12);
+  overflow-wrap:anywhere;
 }
 .msdoc-page .msdoc-page-break{
   display:none;

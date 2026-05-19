@@ -9,9 +9,11 @@ const props = defineProps<{
   data: ArrayBuffer,
 }>()
 
-const MIN_SCALE = 0.5
-const MAX_SCALE = 2
+const MIN_SCALE = 0.2
+const MAX_SCALE = 3
 const SCALE_STEP = 0.1
+const FIT_HORIZONTAL_PADDING = 28
+const PAGE_BORDER_WIDTH = 18
 
 // PDF.js 的滚动容器。
 const container = ref<HTMLDivElement | null>(null)
@@ -21,6 +23,7 @@ const errorMessage = ref('')
 const currentPage = ref(1)
 const pageCount = ref(0)
 const currentScale = ref(1)
+const autoFitWidth = ref(true)
 
 const pages = computed(() => Array.from({ length: pageCount.value }, (_, index) => index + 1))
 const scaleText = computed(() => `${Math.round(currentScale.value * 100)}%`)
@@ -35,6 +38,9 @@ const context = {
   loadingTask: null as null | ReturnType<typeof getDocument>,
   search: ''
 }
+
+let resizeObserver: ResizeObserver | null = null
+let fitFrame = 0
 
 // 指定worker端口
 if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker' in window) {
@@ -67,8 +73,7 @@ async function loadFile() {
     pdfLinkService.setViewer(pdfViewer)
 
     eventBus.on('pagesinit', () => {
-      const initialScale = getInitialScale(pdfViewer)
-      setScale(initialScale)
+      fitToWidth()
       loadStatus.value = 'ready'
 
       if (context.search) {
@@ -105,11 +110,27 @@ async function loadFile() {
   }
 }
 
-function getInitialScale(pdfViewer: PDFViewer) {
-  const viewport = pdfViewer.getPageView(0)?.viewport
+function getPageWidthAtScaleOne(pdfViewer: PDFViewer) {
+  const pageView = pdfViewer.getPageView(0)
+  const pdfPage = pageView?.pdfPage
+  if (pdfPage) {
+    return pdfPage.getViewport({ scale: 1 }).width
+  }
+
+  const viewportWidth = pageView?.viewport?.width
+  if (viewportWidth && currentScale.value) {
+    return viewportWidth / currentScale.value
+  }
+
+  return 0
+}
+
+function getFitWidthScale(pdfViewer: PDFViewer) {
+  const pageWidth = getPageWidthAtScaleOne(pdfViewer)
   const containerWidth = container.value?.clientWidth || window.innerWidth
-  if (!viewport || viewport.width <= containerWidth) return 1
-  return clampScale((containerWidth - 32) / viewport.width)
+  const availableWidth = Math.max(containerWidth - FIT_HORIZONTAL_PADDING - PAGE_BORDER_WIDTH, 96)
+  if (!pageWidth) return 1
+  return clampScale(availableWidth / pageWidth)
 }
 
 function clampScale(scale: number) {
@@ -123,11 +144,32 @@ function setScale(scale: number) {
   currentScale.value = normalizedScale
 }
 
+function fitToWidth() {
+  if (!context.viewer) return
+  autoFitWidth.value = true
+  setScale(getFitWidthScale(context.viewer))
+  nextTick(() => {
+    context.viewer?.update()
+  })
+}
+
+function scheduleFitToWidth() {
+  if (!autoFitWidth.value || !context.viewer || typeof window === 'undefined') {
+    return
+  }
+  window.cancelAnimationFrame(fitFrame)
+  fitFrame = window.requestAnimationFrame(() => {
+    fitToWidth()
+  })
+}
+
 function zoomIn() {
+  autoFitWidth.value = false
   setScale(currentScale.value + SCALE_STEP)
 }
 
 function zoomOut() {
+  autoFitWidth.value = false
   setScale(currentScale.value - SCALE_STEP)
 }
 
@@ -140,20 +182,35 @@ function goToPage(pageNumber: number) {
 
 function toggleNav() {
   navVisible.value = !navVisible.value
-  // 导航窗格改变宽度后通知 PDF.js 重新计算可视页，避免页码状态滞后。
+  // 导航窗格改变宽度后，默认保持“适合宽度”，避免页面被侧栏挤出可视区。
   nextTick(() => {
+    if (autoFitWidth.value) {
+      fitToWidth()
+      return
+    }
     context.viewer?.update()
   })
 }
 
 function resetScale() {
-  if (!context.viewer) return
-  setScale(getInitialScale(context.viewer))
+  fitToWidth()
 }
 
-onMounted(loadFile)
+onMounted(() => {
+  void loadFile()
+
+  if (container.value) {
+    resizeObserver = new ResizeObserver(() => {
+      scheduleFitToWidth()
+    })
+    resizeObserver.observe(container.value)
+  }
+})
 
 onBeforeUnmount(() => {
+  window.cancelAnimationFrame(fitFrame)
+  resizeObserver?.disconnect()
+  resizeObserver = null
   context.loadingTask?.destroy()
 })
 
@@ -381,7 +438,7 @@ onBeforeUnmount(() => {
 .pdf-content {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(174px, 220px) minmax(0, 1fr);
+    grid-template-columns: clamp(148px, 22%, 220px) minmax(0, 1fr);
     flex: 1;
     min-height: 0;
 }
@@ -391,7 +448,10 @@ onBeforeUnmount(() => {
 }
 
 .pdf-nav-pane {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+    min-height: 0;
     overflow: hidden;
     border-right: 1px solid #d7dee8;
     background: #f8fafc;
@@ -414,9 +474,11 @@ onBeforeUnmount(() => {
 }
 
 .pdf-page-list {
+    flex: 1;
+    min-height: 0;
     display: grid;
+    align-content: start;
     gap: 8px;
-    max-height: calc(100% - 44px);
     padding: 10px;
     overflow-y: auto;
 }
@@ -473,7 +535,7 @@ onBeforeUnmount(() => {
 
 .pdfViewer {
     margin: 0 auto;
-    padding: 18px 0 28px;
+    padding: 18px 14px 28px;
 }
 
 .pdf-viewport {

@@ -7,7 +7,7 @@
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 文档站: [doc.flyfish.dev](https://doc.flyfish.dev)
 - npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
-- 公开成品仓库: [github.com/wybaby168/file-viewer](https://github.com/wybaby168/file-viewer)
+- 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)

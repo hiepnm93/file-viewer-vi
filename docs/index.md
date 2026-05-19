@@ -21,7 +21,7 @@ hero:
       link: https://www.npmjs.com/package/@flyfish-group/file-viewer3
     - theme: alt
       text: GitHub 成品仓库
-      link: https://github.com/wybaby168/file-viewer
+      link: https://github.com/flyfish-dev/file-viewer
 features:
   - title: 最新技术栈
     details: 基于 Vite + Vue2/3 + ts + 组合式 API

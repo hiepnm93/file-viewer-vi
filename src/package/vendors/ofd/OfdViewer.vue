@@ -12,6 +12,8 @@ const status = ref<'loading' | 'ready' | 'error'>('loading')
 const errorMessage = ref('')
 
 let destroyed = false
+let resizeObserver: ResizeObserver | null = null
+let resizeTimer = 0
 
 const clearStage = () => {
   const target = stage.value
@@ -83,7 +85,7 @@ const render = async () => {
 
   try {
     await nextTick()
-    const width = Math.max(target.clientWidth - 32, 720)
+    const width = Math.max(target.clientWidth - 32, 320)
     await renderWithOfdJs(target, width)
     status.value = 'ready'
   } catch (reason) {
@@ -95,10 +97,25 @@ const render = async () => {
 
 onMounted(() => {
   void render()
+
+  if (stage.value) {
+    resizeObserver = new ResizeObserver(() => {
+      window.clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(() => {
+        if (!destroyed) {
+          void render()
+        }
+      }, 180)
+    })
+    resizeObserver.observe(stage.value)
+  }
 })
 
 onBeforeUnmount(() => {
   destroyed = true
+  window.clearTimeout(resizeTimer)
+  resizeObserver?.disconnect()
+  resizeObserver = null
   clearStage()
 })
 </script>

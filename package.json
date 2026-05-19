@@ -20,11 +20,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wybaby168/file-viewer.git"
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git"
   },
   "homepage": "https://viewer.flyfish.dev",
   "bugs": {
-    "url": "https://github.com/wybaby168/file-viewer/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "scripts": {
     "dev": "vite",

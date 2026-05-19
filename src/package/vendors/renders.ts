@@ -23,9 +23,9 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['docx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      await renderDocx(buffer, target)
+      const rendered = await renderDocx(buffer, target)
       window.dispatchEvent(new Event('resize'))
-      return createWrapper(target)
+      return rendered
     }
   },
   {

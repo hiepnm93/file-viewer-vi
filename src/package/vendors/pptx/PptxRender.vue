@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
@@ -23,7 +23,9 @@ const wrapper = ref<null | HTMLDivElement>(null);
     isDone: false as boolean,
     thumbElement: null as null | HTMLImageElement,
     worker: null as null | Worker,
-    timer: null as null | number
+    timer: null as null | number,
+    resizeObserver: null as null | ResizeObserver,
+    resizeFrame: 0
   }
 
   const methods = {
@@ -58,13 +60,22 @@ const wrapper = ref<null | HTMLDivElement>(null);
       }
     },
     // 窗口拖动大小，自动调整位置
+    scheduleResize() {
+      window.cancelAnimationFrame(data.resizeFrame)
+      data.resizeFrame = window.requestAnimationFrame(() => {
+        this.resize()
+      })
+    },
     resize() {
       if (wrapper.value) {
         const $wrapper = $(wrapper.value)
-        const slidesWidth = Math.max(...Array.from($wrapper.children('section')).map(s => s.offsetWidth))
+        const slidesWidth = Math.max(...Array.from($wrapper.children('.slide, section')).map(s => s.offsetWidth), 0)
         const wrapperWidth = $wrapper[0].offsetWidth
+        if (!slidesWidth || !wrapperWidth) {
+          return
+        }
         $wrapper.css({
-          'transform': `scale(${wrapperWidth / slidesWidth})`,
+          'transform': `scale(${Math.min(1, wrapperWidth / slidesWidth)})`,
           'transform-origin': 'top left'
         })
       }
@@ -78,6 +89,9 @@ const wrapper = ref<null | HTMLDivElement>(null);
         case 'slide':
           console.log('正在处理:', msg.slide_num)
           $wrapper.append(msg.data)
+          nextTick(() => {
+            this.scheduleResize()
+          })
           break
         case 'pptx-thumb':
           if (thumbElement) $(thumbElement).attr('src', `data:image/jpeg;base64,${msg.data}`)
@@ -92,6 +106,9 @@ const wrapper = ref<null | HTMLDivElement>(null);
           console.log('pptx渲染完成，耗时', msg.data)
           displayChart(msg.charts)
           data.isDone = true
+          nextTick(() => {
+            this.scheduleResize()
+          })
           break
         case 'WARN':
           console.warn('PPTX processing warning: ', msg.data)
@@ -112,6 +129,22 @@ const wrapper = ref<null | HTMLDivElement>(null);
 
   onMounted(() => {
     methods.startWorker()
+    if (wrapper.value) {
+      data.resizeObserver = new ResizeObserver(() => {
+        methods.scheduleResize()
+      })
+      data.resizeObserver.observe(wrapper.value)
+      if (wrapper.value.parentElement) {
+        data.resizeObserver.observe(wrapper.value.parentElement)
+      }
+    }
+  })
+
+  onBeforeUnmount(() => {
+    data.worker?.terminate()
+    if (data.timer) clearInterval(data.timer)
+    window.cancelAnimationFrame(data.resizeFrame)
+    data.resizeObserver?.disconnect()
   })
 })()
 </script>
@@ -124,5 +157,6 @@ const wrapper = ref<null | HTMLDivElement>(null);
 .pptx-wrapper {
     max-width: 100%;
     margin: 0 auto;
+    min-width: 0;
 }
 </style>

@@ -20,7 +20,7 @@
 - ⚡ **超优质代码**：完全异步组件加载，**Web Worker**，超高性能
 
 <div class="doc-link-row">
-  <a href="https://github.com/wybaby168/file-viewer" target="_blank" rel="noreferrer">GitHub 成品仓库</a>
+  <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品仓库</a>
   <a href="https://dev.flyfish.group/shop" target="_blank" rel="noreferrer">源码自助开通</a>
   <a href="/guide/quickstart">快速开始</a>
 </div>
