@@ -867,9 +867,15 @@
 
 .pdfViewer .canvasWrapper {
     overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 
 .pdfViewer .page {
+    --user-unit: 1;
+    --total-scale-factor: calc(var(--scale-factor) * var(--user-unit));
+    --scale-round-x: 1px;
+    --scale-round-y: 1px;
     direction: ltr;
     width: 816px;
     height: 1056px;
@@ -948,8 +954,14 @@
 }
 
 .pdfViewer .page canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     margin: 0;
     display: block;
+    width: 100%;
+    height: 100%;
+    contain: content;
 }
 
 .pdfViewer .page canvas[hidden] {

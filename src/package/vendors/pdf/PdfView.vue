@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { getDocument, GlobalWorkerOptions, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import './pdf.css'
 import PDFWorker from './worker'
@@ -116,7 +116,7 @@ function getPageWidthAtScaleOne(pdfViewer: PDFViewer) {
   const pageView = pdfViewer.getPageView(0)
   const pdfPage = pageView?.pdfPage
   if (pdfPage) {
-    return pdfPage.getViewport({ scale: 1 }).width
+    return pdfPage.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS }).width
   }
 
   const viewportWidth = pageView?.viewport?.width
