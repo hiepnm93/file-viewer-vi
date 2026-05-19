@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### `v1.0.8` 文档视觉与预览稳定性版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.8` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.8` 同步发布到 npm `latest`
+- 修复 PDF worker 生命周期，快速切换 PDF / OFD / PDF 时不再触发 worker 销毁告警
+- 稳定 OFD 渲染状态，避免反复闪动“正在解析 OFD”
+- 刷新官方文档站截图、主题配色和 iframe 示例页视觉
+
 ### `v1.0.7` PDF 自适应修复版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.7` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.7` 同步发布到 npm `latest`
