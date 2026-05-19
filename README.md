@@ -6,7 +6,8 @@
 
 - 官方文档/组件主页: [doc.flyfish.dev](https://doc.flyfish.dev)
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
-- npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm(Vue3): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm(Vue2.7): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 - 当前版本: `1.0.6`
@@ -18,7 +19,7 @@
 - **按需异步加载。** OFD、CAD、PDF、Office、Markdown 和代码高亮能力按需加载，重型解析器不会拖慢其他格式首屏。
 - **阅读体验更像产品。** PDF 支持缩放、页码状态、导航窗格和宽度自适应；Word 视图保留灰色页面底与白色纸张。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
-- **接入方式灵活。** Vue 3 项目可安装 npm 包直接使用，也可以独立部署 `demo/` 后通过 iframe 嵌入任意系统。
+- **接入方式灵活。** Vue 3 / Vue 2.7 项目均可安装 npm 包直接使用，也可以独立部署 `demo/` 后通过 iframe 嵌入任意系统。
 - **成品交付友好。** 仓库内提供混淆压缩库产物、Demo 静态站点、文档静态站点、样例文件和可下载 tarball。
 
 ## 这个仓库包含什么
@@ -36,6 +37,8 @@
 
 ## 直接安装
 
+Vue3 项目使用:
+
 ```bash
 pnpm add @flyfish-group/file-viewer3
 ```
@@ -46,6 +49,24 @@ import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer3'
 
 createApp(App).use(FileViewer).mount('#app')
+```
+
+Vue2.7 项目使用:
+
+```bash
+pnpm add @flyfish-group/file-viewer
+```
+
+```ts
+import Vue from 'vue'
+import App from './App.vue'
+import FileViewer from '@flyfish-group/file-viewer'
+
+Vue.use(FileViewer)
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
 ```
 
 ```vue
@@ -96,6 +117,6 @@ pnpm add ./artifacts/flyfish-group-file-viewer3-1.0.6.tgz
 
 ## 授权与贡献
 
-项目使用 `Apache-2.0` 许可证。二开或商用时，请保留许可证、版权和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3`。
+项目使用 `Apache-2.0` 许可证。二开或商用时，请保留许可证、版权和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3` / `@flyfish-group/file-viewer`。
 
 如果你修复了通用问题或增强了通用能力，欢迎通过 issue / PR 一起贡献回来。
