@@ -1,120 +1,152 @@
 ---
-layout: home
+layout: page
 title: Flyfish Viewer
 titleTemplate: false
-hero:
-  name: Flyfish Viewer
-  text: 纯前端多格式文件预览组件
-  tagline: 官方文档、组件主页和交付说明都在这里。Flyfish Viewer 提供 Vue3 与 Vue2.7 两条 npm 包线，把 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码、图片和视频预览能力放进浏览器端完成。
-  image:
-    src: /_media/logo.svg
-    alt: Flyfish Viewer
-  actions:
-    - theme: brand
-      text: 快速开始
-      link: /guide/quickstart
-    - theme: alt
-      text: 在线 Demo
-      link: https://viewer.flyfish.dev
-    - theme: alt
-      text: GitHub 成品仓库
-      link: https://github.com/flyfish-dev/file-viewer
-    - theme: alt
-      text: npm(Vue3)
-      link: https://www.npmjs.com/package/@flyfish-group/file-viewer3
-    - theme: alt
-      text: npm(Vue2)
-      link: https://www.npmjs.com/package/@flyfish-group/file-viewer
-features:
-  - title: 纯前端 Serverless
-    details: 不依赖后端转码服务，浏览器直接完成解析和渲染，适合静态部署、私有化部署和离线场景。
-  - title: 59 种扩展名覆盖
-    details: 覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频，完整承接常见附件中心需求。
-  - title: 按需异步加载
-    details: OFD、CAD、PDF、Office、Markdown 和代码高亮链路按格式拆包，重型依赖不拖慢其他文件首屏。
-  - title: 真实文档阅读体验
-    details: PDF 和 Word 视图保留灰色工作台、白色纸张、页面导航、自适应缩放和长文档滚动体验。
-  - title: 双 Vue 包与 iframe
-    details: Vue3 使用 @flyfish-group/file-viewer3，Vue2.7 使用 @flyfish-group/file-viewer，多系统复用时也可以通过 iframe 嵌入。
-  - title: 面向交付
-    details: README、文档站、Demo、混淆压缩、npm tarball 和公开成品仓库一起维护，拿到即可验收和分发。
 ---
 
-<div class="doc-kicker">Official Docs And Component Home</div>
-
-<p class="doc-lead">
-  这个站点同时承担 Flyfish Viewer 的组件主页、官方文档和成品交付说明。
-  你可以先从这里判断它是否适合你的业务，再进入快速开始、组件用法、iframe 嵌入、支持格式和发布分发章节。
+<main class="doc-home">
+<section class="doc-home-hero">
+<div class="doc-home-hero-inner">
+<div class="doc-eyebrow">Official Docs And Component Home</div>
+<h1>Flyfish Viewer</h1>
+<p>
+纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码、图片和视频预览能力放进浏览器端，
+同时提供 Vue3、Vue2.7 和 iframe 三种集成路径。
 </p>
+<div class="doc-home-actions">
+<a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
+<a class="doc-action" href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
+<a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品</a>
+</div>
+</div>
+</section>
 
-<div class="doc-link-row">
-  <a href="/guide/">文档导览</a>
-  <a href="/guide/formats">支持格式</a>
-  <a href="/guide/usage">组件用法</a>
-  <a href="/guide/iframe">Iframe 嵌入</a>
-  <a href="/guide/distribution">成品分发</a>
+<section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
+<div>
+<strong>59</strong>
+<span>个扩展名映射</span>
+</div>
+<div>
+<strong>11</strong>
+<span>条预览链路</span>
+</div>
+<div>
+<strong>Vue2/3</strong>
+<span>双包线同步维护</span>
+</div>
+<div>
+<strong>Iframe</strong>
+<span>支持多系统复用</span>
+</div>
+</section>
+
+<section class="doc-section">
+<div class="doc-section-heading">
+<span>Product Experience</span>
+<h2>产品化的文件预览，而不是格式清单</h2>
+<p>
+文档解析、阅读布局、示例验收和分发交付被放在同一条链路里维护。接入前可以先看真实 Demo，
+接入后也能通过 npm、静态站或 iframe 继续迭代。
+</p>
 </div>
 
-<div class="doc-shot">
-  <img src="/_images/demo-main.png" alt="Flyfish Viewer 主界面预览" />
-  <p class="doc-caption">在线 Demo 集成完整样例文件选择器、上传入口和多格式预览区，可直接用于验收真实浏览体验。</p>
+<div class="doc-showcase">
+<figure>
+<img src="/_images/demo-main.png" alt="Flyfish Viewer 在线预览器主界面" />
+<figcaption>在线 Demo 包含示例文件选择器、上传入口和多格式预览区，可直接用于验收真实浏览体验。</figcaption>
+</figure>
+<div class="doc-showcase-list">
+<article>
+<span>01</span>
+<h3>打开即适配阅读宽度</h3>
+<p>PDF 和 Word 会按当前视口计算默认缩放，导航窗格开启时也尽量保留可读区域。</p>
+</article>
+<article>
+<span>02</span>
+<h3>重型能力按需进入</h3>
+<p>OFD、CAD、PDF、Office、Markdown 和代码高亮都拆成异步块，命中格式时再加载。</p>
+</article>
+<article>
+<span>03</span>
+<h3>示例覆盖完整验收路径</h3>
+<p>示例文件按文档、表格、图纸、代码、图片等类型分组，方便快速定位和回归。</p>
+</article>
+</div>
+</div>
+</section>
+
+<section class="doc-section doc-section-muted">
+<div class="doc-section-heading">
+<span>Why It Works</span>
+<h2>为业务系统准备的工程取舍</h2>
+<p>它不是一个只展示单一 PDF 的小组件，而是一套面向附件中心、OA、知识库和工单系统的前端预览方案。</p>
 </div>
 
-## 优势一览
+<div class="doc-value-grid">
+<article class="doc-card">
+<h3>少一条服务端链路</h3>
+<p>大多数格式直接在浏览器完成解析，不需要把附件交给后端转 PDF，也减少临时文件和队列任务。</p>
+</article>
+<article class="doc-card">
+<h3>格式覆盖贴近业务</h3>
+<p>除了 Office、PDF 和图片，也补齐 OFD、DXF、Markdown、代码、日志、配置文件和 MP4。</p>
+</article>
+<article class="doc-card">
+<h3>阅读质感有兜底</h3>
+<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、导航窗格和宽度自适应。</p>
+</article>
+<article class="doc-card">
+<h3>接入边界清晰</h3>
+<p>Vue3、Vue2.7 和 iframe 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
+</article>
+<article class="doc-card">
+<h3>成品可直接下载</h3>
+<p>公开仓库提供混淆压缩库产物、Demo 静态站点、文档静态站点、样例文件和 tarball。</p>
+</article>
+<article class="doc-card">
+<h3>版本交付可追踪</h3>
+<p>README、文档站、Demo、npm 包和公开成品仓库同步维护，便于验收和分发。</p>
+</article>
+</div>
+</section>
 
-<div class="doc-grid">
-  <div class="doc-card">
-    <h3>少一条服务端链路</h3>
-    <p>大多数格式直接在浏览器完成解析，不需要把附件交给后端转 PDF，也减少了临时文件、任务队列和清理脚本的维护成本。</p>
-  </div>
-  <div class="doc-card">
-    <h3>格式覆盖更贴近业务</h3>
-    <p>除了 Office、PDF 和图片，也补齐 OFD、DXF、Markdown、代码、日志、配置文件和 MP4，适合 OA、知识库、工单和附件中心。</p>
-  </div>
-  <div class="doc-card">
-    <h3>重型能力不抢首屏</h3>
-    <p>PDF、OFD、CAD、Office 和代码高亮都按需异步加载。用户打开图片或文本时，不会因为图纸或版式文档解析器而额外等待。</p>
-  </div>
-  <div class="doc-card">
-    <h3>阅读质感有兜底</h3>
-    <p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、导航窗格和宽度自适应，长文档打开后默认就应该可读。</p>
-  </div>
-  <div class="doc-card">
-    <h3>接入边界清晰</h3>
-    <p>Vue3 与 Vue2.7 都有对应 npm 包，iframe 方案适合多系统复用。URL、File、Blob 转 File 等输入路径在文档里都有示例。</p>
-  </div>
-  <div class="doc-card">
-    <h3>成品可直接下载</h3>
-    <p>公开仓库提供混淆压缩库产物、Demo 静态站点、文档静态站点、样例文件和 tarball，源码需求可通过官方渠道自助开通。</p>
-  </div>
+<section class="doc-section">
+<div class="doc-section-heading">
+<span>Choose Your Path</span>
+<h2>按你的接入场景开始</h2>
+<p>先选路线，再进入对应文档。每条路线都给出最短示例和真实项目里的注意事项。</p>
 </div>
 
-## 最快接入路径
-
-<div class="doc-grid">
-  <div class="doc-card">
-    <h3>我想先看效果</h3>
-    <p>打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>，用内置样例或本地文件验证格式、缩放、导航和样式表现。</p>
-  </div>
-  <div class="doc-card">
-    <h3>我在 Vue 3 项目里用</h3>
-    <p>安装 <code>@flyfish-group/file-viewer3@1.0.7</code>，再查看 <a href="/guide/quickstart-vue3">Vue3 集成</a> 接入 URL 或 File 输入。</p>
-  </div>
-  <div class="doc-card">
-    <h3>我还在 Vue2 项目里用</h3>
-    <p>安装 <code>@flyfish-group/file-viewer@1.0.7</code>，按 <a href="/guide/quickstart-vue2">Vue2 集成</a> 使用 <code>Vue.use(FileViewer)</code> 注册。</p>
-  </div>
-  <div class="doc-card">
-    <h3>我要给多个系统共用</h3>
-    <p>阅读 <a href="/guide/iframe">Iframe 嵌入</a>，把预览器作为独立静态站部署，通过 URL 或 postMessage 推送二进制文件。</p>
-  </div>
-  <div class="doc-card">
-    <h3>我要下载成品或二开</h3>
-    <p>查看 <a href="/guide/distribution">发布与成品分发</a>。公开仓库提供可下载产物，源码和商业二开通过官方渠道开通。</p>
-  </div>
+<div class="doc-path-grid">
+<a class="doc-path-card" href="/guide/quickstart-vue3">
+<strong>Vue 3 项目</strong>
+<span>安装 @flyfish-group/file-viewer3@1.0.7，使用 createApp(App).use(FileViewer)。</span>
+</a>
+<a class="doc-path-card" href="/guide/quickstart-vue2">
+<strong>Vue2.7 项目</strong>
+<span>安装 @flyfish-group/file-viewer@1.0.7，使用 Vue.use(FileViewer)。</span>
+</a>
+<a class="doc-path-card" href="/guide/iframe">
+<strong>多系统复用</strong>
+<span>独立部署预览器，通过 URL 或 postMessage 推送二进制文件。</span>
+</a>
+<a class="doc-path-card" href="/guide/distribution">
+<strong>成品与二开</strong>
+<span>下载公开产物，或前往官方渠道开通源码和商业二开。</span>
+</a>
 </div>
+</section>
 
-<div class="doc-callout">
-  <strong>官方入口:</strong>
-  文档站是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>。
+<section class="doc-final-band">
+<div>
+<span>Official Resources</span>
+<h2>一个站点承担主页、文档和交付说明</h2>
+<p>
+官方文档是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
+在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
+公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>。
+</p>
 </div>
+<a class="doc-action doc-action-primary" href="/guide/">进入文档导览</a>
+</section>
+</main>

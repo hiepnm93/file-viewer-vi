@@ -14,13 +14,19 @@ export default defineConfig({
   themeConfig: {
     logo: '/_media/logo.svg',
     nav: [
-      { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
+      { text: '文档', link: '/guide/' },
       { text: '快速开始', link: '/guide/quickstart' },
       { text: '支持格式', link: '/guide/formats' },
-      { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
-      { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
-      { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
-      { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
+      { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
+      {
+        text: '资源',
+        items: [
+          { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
+          { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
+          { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
+          { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
+        ]
+      }
     ],
     sidebar: {
       '/guide/': [
