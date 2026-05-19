@@ -17,7 +17,8 @@ export default defineConfig({
       { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
       { text: '快速开始', link: '/guide/quickstart' },
       { text: '支持格式', link: '/guide/formats' },
-      { text: 'npm', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
+      { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
+      { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
       { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
       { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
     ],
@@ -52,7 +53,7 @@ export default defineConfig({
           items: [
             { text: '本地开发与打包', link: '/guide/development' },
             { text: '发布与成品分发', link: '/guide/distribution' },
-            { text: 'Vue2 历史版本', link: '/guide/quickstart-vue2' }
+            { text: 'Vue2 集成', link: '/guide/quickstart-vue2' }
           ]
         },
         {

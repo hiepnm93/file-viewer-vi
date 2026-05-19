@@ -1,25 +1,98 @@
-# Vue2 历史版本
+# Vue2 集成
 
-当前仓库维护主线是 `v3` 分支，对应 Vue 3 + Vite 版本。
+<div class="doc-kicker">For Vue 2.7 Projects</div>
 
-如果你的业务系统仍然在 Vue2 上，建议优先使用 iframe 集成方式，让预览器作为独立页面接入，这样业务侧几乎不用承担解析依赖带来的升级压力。
+<p class="doc-lead">
+  Vue2 包已经同步发布到 <code>@flyfish-group/file-viewer@1.0.6</code>。
+  它面向 Vue2.7 项目，格式能力、示例文件和 iframe 体验与 v3 分支保持一致。
+</p>
 
-## 为什么推荐这样做
+## 安装
 
-- Vue2 项目可以先稳定接入，不必等待整体迁移
-- 预览器可以独立部署和升级，多系统复用时更省心
-- 鉴权下载逻辑可以继续留在宿主系统中完成
+```bash
+pnpm add @flyfish-group/file-viewer
+```
 
-## Vue2 相关历史资料
+也可以使用 `npm`:
 
-- Vue2 说明文章: <https://blog.csdn.net/wybaby168/article/details/129264431>
-- 项目背景文章: <https://blog.csdn.net/wybaby168/article/details/122842866>
+```bash
+npm install --save @flyfish-group/file-viewer
+```
 
-## 推荐迁移路径
+## 注册插件
 
-1. 当前在 Vue2 项目中，通过 [Iframe 嵌入](/guide/iframe) 先完成预览接入
-2. 业务未来升级到 Vue3 后，再根据需要切换到 [Vue3 集成](/guide/quickstart-vue3)
+```ts
+import Vue from 'vue'
+import App from './App.vue'
+import FileViewer from '@flyfish-group/file-viewer'
+
+Vue.use(FileViewer)
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+## URL 预览
+
+```vue
+<template>
+  <div style="height: 100vh">
+    <file-viewer :url="url" />
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      url: 'https://example.com/demo.pdf'
+    }
+  }
+}
+</script>
+```
+
+## File 预览
+
+```vue
+<template>
+  <div style="height: 100vh">
+    <input type="file" @change="onChange" />
+    <div style="height: calc(100vh - 40px)">
+      <file-viewer :file="file" />
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      file: undefined
+    }
+  },
+  methods: {
+    onChange(event) {
+      const value = event.target.files && event.target.files.item(0)
+      if (value) {
+        this.file = value
+      }
+    }
+  }
+}
+</script>
+```
+
+## 与 Vue3 版本保持一致
+
+Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码高亮、图片和视频。差异主要在包名和插件注册入口:
+
+| 版本 | npm 包 | 最新版本 | 注册方式 |
+| --- | --- | --- | --- |
+| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.6` | `Vue.use(FileViewer)` |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.6` | `createApp(App).use(FileViewer)` |
 
 <div class="doc-note">
-  这样做的好处很朴素: 你不用被某次框架升级卡住，预览能力也能继续平稳迭代。
+  如果一个预览器需要被多个不同技术栈系统复用，仍然建议优先看 <a href="/guide/iframe">Iframe 嵌入</a>，这样升级预览能力时不需要逐个业务项目发版。
 </div>

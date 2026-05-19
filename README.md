@@ -2,13 +2,23 @@
 
 把 Word、Excel、PPT、PDF 和图片稳稳带进浏览器里。
 
-`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
+`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，在线 Demo 始终使用 `v3` 分支产物作为最新体验基准。
+
+它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 官方文档/组件主页: [doc.flyfish.dev](https://doc.flyfish.dev)
-- npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm(Vue3): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm(Vue2): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+
+## 当前发布版本
+
+| 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
+| --- | --- | --- | --- | --- |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.6` | `v3` | 主推版本，在线 Demo 与后续上线均以此为准 |
+| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.6` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
 
 ![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)
 
@@ -19,7 +29,8 @@
 - **按需异步加载。** PDF、OFD、CAD、Office、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放，避免“内容能打开但不好读”的落差。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
-- **组件和独立站两用。** 既支持在 Vue 3 项目里直接作为组件使用，也支持独立部署后通过 iframe 嵌入到任意系统，方便多业务线复用。
+- **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
+- **组件和独立站两用。** 既支持在 Vue 项目里直接作为组件使用，也支持独立部署后通过 iframe 嵌入到任意系统，方便多业务线复用。
 - **适合成品交付。** 官方文档、在线 Demo、公开成品仓库、混淆压缩产物、npm tarball 和静态部署产物都一起维护，便于下载、验收和二次接入。
 
 ## 支持格式
@@ -42,11 +53,11 @@
 | 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段 |
 | 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
-## 两条接入路线
+## 三条接入路线
 
 ### 1. Vue 3 组件集成
 
-适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。
+适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。当前在线 Demo 和生产上线均以 `v3` 分支作为最终产物来源。
 
 ```bash
 pnpm add @flyfish-group/file-viewer3
@@ -74,7 +85,45 @@ const url = ref('https://example.com/demo.pdf')
 </template>
 ```
 
-### 2. Iframe 嵌入
+### 2. Vue 2 组件集成
+
+适合仍在 Vue2.7 技术栈上，希望直接以内嵌组件方式完成接入的团队。
+
+```bash
+pnpm add @flyfish-group/file-viewer
+```
+
+```ts
+import Vue from 'vue'
+import App from './App.vue'
+import FileViewer from '@flyfish-group/file-viewer'
+
+Vue.use(FileViewer)
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+```vue
+<template>
+  <div style="height: 100vh">
+    <file-viewer :url="url" />
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      url: 'https://example.com/demo.pdf'
+    }
+  }
+}
+</script>
+```
+
+### 3. Iframe 嵌入
 
 适合多系统共用一套预览器、想把预览能力独立部署、或者不希望把解析依赖带进业务包的场景。
 
@@ -122,6 +171,13 @@ pnpm dev
 
 ## 打包发布
 
+Vue3 和 Vue2 发包时分别在对应分支执行同一套发布链路:
+
+| 包 | 分支 | npm 名称 |
+| --- | --- | --- |
+| Vue3 | `v3` | `@flyfish-group/file-viewer3` |
+| Vue2.7 | `main` | `@flyfish-group/file-viewer` |
+
 建议在发布前执行下面这组命令:
 
 ```bash
@@ -149,8 +205,11 @@ pnpm release:pack
 发布到 npm:
 
 ```bash
+npm publish --dry-run --access public
 npm publish --access public
 ```
+
+如果 npm 账号启用了 MFA，请使用交互式终端完成浏览器确认后再等待发布结果。
 
 公开 GitHub 仓库只提交可直接使用的构建产物、示例、文档和 npm tarball，不提交当前源码目录。需要源码、二开包或商业自助开通的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，付费 4.99 后自助开通。
 
@@ -167,4 +226,4 @@ npm publish --access public
 
 本项目使用 `Apache-2.0` 许可证。
 
-二开或商用时，请按许可证要求保留版权、许可证和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3`。如果你基于本项目修复了通用问题或增强了通用能力，也欢迎通过 issue / PR 一起贡献回来，让这套预览能力继续变得更稳。
+二开或商用时，请按许可证要求保留版权、许可证和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3` 或 `@flyfish-group/file-viewer`。如果你基于本项目修复了通用问题或增强了通用能力，也欢迎通过 issue / PR 一起贡献回来，让这套预览能力继续变得更稳。

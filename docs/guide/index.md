@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue 组件或 iframe 嵌入，最后完成打包、发布和成品分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2 或 iframe 嵌入，最后完成打包、发布和成品分发。
 </p>
 
 <div class="doc-link-row">
@@ -50,7 +50,7 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue 3 项目可以直接使用组件；多系统复用、隔离依赖或带鉴权文件场景，优先考虑 iframe 嵌入。</p>
+    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>；多系统复用、隔离依赖或带鉴权文件场景，优先考虑 iframe 嵌入。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
@@ -74,6 +74,7 @@
 | 想确认所有格式 | [支持格式](/guide/formats) |
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
 | 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
+| 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想让多个系统共用预览器 | [Iframe 嵌入](/guide/iframe) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
 | 想下载成品或二开 | [发布与成品分发](/guide/distribution) |

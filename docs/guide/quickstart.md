@@ -11,7 +11,8 @@
 
 | 方案 | 适合谁 | 优点 | 你应该看哪页 |
 | --- | --- | --- | --- |
-| Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 接入最直接，开发体验最顺手 | [Vue3 集成](/guide/quickstart-vue3) |
+| Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 主推包线，在线 Demo 与生产上线均以 v3 为准 | [Vue3 集成](/guide/quickstart-vue3) |
+| Vue2 组件集成 | Vue2.7 项目内直接使用 | 保留旧业务栈，体验与 v3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
 | Iframe 嵌入 | 多系统复用、异构系统、需要隔离依赖 | 升级集中、宿主系统更轻、适合平台化 | [Iframe 嵌入](/guide/iframe) |
 
 <div class="doc-callout">
@@ -57,6 +58,28 @@ const url = ref('https://example.com/demo.docx')
   </div>
 </template>
 ```
+
+## Vue2 最短路径
+
+Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致:
+
+```bash
+pnpm add @flyfish-group/file-viewer
+```
+
+```ts
+import Vue from 'vue'
+import App from './App.vue'
+import FileViewer from '@flyfish-group/file-viewer'
+
+Vue.use(FileViewer)
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## Iframe 最短路径
 

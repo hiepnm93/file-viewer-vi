@@ -5,7 +5,7 @@ titleTemplate: false
 hero:
   name: Flyfish Viewer
   text: 纯前端多格式文件预览组件
-  tagline: 官方文档、组件主页和交付说明都在这里。Flyfish Viewer 基于 Vue 3 + TypeScript + Vite 构建，把 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码、图片和视频预览能力放进浏览器端完成。
+  tagline: 官方文档、组件主页和交付说明都在这里。Flyfish Viewer 提供 Vue3 与 Vue2.7 两条 npm 包线，把 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码、图片和视频预览能力放进浏览器端完成。
   image:
     src: /_media/logo.svg
     alt: Flyfish Viewer
@@ -20,8 +20,11 @@ hero:
       text: GitHub 成品仓库
       link: https://github.com/flyfish-dev/file-viewer
     - theme: alt
-      text: npm 包
+      text: npm(Vue3)
       link: https://www.npmjs.com/package/@flyfish-group/file-viewer3
+    - theme: alt
+      text: npm(Vue2)
+      link: https://www.npmjs.com/package/@flyfish-group/file-viewer
 features:
   - title: 纯前端 Serverless
     details: 不依赖后端转码服务，浏览器直接完成解析和渲染，适合静态部署、私有化部署和离线场景。
@@ -31,8 +34,8 @@ features:
     details: OFD、CAD、PDF、Office、Markdown 和代码高亮链路按格式拆包，重型依赖不拖慢其他文件首屏。
   - title: 真实文档阅读体验
     details: PDF 和 Word 视图保留灰色工作台、白色纸张、页面导航、自适应缩放和长文档滚动体验。
-  - title: 组件与 iframe 双路线
-    details: Vue 3 项目可直接安装组件，多系统复用时也可以独立部署预览站并通过 iframe 嵌入。
+  - title: 双 Vue 包与 iframe
+    details: Vue3 使用 @flyfish-group/file-viewer3，Vue2.7 使用 @flyfish-group/file-viewer，多系统复用时也可以通过 iframe 嵌入。
   - title: 面向交付
     details: README、文档站、Demo、混淆压缩、npm tarball 和公开成品仓库一起维护，拿到即可验收和分发。
 ---
@@ -78,7 +81,7 @@ features:
   </div>
   <div class="doc-card">
     <h3>接入边界清晰</h3>
-    <p>Vue 3 组件适合业务内嵌，iframe 方案适合多系统复用。URL、File、Blob 转 File 等输入路径在文档里都有示例。</p>
+    <p>Vue3 与 Vue2.7 都有对应 npm 包，iframe 方案适合多系统复用。URL、File、Blob 转 File 等输入路径在文档里都有示例。</p>
   </div>
   <div class="doc-card">
     <h3>成品可直接下载</h3>
@@ -95,7 +98,11 @@ features:
   </div>
   <div class="doc-card">
     <h3>我在 Vue 3 项目里用</h3>
-    <p>从 <a href="/guide/quickstart">快速开始</a> 安装 npm 包，再查看 <a href="/guide/usage">组件用法</a> 接入 URL 或 File 输入。</p>
+    <p>安装 <code>@flyfish-group/file-viewer3@1.0.6</code>，再查看 <a href="/guide/quickstart-vue3">Vue3 集成</a> 接入 URL 或 File 输入。</p>
+  </div>
+  <div class="doc-card">
+    <h3>我还在 Vue2 项目里用</h3>
+    <p>安装 <code>@flyfish-group/file-viewer@1.0.6</code>，按 <a href="/guide/quickstart-vue2">Vue2 集成</a> 使用 <code>Vue.use(FileViewer)</code> 注册。</p>
   </div>
   <div class="doc-card">
     <h3>我要给多个系统共用</h3>

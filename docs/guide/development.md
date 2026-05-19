@@ -50,6 +50,17 @@ npm pack
 pnpm release:pack
 ```
 
+## Vue2 / Vue3 双包发版
+
+当前两个 npm 包都已发布到 `1.0.6`:
+
+| 技术栈 | 分支 | npm 包 | 注册方式 |
+| --- | --- | --- | --- |
+| Vue3 | `v3` | `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
+| Vue2.7 | `main` | `@flyfish-group/file-viewer` | `Vue.use(FileViewer)` |
+
+发版时请先切到对应分支，再运行类型检查、库构建、混淆和 `npm publish --access public`。线上 Demo 和 Vercel 生产部署始终使用 `v3` 分支产物。
+
 ## 主要产物位置
 
 - 应用构建产物: `dist/`
@@ -60,12 +71,13 @@ pnpm release:pack
 ## 发版前检查清单
 
 - README 是否和当前代码能力一致
+- README 和文档站是否同时写清 Vue3 / Vue2 两个 npm 包名、版本和注册方式
 - 文档站中的支持格式、iframe 协议和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
 - 本地构建和文档构建是否全部通过
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 混淆后的 `dist/index.mjs`、`dist/index.umd.js` 是否仍可被业务项目正常导入
-- README 是否包含 npm、Demo、GitHub 成品仓库、源码自助开通和 Apache-2.0 许可证说明
+- README 是否包含 npm(Vue3/Vue2)、Demo、GitHub 成品仓库、源码自助开通和 Apache-2.0 许可证说明
 
 ## 部署建议
 
@@ -79,4 +91,4 @@ pnpm release:pack
 
 公开仓库用于分发可直接使用的成品；需要源码、二开包或商业自助开通的用户，请前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，付费 4.99 后自助开通。
 
-二开或商用时，请保留 Flyfish Viewer / `@flyfish-group/file-viewer3` 的来源说明、许可证和版权信息。通用问题修复和通用增强建议通过 issue / PR 贡献回来。
+二开或商用时，请保留 Flyfish Viewer / `@flyfish-group/file-viewer3` 或 `@flyfish-group/file-viewer` 的来源说明、许可证和版权信息。通用问题修复和通用增强建议通过 issue / PR 贡献回来。

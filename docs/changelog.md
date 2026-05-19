@@ -6,8 +6,10 @@
 
 ### `v1.0.6` 成品分发版本
 
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.6` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.6` 均已发布到 npm `latest`
 - 新增 PDF 缩放工具栏、页码状态和可显隐页面导航窗格
 - 补齐 OFD、CAD、代码高亮与完整示例文件盒子
+- 示例文件选择器支持分组折叠，默认展开第一个分组，并保持同一时间只展开一个分组
 - 增加 `pnpm obfuscate` 与 `pnpm release:pack`，库产物支持压缩混淆后分发
 - README、文档站和公开成品仓库说明同步补充 npm、GitHub、源码自助开通、授权与贡献说明
 - npm tarball 只包含 `README.md`、`LICENSE` 和混淆压缩后的 `dist/`
