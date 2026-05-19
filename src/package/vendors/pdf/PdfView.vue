@@ -1,35 +1,9 @@
-<script lang='ts'>
-type PdfLoadingTask = {
-  destroy: () => Promise<void>
-}
-
-let pendingLoadingTaskDestroy: Promise<void> = Promise.resolve()
-
-const waitForPendingLoadingTaskDestroy = () => pendingLoadingTaskDestroy.catch(() => undefined)
-
-const queueLoadingTaskDestroy = (loadingTask: PdfLoadingTask | null) => {
-  if (!loadingTask) {
-    return waitForPendingLoadingTaskDestroy()
-  }
-
-  // PDF.js 会在 destroy() 期间给共享 worker 标记 _pendingDestroy。
-  // 新的 getDocument() 必须等这个异步销毁完成，否则会触发 PDFWorker.create 的生命周期告警。
-  pendingLoadingTaskDestroy = waitForPendingLoadingTaskDestroy()
-    .then(() => loadingTask.destroy())
-    .catch(error => {
-      console.warn('PDF 加载任务销毁失败', error)
-    })
-
-  return pendingLoadingTaskDestroy
-}
-</script>
-
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getDocument, GlobalWorkerOptions, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import './pdf.css'
-import PDFWorker from './worker'
+import PDFWorkerPort from './worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -57,11 +31,19 @@ const canGoPrevious = computed(() => currentPage.value > 1)
 const canGoNext = computed(() => currentPage.value < pageCount.value)
 const canZoomOut = computed(() => currentScale.value > MIN_SCALE)
 const canZoomIn = computed(() => currentScale.value < MAX_SCALE)
+type PdfLoadingTask = ReturnType<typeof getDocument>
+type PdfWorkerInstance = {
+  destroy: () => void
+}
+type PdfResource = {
+  loadingTask: PdfLoadingTask
+  worker: PdfWorkerInstance | null
+}
 
 // PDF.js 实例上下文统一保存在这里，便于工具栏和导航窗格操作同一个 viewer。
 const context = {
   viewer: null as null | PDFViewer,
-  loadingTask: null as null | PdfLoadingTask,
+  resource: null as null | PdfResource,
   search: ''
 }
 
@@ -70,9 +52,27 @@ let fitFrame = 0
 let destroyed = false
 let loadVersion = 0
 
-// 指定worker端口
-if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker' in window) {
-  GlobalWorkerOptions.workerPort = PDFWorker.create()
+function createPdfWorker() {
+  if (typeof window === 'undefined' || !('Worker' in window)) {
+    return null
+  }
+
+  // 每个 PDF 视图使用独立 worker，避免快速切换文件时复用同一个 workerPort 撞上 PDF.js 的 pendingDestroy 状态。
+  return PdfJsWorker.create({ port: PDFWorkerPort.create() })
+}
+
+async function destroyPdfResource(resource: PdfResource | null) {
+  if (!resource) {
+    return
+  }
+
+  try {
+    await resource.loadingTask.destroy()
+  } catch (error) {
+    console.warn('PDF 加载任务销毁失败', error)
+  } finally {
+    resource.worker?.destroy()
+  }
 }
 
 async function loadFile() {
@@ -80,10 +80,9 @@ async function loadFile() {
   const requestVersion = ++loadVersion
   loadStatus.value = 'loading'
   errorMessage.value = ''
+  let resource: PdfResource | null = null
 
   try {
-    await waitForPendingLoadingTaskDestroy()
-
     if (destroyed || requestVersion !== loadVersion || !container.value) {
       return
     }
@@ -127,21 +126,24 @@ async function loadFile() {
     })
 
     // cMap 使用远程按需加载，保证中文和表单类 PDF 在部署环境中仍能正常显示。
+    const worker = createPdfWorker()
     const loadingTask = getDocument({
       data: props.data,
+      worker: worker || undefined,
       cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/cmaps/`,
       useWorkerFetch: true,
       cMapPacked: true,
       enableXfa: true
     })
-    context.loadingTask = loadingTask
+    resource = { loadingTask, worker }
+    context.resource = resource
 
     const pdfDocument = await loadingTask.promise
 
-    if (destroyed || requestVersion !== loadVersion || context.loadingTask !== loadingTask) {
-      if (context.loadingTask === loadingTask) {
-        context.loadingTask = null
-        await queueLoadingTaskDestroy(loadingTask)
+    if (destroyed || requestVersion !== loadVersion || context.resource !== resource) {
+      if (context.resource === resource) {
+        context.resource = null
+        await destroyPdfResource(resource)
       }
       return
     }
@@ -152,6 +154,11 @@ async function loadFile() {
     pdfViewer.setDocument(pdfDocument)
     pdfLinkService.setDocument(pdfDocument, null)
   } catch (error) {
+    if (context.resource === resource) {
+      context.resource = null
+      void destroyPdfResource(resource)
+    }
+
     if (destroyed || requestVersion !== loadVersion) {
       return
     }
@@ -264,9 +271,9 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
   context.viewer = null
-  const loadingTask = context.loadingTask
-  context.loadingTask = null
-  void queueLoadingTaskDestroy(loadingTask)
+  const resource = context.resource
+  context.resource = null
+  void destroyPdfResource(resource)
 })
 
 </script>
