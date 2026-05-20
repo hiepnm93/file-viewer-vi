@@ -68,6 +68,14 @@ const sampleGroups: SampleGroup[] = [
     ]
   },
   {
+    title: '电子书',
+    description: 'EPUB',
+    family: 'ebook',
+    items: [
+      { name: 'EPUB', url: '/example/book.epub' }
+    ]
+  },
+  {
     title: '文本',
     description: 'Markdown / TXT / Log',
     family: 'text',
@@ -124,8 +132,8 @@ const sampleGroups: SampleGroup[] = [
     ]
   },
   {
-    title: '图片与视频',
-    description: 'Image / MP4',
+    title: '媒体',
+    description: 'Image / Audio / Video',
     family: 'image',
     items: [
       { name: 'PNG', url: '/example/pic.png' },
@@ -137,18 +145,23 @@ const sampleGroups: SampleGroup[] = [
       { name: 'TIF', url: '/example/pic.tif' },
       { name: 'SVG', url: '/example/vector.svg' },
       { name: 'WEBP', url: '/example/pic.webp' },
+      { name: 'MP3', url: '/example/audio.mp3' },
+      { name: 'OGG', url: '/example/audio.ogg' },
       { name: 'MP4', url: '/example/video.mp4' }
     ]
   }
 ]
 
 const presetFiles = sampleGroups.flatMap(group => group.items)
+const extraUploadExtensions = ['mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba']
 
-const uploadAccept = presetFiles
-  .map(item => {
+const uploadAccept = Array.from(new Set([
+  ...presetFiles.map(item => {
     const ext = item.url.split('.').pop()
     return ext ? `.${ext}` : ''
-  })
+  }),
+  ...extraUploadExtensions.map(ext => `.${ext}`)
+]))
   .filter(Boolean)
   .join(',')
 
@@ -171,6 +184,7 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   excalidraw: { icon: 'EX', family: 'drawing' },
   drawio: { icon: 'DIO', family: 'drawing' },
   dio: { icon: 'DIO', family: 'drawing' },
+  epub: { icon: 'EPUB', family: 'ebook' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },
@@ -215,6 +229,16 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   tif: { icon: 'IMG', family: 'image' },
   svg: { icon: 'SVG', family: 'image' },
   webp: { icon: 'WEBP', family: 'image' },
+  mp3: { icon: 'MP3', family: 'audio' },
+  mpeg: { icon: 'MP3', family: 'audio' },
+  wav: { icon: 'WAV', family: 'audio' },
+  ogg: { icon: 'OGG', family: 'audio' },
+  oga: { icon: 'OGG', family: 'audio' },
+  opus: { icon: 'OPUS', family: 'audio' },
+  m4a: { icon: 'M4A', family: 'audio' },
+  aac: { icon: 'AAC', family: 'audio' },
+  flac: { icon: 'FLAC', family: 'audio' },
+  weba: { icon: 'WEBA', family: 'audio' },
   mp4: { icon: 'MP4', family: 'video' }
 }
 
@@ -1132,6 +1156,11 @@ function updateSampleMenuGeometry() {
   color: #6d28d9;
 }
 
+.sample-file-icon[data-family='ebook'] {
+  background: linear-gradient(145deg, #f1e7ff, #ffffff);
+  color: #7c3aed;
+}
+
 .sample-file-icon[data-family='code'] {
   background: linear-gradient(145deg, #dde7f1, #ffffff);
   color: #334155;
@@ -1145,6 +1174,11 @@ function updateSampleMenuGeometry() {
 .sample-file-icon[data-family='image'] {
   background: linear-gradient(145deg, #ffe0f1, #ffffff);
   color: #be2776;
+}
+
+.sample-file-icon[data-family='audio'] {
+  background: linear-gradient(145deg, #d7f8f2, #ffffff);
+  color: #0f766e;
 }
 
 .sample-file-icon[data-family='video'] {

@@ -108,6 +108,13 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     label: 'Excalidraw 图纸',
     hint: '正在解析手绘图元并生成安全 SVG。'
   },
+  epub: {
+    accent: '#7c3aed',
+    soft: 'rgba(124, 58, 237, 0.12)',
+    badge: 'EPUB',
+    label: 'EPUB 电子书',
+    hint: '正在解析目录、章节资源和阅读分页。'
+  },
   png: {
     accent: '#7c5cff',
     soft: 'rgba(124, 92, 255, 0.12)',
@@ -163,6 +170,76 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     badge: 'VID',
     label: '视频文件',
     hint: '正在准备媒体资源和播放组件。'
+  },
+  mp3: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  mpeg: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  wav: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  ogg: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  oga: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  opus: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  m4a: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  aac: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  flac: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
+  },
+  weba: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'AUD',
+    label: '音频文件',
+    hint: '正在准备音频资源和播放控件。'
   },
   mov: {
     accent: '#0f766e',

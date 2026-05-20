@@ -6,9 +6,11 @@ import renderImage from './image'
 import renderMd from './md'
 import renderText from './text'
 import renderMp4 from './mp4'
+import renderAudio from './audio'
 import renderOfd from './ofd'
 import renderCad from './cad'
 import renderDrawing from './drawing'
+import renderEpub from './ebook'
 import type { AppWrapper, FileHandler, FileHandlerComposite } from '@/package/common/type'
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
@@ -86,6 +88,13 @@ const handlers: Array<FileHandlerComposite> = [
       return renderDrawing(buffer, target, type)
     }
   },
+  // EPUB 使用成熟的 epubjs 阅读引擎，目录、资源和分页都保持在独立异步块里按需加载。
+  {
+    accepts: ['epub'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      return renderEpub(buffer, target)
+    }
+  },
   // 图片过滤器
   {
     accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg','webp'],
@@ -118,12 +127,19 @@ const handlers: Array<FileHandlerComposite> = [
       return createWrapper(target)
     }
   },
+  // 音频文件交给浏览器原生 `<audio>` 播放，扩展名入口覆盖主流 Web 可播放格式。
+  {
+    accepts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      return renderAudio(buffer, target, type)
+    }
+  },
   // 错误处理
   {
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、代码/文本、图片和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

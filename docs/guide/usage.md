@@ -163,11 +163,17 @@ async function useLocal(blob: Blob) {
 
 预览器依赖文件扩展名选择渲染器，所以无论你传入的是 URL 还是二进制结果，文件名都应该尽量带上正确扩展名。
 
-### OFD、CAD 和绘图怎么接
+### OFD、CAD、绘图和电子书怎么接
 
 `.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。`.dxf` 会使用 CAD 预览器显示图纸。DWG 作为兼容入口会提示先转换为 DXF，这是为了避免把 GPL 授权的 DWG 解析运行时打入组件包。
 
 `.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 会使用官方 diagrams.net `GraphViewer` 渲染，不在组件里手写 mxGraphModel 解析逻辑。
+
+`.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读分页阅读。Kindle 专有格式或 DRM 电子书建议先转换为 EPUB / PDF 后再传入预览器。
+
+### 音频怎么接
+
+`.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 会走浏览器原生 `<audio>` 播放器。不同浏览器对音频编码支持不完全一致，如果要保证最稳的跨端体验，建议优先输出 MP3 或 OGG。
 
 ### `html` 会被当网页渲染吗
 

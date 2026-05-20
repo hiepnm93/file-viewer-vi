@@ -3,14 +3,14 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>63 个扩展名映射</strong>，覆盖 <strong>12 条预览链路</strong>。
+  当前版本内置 <strong>74 个扩展名映射</strong>，覆盖 <strong>14 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>63 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、图片、代码/文本和视频等常见附件类型。</p>
+    <h3>74 个扩展名映射</h3>
+    <p>覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
@@ -41,9 +41,11 @@
 | CAD 兼容入口 | `dwg` | CAD 兼容提示 | DWG 属于专有二进制格式，当前不内置 GPL 解析器，会提示转换为 DXF 后预览 | 需要兼容上传入口但不希望引入 GPL 运行时代码的业务 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
+| 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录、章节资源并提供分页阅读控件 | 电子书、培训手册、长篇阅读材料 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
 | 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、UMD 产物源码、接口响应 |
+| 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba` | 浏览器原生 `<audio>` | 使用原生音频控件播放，具体编码支持取决于浏览器 | 录音、播客、语音附件、音效素材 |
 | 视频 | `mp4` | 浏览器原生视频播放器 | 原生播放、带控制条 | 演示视频、录屏材料 |
 
 ## 按类型看体验和边界
@@ -85,16 +87,23 @@
 - `drawio` 和 `dio` 使用官方 diagrams.net `GraphViewer`，由官方 viewer 处理 mxGraphModel / mxfile、主题和图元兼容，组件只负责创建容器和传入 XML。
 - draw.io viewer 脚本来自 diagrams.net 官方静态地址，只有命中 `.drawio` / `.dio` 时才加载；需要内网私有化时，可以把该官方脚本镜像到自己的静态资源域名再替换加载地址。
 
+### 电子书
+
+- `epub` 使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录、章节资源和分页阅读。
+- EPUB 预览提供目录窗格、上一页/下一页和阅读进度。为了安全，阅读器不会允许书内脚本执行。
+- Kindle 专有格式、DRM 电子书或业务加密包不在当前内置范围内，建议在接入侧转换为 EPUB 或 PDF 后预览。
+
 ### Markdown、代码与文本
 
 - `md` 和 `markdown` 会按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。
 - 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本；`umd` 会按 JavaScript 源码高亮。
 - 这里有一个很重要的边界：`html` 文件会被当作源码看，而不是在预览器里当网页执行。这是更安全、也更可控的默认策略。
 
-### 图片与视频
+### 图片、音频与视频
 
 - 图片类支持 `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`。
 - `svg` 会作为图片来展示，很适合拿来放矢量图标、流程图和品牌素材。
+- 音频类支持 `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`，使用浏览器原生播放器；不同浏览器对编码格式的支持会有差异。
 - 视频当前支持 `mp4`，使用浏览器原生播放器，适合最常见的演示和录屏场景。
 
 ## 真实业务里怎么选
@@ -105,6 +114,7 @@
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先沉淀 `dxf`，把 `dwg` 作为上传兼容和转换前提示。
 - 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者走官方 diagrams.net viewer。
+- 你要预览电子书或音频：EPUB 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG。
 
 ## 不支持的格式会怎样
 

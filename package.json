@@ -59,6 +59,7 @@
     "dingbat-to-unicode": "^1.0.1",
     "docx-preview": "^0.3.7",
     "e-virt-table": "^1.3.26",
+    "epubjs": "^0.3.93",
     "github-markdown-css": "^5.9.0",
     "highlight.js": "^11.11.1",
     "jquery": "^4.0.0",

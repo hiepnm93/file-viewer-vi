@@ -2,7 +2,7 @@
 
 当前目录用于演示文件预览与 iframe 嵌入联调。主示例页会从这里读取内置样本，覆盖当前已注册的主要格式入口。
 
-CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
+CAD、绘图、UMD、音频和 EPUB 类样例已经替换为可追溯的公开样本，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
 
 代码/配置/日志类样本刻意保留了更接近真实业务的结构，例如异步加载计划、文件类型识别、错误处理、配置嵌套、SQL CTE、Shell 参数处理和多语言类型定义。这样可以更充分地验证 `highlight.js` 对注释、字符串、泛型、对象嵌套、缩进、diff 和长行滚动的展示效果。
 
@@ -25,6 +25,7 @@ CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和
 - `sample.dwg`: 使用公开 DWG 样例验证 DWG 兼容提示
 - `flow.excalidraw`: 使用公开 Excalidraw 图纸验证官方 SVG 导出预览
 - `process.drawio`: 使用官方 draw.io 示例验证 diagrams.net 图纸预览
+- `book.epub`: 使用 Project Gutenberg 公开 EPUB 验证电子书目录和分页阅读
 - `markdown.md`: 验证 Markdown 阅读样式
 - `notes.markdown`: 验证 Markdown 长扩展名
 - `text.txt`: 验证纯文本预览
@@ -69,6 +70,8 @@ CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和
 - `pic.tif`: 验证 TIF 图片预览
 - `vector.svg`: 验证 SVG 图片预览
 - `pic.webp`: 验证 WEBP 图片预览
+- `audio.mp3`: 使用 MDN CC0 音频验证 MP3 原生播放
+- `audio.ogg`: 使用 Wikimedia Commons 音频验证 OGG 原生播放
 - `video.mp4`: 验证视频播放
 
 ## 说明
@@ -84,6 +87,9 @@ CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和
 | `flow.excalidraw` | `neo4j-labs/agent-memory` 的 `poleo-model.excalidraw` | Apache-2.0 |
 | `process.drawio` | `jgraph/drawio-diagrams` 的 `blog/data-flow.drawio` | Apache-2.0 |
 | `bundle.umd` | `taylorhakes/promise-polyfill` v8.2.2 的 `dist/polyfill.js` | MIT |
+| `audio.mp3` | MDN interactive examples 的 `t-rex-roar.mp3` | CC0 |
+| `audio.ogg` | Wikimedia Commons 的 `Example.ogg` | CC BY-SA 3.0 |
+| `book.epub` | Project Gutenberg 的 `Alice's Adventures in Wonderland` EPUB | Public domain in the USA |
 
 这些样例只作为预览器验收文件使用。更新样例时请继续保留公开来源、固定路径和许可信息，避免重新引入无法追溯的本地占位文件。
 
@@ -92,3 +98,5 @@ CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和
 DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 已换成真实公开 DWG 文件，但组件仍只演示兼容提示。运行时会提示先转换为 DXF 后预览，避免默认引入 GPL 授权的 DWG 解析运行时。
 
 `flow.excalidraw` 与 `process.drawio` 用于验证绘图类文本格式。Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 与 `exportToSvg`，draw.io 使用官方 diagrams.net `GraphViewer`，组件本身只做按需加载、容器挂载和错误提示。
+
+`audio.mp3` 与 `audio.ogg` 用于验证浏览器原生音频播放能力；`book.epub` 用于验证 `epubjs` 的目录、章节资源和分页阅读能力。
