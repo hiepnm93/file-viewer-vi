@@ -120,11 +120,11 @@ titleTemplate: false
 <div class="doc-path-grid">
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
-<span>安装 @flyfish-group/file-viewer3@1.0.8，使用 createApp(App).use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer3@1.0.9，使用 createApp(App).use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@1.0.8，使用 Vue.use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer@1.0.9，使用 Vue.use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>

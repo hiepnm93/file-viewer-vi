@@ -1,14 +1,14 @@
 {
   "name": "file-viewer",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "runtime": {
     "framework": "vue3",
     "viewerSite": "https://viewer.flyfish.dev",
     "docs": "https://doc.flyfish.dev"
   },
   "packages": {
-    "vue3": "@flyfish-group/file-viewer3@1.0.8",
-    "vue2": "@flyfish-group/file-viewer@1.0.8"
+    "vue3": "@flyfish-group/file-viewer3@1.0.9",
+    "vue2": "@flyfish-group/file-viewer@1.0.9"
   },
   "features": [
     {
