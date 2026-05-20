@@ -2,6 +2,8 @@
 
 当前目录用于演示文件预览与 iframe 嵌入联调。主示例页会从这里读取内置样本，覆盖当前已注册的主要格式入口。
 
+CAD、绘图和 UMD 类样例已经替换为可追溯的公开样本，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
+
 代码/配置/日志类样本刻意保留了更接近真实业务的结构，例如异步加载计划、文件类型识别、错误处理、配置嵌套、SQL CTE、Shell 参数处理和多语言类型定义。这样可以更充分地验证 `highlight.js` 对注释、字符串、泛型、对象嵌套、缩进、diff 和长行滚动的展示效果。
 
 ## 当前内置样本
@@ -19,10 +21,10 @@
 - `ppt.pptx`: 验证 `pptx` 幻灯片渲染
 - `pdf.pdf`: 验证 `pdf` 阅读体验
 - `ofd.ofd`: 验证 `ofd.js` 在线预览
-- `drawing.dxf`: 验证 CAD/DXF 图纸预览
-- `sample.dwg`: 验证 DWG 兼容提示
-- `flow.excalidraw`: 验证 Excalidraw 手绘图预览
-- `process.drawio`: 验证 draw.io / diagrams.net 图纸预览
+- `drawing.dxf`: 使用公开 DXF CAD 样例验证图纸预览
+- `sample.dwg`: 使用公开 DWG 样例验证 DWG 兼容提示
+- `flow.excalidraw`: 使用公开 Excalidraw 图纸验证官方 SVG 导出预览
+- `process.drawio`: 使用官方 draw.io 示例验证 diagrams.net 图纸预览
 - `markdown.md`: 验证 Markdown 阅读样式
 - `notes.markdown`: 验证 Markdown 长扩展名
 - `text.txt`: 验证纯文本预览
@@ -41,7 +43,7 @@
 - `config.yaml`: 验证 YAML 高亮
 - `config.yml`: 验证 YML 高亮
 - `settings.ini`: 验证 INI 高亮
-- `bundle.umd`: 验证 UMD JavaScript 包源码高亮
+- `bundle.umd`: 使用公开 UMD 构建产物验证 JavaScript 包源码高亮
 - `script.sh`: 验证 Shell 脚本高亮
 - `script.bash`: 验证 Bash 脚本高亮
 - `query.sql`: 验证 SQL 高亮
@@ -73,8 +75,20 @@
 
 部分兼容扩展名样本复用了同一份可解析文件内容来确认渲染入口，例如表格兼容格式和图片兼容格式。生产上线前，仍建议用业务真实文件补一轮回归。
 
+## 公开样例来源
+
+| 文件 | 公开来源 | 许可 |
+| --- | --- | --- |
+| `drawing.dxf` | `mozman/ezdxf` 的 `examples_dxf/wipeout_door.dxf` | MIT |
+| `sample.dwg` | `dshn06/cad-webviewer-unity` 的 `baseline-sample.dwg` | MIT |
+| `flow.excalidraw` | `neo4j-labs/agent-memory` 的 `poleo-model.excalidraw` | Apache-2.0 |
+| `process.drawio` | `jgraph/drawio-diagrams` 的 `blog/data-flow.drawio` | Apache-2.0 |
+| `bundle.umd` | `taylorhakes/promise-polyfill` v8.2.2 的 `dist/polyfill.js` | MIT |
+
+这些样例只作为预览器验收文件使用。更新样例时请继续保留公开来源、固定路径和许可信息，避免重新引入无法追溯的本地占位文件。
+
 `ofd.ofd` 示例来自 Apache-2.0 授权的 `DLTech21/ofd.js` 项目公开样本，用于确认 OFD 在浏览器端的基础解析和渲染链路。运行时使用同仓库纯 JS 解析/渲染源码，避开 npm dist 的授权 wasm 分支。
 
-DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 用于演示转换提示。组件会提示先转换为 DXF 后预览，避免默认引入 GPL 授权的 DWG 解析运行时。
+DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 已换成真实公开 DWG 文件，但组件仍只演示兼容提示。运行时会提示先转换为 DXF 后预览，避免默认引入 GPL 授权的 DWG 解析运行时。
 
-`flow.excalidraw` 与 `process.drawio` 用于验证绘图类文本格式。Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `exportToSvg`，draw.io 使用官方 diagrams.net `GraphViewer`，组件本身只做按需加载和容器挂载。
+`flow.excalidraw` 与 `process.drawio` 用于验证绘图类文本格式。Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 与 `exportToSvg`，draw.io 使用官方 diagrams.net `GraphViewer`，组件本身只做按需加载、容器挂载和错误提示。

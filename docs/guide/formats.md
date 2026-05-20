@@ -39,7 +39,7 @@
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
 | CAD 兼容入口 | `dwg` | CAD 兼容提示 | DWG 属于专有二进制格式，当前不内置 GPL 解析器，会提示转换为 DXF 后预览 | 需要兼容上传入口但不希望引入 GPL 运行时代码的业务 |
-| Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `exportToSvg` 输出只读 SVG 预览，保留手绘图元风格 | 白板草图、产品沟通图、流程草稿 |
+| Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
@@ -81,7 +81,7 @@
 
 ### 绘图文件
 
-- `excalidraw` 使用官方 `@excalidraw/excalidraw` 包的 `exportToSvg` 能力，按需加载后输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
+- `excalidraw` 使用官方 `@excalidraw/excalidraw` 包的 `restore` 与 `exportToSvg` 能力，按需加载后输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
 - `drawio` 和 `dio` 使用官方 diagrams.net `GraphViewer`，由官方 viewer 处理 mxGraphModel / mxfile、主题和图元兼容，组件只负责创建容器和传入 XML。
 - draw.io viewer 脚本来自 diagrams.net 官方静态地址，只有命中 `.drawio` / `.dio` 时才加载；需要内网私有化时，可以把该官方脚本镜像到自己的静态资源域名再替换加载地址。
 
@@ -104,7 +104,7 @@
 - 你要看日志、配置或代码：直接用代码/文本链路即可，重点是快速打开、检索内容和保持安全。
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先沉淀 `dxf`，把 `dwg` 作为上传兼容和转换前提示。
-- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方导出 SVG，后者走官方 diagrams.net viewer。
+- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者走官方 diagrams.net viewer。
 
 ## 不支持的格式会怎样
 

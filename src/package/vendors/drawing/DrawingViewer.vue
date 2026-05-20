@@ -105,15 +105,26 @@ const renderExcalidraw = async (text: string) => {
     throw new Error('Excalidraw 文件中没有可预览图元')
   }
 
-  const { exportToSvg } = await import('@excalidraw/excalidraw')
-  const svg = await exportToSvg({
+  const { exportToSvg, restore } = await import('@excalidraw/excalidraw')
+  // 公开仓库里的 .excalidraw 文件经常省略 seed、versionNonce 等默认字段；
+  // 先交给 Excalidraw 官方 restore 补齐结构，再导出 SVG，能最大化兼容历史文件和第三方导出文件。
+  const restored = restore({
     elements,
-    appState: {
-      ...(payload.appState || {}),
-      exportBackground: true,
-      viewBackgroundColor: payload.appState?.viewBackgroundColor || '#ffffff'
-    },
+    appState: payload.appState || {},
     files: payload.files || {}
+  }, null, null, {
+    repairBindings: true,
+    refreshDimensions: true
+  })
+  const restoredElements = restored.elements.filter((element: any) => !element.isDeleted)
+  const svg = await exportToSvg({
+    elements: restoredElements,
+    appState: {
+      ...restored.appState,
+      exportBackground: true,
+      viewBackgroundColor: restored.appState.viewBackgroundColor || '#ffffff'
+    },
+    files: restored.files || {}
   })
 
   svg.classList.add('drawing-svg')

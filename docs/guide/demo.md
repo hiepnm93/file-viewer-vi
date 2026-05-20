@@ -49,7 +49,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 
 仓库中当前提供的示例文件位于 `public/example/`:
 
-代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。
+代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。CAD、绘图和 UMD 样本使用公开仓库中的真实文件，来源记录在 `public/example/SOURCES.md`。
 
 | 文件 | 用途 | 对应能力 |
 | --- | --- | --- |
@@ -66,10 +66,10 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `ppt.pptx` | 验证演示文稿渲染 | `pptx` |
 | `pdf.pdf` | 验证 PDF 阅读体验、缩放工具栏和页面导航窗格 | `pdf` |
 | `ofd.ofd` | 验证 OFD 在线预览 | `ofd` |
-| `drawing.dxf` | 验证 CAD 图纸预览、平移、缩放和图层控制 | `dxf` |
-| `sample.dwg` | 验证 DWG 兼容提示 | `dwg` |
-| `flow.excalidraw` | 验证 Excalidraw 官方 SVG 导出预览 | `excalidraw` |
-| `process.drawio` | 验证 diagrams.net 官方 Viewer 预览 | `drawio` |
+| `drawing.dxf` | 使用公开 DXF 样例验证 CAD 图纸预览、平移、缩放和图层控制 | `dxf` |
+| `sample.dwg` | 使用公开 DWG 样例验证 DWG 兼容提示 | `dwg` |
+| `flow.excalidraw` | 使用公开 Excalidraw 图纸验证官方恢复与 SVG 导出预览 | `excalidraw` |
+| `process.drawio` | 使用官方 draw.io 示例验证 diagrams.net Viewer 预览 | `drawio` |
 | `markdown.md` | 验证 Markdown 阅读样式 | `md` |
 | `notes.markdown` | 验证 Markdown 长扩展名 | `markdown` |
 | `text.txt` | 验证纯文本展示 | `txt` |
@@ -88,7 +88,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `config.yaml` | 验证 YAML 高亮 | `yaml` |
 | `config.yml` | 验证 YML 高亮 | `yml` |
 | `settings.ini` | 验证 INI 高亮 | `ini` |
-| `bundle.umd` | 验证 UMD JavaScript 包源码高亮 | `umd` |
+| `bundle.umd` | 使用公开 UMD 构建产物验证 JavaScript 包源码高亮 | `umd` |
 | `script.sh` | 验证 Shell 脚本高亮 | `sh` |
 | `script.bash` | 验证 Bash 脚本高亮 | `bash` |
 | `query.sql` | 验证 SQL 高亮 | `sql` |
@@ -124,7 +124,19 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 
 上面的清单已经覆盖当前注册的全部扩展名。DWG 当前作为 CAD 兼容入口保留，打开 `.dwg` 时会提示转换为 DXF 后预览，不会把 GPL 授权的 DWG 解析运行时打进组件包。
 
-Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
+Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
+
+## 公开样例来源
+
+| 示例 | 来源 | 许可 |
+| --- | --- | --- |
+| `drawing.dxf` | `mozman/ezdxf` 的 `examples_dxf/wipeout_door.dxf` | MIT |
+| `sample.dwg` | `dshn06/cad-webviewer-unity` 的 `baseline-sample.dwg` | MIT |
+| `flow.excalidraw` | `neo4j-labs/agent-memory` 的 `poleo-model.excalidraw` | Apache-2.0 |
+| `process.drawio` | `jgraph/drawio-diagrams` 的 `blog/data-flow.drawio` | Apache-2.0 |
+| `bundle.umd` | `taylorhakes/promise-polyfill` v8.2.2 的 `dist/polyfill.js` | MIT |
+
+这些样例的作用是验证预览器兼容性，不承诺覆盖你业务中所有 CAD 图元、绘图插件或打包器输出。上线前仍建议把自己的高频文件加入回归清单。
 
 ## 建议保留一套自己的回归样本
 
