@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { listenForFile } from '@/components/utils'
 import type { FileRef } from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
@@ -12,6 +12,9 @@ const url = ref('/example/word.docx')
 const preview = ref('')
 const samplePickerOpen = ref(false)
 const expandedSampleGroupIndex = ref<number | null>(0)
+const samplePickerRef = ref<HTMLElement | null>(null)
+const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
+const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 
 type PresetFile = {
   name: string
@@ -282,7 +285,16 @@ listenForFile((body, target) => {
 })
 
 onMounted(() => {
+  document.addEventListener('pointerdown', handleDocumentPointerDown)
+  document.addEventListener('keydown', handleDocumentKeydown)
+  window.addEventListener('resize', handleWindowResize)
   openUrlPreview(url.value)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', handleDocumentPointerDown)
+  document.removeEventListener('keydown', handleDocumentKeydown)
+  window.removeEventListener('resize', handleWindowResize)
 })
 
 function openUrlPreview(nextUrl = url.value) {
@@ -309,21 +321,61 @@ async function handleChange(e: Event) {
   file.value = value
 }
 
-function toggleSamplePicker() {
+async function toggleSamplePicker() {
   samplePickerOpen.value = !samplePickerOpen.value
   if (samplePickerOpen.value) {
     expandedSampleGroupIndex.value = 0
+    await nextTick()
+    updateSampleMenuGeometry()
   }
 }
 
-function toggleSampleGroup(index: number) {
+async function toggleSampleGroup(index: number) {
   expandedSampleGroupIndex.value = expandedSampleGroupIndex.value === index ? null : index
+  await nextTick()
+  updateSampleMenuGeometry()
 }
 
 function selectPreset(nextUrl: string) {
   url.value = nextUrl
   samplePickerOpen.value = false
   openUrlPreview(nextUrl)
+}
+
+function handleDocumentPointerDown(event: PointerEvent) {
+  if (!samplePickerOpen.value) {
+    return
+  }
+  const target = event.target
+  if (target instanceof Node && samplePickerRef.value?.contains(target)) {
+    return
+  }
+  samplePickerOpen.value = false
+}
+
+function handleDocumentKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    samplePickerOpen.value = false
+  }
+}
+
+function handleWindowResize() {
+  updateSampleMenuGeometry()
+}
+
+function updateSampleMenuGeometry() {
+  const picker = samplePickerRef.value
+  if (!samplePickerOpen.value || !picker) {
+    return
+  }
+  const rect = picker.getBoundingClientRect()
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+  const bottomRoom = viewportHeight - rect.bottom - 18
+  const topRoom = rect.top - 18
+  const openUp = bottomRoom < 300 && topRoom > bottomRoom
+  const availableRoom = Math.max(96, openUp ? topRoom : bottomRoom)
+  sampleMenuPlacement.value = openUp ? 'top' : 'bottom'
+  sampleMenuMaxHeight.value = `${Math.min(520, Math.floor(availableRoom))}px`
 }
 </script>
 
@@ -375,10 +427,11 @@ function selectPreset(nextUrl: string) {
             </div>
 
             <template v-if='input'>
-              <div class='sample-picker' :class='{ open: samplePickerOpen }'>
+              <div ref='samplePickerRef' class='sample-picker' :class='{ open: samplePickerOpen }'>
                 <button
                   type='button'
                   class='sample-trigger'
+                  aria-controls='sample-menu'
                   :aria-expanded="samplePickerOpen ? 'true' : 'false'"
                   @click='toggleSamplePicker'
                 >
@@ -393,7 +446,13 @@ function selectPreset(nextUrl: string) {
                   <span class='sample-trigger-action'>{{ samplePickerOpen ? '收起' : '打开' }}</span>
                 </button>
 
-                <div v-if='samplePickerOpen' class='sample-menu'>
+                <div
+                  v-if='samplePickerOpen'
+                  id='sample-menu'
+                  class='sample-menu'
+                  :class='`sample-menu--${sampleMenuPlacement}`'
+                  :style='{ maxHeight: sampleMenuMaxHeight }'
+                >
                   <section
                     v-for='(group, groupIndex) in sampleGroups'
                     :key='group.title'
@@ -525,9 +584,11 @@ function selectPreset(nextUrl: string) {
 }
 
 .control-panel {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   padding: 12px;
   gap: 12px;
 }
@@ -720,9 +781,10 @@ function selectPreset(nextUrl: string) {
 }
 
 .panel-body {
+  position: relative;
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -759,9 +821,10 @@ function selectPreset(nextUrl: string) {
 }
 
 .sample-picker {
+  position: relative;
+  z-index: 4;
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .sample-trigger {
@@ -837,16 +900,33 @@ function selectPreset(nextUrl: string) {
 }
 
 .sample-menu {
-  max-height: min(52vh, 480px);
-  overflow: auto;
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 11px;
   border-radius: 16px;
-  border: 1px solid rgba(20, 35, 53, 0.08);
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(20, 35, 53, 0.1);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 22px 56px rgba(18, 35, 55, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.sample-menu--bottom {
+  top: calc(100% + 10px);
+}
+
+.sample-menu--top {
+  bottom: calc(100% + 10px);
 }
 
 .sample-group {
@@ -1134,6 +1214,8 @@ function selectPreset(nextUrl: string) {
 }
 
 .viewer-panel {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1253,7 +1335,7 @@ function selectPreset(nextUrl: string) {
   }
 
   .panel-body {
-    overflow: auto;
+    overflow: visible;
   }
 }
 
