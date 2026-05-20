@@ -12,7 +12,7 @@
 
 如果你希望获得更多产品与服务支持，也可以前往官方商城:
 
-[进入飞鱼小铺](https://store.flyfish.dev)
+[进入飞鱼小铺](https://dev.flyfish.group/shop)
 
 ### 微信
 

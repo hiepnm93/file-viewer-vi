@@ -11,7 +11,7 @@
 - npm(Vue3): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - npm(Vue2): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-- 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- 源码自助开通: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ## 当前发布版本
 

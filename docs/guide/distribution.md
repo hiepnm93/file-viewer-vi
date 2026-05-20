@@ -16,7 +16,7 @@
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.8` |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.8` |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
-| 源码自助开通 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
+| 源码自助开通 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
 
 ## npm 安装
 
