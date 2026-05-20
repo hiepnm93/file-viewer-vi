@@ -248,6 +248,20 @@ const extensionOf = (target: string) => {
   return dotIndex === -1 ? '' : clean.slice(dotIndex + 1).toLowerCase()
 }
 
+const sampleUrlKey = (target: string) => {
+  const clean = target.split(/[?#]/)[0] || target
+  try {
+    return decodeURIComponent(new URL(clean, 'https://viewer.flyfish.dev').pathname)
+  } catch {
+    const path = clean.startsWith('/') ? clean : `/${clean}`
+    return decodeURIComponent(path)
+  }
+}
+
+const isSameSampleUrl = (left: string, right: string) => {
+  return sampleUrlKey(left) === sampleUrlKey(right)
+}
+
 const fileNameOf = (target: string) => {
   const clean = target.split(/[?#]/)[0] || target
   return decodeURIComponent(clean.split('/').pop() || target)
@@ -258,7 +272,12 @@ const getFileIconMeta = (target: string) => {
 }
 
 const activePreset = computed(() => {
-  return presetFiles.find(item => item.url === url.value)
+  return presetFiles.find(item => isSameSampleUrl(item.url, url.value))
+})
+
+const activeSampleGroupIndex = computed(() => {
+  const target = activePreset.value?.url || url.value || preview.value
+  return sampleGroups.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, target)))
 })
 
 const activeIconMeta = computed(() => {
@@ -348,7 +367,7 @@ async function handleChange(e: Event) {
 async function toggleSamplePicker() {
   samplePickerOpen.value = !samplePickerOpen.value
   if (samplePickerOpen.value) {
-    expandedSampleGroupIndex.value = 0
+    expandedSampleGroupIndex.value = activeSampleGroupIndex.value >= 0 ? activeSampleGroupIndex.value : 0
     await nextTick()
     updateSampleMenuGeometry()
   }
@@ -362,8 +381,13 @@ async function toggleSampleGroup(index: number) {
 
 function selectPreset(nextUrl: string) {
   url.value = nextUrl
+  expandedSampleGroupIndex.value = activeSampleGroupIndex.value >= 0 ? activeSampleGroupIndex.value : expandedSampleGroupIndex.value
   samplePickerOpen.value = false
   openUrlPreview(nextUrl)
+}
+
+function isActivePreset(item: PresetFile) {
+  return !file.value && isSameSampleUrl(url.value, item.url)
 }
 
 function handleDocumentPointerDown(event: PointerEvent) {
@@ -506,7 +530,7 @@ function updateSampleMenuGeometry() {
                         :key='item.url'
                         type='button'
                         class='sample-card'
-                        :class='{ active: !file && url === item.url }'
+                        :class='{ active: isActivePreset(item) }'
                         @click='selectPreset(item.url)'
                       >
                         <span class='sample-file-icon' :data-family='getFileIconMeta(item.url).family'>
