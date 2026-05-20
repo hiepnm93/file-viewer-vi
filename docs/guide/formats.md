@@ -3,14 +3,14 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>74 个扩展名映射</strong>，覆盖 <strong>14 条预览链路</strong>。
+  当前版本内置 <strong>74 个扩展名映射</strong>，覆盖 <strong>15 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
     <h3>74 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
+    <p>覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
@@ -42,9 +42,10 @@
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
-| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、UMD 产物源码、接口响应 |
+| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、接口响应 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba` | 浏览器原生 `<audio>` | 使用原生音频控件播放，具体编码支持取决于浏览器 | 录音、播客、语音附件、音效素材 |
 | 视频 | `mp4` | 浏览器原生视频播放器 | 原生播放、带控制条 | 演示视频、录屏材料 |
 
@@ -94,12 +95,14 @@
 
 - `epub` 使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
 - EPUB 预览提供目录窗格、上一章/下一章式导航和阅读进度。正文区域使用滚动文档模式，避免部分浏览器在超宽分页 iframe 下出现白板。为了安全，阅读器不会允许书内脚本执行。
-- Kindle 专有格式、DRM 电子书或业务加密包不在当前内置范围内，建议在接入侧转换为 EPUB 或 PDF 后预览。
+- `umd` 是早期移动阅读器常见的电子书封装。当前没有可靠维护的前端 UMD 阅读库，组件按公开文件结构解析文件头、元数据、章节偏移、章节标题和正文数据块，正文 zlib 解压交给 `pako`。
+- UMD 文本正文按 UTF-16LE 解码，保留章节目录和换行；图片/漫画类 UMD 会尽量按图像数据块展示，但复杂混排文件建议用真实样本补充回归。
+- Kindle 专有格式、DRM 电子书或业务加密包不在当前内置范围内，建议在接入侧转换为 EPUB、UMD 文本电子书或 PDF 后预览。
 
 ### Markdown、代码与文本
 
 - `md` 和 `markdown` 会按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。
-- 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本；`umd` 会按 JavaScript 源码高亮。
+- 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本。
 - 这里有一个很重要的边界：`html` 文件会被当作源码看，而不是在预览器里当网页执行。这是更安全、也更可控的默认策略。
 
 ### 图片、音频与视频
@@ -117,7 +120,7 @@
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先沉淀 `dxf`，把 `dwg` 作为上传兼容和转换前提示。
 - 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者走官方 diagrams.net viewer。
-- 你要预览电子书或音频：EPUB 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG。
+- 你要预览电子书或音频：EPUB / UMD 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG。
 
 ## 不支持的格式会怎样
 

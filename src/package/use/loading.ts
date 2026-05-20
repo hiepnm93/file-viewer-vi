@@ -115,6 +115,13 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     label: 'EPUB 电子书',
     hint: '正在解析目录、章节资源和阅读分页。'
   },
+  umd: {
+    accent: '#0284c7',
+    soft: 'rgba(2, 132, 199, 0.12)',
+    badge: 'UMD',
+    label: 'UMD 电子书',
+    hint: '正在解析移动电子书结构、目录和压缩正文。'
+  },
   png: {
     accent: '#7c5cff',
     soft: 'rgba(124, 92, 255, 0.12)',

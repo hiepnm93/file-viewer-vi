@@ -19,7 +19,10 @@
       <format extension="ts" renderer="highlight.js" />
       <format extension="json" renderer="highlight.js" />
       <format extension="vue" renderer="highlight.js" />
-      <format extension="umd" renderer="highlight.js" />
+    </group>
+    <group id="ebook" label="Ebooks">
+      <format extension="epub" renderer="epubjs" async="true" />
+      <format extension="umd" renderer="umd-parser" async="true" />
     </group>
   </groups>
 

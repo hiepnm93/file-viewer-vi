@@ -59,7 +59,6 @@ const languageMap: Record<string, string> = {
   ts: 'typescript',
   tsx: 'typescript',
   txt: 'plaintext',
-  umd: 'javascript',
   vue: 'xml',
   xml: 'xml',
   yaml: 'yaml',

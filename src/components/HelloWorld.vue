@@ -69,10 +69,11 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '电子书',
-    description: 'EPUB',
+    description: 'EPUB / UMD',
     family: 'ebook',
     items: [
-      { name: 'EPUB', url: '/example/book.epub' }
+      { name: 'EPUB', url: '/example/book.epub' },
+      { name: 'UMD', url: '/example/book.umd' }
     ]
   },
   {
@@ -106,7 +107,6 @@ const sampleGroups: SampleGroup[] = [
       { name: 'YAML', url: '/example/config.yaml' },
       { name: 'YML', url: '/example/config.yml' },
       { name: 'INI', url: '/example/settings.ini' },
-      { name: 'UMD', url: '/example/bundle.umd' },
       { name: 'DIFF', url: '/example/change.diff' }
     ]
   },
@@ -185,6 +185,7 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   drawio: { icon: 'DIO', family: 'drawing' },
   dio: { icon: 'DIO', family: 'drawing' },
   epub: { icon: 'EPUB', family: 'ebook' },
+  umd: { icon: 'UMD', family: 'ebook' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },
@@ -203,7 +204,6 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   yaml: { icon: 'YML', family: 'code' },
   yml: { icon: 'YML', family: 'code' },
   ini: { icon: 'INI', family: 'code' },
-  umd: { icon: 'UMD', family: 'code' },
   sh: { icon: 'SH', family: 'code' },
   bash: { icon: 'SH', family: 'code' },
   sql: { icon: 'SQL', family: 'code' },

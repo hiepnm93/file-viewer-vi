@@ -19,6 +19,10 @@ viewer:
       label: Drawings
       formats: [dxf, dwg, excalidraw, drawio, dio]
       fallback: convert-dwg-to-dxf
+    ebooks:
+      label: Ebooks
+      formats: [epub, umd]
+      renderer: epubjs-or-umd-parser
     source:
       label: Code and Data
       renderer: highlight.js
@@ -31,7 +35,6 @@ viewer:
         - vue
         - yaml
         - sql
-        - umd
   smoke:
     browser: chrome
     assertions:

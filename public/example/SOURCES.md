@@ -1,6 +1,6 @@
 # Public Sample Sources
 
-本目录中的 CAD、绘图、UMD、音频和 EPUB 示例文件使用可追溯的公开样本。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库，并同步更新本文件与 `README.md`。
+本目录中的 CAD、绘图、音频和 EPUB 示例文件使用可追溯的公开样本；UMD 示例文件由项目内生成，用于固定回归早期移动电子书结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库，并同步更新本文件与 `README.md`。
 
 | Local file | Source | License | Purpose |
 | --- | --- | --- | --- |
@@ -8,7 +8,7 @@
 | `sample.dwg` | `https://github.com/dshn06/cad-webviewer-unity/blob/main/cad-webview/public/cad-data/data/baseline-sample.dwg` | MIT | Real DWG sample for compatibility messaging |
 | `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for official restore/export smoke tests |
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
-| `bundle.umd` | `https://github.com/taylorhakes/promise-polyfill/blob/8.2.2/dist/polyfill.js` | MIT | Real UMD bundle for highlight.js code preview smoke tests |
+| `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
 | `audio.mp3` | `https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3` | CC0 | Small MP3 sample for native audio playback smoke tests |
 | `audio.ogg` | `https://commons.wikimedia.org/wiki/File:Example.ogg` | CC BY-SA 3.0 | OGG Vorbis sample for native audio playback smoke tests |
 | `book.epub` | `https://www.gutenberg.org/ebooks/928.epub3.images` | Public domain in the USA | EPUB sample for epubjs table-of-contents and paginated reading smoke tests |
@@ -20,3 +20,4 @@
 - `process.drawio` 由 diagrams.net 官方 `GraphViewer` 解析，组件不自行实现 draw.io 方言解析。
 - `audio.mp3` 与 `audio.ogg` 只用于验证浏览器原生音频播放能力；不同浏览器对编码的支持存在差异。
 - `book.epub` 来自 Project Gutenberg，运行时由 `epubjs` 解析 EPUB 包、目录和章节资源。
+- `book.umd` 由项目内生成，覆盖 UMD 文件头、元数据、章节偏移、章节标题和 zlib 压缩正文段。

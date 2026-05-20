@@ -31,7 +31,7 @@
 - 当 `file` 被清空后，如果 `url` 仍然存在，会自动回退到 `url`
 - 组件默认撑满父容器，因此父容器必须有稳定高度
 - 扩展名匹配会自动转成小写，所以 `PDF`、`DocX` 这类大小写差异不会影响命中
-- OFD、CAD、绘图、EPUB、PDF、Office、Markdown、音频和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
+- OFD、CAD、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
 - PPTX 属于浏览器端近似渲染链路，已增强组合图形、主题背景、图片裁剪和 EMF 矢量图片；如果业务材料大量使用复杂动画或专有 Office 特效，建议把真实样本加入上线前回归。
 
 ## URL 预览
@@ -170,7 +170,9 @@ async function useLocal(blob: Blob) {
 
 `.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 会使用官方 diagrams.net `GraphViewer` 渲染，不在组件里手写 mxGraphModel 解析逻辑。
 
-`.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读滚动阅读。阅读器会默认打开第一个正文章节，避免停留在封面或空白包装页。Kindle 专有格式或 DRM 电子书建议先转换为 EPUB / PDF 后再传入预览器。
+`.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读滚动阅读。阅读器会默认打开第一个正文章节，避免停留在封面或空白包装页。
+
+`.umd` 会按早期移动电子书结构在浏览器端解析文件头、元数据、章节偏移、章节标题和压缩正文。正文数据块使用 `pako` 解压并按 UTF-16LE 解码，适合历史小说附件和旧移动阅读文件。Kindle 专有格式或 DRM 电子书建议先转换为 EPUB / UMD 文本电子书 / PDF 后再传入预览器。
 
 ### 音频怎么接
 

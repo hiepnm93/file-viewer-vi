@@ -23,8 +23,14 @@
       "notes": ["DXF renders in browser", "DWG shows compatibility guidance", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
     },
     {
+      "group": "ebook",
+      "extensions": ["epub", "umd"],
+      "renderer": "epubjs-or-umd-parser",
+      "lazyLoaded": true
+    },
+    {
       "group": "source",
-      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql", "umd"],
+      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql"],
       "renderer": "highlight.js",
       "executeHtml": false
     }

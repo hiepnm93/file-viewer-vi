@@ -25,8 +25,8 @@
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
-- **格式覆盖完整。** 当前内置 74 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、Markdown、图片、音频、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
-- **按需异步加载。** PDF、OFD、CAD、绘图、Office、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
+- **格式覆盖完整。** 当前内置 74 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
+- **按需异步加载。** PDF、OFD、CAD、绘图、Office、EPUB、UMD、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放，避免“内容能打开但不好读”的落差。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
@@ -35,7 +35,7 @@
 
 ## 支持格式
 
-当前版本内置 74 个扩展名映射，覆盖 14 条预览链路。
+当前版本内置 74 个扩展名映射，覆盖 15 条预览链路。
 
 | 类别 | 扩展名 | 当前表现 | 适合场景 |
 | --- | --- | --- | --- |
@@ -51,9 +51,10 @@
 | Excalidraw | `excalidraw` | 基于官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` 输出只读预览 | 白板草图、流程草稿、产品沟通图 |
 | draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `umd` | 按 UMD 移动电子书结构解析元数据、目录和 zlib 压缩正文 | 旧移动电子书、历史小说附件 |
 | Markdown | `md`、`markdown` | Markdown 阅读样式 | README、知识文档、说明文档 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 原生图片浏览 | 图片附件、设计稿、Logo |
-| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段、UMD 产物源码 |
+| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段、接口响应 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba` | 浏览器原生音频播放，带控制条和基础进度信息 | 录音、播客、语音附件、音效素材 |
 | 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
@@ -150,7 +151,7 @@ export default {
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 - PPTX 渲染器会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
-- OFD、CAD、绘图、EPUB、PDF、Office、Markdown、音频和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
+- OFD、CAD、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
 
 ```ts
 const blob = await response.blob()
