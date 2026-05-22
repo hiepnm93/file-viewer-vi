@@ -13,8 +13,8 @@
 | --- | --- | --- |
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
-| npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.9` |
-| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.9` |
+| npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.10` |
+| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.10` |
 | npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.10` |
 | npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.10` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |

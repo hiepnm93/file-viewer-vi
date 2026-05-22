@@ -19,8 +19,8 @@
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.9` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
-| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.9` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.10` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
+| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.10` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
 | React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.10` | 当前仓库子工程 | iframe 组件，默认加载 `/file-viewer/index.html` |
 | 纯 JS | `@flyfish-group/file-viewer-web` | `1.0.10` | 当前仓库子工程 | iframe helper 和 viewer 产物复制工具 |
 

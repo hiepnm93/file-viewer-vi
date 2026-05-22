@@ -2,7 +2,7 @@
 
 ## Vue、React 和纯 JS 应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.9`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.9`，使用 `Vue.use(FileViewer)` 注册。
+Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.10`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.10`，使用 `Vue.use(FileViewer)` 注册。
 
 React 项目安装 `@flyfish-group/file-viewer-react@1.0.10`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.10`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
 
