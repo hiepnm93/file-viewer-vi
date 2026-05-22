@@ -23,7 +23,9 @@ const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 
 const version = packageJson.version
 const releaseDir = join(sourceRoot, '.release', `file-viewer-v3-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
+const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
 const npmPackDir = join(releaseDir, 'npm')
+const adapterPackDir = join(releaseDir, 'adapters')
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -84,10 +86,10 @@ async function removeOldArtifacts(artifactsDir) {
   }
   const entries = await readdir(artifactsDir)
   for (const entry of entries) {
-    if (/^file-viewer-v3-.*-(demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
+    if (/^file-viewer-v3-.*-(demo|adapter-demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
     }
-    if (/^flyfish-group-file-viewer3-.*\.tgz$/.test(entry)) {
+    if (/^flyfish-group-file-viewer(3|-web|-react)-.*\.tgz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
     }
   }
@@ -105,6 +107,20 @@ async function findPackedNpmTarball() {
     throw new Error(`Expected npm tarball was not found in ${npmPackDir}`)
   }
   return join(npmPackDir, match)
+}
+
+async function findAdapterTarballs() {
+  const entries = await readdir(adapterPackDir)
+  const expected = [
+    `flyfish-group-file-viewer-web-${version}.tgz`,
+    `flyfish-group-file-viewer-react-${version}.tgz`
+  ]
+  for (const name of expected) {
+    if (!entries.includes(name)) {
+      throw new Error(`Expected adapter tarball was not found in ${adapterPackDir}: ${name}`)
+    }
+  }
+  return expected.map(name => join(adapterPackDir, name))
 }
 
 async function assertArtifactOnlyRepo(repoDir) {
@@ -142,7 +158,7 @@ async function writeReleaseManifest(repoDir) {
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
     publicRepo: repoDir,
     artifactOnly: true,
-    allowedRoots: ['README.md', 'LICENSE', 'package.json', 'dist', 'demo', 'docs', 'example', 'artifacts']
+    allowedRoots: ['README.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
   }
   await writeFile(
     join(repoDir, 'artifacts', 'release-manifest.json'),
@@ -161,10 +177,17 @@ await assertArtifactOnlyRepo(publicRepoDir)
 if (!skipBuild) {
   await removePath(releaseDir)
   await mkdir(demoStagingDir, { recursive: true })
+  await mkdir(adapterDemoStagingDir, { recursive: true })
   await mkdir(npmPackDir, { recursive: true })
+  await mkdir(adapterPackDir, { recursive: true })
 
   run('pnpm', ['run', 'build-only'])
   await copyCleanDir(join(sourceRoot, 'dist'), demoStagingDir)
+
+  run('pnpm', ['run', 'build:adapter-demo'])
+  await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), adapterDemoStagingDir)
+  run('pnpm', ['-C', 'packages/web', 'pack', '--pack-destination', adapterPackDir])
+  run('pnpm', ['-C', 'packages/react', 'pack', '--pack-destination', adapterPackDir])
 
   run('pnpm', ['run', 'build-lib-only'])
   run('pnpm', ['run', 'obfuscate'])
@@ -172,23 +195,32 @@ if (!skipBuild) {
   run('npm', ['pack', '--pack-destination', npmPackDir, '--registry=https://registry.npmjs.org/'])
 } else {
   await assertDirectory(demoStagingDir, 'Demo staging directory')
+  await assertDirectory(adapterDemoStagingDir, 'Adapter demo staging directory')
   await assertDirectory(join(sourceRoot, 'dist'), 'Library dist directory')
   await assertDirectory(join(sourceRoot, 'docs', '.vitepress', 'dist'), 'Docs dist directory')
+  await assertDirectory(adapterPackDir, 'Adapter pack directory')
 }
 
 const artifactsDir = join(publicRepoDir, 'artifacts')
 await removeOldArtifacts(artifactsDir)
 
 await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))
+await copyCleanDir(adapterDemoStagingDir, join(publicRepoDir, 'adapter-demo'))
 await copyCleanDir(join(sourceRoot, 'dist'), join(publicRepoDir, 'dist'))
 await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
 await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
+await cp(join(sourceRoot, 'README.md'), join(publicRepoDir, 'README.md'), { force: true })
+await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
 await cp(join(sourceRoot, 'package.json'), join(publicRepoDir, 'package.json'), { force: true })
 
 const npmTarball = await findPackedNpmTarball()
 await cp(npmTarball, join(artifactsDir, basename(npmTarball)), { force: true })
+for (const adapterTarball of await findAdapterTarballs()) {
+  await cp(adapterTarball, join(artifactsDir, basename(adapterTarball)), { force: true })
+}
 
 await createTarball(join(publicRepoDir, 'demo'), join(artifactsDir, `file-viewer-v3-${version}-demo.tar.gz`))
+await createTarball(join(publicRepoDir, 'adapter-demo'), join(artifactsDir, `file-viewer-v3-${version}-adapter-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v3-${version}-lib-dist.tar.gz`))
 await createTarball(join(publicRepoDir, 'docs'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir)

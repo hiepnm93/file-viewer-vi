@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2 或 iframe 嵌入，最后了解安装和成品分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS 或 iframe 嵌入，最后了解安装、私有化部署和成品分发。
 </p>
 
 <div class="doc-link-row">
@@ -14,6 +14,7 @@
   <a href="/guide/quickstart">快速开始</a>
   <a href="/guide/formats">支持格式</a>
   <a href="/guide/usage">组件用法</a>
+  <a href="/guide/distribution">发布分发</a>
 </div>
 
 ## 优秀之处
@@ -42,7 +43,7 @@
 <div class="doc-grid">
   <div class="doc-card">
     <h3>先看 Demo</h3>
-    <p>在线 Demo 提供按文件类型分组的样例文件盒子，点击样例即可打开并自动收起选择器，适合快速验收全部格式。</p>
+    <p>在线 Demo 和私有化 Demo 都提供按文件类型分组的样例文件盒子，点击样例即可打开并自动收起选择器，适合快速验收全部格式。</p>
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
@@ -50,11 +51,11 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>；多系统复用、隔离依赖或带鉴权文件场景，优先考虑 iframe 嵌入。</p>
+    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>；React 和纯 JS 包通过 iframe 复用 Vue3 基线产物，适合私有化部署和多系统复用。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
-    <p>成品分发说明了 npm 包、在线 Demo、官方文档和公开成品仓库之间的交付关系。</p>
+    <p>成品分发说明了 npm 包、私有化 viewer 静态产物、文档静态产物和公开成品仓库之间的交付关系。</p>
   </div>
 </div>
 
@@ -78,10 +79,12 @@
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
 | 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
+| 想在 React 中接入 | [React 集成](/guide/quickstart-react) |
+| 想在非框架页面中接入 | [纯 JS 集成](/guide/quickstart-web) |
 | 想让多个系统共用预览器 | [Iframe 嵌入](/guide/iframe) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
 | 想下载成品或二开 | [发布与成品分发](/guide/distribution) |
 
 <div class="doc-note">
-  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a>，再用自己的真实附件补一轮回归。
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件默认仍只加载你私有部署的 <code>/file-viewer/index.html</code>。
 </div>

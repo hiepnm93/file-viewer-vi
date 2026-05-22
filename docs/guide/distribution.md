@@ -3,8 +3,8 @@
 <div class="doc-kicker">Release For Users</div>
 
 <p class="doc-lead">
-  这一页说明 Flyfish Viewer 对外分发时包含什么、如何安装、如何下载成品，以及源码如何自助开通。
-  公开 GitHub 仓库只交付混淆压缩后的构建产物、示例文件、静态文档产物和下载包。
+  这一页说明 Flyfish Viewer 对外分发时包含什么、如何安装、如何发布私有化 viewer 静态产物，以及源码如何自助开通。
+  公开 GitHub 仓库只交付混淆压缩后的构建产物、示例文件、静态文档产物、适配包和下载包。
 </p>
 
 ## 分发渠道
@@ -12,9 +12,12 @@
 | 渠道 | 地址 | 内容 |
 | --- | --- | --- |
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
-| 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器 |
+| 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.9` |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.9` |
+| npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前版本为 `1.0.9` |
+| npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前版本为 `1.0.9` |
+| 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
 | 源码自助开通 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
 
@@ -52,25 +55,71 @@ new Vue({
 }).$mount('#app')
 ```
 
+### React
+
+```bash
+pnpm add @flyfish-group/file-viewer-react
+```
+
+```tsx
+import FileViewer from '@flyfish-group/file-viewer-react'
+
+export function Preview() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <FileViewer url="/files/demo.docx" />
+    </div>
+  )
+}
+```
+
+安装后依赖的 web 包会把 Vue3 基线 viewer 产物复制到宿主项目 `public/file-viewer`。如果静态目录不同，请手动执行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并传入 `viewerUrl="/vendor/file-viewer/index.html"`。
+
+### 纯 JS
+
+```bash
+pnpm add @flyfish-group/file-viewer-web
+```
+
+```ts
+import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
+
+mountViewerFrame(document.getElementById('viewer')!, {
+  url: '/files/demo.pdf'
+})
+```
+
+## 成品 tarball 安装
+
+如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball:
+
+```bash
+pnpm add ./artifacts/flyfish-group-file-viewer-web-1.0.9.tgz
+pnpm add ./artifacts/flyfish-group-file-viewer-react-1.0.9.tgz
+```
+
+React tarball 会依赖同版本的 `@flyfish-group/file-viewer-web`，所以离线安装时请先安装 web 包，再安装 React 包。
+
 ## 成品仓库内容
 
 公开 GitHub 仓库只用于成品交付，不包含当前源码目录。仓库内容通常包括:
 
 - `dist/`: 混淆压缩后的组件库产物
-- `demo/`: 可独立部署的在线预览器静态站点
+- `demo/`: 可独立部署的私有化预览器静态站点
 - `docs/`: VitePress 文档静态站点
 - `example/`: 完整样例文件列表
-- `artifacts/`: npm tarball、Demo tarball、文档 tarball
+- `artifacts/`: npm tarball、适配包 tarball、Demo tarball、文档 tarball
+- `packages/web/viewer/`: React、纯 JS 和 iframe 适配层共用的 Vue3 基线 viewer 产物
 - `README.md`: 友好的安装、嵌入、下载和授权说明
 - `LICENSE`: 项目许可证
 
-其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、成品目录和源码开通入口。`docs/` 则是官方文档站的静态构建产物，可部署到任何静态资源服务中。
+其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、私有化部署、成品目录和源码开通入口。`docs/` 是文档站静态构建产物，可部署到任何静态资源服务中。
 
 公开 GitHub 成品仓库和源码仓库保持分离，源码只在内部仓库维护；公开仓库只保留可直接部署或下载的成品。
 
 ## 发版命令
 
-两条 npm 包线分别在对应分支发布:
+Vue 组件 npm 包线分别在对应分支发布:
 
 | 技术栈 | 分支 | npm 包 |
 | --- | --- | --- |
@@ -97,6 +146,19 @@ npm publish --dry-run --access public
 ```
 
 确认包名、版本、README 和 `dist/` 文件无误后，再执行 `npm publish --access public`。如果 npm 账号启用了 MFA，请使用交互式会话完成浏览器确认。
+
+React 和纯 JS 适配包在当前仓库内发布:
+
+```bash
+pnpm type-check:adapters
+pnpm build:adapter-demo
+pnpm release:adapters:pack
+pnpm -C packages/web publish --access public --dry-run
+pnpm -C packages/react publish --access public --dry-run
+pnpm release:adapters:publish
+```
+
+`release:adapters:pack` 会先构建 Vue3 基线 viewer 并同步到 `packages/web/viewer`，再分别打包 `@flyfish-group/file-viewer-web` 和 `@flyfish-group/file-viewer-react`。发布前请确认 tarball 中包含 `viewer/index.html`、`viewer/assets/*`、`dist/*` 和 README，且没有 `.DS_Store`。
 
 ## 授权和贡献
 

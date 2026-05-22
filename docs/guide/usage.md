@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在两个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.9`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.9`。差异只在插件注册方式。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.9`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.9`，React 使用 `@flyfish-group/file-viewer-react@1.0.9`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.9`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 ## 先记住这 4 条规则
 
@@ -15,6 +15,7 @@
 - 当 `file` 和 `url` 同时存在时，组件会优先渲染 `file`。
 - 如果你拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File` 再传入。
 - 组件会默认撑满父容器，所以父容器必须有明确高度。
+- React、纯 JS 和 iframe 模式默认使用 `/file-viewer/index.html`，如果静态目录不同，请显式传入 `viewerUrl`。
 
 ## 输入方式怎么选
 
@@ -23,6 +24,8 @@
 | `url` | 推荐 | 文件地址可直接访问、链路简单 | 组件会在浏览器内下载文件，再按扩展名选择渲染器 |
 | `file: File` | 强烈推荐 | 本地上传、鉴权下载后预览、宿主系统已拿到文件对象 | 最稳妥的二进制接入方式 |
 | `Blob` / `ArrayBuffer` | 先包装再用 | SDK 返回二进制、接口已返回文件流 | 建议先包装成 `new File([...], 'demo.pdf')`，把文件名和扩展名补全 |
+
+React、纯 JS 和 iframe 适配层允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。底层会把二进制推送给私有化 viewer iframe，渲染规则仍由 Vue3 基线预览器决定。
 
 ## 行为规则
 

@@ -1,10 +1,12 @@
 # 常见问题
 
-## Vue2 和 Vue3 应该安装哪个包
+## Vue、React 和纯 JS 应该安装哪个包
 
 Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.9`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.9`，使用 `Vue.use(FileViewer)` 注册。
 
-两条包线的格式能力、示例文件、`file` / `url` 参数行为和 iframe 协议保持一致。线上 Demo `viewer.flyfish.dev` 始终使用 `v3` 分支产物作为最新体验基准。
+React 项目安装 `@flyfish-group/file-viewer-react@1.0.9`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.9`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
+
+所有包线的格式能力、示例文件、`file` / `url` 参数行为和 iframe 协议保持一致。
 
 ## URL 预览为什么失败或空白
 
@@ -15,6 +17,23 @@ Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.9`，使用 `createApp(App).u
 - 鉴权信息只能在宿主系统内使用，浏览器直接请求拿不到文件
 
 如果你的场景带有登录态、签名 URL 或内部权限体系，优先使用 `file` 参数或 [Iframe 嵌入](/guide/iframe)。
+
+## React 或纯 JS 集成后为什么页面空白
+
+这通常是私有化 viewer 静态产物没有被部署出来。默认情况下，React 和纯 JS 包会加载:
+
+```txt
+/file-viewer/index.html
+/file-viewer/assets/*
+```
+
+如果你的构建工具没有执行安装脚本，或者静态目录不是 `public/file-viewer`，请运行:
+
+```bash
+npx file-viewer-copy-assets ./public/vendor/file-viewer
+```
+
+然后在组件或 helper 中传入 `viewerUrl="/vendor/file-viewer/index.html"`。
 
 ## 为什么带查询参数的下载地址有时识别不到格式
 

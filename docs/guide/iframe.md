@@ -3,7 +3,7 @@
 <div class="doc-kicker">Recommended For Multi-System Use</div>
 
 <p class="doc-lead">
-  当你希望把预览器独立部署出来，给多个系统统一复用时，iframe 是更稳的一条路。
+  当你希望把预览器私有化部署出来，给多个系统统一复用时，iframe 是更稳的一条路。
   业务系统负责鉴权和下载，预览器负责渲染，这种职责分离在真实项目里往往更容易维护。
 </p>
 
@@ -16,13 +16,22 @@
 
 ## 当前支持的两种 iframe 使用方式
 
+本文所有示例都假设你已经把 Vue3 基线 viewer 静态产物部署到了宿主站点:
+
+```txt
+/file-viewer/index.html
+/file-viewer/assets/*
+```
+
+React 和纯 JS 包会默认维护这套目录；其他系统也可以手动复制同一份静态产物。
+
 ### 1. URL 模式
 
 如果文件本身就能被浏览器直接访问，可以直接把 `url` 作为查询参数挂到预览器页面上:
 
 ```html
 <iframe
-  src="https://viewer.flyfish.dev?url=https%3A%2F%2Fexample.com%2Fdemo.docx"
+  src="/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx"
   style="width: 100%; height: 100%; border: 0"
 ></iframe>
 ```
@@ -36,9 +45,10 @@
 #### 第一步: 构造 iframe 地址
 
 ```ts
-const viewerOrigin = 'https://viewer.flyfish.dev'
+const viewerUrl = '/file-viewer/index.html'
+const viewerOrigin = location.origin
 const filename = 'demo.doc'
-const src = `${viewerOrigin}?name=${encodeURIComponent(filename)}&from=${encodeURIComponent(location.origin)}`
+const src = `${viewerUrl}?name=${encodeURIComponent(filename)}&from=${encodeURIComponent(location.origin)}`
 ```
 
 其中:
@@ -87,6 +97,7 @@ frame.onload = async () => {
 - `postMessage` 的第二个参数也要使用精确的预览器 origin
 - 宿主系统下载文件时，可以携带 cookie、token 或任何内部鉴权信息
 - 联调阶段先用仓库中的 `public/example` 示例文件跑通，再接入真实接口
+- React / 纯 JS 包默认使用 `/file-viewer/index.html`；如果静态目录不同，请显式传入 `viewerUrl`
 
 ## 什么时候该优先选 iframe
 

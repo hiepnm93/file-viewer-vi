@@ -11,12 +11,14 @@
 
 | 方案 | 适合谁 | 优点 | 你应该看哪页 |
 | --- | --- | --- | --- |
-| Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 主推包线，在线 Demo 与生产上线均以 v3 为准 | [Vue3 集成](/guide/quickstart-vue3) |
+| Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 主推基线，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
 | Vue2 组件集成 | Vue2.7 项目内直接使用 | 保留旧业务栈，体验与 v3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
+| React 组件集成 | React 17 / 18 / 19 项目 | 安装即复制私有化 viewer，组件内用 iframe 加载 | [React 集成](/guide/quickstart-react) |
+| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | 用 helper 创建 iframe，部署和升级边界清楚 | [纯 JS 集成](/guide/quickstart-web) |
 | Iframe 嵌入 | 多系统复用、异构系统、需要隔离依赖 | 升级集中、宿主系统更轻、适合平台化 | [Iframe 嵌入](/guide/iframe) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> 如果你的业务系统不止一个，或者你不希望把解析依赖放进业务包里，直接走 iframe 方案通常更省心。
+  <strong>推荐经验:</strong> React、纯 JS 和后续其他框架都建议走私有化 iframe 适配层。Vue3 产物作为唯一预览基线，其他包只负责参数、iframe 和二进制推送协议。
 </div>
 
 ## 运行环境
@@ -81,13 +83,57 @@ new Vue({
 
 完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
+## React 最短路径
+
+React 17 / 18 / 19 项目安装:
+
+```bash
+pnpm add @flyfish-group/file-viewer-react
+```
+
+```tsx
+import FileViewer from '@flyfish-group/file-viewer-react'
+
+export function Preview() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <FileViewer url="/files/demo.docx" />
+    </div>
+  )
+}
+```
+
+安装后依赖包会把 viewer 静态产物复制到 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。完整步骤见 [React 集成](/guide/quickstart-react)。
+
+## 纯 JS 最短路径
+
+不使用框架时安装:
+
+```bash
+pnpm add @flyfish-group/file-viewer-web
+```
+
+```html
+<div id="viewer" style="height: 100vh"></div>
+
+<script type="module">
+  import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
+
+  mountViewerFrame(document.getElementById('viewer'), {
+    url: '/files/demo.pdf'
+  })
+</script>
+```
+
+完整步骤见 [纯 JS 集成](/guide/quickstart-web)。
+
 ## Iframe 最短路径
 
 如果你希望把预览器独立部署出来，最简单的 URL 方案可以直接这样挂载:
 
 ```html
 <iframe
-  src="https://viewer.flyfish.dev?url=https%3A%2F%2Fexample.com%2Fdemo.pdf"
+  src="/file-viewer/index.html?url=%2Ffiles%2Fdemo.pdf"
   style="width: 100%; height: 100%; border: 0"
 ></iframe>
 ```

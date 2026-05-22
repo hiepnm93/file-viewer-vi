@@ -2,14 +2,16 @@
 
 把 Word、Excel、PPT、PDF、音频和电子书稳稳带进浏览器里。
 
-`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，在线 Demo 始终使用 `v3` 分支产物作为最新体验基准。
+`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，Vue3 构建产物作为 React、纯 Web 和其他适配层的统一预览基线。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
-- 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
-- 官方文档/组件主页: [doc.flyfish.dev](https://doc.flyfish.dev)
 - npm(Vue3): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - npm(Vue2): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
+- npm(React): [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
+- npm(纯 JS): [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
+- 官方文档: [doc.flyfish.dev](https://doc.flyfish.dev)
+- 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
@@ -17,10 +19,19 @@
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.9` | `v3` | 主推版本，在线 Demo 与后续上线均以此为准 |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.9` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
 | Vue2.7 | `@flyfish-group/file-viewer` | `1.0.9` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
+| React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.9` | 当前仓库子工程 | iframe 组件，默认加载 `/file-viewer/index.html` |
+| 纯 JS | `@flyfish-group/file-viewer-web` | `1.0.9` | 当前仓库子工程 | iframe helper 和 viewer 产物复制工具 |
 
-![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)
+如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball。离线安装 React 包时请先安装同版本 web 包:
+
+```bash
+pnpm add ./artifacts/flyfish-group-file-viewer-web-1.0.9.tgz
+pnpm add ./artifacts/flyfish-group-file-viewer-react-1.0.9.tgz
+```
+
+![Flyfish Viewer demo](docs/_images/demo-main.png)
 
 ## 为什么值得接入
 
@@ -31,7 +42,7 @@
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
 - **组件和独立站两用。** 既支持在 Vue 项目里直接作为组件使用，也支持独立部署后通过 iframe 嵌入到任意系统，方便多业务线复用。
-- **适合成品交付。** 官方文档、在线 Demo、公开成品仓库、混淆压缩产物、npm tarball 和静态部署产物都一起维护，便于下载、验收和二次接入。
+- **适合成品交付。** 公开成品仓库、混淆压缩产物、npm tarball、静态部署产物和私有化 iframe 适配包都一起维护，便于下载、验收和二次接入。
 
 ## 支持格式
 
@@ -58,11 +69,11 @@
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba` | 浏览器原生音频播放，带控制条和基础进度信息 | 录音、播客、语音附件、音效素材 |
 | 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
-## 三条接入路线
+## 接入路线
 
 ### 1. Vue 3 组件集成
 
-适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。当前在线 Demo 和生产上线均以 `v3` 分支作为最终产物来源。
+适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。React、纯 Web 和后续其他框架适配层都以这套 Vue3 构建产物作为 iframe 预览基线。
 
 ```bash
 pnpm add @flyfish-group/file-viewer3
@@ -135,12 +146,49 @@ export default {
 ```html
 <iframe
   id="viewer"
-  src="https://viewer.flyfish.dev?url=https%3A%2F%2Fexample.com%2Fdemo.docx"
+  src="/file-viewer/index.html?url=https%3A%2F%2Fexample.com%2Fdemo.docx"
   style="width: 100%; height: 100%; border: 0"
 ></iframe>
 ```
 
-更完整的二进制推送方案、`from` 安全校验和宿主页面示例，请查看文档站中的 [Iframe 嵌入说明](https://doc.flyfish.dev/guide/iframe)。
+更完整的二进制推送方案、`from` 安全校验和宿主页面示例，请查看仓库内的 [Iframe 嵌入说明](docs/guide/iframe.md)。
+
+### 4. React / 纯 Web 子工程
+
+React 与纯 Web 适配层不再复制渲染器，只通过 iframe 加载 Vue3 基线预览器产物。包里会携带主工程构建产物，安装后复制到宿主项目 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`，只提供私有化静态部署路线:
+
+官网 Demo 可用于快速验证预览效果，但 React / 纯 JS 组件不会把官网 Demo 地址作为内置 viewer 地址。
+
+```tsx
+import FileViewer from '@flyfish-group/file-viewer-react'
+
+export function Preview() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <FileViewer
+        url="https://example.com/demo.docx"
+      />
+    </div>
+  )
+}
+```
+
+`@flyfish-group/file-viewer-react` 支持 React 17 / 18 / 19，内部复用 `@flyfish-group/file-viewer-web` 的 iframe 协议工具。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 推送给预览器。静态目录不是 `public/file-viewer` 时，可以运行 `npx file-viewer-copy-assets ./public/vendor/file-viewer` 并覆盖 `viewerUrl="/vendor/file-viewer/index.html"`。
+
+本仓库内置了一个私有化适配层演示应用，覆盖 React 组件和纯 Web helper 两种入口。调试时直接运行:
+
+```bash
+pnpm dev:adapters
+```
+
+它会先构建并同步 Vue3 基线预览器到演示应用的 `public/file-viewer`，打开本地地址即可看到预览效果。验证静态部署产物时运行:
+
+```bash
+pnpm build:adapter-demo
+pnpm --filter @flyfish-group/file-viewer-demo preview
+```
+
+确认无误后，`packages/demo/dist` 可以作为普通静态目录部署；其中已经包含 `file-viewer/index.html` 和演示文件。
 
 ## 使用说明
 
@@ -174,6 +222,9 @@ pnpm dev
 - `pnpm docs:dev`: 启动 VitePress 文档站
 - `pnpm docs:build`: 构建文档站
 - `pnpm type-check`: 执行 TypeScript 类型检查
+- `pnpm dev:adapters`: 启动 React + 纯 JS 适配层 Demo
+- `pnpm build:adapter-demo`: 构建适配层 Demo
+- `pnpm release:adapters:pack`: 打包 React / 纯 JS npm tarball
 
 ## 打包发布
 
@@ -183,6 +234,8 @@ Vue3 和 Vue2 发包时分别在对应分支执行同一套发布链路:
 | --- | --- | --- |
 | Vue3 | `v3` | `@flyfish-group/file-viewer3` |
 | Vue2.7 | `main` | `@flyfish-group/file-viewer` |
+| React | 当前仓库子工程 | `@flyfish-group/file-viewer-react` |
+| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web` |
 
 建议在发布前执行下面这组命令:
 
@@ -208,6 +261,15 @@ npm pack
 pnpm release:pack
 ```
 
+React 和纯 JS 适配包发布前执行:
+
+```bash
+pnpm type-check:adapters
+pnpm build:adapter-demo
+pnpm release:adapters:pack
+pnpm release:adapters:publish
+```
+
 发布到 npm:
 
 ```bash
@@ -221,12 +283,12 @@ npm publish --access public
 
 ## 文档导航
 
-- [文档导览](https://doc.flyfish.dev/guide/)
-- [快速开始](https://doc.flyfish.dev/guide/quickstart)
-- [Demo 说明](https://doc.flyfish.dev/guide/demo)
-- [组件用法](https://doc.flyfish.dev/guide/usage)
-- [支持格式](https://doc.flyfish.dev/guide/formats)
-- [本地开发与打包](https://doc.flyfish.dev/guide/development)
+- [文档导览](docs/guide/index.md)
+- [快速开始](docs/guide/quickstart.md)
+- [Demo 说明](docs/guide/demo.md)
+- [组件用法](docs/guide/usage.md)
+- [支持格式](docs/guide/formats.md)
+- [本地开发与打包](docs/guide/development.md)
 
 ## 开源说明
 

@@ -11,7 +11,7 @@ titleTemplate: false
 <h1>Flyfish Viewer</h1>
 <p>
 纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音频和视频预览能力放进浏览器端，
-同时提供 Vue3、Vue2.7 和 iframe 三种集成路径。
+同时提供 Vue3、Vue2.7、React、纯 JS 和 iframe 多种集成路径。
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
@@ -31,8 +31,8 @@ titleTemplate: false
 <span>条预览链路</span>
 </div>
 <div>
-<strong>Vue2/3</strong>
-<span>双包线同步维护</span>
+<strong>4</strong>
+<span>条 npm 包线</span>
 </div>
 <div>
 <strong>Iframe</strong>
@@ -46,14 +46,14 @@ titleTemplate: false
 <h2>产品化的文件预览，而不是格式清单</h2>
 <p>
 文档解析、阅读布局、示例验收和分发交付被放在同一条链路里维护。接入前可以先看真实 Demo，
-接入后也能通过 npm、静态站或 iframe 继续迭代。
+接入后也能通过 npm、私有化静态站或 iframe 继续迭代。
 </p>
 </div>
 
 <div class="doc-showcase">
 <figure>
 <img src="/_images/demo-main.png" alt="Flyfish Viewer 在线预览器主界面" />
-<figcaption>在线 Demo 包含示例文件选择器、上传入口和多格式预览区，可直接用于验收真实浏览体验。</figcaption>
+<figcaption>在线 Demo 和私有化 Demo 都包含示例文件选择器、上传入口和多格式预览区，可直接用于验收真实浏览体验。</figcaption>
 </figure>
 <div class="doc-showcase-list">
 <article>
@@ -97,7 +97,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>接入边界清晰</h3>
-<p>Vue3、Vue2.7 和 iframe 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
+<p>Vue3、Vue2.7、React、纯 JS 和 iframe 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
 </article>
 <article class="doc-card">
 <h3>成品可直接下载</h3>
@@ -126,6 +126,14 @@ titleTemplate: false
 <strong>Vue2.7 项目</strong>
 <span>安装 @flyfish-group/file-viewer@1.0.9，使用 Vue.use(FileViewer)。</span>
 </a>
+<a class="doc-path-card" href="/guide/quickstart-react">
+<strong>React 项目</strong>
+<span>安装 @flyfish-group/file-viewer-react@1.0.9，通过 iframe 加载私有化 viewer。</span>
+</a>
+<a class="doc-path-card" href="/guide/quickstart-web">
+<strong>纯 JS 页面</strong>
+<span>安装 @flyfish-group/file-viewer-web@1.0.9，用 helper 创建和同步 iframe。</span>
+</a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>
 <span>独立部署预览器，通过 URL 或 postMessage 推送二进制文件。</span>
@@ -140,11 +148,12 @@ titleTemplate: false
 <section class="doc-final-band">
 <div>
 <span>Official Resources</span>
-<h2>一个站点承担主页、文档和交付说明</h2>
+<h2>官网用于验证，组件用于私有化接入</h2>
 <p>
 官方文档是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
 在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
 公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>。
+React 和纯 JS 组件默认加载你私有部署的 <code>/file-viewer/index.html</code>，不会把官网 Demo 地址作为内置依赖。
 </p>
 </div>
 <a class="doc-action doc-action-primary" href="/guide/">进入文档导览</a>

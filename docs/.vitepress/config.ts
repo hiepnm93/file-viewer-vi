@@ -17,12 +17,15 @@ export default defineConfig({
       { text: '文档', link: '/guide/' },
       { text: '快速开始', link: '/guide/quickstart' },
       { text: '支持格式', link: '/guide/formats' },
-      { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
       {
         text: '资源',
         items: [
+          { text: '官方文档', link: 'https://doc.flyfish.dev' },
+          { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
           { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
           { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
+          { text: 'npm(React)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-react' },
+          { text: 'npm(纯 JS)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-web' },
           { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
           { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
         ]
@@ -43,6 +46,9 @@ export default defineConfig({
           text: '集成方式',
           items: [
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
+            { text: 'Vue2 集成', link: '/guide/quickstart-vue2' },
+            { text: 'React 集成', link: '/guide/quickstart-react' },
+            { text: '纯 JS 集成', link: '/guide/quickstart-web' },
             { text: 'Iframe 嵌入', link: '/guide/iframe' },
             { text: '组件用法', link: '/guide/usage' }
           ]
@@ -58,8 +64,7 @@ export default defineConfig({
           text: '开发与发布',
           items: [
             { text: '本地开发与打包', link: '/guide/development' },
-            { text: '发布与成品分发', link: '/guide/distribution' },
-            { text: 'Vue2 集成', link: '/guide/quickstart-vue2' }
+            { text: '发布与成品分发', link: '/guide/distribution' }
           ]
         },
         {

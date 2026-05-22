@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.9`。在线 Demo `viewer.flyfish.dev` 和后续生产上线均以 `v3` 分支产物作为最终来源。
+当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.9`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
 
 ## 安装
 

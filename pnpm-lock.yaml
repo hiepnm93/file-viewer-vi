@@ -172,6 +172,59 @@ importers:
         specifier: ^3.2.9
         version: 3.2.9(typescript@6.0.3)
 
+  packages/demo:
+    dependencies:
+      '@flyfish-group/file-viewer-react':
+        specifier: workspace:^
+        version: link:../react
+      '@flyfish-group/file-viewer-web':
+        specifier: workspace:^
+        version: link:../web
+      react:
+        specifier: ^19.2.6
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.2.6
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vite:
+        specifier: ^8.0.13
+        version: 8.0.13(@types/node@25.8.0)(sass@1.99.0)
+
+  packages/react:
+    dependencies:
+      '@flyfish-group/file-viewer-web':
+        specifier: workspace:^
+        version: link:../web
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      react:
+        specifier: ^19.2.6
+        version: 19.2.6
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/web:
+    devDependencies:
+      '@types/node':
+        specifier: ^25.8.0
+        version: 25.8.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
 packages:
 
   '@algolia/abtesting@1.18.1':

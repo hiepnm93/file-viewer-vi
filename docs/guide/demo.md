@@ -13,6 +13,7 @@
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
 | iframe 示例页 | `/example/embedded.html` | 验证独立部署与二进制推送协议 |
+| 适配层 Demo | `packages/demo` | 同时验证 React 组件和纯 JS helper 的私有化 iframe 集成 |
 
 ## 主示例页
 
@@ -44,6 +45,23 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
   <img src="/_images/demo-iframe.png" alt="Iframe 示例页截图" />
   <p class="doc-caption">iframe 示例适合验证跨系统集成路径，尤其适合做带鉴权文件的联调。</p>
 </div>
+
+## React / 纯 JS 适配层 Demo
+
+仓库中的 `packages/demo` 会把 `packages/web/viewer` 同步到自己的 `public/file-viewer`，页面上同时挂载 React 组件和纯 JS helper。调试时运行:
+
+```bash
+pnpm dev:adapters
+```
+
+构建上线前运行:
+
+```bash
+pnpm build:adapter-demo
+pnpm --filter @flyfish-group/file-viewer-demo preview
+```
+
+如果开发服务和 build preview 中两个面板都能显示同一份 Markdown 示例，就说明 npm 包默认的 `/file-viewer/index.html` 私有化路径可用。
 
 ## 示例文件清单
 
