@@ -656,6 +656,13 @@ onMounted(() => {
   gap: 14px;
 }
 
+.eda-topology > .eda-panel {
+  min-height: 360px;
+  max-height: min(58vh, 620px);
+  display: flex;
+  flex-direction: column;
+}
+
 .eda-tree,
 .eda-entities,
 .eda-diagnostics,
@@ -663,10 +670,18 @@ onMounted(() => {
   min-height: 0;
   max-height: 380px;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .eda-tree {
+  flex: 1;
+  max-height: none;
   padding: 10px;
+}
+
+.eda-entities {
+  flex: 1;
+  max-height: none;
 }
 
 .eda-tree button {
