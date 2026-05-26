@@ -168,7 +168,7 @@ const options = {
 
 | 选项 | 说明 |
 | --- | --- |
-| `toolbar` | `true` 或对象；控制下载原文件、打印当前渲染结果和导出渲染后 HTML |
+| `toolbar` | `true` 或对象；控制下载原文件、打印完整渲染结果和导出渲染后 HTML |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |

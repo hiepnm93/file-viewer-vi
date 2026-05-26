@@ -2,11 +2,13 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
+import type { FileRenderExportOptions, FileRenderExportAdapter } from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
+  exportAdapter?: (adapter: FileRenderExportAdapter | null) => void,
 }>()
 
 const MIN_SCALE = 0.2
@@ -14,6 +16,7 @@ const MAX_SCALE = 3
 const SCALE_STEP = 0.1
 const FIT_HORIZONTAL_PADDING = 28
 const PAGE_BORDER_WIDTH = 18
+const PDF_EXPORT_MAX_PAGE_PIXELS = 8_000_000
 
 // PDF.js 的滚动容器。
 const container = ref<HTMLDivElement | null>(null)
@@ -32,6 +35,7 @@ const canGoNext = computed(() => currentPage.value < pageCount.value)
 const canZoomOut = computed(() => currentScale.value > MIN_SCALE)
 const canZoomIn = computed(() => currentScale.value < MAX_SCALE)
 type PdfLoadingTask = ReturnType<typeof getDocument>
+type PdfDocumentProxy = Awaited<PdfLoadingTask['promise']>
 type PdfWorkerInstance = {
   destroy: () => void
 }
@@ -44,6 +48,7 @@ type PdfResource = {
 const context = {
   viewer: null as null | PDFViewer,
   resource: null as null | PdfResource,
+  document: null as null | PdfDocumentProxy,
   search: ''
 }
 
@@ -75,11 +80,64 @@ async function destroyPdfResource(resource: PdfResource | null) {
   }
 }
 
+function escapeAttribute(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function getPdfExportRatio(width: number, height: number, mode: FileRenderExportOptions['mode']) {
+  const preferredRatio = mode === 'print' ? 1.75 : 1.5
+  const maxRatio = Math.sqrt(PDF_EXPORT_MAX_PAGE_PIXELS / Math.max(width * height, 1))
+  return Math.max(0.75, Math.min(preferredRatio, maxRatio))
+}
+
+async function renderPdfPagesForExport(options: FileRenderExportOptions) {
+  const pdfDocument = context.document
+  if (!pdfDocument) {
+    throw new Error('PDF 尚未加载完成，请稍后再试')
+  }
+
+  const pagesHtml: string[] = []
+  for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+    if (destroyed) {
+      throw new Error('PDF 已卸载，无法继续打印')
+    }
+
+    const page = await pdfDocument.getPage(pageNumber)
+    const baseViewport = page.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS })
+    const exportRatio = getPdfExportRatio(baseViewport.width, baseViewport.height, options.mode)
+    const renderViewport = page.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS * exportRatio })
+    const canvas = document.createElement('canvas')
+    const canvasContext = canvas.getContext('2d')
+    if (!canvasContext) {
+      throw new Error('当前浏览器无法创建 PDF 打印画布')
+    }
+
+    canvas.width = Math.ceil(renderViewport.width)
+    canvas.height = Math.ceil(renderViewport.height)
+    await page.render({ canvas, canvasContext, viewport: renderViewport }).promise
+
+    const pageTitle = `${options.title} - 第 ${pageNumber} 页`
+    pagesHtml.push(`<section class="pdf-export-page" style="width:${Math.ceil(baseViewport.width)}px" aria-label="${escapeAttribute(pageTitle)}"><img src="${canvas.toDataURL('image/png')}" alt="${escapeAttribute(pageTitle)}" /></section>`)
+
+    canvas.width = 0
+    canvas.height = 0
+    ;(page as { cleanup?: () => void }).cleanup?.()
+  }
+
+  return `<div class="pdf-export-document">${pagesHtml.join('')}</div>`
+}
+
 async function loadFile() {
   if (!container.value) return
   const requestVersion = ++loadVersion
   loadStatus.value = 'loading'
   errorMessage.value = ''
+  context.document = null
+  props.exportAdapter?.(null)
   let resource: PdfResource | null = null
 
   try {
@@ -150,6 +208,10 @@ async function loadFile() {
 
     pageCount.value = pdfDocument.numPages
     currentPage.value = 1
+    context.document = pdfDocument
+    props.exportAdapter?.({
+      toHtml: renderPdfPagesForExport
+    })
 
     pdfViewer.setDocument(pdfDocument)
     pdfLinkService.setDocument(pdfDocument, null)
@@ -271,6 +333,8 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
   context.viewer = null
+  context.document = null
+  props.exportAdapter?.(null)
   const resource = context.resource
   context.resource = null
   void destroyPdfResource(resource)

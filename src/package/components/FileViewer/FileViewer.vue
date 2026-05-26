@@ -4,6 +4,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { readBuffer } from '../../common/util'
 import type {
   FileRef,
+  FileRenderExportAdapter,
+  FileRenderExportMode,
   FileViewerOptions,
   FileViewerToolbarOptions,
   FileViewerWatermarkOptions,
@@ -122,6 +124,7 @@ const {
 } = useLoading(currentExtend)
 
 let activeRendered: Rendered | undefined
+let activeExportAdapter: FileRenderExportAdapter | null = null
 let renderVersion = 0
 let pendingDownloadController: AbortController | null = null
 
@@ -276,6 +279,7 @@ const wrapFileRef = (data: FileRef, nextFilename?: string) => {
 const clearRenderedContent = () => {
   activeRendered?.unmount?.()
   activeRendered = undefined
+  activeExportAdapter = null
 
   const out = output.value
   if (!out) {
@@ -285,6 +289,10 @@ const clearRenderedContent = () => {
   while (out.firstChild) {
     out.removeChild(out.firstChild)
   }
+}
+
+const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
+  activeExportAdapter = adapter
 }
 
 const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number, sourceUrl?: string) => {
@@ -303,7 +311,8 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
     const rendered = await render(buffer, getExtend(file.name), child, {
       filename: file.name,
       url: sourceUrl,
-      options: props.options
+      options: props.options,
+      registerExportAdapter
     })
     if (!isCurrentRequest(version)) {
       rendered?.unmount?.()
@@ -474,19 +483,45 @@ const collectDocumentStyles = () => {
     .join('\n')
 }
 
-const buildRenderedHtmlDocument = () => {
-  const out = output.value
-  if (!out) {
-    throw new Error('当前没有可导出的预览内容')
-  }
+const waitForNextPaint = () => {
+  return new Promise<void>(resolve => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve())
+    })
+  })
+}
 
-  const clone = out.cloneNode(true) as HTMLElement
-  replaceCanvasWithImages(out, clone)
+const waitForImages = async (root: HTMLElement) => {
+  const images = Array.from(root.querySelectorAll('img'))
+  await Promise.all(images.map(async image => {
+    if (image.complete) {
+      return
+    }
+    if ('decode' in image) {
+      try {
+        await image.decode()
+        return
+      } catch {
+        // decode 失败时继续走 load/error 事件，避免单张异常图片阻塞打印。
+      }
+    }
+    await new Promise<void>(resolve => {
+      image.addEventListener('load', () => resolve(), { once: true })
+      image.addEventListener('error', () => resolve(), { once: true })
+    })
+  }))
+}
 
+const prepareRenderedContentForSnapshot = async (source: HTMLElement) => {
+  await activeExportAdapter?.beforeSnapshot?.()
+  await waitForNextPaint()
+  await waitForImages(source)
+}
+
+const buildExportHtmlDocument = (contentHtml: string, title: string) => {
   const watermark = watermarkInlineStyle.value
     ? `<div class="viewer-export-watermark" style="${watermarkInlineStyle.value}"></div>`
     : ''
-  const title = escapeXml(displayFilename.value || 'file-viewer-preview')
   const styles = collectDocumentStyles()
 
   return `<!doctype html>
@@ -500,19 +535,123 @@ const buildRenderedHtmlDocument = () => {
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: #f2f4f7; color: #172033; font-family: Aptos, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
     body { padding: 24px; }
-    .viewer-export-shell { position: relative; min-height: calc(100vh - 48px); overflow: auto; background: #f2f4f7; }
-    .viewer-export-content { position: relative; z-index: 1; width: 100%; min-height: 100%; }
+    .viewer-export-shell { position: relative; min-height: calc(100vh - 48px); overflow: visible; background: #f2f4f7; }
+    .viewer-export-content { position: relative; z-index: 1; width: 100%; min-height: 100%; overflow: visible; }
+    .viewer-export-content .file-render,
+    .viewer-export-content .file-viewer,
+    .viewer-export-content .viewer-stage,
+    .viewer-export-content .content,
+    .viewer-export-content .pdf-shell,
+    .viewer-export-content .pdf-content,
+    .viewer-export-content .pdf-viewport,
+    .viewer-export-content .pdf-wrapper,
+    .viewer-export-content .cad-shell,
+    .viewer-export-content .cad-body,
+    .viewer-export-content .cad-canvas-wrap,
+    .viewer-export-content .dwg-preview-frame {
+      position: relative !important;
+      inset: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+    .viewer-export-content .pdf-toolbar,
+    .viewer-export-content .pdf-nav-pane,
+    .viewer-export-content .viewer-actions {
+      display: none !important;
+    }
+    .viewer-export-content .pdf-content,
+    .viewer-export-content .pdf-shell--nav-hidden .pdf-content,
+    .viewer-export-content .cad-body.without-layers {
+      display: block !important;
+      grid-template-columns: none !important;
+    }
+    .viewer-export-content .pdfViewer { padding: 0 !important; }
+    .viewer-export-content .pdfViewer .page {
+      margin: 0 auto 16px !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      break-after: page;
+      page-break-after: always;
+    }
+    .viewer-export-content .pdfViewer .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .viewer-export-content .pdf-export-document {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+      padding: 4px 0;
+    }
+    .viewer-export-content .pdf-export-page {
+      max-width: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+      break-after: page;
+      page-break-after: always;
+    }
+    .viewer-export-content .pdf-export-page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .viewer-export-content .pdf-export-page img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
     img, canvas, svg, video { max-width: 100%; }
-    @media print { body { padding: 0; } .viewer-export-shell { min-height: 100vh; } }
+    @media print {
+      @page { margin: 12mm; }
+      html, body { min-height: auto; background: #ffffff; }
+      body { padding: 0; }
+      .viewer-export-shell,
+      .viewer-export-content {
+        min-height: 0;
+        overflow: visible;
+        background: #ffffff;
+      }
+      .viewer-export-content .pdf-export-document {
+        display: block;
+        padding: 0;
+      }
+      .viewer-export-content .pdf-export-page {
+        width: 100% !important;
+        margin: 0 auto;
+        overflow: visible;
+        box-shadow: none;
+      }
+    }
   </style>
 </head>
 <body>
   <main class="viewer-export-shell">
-    <div class="viewer-export-content">${clone.innerHTML}</div>
+    <div class="viewer-export-content">${contentHtml}</div>
     ${watermark}
   </main>
 </body>
 </html>`
+}
+
+const buildRenderedHtmlDocument = async (mode: FileRenderExportMode = 'export') => {
+  const out = output.value
+  if (!out) {
+    throw new Error('当前没有可导出的预览内容')
+  }
+
+  const title = escapeXml(displayFilename.value || 'file-viewer-preview')
+  if (activeExportAdapter?.toHtml) {
+    const contentHtml = await activeExportAdapter.toHtml({ mode, title })
+    return buildExportHtmlDocument(contentHtml, title)
+  }
+
+  await prepareRenderedContentForSnapshot(out)
+  const clone = out.cloneNode(true) as HTMLElement
+  replaceCanvasWithImages(out, clone)
+  return buildExportHtmlDocument(clone.innerHTML, title)
 }
 
 const downloadOriginalFile = () => {
@@ -524,9 +663,9 @@ const downloadOriginalFile = () => {
   triggerBlobDownload(new Blob([buffer], { type: file.type || 'application/octet-stream' }), file.name || 'preview.bin')
 }
 
-const exportRenderedHtml = () => {
+const exportRenderedHtml = async () => {
   try {
-    const html = buildRenderedHtmlDocument()
+    const html = await buildRenderedHtmlDocument('export')
     const baseName = displayFilename.value || 'preview'
     triggerBlobDownload(new Blob([html], { type: 'text/html;charset=utf-8' }), `${baseName}.rendered.html`)
   } catch (nextError) {
@@ -534,9 +673,9 @@ const exportRenderedHtml = () => {
   }
 }
 
-const printRenderedHtml = () => {
+const printRenderedHtml = async () => {
   try {
-    const html = buildRenderedHtmlDocument()
+    const html = await buildRenderedHtmlDocument('print')
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       throw new Error('浏览器拦截了打印窗口')
@@ -547,7 +686,7 @@ const printRenderedHtml = () => {
     printWindow.focus()
     printWindow.setTimeout(() => {
       printWindow.print()
-    }, 200)
+    }, 500)
   } catch (nextError) {
     showError(formatErrorMessage('打印失败', nextError))
   }
@@ -581,7 +720,7 @@ onBeforeUnmount(() => {
           v-if='normalizedToolbar.print'
           type='button'
           :disabled='toolbarDisabled'
-          title='打印当前渲染内容'
+          title='打印完整渲染内容'
           @click='printRenderedHtml'
         >
           打印

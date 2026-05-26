@@ -57,9 +57,9 @@ const handlers: Array<FileHandlerComposite> = [
   // 使用pdfjs，渲染pdf，效果最好
   {
     accepts: ['pdf'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderPdf } = await import('./pdf')
-      return renderPdf(buffer, target)
+      return renderPdf(buffer, target, context)
     }
   },
   // OFD 是国产版式文档格式，解析和页面渲染依赖较重，必须保持在独立异步块里按需加载。

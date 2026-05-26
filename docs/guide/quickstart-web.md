@@ -115,7 +115,7 @@ await copyViewerAssets({
 
 `options` 会被序列化到 iframe 查询参数中，当前支持:
 
-- `toolbar`: 控制下载原文件、打印和导出 HTML。
+- `toolbar`: 控制下载原文件、完整打印和导出 HTML。
 - `watermark`: 配置文字或图片水印。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
 
