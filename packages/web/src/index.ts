@@ -2,6 +2,40 @@ export type FileRef = File | Blob | ArrayBuffer
 
 export type ViewerFrameParamValue = string | number | boolean | null | undefined
 
+export interface ViewerWatermarkOptions {
+  enabled?: boolean
+  text?: string
+  image?: string
+  opacity?: number
+  rotate?: number
+  gapX?: number
+  gapY?: number
+  width?: number
+  height?: number
+  fontSize?: number
+  color?: string
+  fontFamily?: string
+}
+
+export interface ViewerToolbarOptions {
+  download?: boolean
+  print?: boolean
+  exportHtml?: boolean
+}
+
+export interface ViewerArchiveOptions {
+  workerUrl?: string
+  cache?: boolean
+  maxArchiveSize?: number
+  maxEntryPreviewSize?: number
+}
+
+export interface ViewerRuntimeOptions {
+  watermark?: boolean | ViewerWatermarkOptions
+  toolbar?: boolean | ViewerToolbarOptions
+  archive?: ViewerArchiveOptions
+}
+
 export interface ViewerFrameOptions {
   /**
    * 私有化部署后的 Vue 基线预览器页面地址。
@@ -33,6 +67,10 @@ export interface ViewerFrameOptions {
    * 预留给后续 Vue 基线页面扩展的查询参数。
    */
   params?: Record<string, ViewerFrameParamValue>
+  /**
+   * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
+   */
+  options?: ViewerRuntimeOptions
 }
 
 export interface CreateViewerFrameOptions extends ViewerFrameOptions {
@@ -95,6 +133,14 @@ const appendSearchParam = (target: URL, key: string, value: ViewerFrameParamValu
   target.searchParams.set(key, String(value))
 }
 
+const appendJsonSearchParam = (target: URL, key: string, value: unknown) => {
+  if (value === undefined || value === null) {
+    target.searchParams.delete(key)
+    return
+  }
+  target.searchParams.set(key, JSON.stringify(value))
+}
+
 export const getCurrentOrigin = () => {
   return canUseDom() ? window.location.origin : ''
 }
@@ -128,6 +174,7 @@ export const buildViewerSrc = (options: ViewerFrameOptions = {}) => {
   Object.entries(options.params || {}).forEach(([key, value]) => {
     appendSearchParam(src, key, value)
   })
+  appendJsonSearchParam(src, 'options', options.options)
 
   if (options.file) {
     appendSearchParam(src, 'url', undefined)

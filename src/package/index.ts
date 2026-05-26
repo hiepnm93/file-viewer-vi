@@ -41,3 +41,11 @@ export default new Installer()
 export {
   FileViewer
 }
+
+export type {
+  FileRef,
+  FileViewerArchiveOptions,
+  FileViewerOptions,
+  FileViewerToolbarOptions,
+  FileViewerWatermarkOptions
+} from './common/type'

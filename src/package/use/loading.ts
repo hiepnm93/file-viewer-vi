@@ -80,6 +80,69 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     label: 'OFD 版式文件',
     hint: '正在解析国产版式文档和页面对象。'
   },
+  zip: {
+    accent: '#a15c07',
+    soft: 'rgba(161, 92, 7, 0.12)',
+    badge: 'ZIP',
+    label: '压缩包',
+    hint: '正在启动 Worker 并读取压缩包目录。'
+  },
+  rar: {
+    accent: '#a15c07',
+    soft: 'rgba(161, 92, 7, 0.12)',
+    badge: 'RAR',
+    label: '压缩包',
+    hint: '正在启动 Worker 并读取压缩包目录。'
+  },
+  '7z': {
+    accent: '#a15c07',
+    soft: 'rgba(161, 92, 7, 0.12)',
+    badge: '7Z',
+    label: '压缩包',
+    hint: '正在启动 Worker 并读取压缩包目录。'
+  },
+  tar: {
+    accent: '#a15c07',
+    soft: 'rgba(161, 92, 7, 0.12)',
+    badge: 'TAR',
+    label: '压缩包',
+    hint: '正在启动 Worker 并读取压缩包目录。'
+  },
+  gz: {
+    accent: '#a15c07',
+    soft: 'rgba(161, 92, 7, 0.12)',
+    badge: 'GZ',
+    label: '压缩包',
+    hint: '正在启动 Worker 并读取压缩包目录。'
+  },
+  eml: {
+    accent: '#2563eb',
+    soft: 'rgba(37, 99, 235, 0.12)',
+    badge: 'EML',
+    label: '邮件文件',
+    hint: '正在解析邮件头、正文和附件。'
+  },
+  msg: {
+    accent: '#2563eb',
+    soft: 'rgba(37, 99, 235, 0.12)',
+    badge: 'MSG',
+    label: '邮件文件',
+    hint: '正在解析 Outlook 邮件和附件。'
+  },
+  olb: {
+    accent: '#0d7884',
+    soft: 'rgba(13, 120, 132, 0.12)',
+    badge: 'OLB',
+    label: 'EDA 文件',
+    hint: '正在读取 EDA 容器结构和可读属性。'
+  },
+  dra: {
+    accent: '#0d7884',
+    soft: 'rgba(13, 120, 132, 0.12)',
+    badge: 'DRA',
+    label: 'EDA 文件',
+    hint: '正在读取 EDA 容器结构和可读属性。'
+  },
   dxf: {
     accent: '#0f766e',
     soft: 'rgba(15, 118, 110, 0.12)',

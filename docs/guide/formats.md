@@ -3,18 +3,18 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>101 个扩展名映射</strong>，覆盖 <strong>16 条预览链路</strong>。
+  当前版本内置 <strong>135 个扩展名映射</strong>，覆盖 <strong>19 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>101 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
+    <h3>135 个扩展名映射</h3>
+    <p>覆盖 Office、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
-    <p>OFD、CAD、3D 模型、绘图、PDF、Office、Markdown、代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
+    <p>OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、PDF、Office、Markdown、代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
   </div>
   <div class="doc-card">
     <h3>两条输入路径</h3>
@@ -37,6 +37,9 @@
 | PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，增强组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览 | 汇报材料、说明文档、培训课件 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，支持缩放工具栏、页码状态和可显隐导航窗格 | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
+| 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `libarchive.js` + WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
+| 邮件 | `eml`、`msg` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
+| EDA | `olb`、`dra` | `cfb` 容器解析 + 二进制字符串索引 | 优先解析 OrCAD / Allegro 常见 CFB 容器，展示内部条目、文本片段和可读字符串；非 CFB 文件安全退化 | 元件库、封装图纸、EDA 文件初筛 |
 | CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
 | CAD 兼容入口 | `dwg` | DWG 兼容解析 | 先识别误命名 DXF；真实 DWG 会尽量提取内嵌 PNG/JPEG/BMP 预览图，无法完整解析几何时说明原因 | 需要兼容上传入口但不希望引入 GPL 或闭源 DWG 运行时代码的业务 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
@@ -79,6 +82,15 @@
 - `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态和可显隐页面导航窗格。
 - `ofd` 走 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，OFD 依赖仍保持按需异步加载。
 - 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf` / `ofd` 这类版式成品；如果你需要保留可编辑文件的阅读入口，优先用 `pptx`。
+
+### 压缩包、邮件与 EDA
+
+- 压缩包走 `libarchive.js`，目录读取在 Worker 中完成，只有用户点击内部文件时才按需解压对应条目，避免一次性把大包全量展开到主线程。
+- 压缩包内文件会继续复用同一套文件预览器，所以包里的 PDF、Word、Markdown、代码、图片、邮件或嵌套压缩包都能在体积限制内继续打开。
+- `options.archive.cache` 默认启用 IndexedDB 缓存，已解压的内部文件再次打开会更快；`maxArchiveSize` 和 `maxEntryPreviewSize` 用于限制压缩包和单个条目的内存风险。
+- EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。
+- 邮件 HTML 正文渲染在 sandbox iframe 中，不执行脚本；如果你接收外部邮件，仍建议在业务层保留病毒扫描和附件白名单策略。
+- OLB / DRA 使用 `cfb` 读取常见复合文档容器，适合在线查看内部条目和可读属性。复杂电气规则、封装编辑和几何校核仍应交给 OrCAD / Allegro 等专业工具。
 
 ### CAD 图纸
 

@@ -56,6 +56,10 @@ export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameEle
    * 预留给 Vue 基线页面的查询参数。
    */
   params?: ViewerFrameOptions['params']
+  /**
+   * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
+   */
+  options?: ViewerFrameOptions['options']
 }
 
 const defaultStyle: CSSProperties = {
@@ -74,6 +78,7 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     from,
     targetOrigin,
     params,
+    options,
     onLoad,
     style,
     title = 'Flyfish Viewer 文件预览',
@@ -90,8 +95,9 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     name,
     from,
     targetOrigin,
-    params
-  }), [viewerUrl, url, file, name, from, targetOrigin, params])
+    params,
+    options
+  }), [viewerUrl, url, file, name, from, targetOrigin, params, options])
 
   const src = useMemo(() => buildViewerSrc(frameOptions), [frameOptions])
 

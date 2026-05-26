@@ -2,7 +2,13 @@
 import axios from 'axios'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { readBuffer } from '../../common/util'
-import type { FileRef, Rendered } from '@/package/common/type'
+import type {
+  FileRef,
+  FileViewerOptions,
+  FileViewerToolbarOptions,
+  FileViewerWatermarkOptions,
+  Rendered
+} from '@/package/common/type'
 import { useLoading } from '@/package/use'
 import { getExtend, render } from './util'
 
@@ -21,6 +27,12 @@ const props = defineProps<{
    * 再通过 `file` 参数传入。
    */
   url?: string
+  /**
+   * 预览器通用选项。
+   *
+   * 目前覆盖内置操作栏、水印，以及压缩包内文件预览的缓存/体积限制。
+   */
+  options?: FileViewerOptions
 }>()
 
 const PREVIEW_MESSAGE = {
@@ -30,6 +42,8 @@ const PREVIEW_MESSAGE = {
 
 const filename = ref('')
 const output = ref<HTMLDivElement | null>(null)
+const currentFile = ref<File | null>(null)
+const currentBuffer = ref<ArrayBuffer | null>(null)
 
 const displayFilename = computed(() => getSourceFilename())
 const currentExtend = computed(() => {
@@ -38,6 +52,59 @@ const currentExtend = computed(() => {
     return ''
   }
   return getExtend(name).toLowerCase()
+})
+
+const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
+  const toolbar = props.options?.toolbar
+  if (toolbar === false) {
+    return {
+      download: false,
+      print: false,
+      exportHtml: false
+    }
+  }
+  if (toolbar && typeof toolbar === 'object') {
+    return {
+      download: toolbar.download !== false,
+      print: toolbar.print !== false,
+      exportHtml: toolbar.exportHtml !== false
+    }
+  }
+  return {
+    download: true,
+    print: true,
+    exportHtml: true
+  }
+})
+
+const showToolbar = computed(() => {
+  const toolbar = normalizedToolbar.value
+  return toolbar.download || toolbar.print || toolbar.exportHtml
+})
+
+const toolbarDisabled = computed(() => loading.value || !!error.value || !currentBuffer.value)
+
+const normalizedWatermark = computed<FileViewerWatermarkOptions | null>(() => {
+  const watermark = props.options?.watermark
+  if (!watermark) {
+    return null
+  }
+  if (watermark === true) {
+    return {
+      enabled: true,
+      text: 'Flyfish Viewer'
+    }
+  }
+  if (watermark.enabled === false) {
+    return null
+  }
+  if (!watermark.text && !watermark.image) {
+    return null
+  }
+  return {
+    enabled: true,
+    ...watermark
+  }
 })
 
 const {
@@ -85,12 +152,72 @@ const getSourceFilename = () => {
   return ''
 }
 
+const escapeXml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+
+const encodeSvgDataUrl = (svg: string) => {
+  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`
+}
+
+const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
+  const next = typeof value === 'number' && Number.isFinite(value) ? value : fallback
+  return Math.min(max, Math.max(min, next))
+}
+
+const buildWatermarkSvg = (watermark: FileViewerWatermarkOptions) => {
+  const gapX = clampNumber(watermark.gapX, 260, 96, 800)
+  const gapY = clampNumber(watermark.gapY, 180, 80, 800)
+  const width = clampNumber(watermark.width, watermark.image ? 160 : 220, 32, gapX)
+  const height = clampNumber(watermark.height, watermark.image ? 72 : 72, 24, gapY)
+  const rotate = clampNumber(watermark.rotate, -24, -75, 75)
+  const opacity = clampNumber(watermark.opacity, 0.18, 0.02, 0.8)
+  const x = (gapX - width) / 2
+  const y = (gapY - height) / 2
+  const cx = gapX / 2
+  const cy = gapY / 2
+
+  if (watermark.image) {
+    const href = escapeXml(watermark.image)
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${gapX}" height="${gapY}" viewBox="0 0 ${gapX} ${gapY}"><g opacity="${opacity}" transform="rotate(${rotate} ${cx} ${cy})"><image href="${href}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/></g></svg>`
+  }
+
+  const text = escapeXml(watermark.text || 'Flyfish Viewer')
+  const fontSize = clampNumber(watermark.fontSize, 20, 10, 72)
+  const color = escapeXml(watermark.color || '#355070')
+  const fontFamily = escapeXml(watermark.fontFamily || "Aptos, 'Segoe UI', sans-serif")
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${gapX}" height="${gapY}" viewBox="0 0 ${gapX} ${gapY}"><g opacity="${opacity}" transform="rotate(${rotate} ${cx} ${cy})"><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="${fontFamily}" font-size="${fontSize}" font-weight="700">${text}</text></g></svg>`
+}
+
+const watermarkStyle = computed(() => {
+  const watermark = normalizedWatermark.value
+  if (!watermark) {
+    return undefined
+  }
+  return {
+    backgroundImage: encodeSvgDataUrl(buildWatermarkSvg(watermark))
+  }
+})
+
+const watermarkInlineStyle = computed(() => {
+  const watermark = normalizedWatermark.value
+  if (!watermark) {
+    return ''
+  }
+  return `position:absolute;inset:0;pointer-events:none;background-image:${encodeSvgDataUrl(buildWatermarkSvg(watermark))};background-repeat:repeat;z-index:20;`
+})
+
 // 每次开始新的预览任务时都生成一个版本号。
 // 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
 const createRequestVersion = () => {
   renderVersion += 1
   pendingDownloadController?.abort()
   pendingDownloadController = null
+  currentFile.value = null
+  currentBuffer.value = null
   clearError()
   return renderVersion
 }
@@ -175,7 +302,8 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
   try {
     const rendered = await render(buffer, getExtend(file.name), child, {
       filename: file.name,
-      url: sourceUrl
+      url: sourceUrl,
+      options: props.options
     })
     if (!isCurrentRequest(version)) {
       rendered?.unmount?.()
@@ -200,6 +328,8 @@ const readAndRenderFile = async (file: File, version: number, sourceUrl?: string
   if (!(arrayBuffer instanceof ArrayBuffer) || !isCurrentRequest(version)) {
     return
   }
+  currentFile.value = file
+  currentBuffer.value = arrayBuffer
 
   const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
@@ -270,6 +400,8 @@ const previewRemoteFile = async (url: string, version: number) => {
 // 没有输入源时回到干净初始态，避免保留上一份文档的残留信息。
 const resetViewer = () => {
   filename.value = ''
+  currentFile.value = null
+  currentBuffer.value = null
   clearRenderedContent()
   resetLoading()
 }
@@ -292,6 +424,135 @@ const refreshPreview = async () => {
   resetViewer()
 }
 
+const triggerBlobDownload = (blob: Blob, name: string) => {
+  const objectUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = name
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 4000)
+}
+
+const replaceCanvasWithImages = (source: HTMLElement, clone: HTMLElement) => {
+  const sourceCanvases = Array.from(source.querySelectorAll('canvas'))
+  const clonedCanvases = Array.from(clone.querySelectorAll('canvas'))
+
+  clonedCanvases.forEach((canvas, index) => {
+    const sourceCanvas = sourceCanvases[index]
+    if (!sourceCanvas) {
+      return
+    }
+    try {
+      const image = document.createElement('img')
+      image.src = sourceCanvas.toDataURL('image/png')
+      image.alt = 'rendered canvas'
+      image.style.maxWidth = '100%'
+      image.style.display = 'block'
+      image.style.margin = '0 auto'
+      canvas.replaceWith(image)
+    } catch {
+      // 跨域资源污染过的 canvas 无法导出，只保留原 canvas 占位。
+    }
+  })
+}
+
+const collectDocumentStyles = () => {
+  return Array.from(document.querySelectorAll<HTMLStyleElement | HTMLLinkElement>('style, link[rel="stylesheet"]'))
+    .map(node => {
+      if (node instanceof HTMLStyleElement) {
+        return `<style>${node.textContent || ''}</style>`
+      }
+      if (node.href) {
+        return `<link rel="stylesheet" href="${escapeXml(node.href)}" />`
+      }
+      return ''
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+
+const buildRenderedHtmlDocument = () => {
+  const out = output.value
+  if (!out) {
+    throw new Error('当前没有可导出的预览内容')
+  }
+
+  const clone = out.cloneNode(true) as HTMLElement
+  replaceCanvasWithImages(out, clone)
+
+  const watermark = watermarkInlineStyle.value
+    ? `<div class="viewer-export-watermark" style="${watermarkInlineStyle.value}"></div>`
+    : ''
+  const title = escapeXml(displayFilename.value || 'file-viewer-preview')
+  const styles = collectDocumentStyles()
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title}</title>
+  ${styles}
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #f2f4f7; color: #172033; font-family: Aptos, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { padding: 24px; }
+    .viewer-export-shell { position: relative; min-height: calc(100vh - 48px); overflow: auto; background: #f2f4f7; }
+    .viewer-export-content { position: relative; z-index: 1; width: 100%; min-height: 100%; }
+    img, canvas, svg, video { max-width: 100%; }
+    @media print { body { padding: 0; } .viewer-export-shell { min-height: 100vh; } }
+  </style>
+</head>
+<body>
+  <main class="viewer-export-shell">
+    <div class="viewer-export-content">${clone.innerHTML}</div>
+    ${watermark}
+  </main>
+</body>
+</html>`
+}
+
+const downloadOriginalFile = () => {
+  const buffer = currentBuffer.value
+  const file = currentFile.value
+  if (!buffer || !file) {
+    return
+  }
+  triggerBlobDownload(new Blob([buffer], { type: file.type || 'application/octet-stream' }), file.name || 'preview.bin')
+}
+
+const exportRenderedHtml = () => {
+  try {
+    const html = buildRenderedHtmlDocument()
+    const baseName = displayFilename.value || 'preview'
+    triggerBlobDownload(new Blob([html], { type: 'text/html;charset=utf-8' }), `${baseName}.rendered.html`)
+  } catch (nextError) {
+    showError(formatErrorMessage('导出 HTML 失败', nextError))
+  }
+}
+
+const printRenderedHtml = () => {
+  try {
+    const html = buildRenderedHtmlDocument()
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      throw new Error('浏览器拦截了打印窗口')
+    }
+    printWindow.document.open()
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.setTimeout(() => {
+      printWindow.print()
+    }, 200)
+  } catch (nextError) {
+    showError(formatErrorMessage('打印失败', nextError))
+  }
+}
+
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()
 }, { immediate: true })
@@ -306,7 +567,37 @@ onBeforeUnmount(() => {
 <template>
   <div class='file-viewer' :style='loadingVars'>
     <div class='viewer-stage'>
+      <div v-if='showToolbar' class='viewer-actions'>
+        <button
+          v-if='normalizedToolbar.download'
+          type='button'
+          :disabled='toolbarDisabled'
+          title='下载原始文件'
+          @click='downloadOriginalFile'
+        >
+          下载
+        </button>
+        <button
+          v-if='normalizedToolbar.print'
+          type='button'
+          :disabled='toolbarDisabled'
+          title='打印当前渲染内容'
+          @click='printRenderedHtml'
+        >
+          打印
+        </button>
+        <button
+          v-if='normalizedToolbar.exportHtml'
+          type='button'
+          :disabled='toolbarDisabled'
+          title='导出当前渲染后的 HTML'
+          @click='exportRenderedHtml'
+        >
+          HTML
+        </button>
+      </div>
       <div ref='output' class='content' :class='{ hidden: loading || !!error }' />
+      <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
 
       <div v-if='loading' class='state-panel loading-panel'>
         <div class='loading-card'>
@@ -348,6 +639,46 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+.viewer-actions {
+  position: absolute;
+  z-index: 35;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 12px 28px rgba(17, 30, 45, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.viewer-actions button {
+  min-width: 42px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #40546a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.viewer-actions button:hover:not(:disabled) {
+  background: rgba(33, 163, 102, 0.1);
+  color: #16774c;
+}
+
+.viewer-actions button:disabled {
+  color: #aab5c0;
+  cursor: not-allowed;
+}
+
 .content {
   display: block;
   width: 100%;
@@ -360,8 +691,17 @@ onBeforeUnmount(() => {
   visibility: hidden;
 }
 
+.viewer-watermark {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
 .state-panel {
   position: absolute;
+  z-index: 40;
   inset: 0;
   display: flex;
   align-items: center;

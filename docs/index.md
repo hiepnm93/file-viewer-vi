@@ -10,7 +10,7 @@ titleTemplate: false
 <div class="doc-eyebrow">Official Docs And Component Home</div>
 <h1>Flyfish Viewer</h1>
 <p>
-纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音频和视频预览能力放进浏览器端，
+纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音频和视频预览能力放进浏览器端，
 同时提供 Vue3、Vue2.7、React、纯 JS 和 iframe 多种集成路径。
 </p>
 <div class="doc-home-actions">
@@ -23,11 +23,11 @@ titleTemplate: false
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
 <div>
-<strong>101</strong>
+<strong>135</strong>
 <span>个扩展名映射</span>
 </div>
 <div>
-<strong>16</strong>
+<strong>19</strong>
 <span>条预览链路</span>
 </div>
 <div>
@@ -64,12 +64,12 @@ titleTemplate: false
 <article>
 <span>02</span>
 <h3>重型能力按需进入</h3>
-<p>OFD、CAD、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮都拆成异步块，命中格式时再加载。</p>
+<p>OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮都拆成异步块，命中格式时再加载。</p>
 </article>
 <article>
 <span>03</span>
 <h3>示例覆盖完整验收路径</h3>
-<p>示例文件按文档、表格、图纸、电子书、代码、媒体等类型分组，方便快速定位和回归。</p>
+<p>示例文件按文档、表格、图纸、电子书、压缩包、邮件、EDA、代码、媒体等类型分组，方便快速定位和回归。</p>
 </article>
 </div>
 </div>
@@ -89,7 +89,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音频和 MP4；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音频和 MP4；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>
@@ -120,19 +120,19 @@ titleTemplate: false
 <div class="doc-path-grid">
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
-<span>安装 @flyfish-group/file-viewer3@1.0.10，使用 createApp(App).use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer3@1.0.11，使用 createApp(App).use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@1.0.10，使用 Vue.use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer@1.0.11，使用 Vue.use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
-<span>安装 @flyfish-group/file-viewer-react@1.0.10，通过 iframe 加载私有化 viewer。</span>
+<span>安装 @flyfish-group/file-viewer-react@1.0.11，通过 iframe 加载私有化 viewer。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @flyfish-group/file-viewer-web@1.0.10，用 helper 创建和同步 iframe。</span>
+<span>安装 @flyfish-group/file-viewer-web@1.0.11，用 helper 创建和同步 iframe。</span>
 </a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>

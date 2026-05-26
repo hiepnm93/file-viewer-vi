@@ -4,13 +4,17 @@
 
 ## 当前主线
 
-### `v1.0.10` 完整格式、成品仓库与 npm 同步版本
+### `v1.0.11` 完整格式、成品仓库与 npm 同步版本
 
-- Vue3 包 `@flyfish-group/file-viewer3@1.0.10`、Vue2 包 `@flyfish-group/file-viewer@1.0.10`、React 包 `@flyfish-group/file-viewer-react@1.0.10` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.10` 统一对齐到 npm `latest`
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.11`、Vue2 包 `@flyfish-group/file-viewer@1.0.11`、React 包 `@flyfish-group/file-viewer-react@1.0.11` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.11` 统一对齐到 npm `latest`
+- 新增压缩包预览，基于 `libarchive.js` Worker 支持 ZIP、7z、RAR、TAR、GZIP、BZIP2、XZ、CAB、ISO、JAR、APK、CBZ/CBR 等入口，内部文件按需解压、IndexedDB 缓存并继续调用统一预览器
+- 新增 EML / MSG 邮件预览，支持头信息、HTML/文本正文、附件下载和附件继续在线预览
+- 新增 OLB / DRA 结构预览，基于 `cfb` 解析常见 EDA 复合文档容器，并提供二进制退化和可读字符串索引
+- 预览器新增 `options.watermark`、`options.toolbar` 和 `options.archive`，支持文字/图片水印、下载原文件、打印、导出渲染后 HTML、压缩包 worker 和体积限制配置
 - DWG 入口从单纯提示转换为尽力展示: 误命名 DXF 会直接按 DXF 解析，真实 DWG 会尝试提取内嵌 PNG/JPEG/BMP 预览图，并说明无法完整解析几何的原因
 - 新增 Three.js 3D 模型预览器，支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`；`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会给出转换原因和建议
-- Demo 新增 GLTF / OBJ / STL / PLY / STEP 3D 样例，支持格式矩阵更新到 101 个扩展名、16 条预览链路
-- 文档站全局导航、首页、格式矩阵、分发说明、快速开始和 npm README 均刷新到 `1.0.10`
+- Demo 新增 GLTF / OBJ / STL / PLY / STEP 3D 样例，以及 ZIP、TAR.GZ、EML、MSG、OLB、DRA 样例，支持格式矩阵更新到 135 个扩展名、19 条预览链路
+- 文档站全局导航、首页、格式矩阵、分发说明、快速开始和 npm README 均刷新到 `1.0.11`
 - 公开成品仓库继续只保留混淆压缩构建产物、Demo 静态站、文档静态站、样例文件和 tarball，不提交源码目录
 - React / 纯 JS 文档继续推荐 `npm install` 零步骤安装，并补充 pnpm 10 拦截 `postinstall` 时的 `pnpm approve-builds` / `pnpm exec file-viewer-copy-assets` 处理方式
 

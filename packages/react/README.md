@@ -3,7 +3,7 @@
 React 文件预览组件。只提供私有化部署路线: 依赖的 `@flyfish-group/file-viewer-web` 会随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.10
+npm install @flyfish-group/file-viewer-react@1.0.11
 ```
 
 pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
@@ -16,6 +16,14 @@ export function Preview() {
     <div style={{ height: '100vh' }}>
       <FileViewer
         url="https://example.com/demo.docx"
+        options={{
+          toolbar: true,
+          watermark: { text: '内部预览', opacity: 0.14 },
+          archive: {
+            workerUrl: '/file-viewer/vendor/libarchive/worker-bundle.js',
+            cache: true
+          }
+        }}
       />
     </div>
   )
@@ -33,3 +41,5 @@ export function Preview() {
 ```tsx
 <FileViewer viewerUrl="/vendor/file-viewer/index.html" url={url} />
 ```
+
+`options` 会透传给 Vue 基线预览器，可配置下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。

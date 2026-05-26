@@ -1,18 +1,5 @@
-import { renderDoc, renderDocx } from './word'
-import renderPptx from './pptx'
-import renderXlsx from './xlsx'
-import renderPdf from './pdf'
-import renderImage from './image'
-import renderMd from './md'
-import renderText from './text'
-import renderMp4 from './mp4'
-import renderAudio from './audio'
-import renderOfd from './ofd'
-import renderCad from './cad'
-import renderDrawing from './drawing'
-import renderEpub from './ebook'
-import renderUmd from './umd'
-import renderModel, { MODEL_EXTENSIONS } from './model'
+import { ARCHIVE_EXTENSIONS } from './archive/shared'
+import { MODEL_EXTENSIONS } from './model/shared'
 import type { AppWrapper, FileHandler, FileHandlerComposite, FileRenderContext } from '@/package/common/type'
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
@@ -28,6 +15,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['docx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { renderDocx } = await import('./word')
       const rendered = await renderDocx(buffer, target)
       window.dispatchEvent(new Event('resize'))
       return rendered
@@ -36,6 +24,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['doc'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { renderDoc } = await import('./word')
       return renderDoc(buffer, target)
     }
   },
@@ -43,6 +32,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['pptx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderPptx } = await import('./pptx')
       await renderPptx(buffer, target)
       window.dispatchEvent(new Event('resize'))
       return createWrapper(target)
@@ -52,6 +42,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['xlsx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderXlsx } = await import('./xlsx')
       return renderXlsx(buffer, target)
     }
   },
@@ -59,6 +50,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderXlsx } = await import('./xlsx')
       return renderXlsx(buffer, target)
     }
   },
@@ -66,6 +58,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['pdf'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderPdf } = await import('./pdf')
       return renderPdf(buffer, target)
     }
   },
@@ -73,13 +66,39 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['ofd'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderOfd } = await import('./ofd')
       return renderOfd(buffer, target)
+    }
+  },
+  // 压缩包依赖 libarchive.js 的 WASM Worker。只在命中压缩包扩展名时加载，并且内部文件按点击解压。
+  {
+    accepts: ARCHIVE_EXTENSIONS,
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
+      const { default: renderArchive } = await import('./archive')
+      return renderArchive(buffer, target, context)
+    }
+  },
+  // EML/MSG 使用成熟邮件解析库读取头信息、正文与附件，附件继续交给统一渲染器预览。
+  {
+    accepts: ['eml', 'msg'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      const { default: renderEmail } = await import('./email')
+      return renderEmail(buffer, target, type, context)
+    }
+  },
+  // OLB/DRA 常见于 OrCAD / Allegro 生态，优先按 CFB 容器解析，失败时退化为安全的二进制结构预览。
+  {
+    accepts: ['olb', 'dra'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      const { default: renderEda } = await import('./eda')
+      return renderEda(buffer, target, type, context)
     }
   },
   // CAD 内置 DXF 几何预览；DWG 会识别误命名 DXF，并尽量提取二进制内嵌预览图。
   {
     accepts: ['dxf', 'dwg'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderCad } = await import('./cad')
       return renderCad(buffer, target, type)
     }
   },
@@ -87,6 +106,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: MODEL_EXTENSIONS,
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      const { default: renderModel } = await import('./model')
       return renderModel(buffer, target, type, context)
     }
   },
@@ -94,6 +114,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['excalidraw', 'drawio', 'dio'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderDrawing } = await import('./drawing')
       return renderDrawing(buffer, target, type)
     }
   },
@@ -101,6 +122,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['epub'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderEpub } = await import('./ebook')
       return renderEpub(buffer, target)
     }
   },
@@ -108,6 +130,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['umd'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderUmd } = await import('./umd')
       return renderUmd(buffer, target)
     }
   },
@@ -115,12 +138,14 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg','webp'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderImage } = await import('./image')
       return renderImage(buffer, target)
     }
   },
   {
     accepts: ['md', 'markdown'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderMd } = await import('./md')
       return renderMd(buffer, target)
     }
   },
@@ -131,6 +156,7 @@ const handlers: Array<FileHandlerComposite> = [
       'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs', 'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff'
     ],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderText } = await import('./text')
       return renderText(buffer, target, type)
     }
   },
@@ -138,6 +164,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['mp4'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      const { default: renderMp4 } = await import('./mp4')
       renderMp4(buffer, target)
       return createWrapper(target)
     }
@@ -146,6 +173,7 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderAudio } = await import('./audio')
       return renderAudio(buffer, target, type)
     }
   },
@@ -154,7 +182,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

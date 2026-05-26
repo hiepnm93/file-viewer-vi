@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.10`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
+当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.11`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
 
 ## 安装
 
@@ -98,6 +98,7 @@ function onChange(event: Event) {
 | --- | --- | --- |
 | `url` | `string` | 组件内部会使用 `axios` 拉取文件，再交给对应渲染器解析 |
 | `file` | `File` | 推荐直接传入带正确扩展名的 `File`，适合本地上传预览或业务侧已完成鉴权下载的场景 |
+| `options` | `FileViewerOptions` | 可选运行配置，支持工具栏、水印、压缩包 Worker、缓存和体积上限 |
 
 当 `file` 和 `url` 同时存在时，组件会优先渲染 `file`。如果后续 `file` 被清空，组件会回退到 `url` 继续加载。
 
@@ -105,6 +106,22 @@ function onChange(event: Event) {
 
 ```ts
 file.value = new File([blob], 'contract.pdf', { type: blob.type })
+```
+
+### 配置水印、导出和压缩包
+
+```vue
+<file-viewer
+  :url="url"
+  :options="{
+    toolbar: { download: true, print: true, exportHtml: true },
+    watermark: { text: '内部预览', opacity: 0.14 },
+    archive: {
+      workerUrl: '/vendor/libarchive/worker-bundle.js',
+      cache: true
+    }
+  }"
+/>
 ```
 
 ## 常见接入建议
@@ -151,7 +168,7 @@ import { FileViewer } from '@flyfish-group/file-viewer3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.10`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.11`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 

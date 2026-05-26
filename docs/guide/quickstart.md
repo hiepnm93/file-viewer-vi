@@ -53,11 +53,15 @@ createApp(App).use(FileViewer).mount('#app')
 import { ref } from 'vue'
 
 const url = ref('https://example.com/demo.docx')
+const options = {
+  toolbar: true,
+  watermark: { text: '内部预览', opacity: 0.14 }
+}
 </script>
 
 <template>
   <div style="height: 100vh">
-    <file-viewer :url="url" />
+    <file-viewer :url="url" :options="options" />
   </div>
 </template>
 ```
@@ -89,7 +93,7 @@ new Vue({
 React 17 / 18 / 19 项目安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.10
+npm install @flyfish-group/file-viewer-react@1.0.11
 ```
 
 ```tsx
@@ -111,7 +115,7 @@ export function Preview() {
 不使用框架时安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.10
+npm install @flyfish-group/file-viewer-web@1.0.11
 ```
 
 ```html
@@ -121,7 +125,11 @@ npm install @flyfish-group/file-viewer-web@1.0.10
   import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
 
   mountViewerFrame(document.getElementById('viewer'), {
-    url: '/files/demo.pdf'
+    url: '/files/demo.pdf',
+    options: {
+      toolbar: true,
+      archive: { workerUrl: '/file-viewer/vendor/libarchive/worker-bundle.js' }
+    }
   })
 </script>
 ```
@@ -144,6 +152,6 @@ npm install @flyfish-group/file-viewer-web@1.0.10
 ## 下一步建议
 
 - 想了解 Demo 中每个示例文件的作用: 看 [Demo 说明](/guide/demo)
-- 想明确 `file` 和 `url` 的参数行为: 看 [组件用法](/guide/usage)
+- 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/guide/usage)
 - 准备做本地验证和打包: 看 [本地开发与打包](/guide/development)
 - 想下载成品或开通源码: 看 [发布与成品分发](/guide/distribution)

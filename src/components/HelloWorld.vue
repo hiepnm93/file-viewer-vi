@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { listenForFile } from '@/components/utils'
-import type { FileRef } from '@/package/common/type'
+import type { FileRef, FileViewerOptions } from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
 
 const hidden = ref(false)
@@ -15,6 +15,8 @@ const expandedSampleGroupIndex = ref<number | null>(0)
 const samplePickerRef = ref<HTMLElement | null>(null)
 const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
+const watermarkEnabled = ref(false)
+const runtimeOptions = ref<FileViewerOptions>({})
 
 type PresetFile = {
   name: string
@@ -86,6 +88,26 @@ const sampleGroups: SampleGroup[] = [
     items: [
       { name: 'EPUB', url: '/example/book.epub' },
       { name: 'UMD', url: '/example/book.umd' }
+    ]
+  },
+  {
+    title: '压缩包',
+    description: 'ZIP / TAR.GZ',
+    family: 'archive',
+    items: [
+      { name: 'ZIP', url: '/example/archive.zip' },
+      { name: 'TAR.GZ', url: '/example/archive.tar.gz' }
+    ]
+  },
+  {
+    title: '邮件与 EDA',
+    description: 'EML / MSG / OLB / DRA',
+    family: 'email',
+    items: [
+      { name: 'EML', url: '/example/sample.eml' },
+      { name: 'MSG', url: '/example/sample.msg' },
+      { name: 'OLB', url: '/example/sample.olb' },
+      { name: 'DRA', url: '/example/sample.dra' }
     ]
   },
   {
@@ -168,7 +190,10 @@ const presetFiles = sampleGroups.flatMap(group => group.items)
 const extraUploadExtensions = [
   'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba',
   'glb', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz',
-  'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp'
+  'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp',
+  'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
+  'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
+  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'olb', 'dra'
 ]
 
 const uploadAccept = Array.from(new Set([
@@ -229,6 +254,40 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   dio: { icon: 'DIO', family: 'drawing' },
   epub: { icon: 'EPUB', family: 'ebook' },
   umd: { icon: 'UMD', family: 'ebook' },
+  zip: { icon: 'ZIP', family: 'archive' },
+  zipx: { icon: 'ZIP', family: 'archive' },
+  '7z': { icon: '7Z', family: 'archive' },
+  rar: { icon: 'RAR', family: 'archive' },
+  tar: { icon: 'TAR', family: 'archive' },
+  gz: { icon: 'GZ', family: 'archive' },
+  gzip: { icon: 'GZ', family: 'archive' },
+  tgz: { icon: 'TGZ', family: 'archive' },
+  bz2: { icon: 'BZ2', family: 'archive' },
+  bzip2: { icon: 'BZ2', family: 'archive' },
+  tbz: { icon: 'TBZ', family: 'archive' },
+  tbz2: { icon: 'TBZ', family: 'archive' },
+  xz: { icon: 'XZ', family: 'archive' },
+  txz: { icon: 'TXZ', family: 'archive' },
+  lzma: { icon: 'LZ', family: 'archive' },
+  zst: { icon: 'ZST', family: 'archive' },
+  tzst: { icon: 'ZST', family: 'archive' },
+  cab: { icon: 'CAB', family: 'archive' },
+  ar: { icon: 'AR', family: 'archive' },
+  cpio: { icon: 'CPIO', family: 'archive' },
+  iso: { icon: 'ISO', family: 'archive' },
+  xar: { icon: 'XAR', family: 'archive' },
+  lha: { icon: 'LHA', family: 'archive' },
+  lzh: { icon: 'LZH', family: 'archive' },
+  jar: { icon: 'JAR', family: 'archive' },
+  war: { icon: 'WAR', family: 'archive' },
+  ear: { icon: 'EAR', family: 'archive' },
+  apk: { icon: 'APK', family: 'archive' },
+  cbz: { icon: 'CBZ', family: 'archive' },
+  cbr: { icon: 'CBR', family: 'archive' },
+  eml: { icon: 'EML', family: 'email' },
+  msg: { icon: 'MSG', family: 'email' },
+  olb: { icon: 'OLB', family: 'eda' },
+  dra: { icon: 'DRA', family: 'eda' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },
@@ -358,8 +417,32 @@ const previewType = computed(() => {
   return ext.toUpperCase()
 })
 
-listenForFile((body, target) => {
+const viewerOptions = computed<FileViewerOptions>(() => ({
+  toolbar: true,
+  archive: {
+    workerUrl: '/vendor/libarchive/worker-bundle.js',
+    cache: true,
+    ...runtimeOptions.value.archive
+  },
+  ...runtimeOptions.value,
+  watermark: watermarkEnabled.value
+    ? {
+        text: 'Flyfish Viewer',
+        opacity: 0.16,
+        rotate: -24,
+        color: '#1f7a58',
+        ...(
+          typeof runtimeOptions.value.watermark === 'object'
+            ? runtimeOptions.value.watermark
+            : {}
+        )
+      }
+    : runtimeOptions.value.watermark
+}))
+
+listenForFile((body, target, options) => {
   hidden.value = true
+  runtimeOptions.value = options || {}
   if (body) {
     filename.value = body.name && decodeURIComponent(body.name) || ''
     file.value = body
@@ -423,8 +506,9 @@ async function toggleSampleGroup(index: number) {
 }
 
 function selectPreset(nextUrl: string) {
+  const nextGroupIndex = sampleGroups.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, nextUrl)))
   url.value = nextUrl
-  expandedSampleGroupIndex.value = activeSampleGroupIndex.value >= 0 ? activeSampleGroupIndex.value : expandedSampleGroupIndex.value
+  expandedSampleGroupIndex.value = nextGroupIndex >= 0 ? nextGroupIndex : expandedSampleGroupIndex.value
   samplePickerOpen.value = false
   openUrlPreview(nextUrl)
 }
@@ -624,17 +708,26 @@ function updateSampleMenuGeometry() {
               <span class='viewer-type'>{{ previewType }}</span>
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
+            <button
+              type='button'
+              class='viewer-tool-button'
+              :class='{ active: watermarkEnabled }'
+              title='切换水印'
+              @click='watermarkEnabled = !watermarkEnabled'
+            >
+              水印
+            </button>
           </div>
 
           <div class='viewport'>
-            <file-viewer :file='file' :url='preview' />
+            <file-viewer :file='file' :url='preview' :options='viewerOptions' />
           </div>
         </section>
       </div>
 
       <section v-else class='viewer-panel standalone'>
         <div class='viewport'>
-          <file-viewer :file='file' :url='preview' />
+          <file-viewer :file='file' :url='preview' :options='viewerOptions' />
         </div>
       </section>
     </main>
@@ -1233,6 +1326,21 @@ function updateSampleMenuGeometry() {
   color: #7c3aed;
 }
 
+.sample-file-icon[data-family='archive'] {
+  background: linear-gradient(145deg, #ffeec7, #ffffff);
+  color: #a15c07;
+}
+
+.sample-file-icon[data-family='email'] {
+  background: linear-gradient(145deg, #dcecff, #ffffff);
+  color: #2563eb;
+}
+
+.sample-file-icon[data-family='eda'] {
+  background: linear-gradient(145deg, #dff7fb, #ffffff);
+  color: #0d7884;
+}
+
 .sample-file-icon[data-family='code'] {
   background: linear-gradient(145deg, #dde7f1, #ffffff);
   color: #334155;
@@ -1382,6 +1490,26 @@ function updateSampleMenuGeometry() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.viewer-tool-button {
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #526174;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.viewer-tool-button.active {
+  border-color: rgba(33, 163, 102, 0.28);
+  background: rgba(33, 163, 102, 0.12);
+  color: #16804f;
 }
 
 .viewport {

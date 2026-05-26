@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.10
+npm install --save @flyfish-group/file-viewer-web@1.0.11
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -38,7 +38,12 @@ pnpm exec file-viewer-copy-assets ./public/file-viewer
   import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
 
   mountViewerFrame(document.getElementById('viewer'), {
-    url: '/files/demo.pdf'
+    url: '/files/demo.pdf',
+    options: {
+      toolbar: true,
+      watermark: { text: '内部资料', opacity: 0.14 },
+      archive: { workerUrl: '/vendor/libarchive/worker-bundle.js', cache: true }
+    }
   })
 </script>
 ```
@@ -108,6 +113,12 @@ await copyViewerAssets({
 | `syncViewerFrame(frame, options)` | 更新 iframe 地址 |
 | `copyViewerAssets(options)` | Node 环境下复制 viewer 静态产物 |
 
+`options` 会被序列化到 iframe 查询参数中，当前支持:
+
+- `toolbar`: 控制下载原文件、打印和导出 HTML。
+- `watermark`: 配置文字或图片水印。
+- `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
+
 ## 构建上线
 
 上线只需要发布业务构建产物和 viewer 静态目录。默认结构是:
@@ -119,6 +130,10 @@ dist/
   file-viewer/
     index.html
     assets/
+    vendor/
+      libarchive/
+        worker-bundle.js
+        libarchive.wasm
 ```
 
 仓库里的适配层演示可以作为上线前 smoke test:

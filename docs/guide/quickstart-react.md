@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-react@1.0.10
+npm install --save @flyfish-group/file-viewer-react@1.0.11
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -27,7 +27,7 @@ pnpm approve-builds
 pnpm exec file-viewer-copy-assets ./public/file-viewer
 ```
 
-`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.10`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
+`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.11`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
 
 ```txt
 /file-viewer/index.html
@@ -41,7 +41,17 @@ import FileViewer from '@flyfish-group/file-viewer-react'
 export function Preview() {
   return (
     <div style={{ height: '100vh' }}>
-      <FileViewer url="/files/demo.docx" />
+      <FileViewer
+        url="/files/demo.docx"
+        options={{
+          toolbar: true,
+          watermark: { text: '内部预览', opacity: 0.14 },
+          archive: {
+            workerUrl: '/vendor/libarchive/worker-bundle.js',
+            cache: true
+          }
+        }}
+      />
     </div>
   )
 }
@@ -102,6 +112,7 @@ npx file-viewer-copy-assets ./public/vendor/file-viewer
 | `from` | `string` | 二进制推送时允许的宿主 origin，默认当前页面 origin |
 | `targetOrigin` | `string` | `postMessage` 目标 origin，默认从 `viewerUrl` 推导 |
 | `params` | `Record<string, string \| number \| boolean>` | 透传给 Vue3 基线 viewer 的查询参数 |
+| `options` | `ViewerRuntimeOptions` | 透传给 Vue3 基线 viewer 的运行配置，支持操作栏、水印和压缩包 Worker / 缓存 / 体积限制 |
 
 组件支持普通 iframe 属性，例如 `className`、`style`、`allow`、`sandbox`、`loading`。
 
@@ -122,6 +133,8 @@ pnpm dev:adapters
 ```txt
 file-viewer/index.html
 file-viewer/assets/*
+file-viewer/vendor/libarchive/worker-bundle.js
+file-viewer/vendor/libarchive/libarchive.wasm
 ```
 
 构建后的业务页面就能继续使用默认 `viewerUrl`。如果你的部署路径有前缀，请复制 viewer 到对应静态目录，并显式传入 `viewerUrl`。
