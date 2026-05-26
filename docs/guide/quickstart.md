@@ -93,7 +93,7 @@ new Vue({
 React 17 / 18 / 19 项目安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.11
+npm install @flyfish-group/file-viewer-react@1.0.12
 ```
 
 ```tsx
@@ -115,7 +115,7 @@ export function Preview() {
 不使用框架时安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.11
+npm install @flyfish-group/file-viewer-web@1.0.12
 ```
 
 ```html

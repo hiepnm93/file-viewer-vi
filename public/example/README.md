@@ -36,8 +36,8 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用可追溯的
 - `archive.tar.gz`: 验证 TAR.GZ 压缩包兼容入口和内部文件预览
 - `sample.eml`: 验证 EML 头信息、HTML/文本正文、附件下载和附件预览
 - `sample.msg`: 使用 msgreader 上游公开样例验证 Outlook MSG 解析
-- `sample.olb`: 使用项目内生成的 CFB 元件库夹具验证 OLB 结构预览
-- `sample.dra`: 使用项目内生成的 CFB 封装图纸夹具验证 DRA 结构预览
+- `sample.olb`: 使用项目内生成的 CFB 元件库夹具验证 OLB 结构树、元件属性和字符串预览
+- `sample.dra`: 使用项目内生成的 CFB 封装图纸夹具验证 DRA 图纸、封装、Padstack 和属性预览
 - `markdown.md`: 验证 Markdown 阅读样式
 - `notes.markdown`: 验证 Markdown 长扩展名
 - `text.txt`: 验证纯文本预览
@@ -119,4 +119,4 @@ DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 已换成真实公开 DWG
 
 `audio.mp3` 与 `audio.ogg` 用于验证浏览器原生音频播放能力；`book.epub` 用于验证 `epubjs` 的目录、章节资源和滚动阅读能力；`book.umd` 用于验证早期移动电子书的文件头、元数据、章节偏移、章节标题和 zlib 正文段。
 
-`archive.zip` 与 `archive.tar.gz` 用于验证 `libarchive.js` 的 Worker 目录读取、按需解压、IndexedDB 缓存和压缩包内文件继续预览。`sample.eml` 与 `sample.msg` 用于验证邮件头信息、HTML/文本正文、附件下载和附件预览。`sample.olb` 与 `sample.dra` 是 CFB 容器夹具，用于验证 OLB / DRA 的内部条目、文本片段和可读字符串预览。
+`archive.zip` 与 `archive.tar.gz` 用于验证 `libarchive.js` 的 Worker 目录读取、按需解压、IndexedDB 缓存和压缩包内文件继续预览。`sample.eml` 与 `sample.msg` 用于验证邮件头信息、HTML/文本正文、附件下载和附件预览。`sample.olb` 与 `sample.dra` 是 CFB 容器夹具，用于验证 OLB / DRA 的结构树、对象候选、属性、文本片段和可读字符串预览。

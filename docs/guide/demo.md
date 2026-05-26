@@ -160,7 +160,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
 
-压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG 的头信息、正文切换、附件下载和附件预览。OLB / DRA 样例是项目内生成的 CFB 容器，用于验证 EDA 文件结构预览和可读字符串索引。
+压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG 的头信息、正文切换、附件下载和附件预览。OLB / DRA 样例是项目内生成的 CFB 容器，用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引。
 
 ## 公开样例来源
 

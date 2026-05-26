@@ -1,24 +1,6 @@
 <script setup lang='ts'>
-import { computed } from 'vue'
-import hljs from 'highlight.js/lib/core'
-import bash from 'highlight.js/lib/languages/bash'
-import cpp from 'highlight.js/lib/languages/cpp'
-import csharp from 'highlight.js/lib/languages/csharp'
-import css from 'highlight.js/lib/languages/css'
-import diff from 'highlight.js/lib/languages/diff'
-import go from 'highlight.js/lib/languages/go'
-import ini from 'highlight.js/lib/languages/ini'
-import java from 'highlight.js/lib/languages/java'
-import javascript from 'highlight.js/lib/languages/javascript'
-import json from 'highlight.js/lib/languages/json'
-import markdown from 'highlight.js/lib/languages/markdown'
-import php from 'highlight.js/lib/languages/php'
-import python from 'highlight.js/lib/languages/python'
-import rust from 'highlight.js/lib/languages/rust'
-import sql from 'highlight.js/lib/languages/sql'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
-import yaml from 'highlight.js/lib/languages/yaml'
+import { computed, ref, watch } from 'vue'
+import type { HLJSApi, LanguageFn } from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 
 const props = defineProps<{
@@ -65,34 +47,51 @@ const languageMap: Record<string, string> = {
   yml: 'yaml'
 }
 
-const registeredLanguages = new Set<string>()
-
-const registerLanguageOnce = (name: string, language: Parameters<typeof hljs.registerLanguage>[1]) => {
-  if (registeredLanguages.has(name)) {
-    return
-  }
-  hljs.registerLanguage(name, language)
-  registeredLanguages.add(name)
+const languageLoaders: Record<string, () => Promise<{ default: LanguageFn }>> = {
+  bash: () => import('highlight.js/lib/languages/bash'),
+  cpp: () => import('highlight.js/lib/languages/cpp'),
+  csharp: () => import('highlight.js/lib/languages/csharp'),
+  css: () => import('highlight.js/lib/languages/css'),
+  diff: () => import('highlight.js/lib/languages/diff'),
+  go: () => import('highlight.js/lib/languages/go'),
+  ini: () => import('highlight.js/lib/languages/ini'),
+  java: () => import('highlight.js/lib/languages/java'),
+  javascript: () => import('highlight.js/lib/languages/javascript'),
+  json: () => import('highlight.js/lib/languages/json'),
+  markdown: () => import('highlight.js/lib/languages/markdown'),
+  php: () => import('highlight.js/lib/languages/php'),
+  python: () => import('highlight.js/lib/languages/python'),
+  rust: () => import('highlight.js/lib/languages/rust'),
+  sql: () => import('highlight.js/lib/languages/sql'),
+  typescript: () => import('highlight.js/lib/languages/typescript'),
+  xml: () => import('highlight.js/lib/languages/xml'),
+  yaml: () => import('highlight.js/lib/languages/yaml')
 }
 
-registerLanguageOnce('bash', bash)
-registerLanguageOnce('cpp', cpp)
-registerLanguageOnce('csharp', csharp)
-registerLanguageOnce('css', css)
-registerLanguageOnce('diff', diff)
-registerLanguageOnce('go', go)
-registerLanguageOnce('ini', ini)
-registerLanguageOnce('java', java)
-registerLanguageOnce('javascript', javascript)
-registerLanguageOnce('json', json)
-registerLanguageOnce('markdown', markdown)
-registerLanguageOnce('php', php)
-registerLanguageOnce('python', python)
-registerLanguageOnce('rust', rust)
-registerLanguageOnce('sql', sql)
-registerLanguageOnce('typescript', typescript)
-registerLanguageOnce('xml', xml)
-registerLanguageOnce('yaml', yaml)
+let highlighterPromise: Promise<HLJSApi> | null = null
+const registeredLanguages = new Set<string>()
+
+const loadHighlighter = async () => {
+  if (!highlighterPromise) {
+    highlighterPromise = import('highlight.js/lib/core').then(module => module.default)
+  }
+  return highlighterPromise
+}
+
+const registerLanguageOnce = async (hljs: HLJSApi, name: string) => {
+  if (registeredLanguages.has(name)) {
+    return true
+  }
+  const loader = languageLoaders[name]
+  if (!loader) {
+    return false
+  }
+  // 每个代码格式只加载当前语言定义，避免代码预览 chunk 被所有语言解析器拖大。
+  const { default: language } = await loader()
+  hljs.registerLanguage(name, language)
+  registeredLanguages.add(name)
+  return true
+}
 
 const language = computed(() => {
   return languageMap[props.type.toLowerCase()] || 'plaintext'
@@ -111,19 +110,36 @@ const escapeHtml = (value: string) => {
   })
 }
 
-const highlighted = computed(() => {
-  if (language.value === 'plaintext') {
+const highlighted = ref('')
+let highlightToken = 0
+
+const updateHighlighted = async () => {
+  const token = ++highlightToken
+  const currentLanguage = language.value
+  if (currentLanguage === 'plaintext') {
     // highlight.js core 不注册 plaintext，纯文本只做 HTML 转义，避免执行用户内容。
-    return escapeHtml(props.value)
+    highlighted.value = escapeHtml(props.value)
+    return
   }
 
   try {
-    return hljs.highlight(props.value, { language: language.value }).value
+    const hljs = await loadHighlighter()
+    const hasLanguage = await registerLanguageOnce(hljs, currentLanguage)
+    if (token !== highlightToken) {
+      return
+    }
+    highlighted.value = hasLanguage
+      ? hljs.highlight(props.value, { language: currentLanguage, ignoreIllegals: true }).value
+      : escapeHtml(props.value)
   } catch {
-    // 某些少见扩展名可能没有映射到 highlight.js 语言，自动识别比直接失败更友好。
-    return hljs.highlightAuto(props.value).value
+    if (token === highlightToken) {
+      // 高亮器加载失败时只退回安全转义文本，不额外加载自动识别语言集合。
+      highlighted.value = escapeHtml(props.value)
+    }
   }
-})
+}
+
+watch(() => [props.value, language.value] as const, updateHighlighted, { immediate: true })
 
 const lineCount = computed(() => {
   return props.value.split(/\r\n|\r|\n/).length

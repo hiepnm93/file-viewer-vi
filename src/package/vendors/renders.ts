@@ -86,7 +86,7 @@ const handlers: Array<FileHandlerComposite> = [
       return renderEmail(buffer, target, type, context)
     }
   },
-  // OLB/DRA 常见于 OrCAD / Allegro 生态，优先按 CFB 容器解析，失败时退化为安全的二进制结构预览。
+  // OLB/DRA 常见于 OrCAD / Allegro 生态，优先按 CFB 容器解析结构树、对象和属性，失败时退化为安全的二进制结构预览。
   {
     accepts: ['olb', 'dra'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {

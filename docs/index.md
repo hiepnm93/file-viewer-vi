@@ -120,19 +120,19 @@ titleTemplate: false
 <div class="doc-path-grid">
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
-<span>安装 @flyfish-group/file-viewer3@1.0.11，使用 createApp(App).use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer3@1.0.12，使用 createApp(App).use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@1.0.11，使用 Vue.use(FileViewer)。</span>
+<span>安装 @flyfish-group/file-viewer@1.0.12，使用 Vue.use(FileViewer)。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
-<span>安装 @flyfish-group/file-viewer-react@1.0.11，通过 iframe 加载私有化 viewer。</span>
+<span>安装 @flyfish-group/file-viewer-react@1.0.12，通过 iframe 加载私有化 viewer。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @flyfish-group/file-viewer-web@1.0.11，用 helper 创建和同步 iframe。</span>
+<span>安装 @flyfish-group/file-viewer-web@1.0.12，用 helper 创建和同步 iframe。</span>
 </a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>

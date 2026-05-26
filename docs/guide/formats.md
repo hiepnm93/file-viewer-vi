@@ -39,7 +39,7 @@
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `libarchive.js` + WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
-| EDA | `olb`、`dra` | `cfb` 容器解析 + 二进制字符串索引 | 优先解析 OrCAD / Allegro 常见 CFB 容器，展示内部条目、文本片段和可读字符串；非 CFB 文件安全退化 | 元件库、封装图纸、EDA 文件初筛 |
+| EDA | `olb`、`dra` | `cfb` 容器解析 + EDA 结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器，展示结构树、元件/封装/Padstack 候选、属性、诊断和可读字符串；非 CFB 文件安全退化 | 元件库、封装图纸、EDA 文件初筛 |
 | CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
 | CAD 兼容入口 | `dwg` | DWG 兼容解析 | 先识别误命名 DXF；真实 DWG 会尽量提取内嵌 PNG/JPEG/BMP 预览图，无法完整解析几何时说明原因 | 需要兼容上传入口但不希望引入 GPL 或闭源 DWG 运行时代码的业务 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
@@ -90,7 +90,7 @@
 - `options.archive.cache` 默认启用 IndexedDB 缓存，已解压的内部文件再次打开会更快；`maxArchiveSize` 和 `maxEntryPreviewSize` 用于限制压缩包和单个条目的内存风险。
 - EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。
 - 邮件 HTML 正文渲染在 sandbox iframe 中，不执行脚本；如果你接收外部邮件，仍建议在业务层保留病毒扫描和附件白名单策略。
-- OLB / DRA 使用 `cfb` 读取常见复合文档容器，适合在线查看内部条目和可读属性。复杂电气规则、封装编辑和几何校核仍应交给 OrCAD / Allegro 等专业工具。
+- OLB / DRA 使用 `cfb` 读取常见复合文档容器，并按 OrCAD Capture 元件库、Allegro drawing / footprint / padstack 的内容习惯做结构树、对象候选、属性和诊断展示。复杂电气规则、封装编辑和几何校核仍应交给 OrCAD / Allegro 等专业工具。
 
 ### CAD 图纸
 

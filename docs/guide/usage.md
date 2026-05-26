@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.11`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.11`，React 使用 `@flyfish-group/file-viewer-react@1.0.11`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.11`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.12`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.12`，React 使用 `@flyfish-group/file-viewer-react@1.0.12`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.12`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 ## 先记住这 4 条规则
 
@@ -224,7 +224,7 @@ async function useLocal(blob: Blob) {
 
 `.eml` 使用 `postal-mime`，`.msg` 使用 `@kenjiuno/msgreader`。邮件正文会在安全 iframe 中展示，附件可以下载，也可以继续在线预览。
 
-`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。它适合查看内部条目、文本片段和可读字符串，不替代专业 EDA 软件里的封装编辑、规则校核和电气验证。
+`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。组件会展示结构树、流类型、元件符号、封装、Padstack、属性、可读字符串和诊断信息；它适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、规则校核和电气验证。
 
 3D 模型使用 Three.js，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议。
 
