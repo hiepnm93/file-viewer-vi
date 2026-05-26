@@ -11,7 +11,7 @@ html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #081522;
+  background: #eef5f1;
   font-family: Aptos, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -20,7 +20,7 @@ html {
 body {
   margin: 0;
   height: 100%;
-  background: #081522;
+  background: #eef5f1;
   overflow: hidden;
 }
 
