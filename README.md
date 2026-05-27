@@ -94,6 +94,8 @@ import FileViewer from '@flyfish-group/file-viewer3'
 createApp(App).use(FileViewer).mount('#app')
 ```
 
+Vue3 入口会把样式一起带到安装器里，所以这里不需要再额外引入 `dist/file-viewer3.css`。
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -116,10 +118,13 @@ const url = ref('https://example.com/demo.pdf')
 pnpm add @flyfish-group/file-viewer
 ```
 
+Vue2 包仍然需要显式引入样式文件 `@flyfish-group/file-viewer/dist/style.css`。
+
 ```ts
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
+import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 

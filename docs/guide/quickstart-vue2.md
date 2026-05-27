@@ -25,6 +25,7 @@ npm install --save @flyfish-group/file-viewer
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
+import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 
@@ -32,6 +33,8 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 ```
+
+Vue2 包当前仍需要显式引入 `dist/style.css`，否则组件会正常工作但缺少预览器基础样式。
 
 ## URL 预览
 

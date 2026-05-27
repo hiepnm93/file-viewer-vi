@@ -1,3 +1,4 @@
+import './style.css'
 import FileViewer from './components/FileViewer'
 import type { App, Component } from 'vue'
 
@@ -24,6 +25,9 @@ declare interface FileViewerInstaller {
 
 /**
  * Vue3 插件安装器。
+ *
+ * 这里顺手引入库级样式，确保宿主项目只要 `app.use(FileViewer)`，
+ * 就能拿到组件渲染所需的基础样式。
  */
 class Installer implements FileViewerInstaller {
 

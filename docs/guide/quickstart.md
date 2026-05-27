@@ -46,6 +46,8 @@ import FileViewer from '@flyfish-group/file-viewer3'
 createApp(App).use(FileViewer).mount('#app')
 ```
 
+Vue3 入口会自动带上样式，所以这里不需要再手动引 CSS。
+
 ### 3. 放进页面
 
 ```vue
@@ -78,6 +80,7 @@ pnpm add @flyfish-group/file-viewer
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
+import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 
@@ -85,6 +88,8 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 ```
+
+Vue2 这条路线仍然需要显式引入 `dist/style.css`。
 
 完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 

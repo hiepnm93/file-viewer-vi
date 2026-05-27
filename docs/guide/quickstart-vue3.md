@@ -33,6 +33,8 @@ import FileViewer from '@flyfish-group/file-viewer3'
 createApp(App).use(FileViewer).mount('#app')
 ```
 
+Vue3 入口会自动把样式带进来，所以这里只需要正常 `use(FileViewer)`。
+
 ## 页面中使用
 
 ### 通过 URL 预览
