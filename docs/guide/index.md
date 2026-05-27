@@ -51,7 +51,7 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>；React 和纯 JS 包通过 iframe 复用 Vue3 基线产物，适合私有化部署和多系统复用。</p>
+    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>，两个安装器都会自动带上样式；React 和纯 JS 包通过 iframe 复用 Vue3 基线产物，适合私有化部署和多系统复用。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>

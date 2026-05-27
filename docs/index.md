@@ -124,7 +124,7 @@ titleTemplate: false
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@1.0.12，使用 Vue.use(FileViewer)，并显式引入 `dist/style.css`。</span>
+<span>安装 @flyfish-group/file-viewer@1.0.12，使用 Vue.use(FileViewer)，安装器会自动带上样式。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>

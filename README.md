@@ -112,19 +112,16 @@ const url = ref('https://example.com/demo.pdf')
 
 ### 2. Vue 2 组件集成
 
-适合仍在 Vue2.7 技术栈上，希望直接以内嵌组件方式完成接入的团队。
+适合仍在 Vue2.7 技术栈上，希望直接以内嵌组件方式完成接入的团队。Vue2 入口也会自动带上样式，不需要再额外 import CSS。
 
 ```bash
 pnpm add @flyfish-group/file-viewer
 ```
 
-Vue2 包仍然需要显式引入样式文件 `@flyfish-group/file-viewer/dist/style.css`。
-
 ```ts
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
-import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 

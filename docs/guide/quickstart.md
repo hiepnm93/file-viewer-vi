@@ -70,7 +70,7 @@ const options = {
 
 ## Vue2 最短路径
 
-Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致:
+Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致，入口也会自动带上样式:
 
 ```bash
 pnpm add @flyfish-group/file-viewer
@@ -80,7 +80,6 @@ pnpm add @flyfish-group/file-viewer
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
-import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 
@@ -88,8 +87,6 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 ```
-
-Vue2 这条路线仍然需要显式引入 `dist/style.css`。
 
 完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 

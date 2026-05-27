@@ -9,7 +9,7 @@
 
 这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.12`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.12`，React 使用 `@flyfish-group/file-viewer-react@1.0.12`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.12`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
-Vue3 入口会自动带上组件样式；Vue2 包如果还在单独使用，则需要显式引入 `@flyfish-group/file-viewer/dist/style.css`。
+Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
 ## 先记住这 4 条规则
 

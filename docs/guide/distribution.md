@@ -14,7 +14,7 @@
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.12`，样式会随安装器自动带入 |
-| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.12`，使用时仍需显式引入 `dist/style.css` |
+| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.12`，安装器会自动带上样式 |
 | npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.12` |
 | npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.12` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
@@ -49,7 +49,6 @@ pnpm add @flyfish-group/file-viewer
 import Vue from 'vue'
 import App from './App.vue'
 import FileViewer from '@flyfish-group/file-viewer'
-import '@flyfish-group/file-viewer/dist/style.css'
 
 Vue.use(FileViewer)
 
@@ -58,7 +57,7 @@ new Vue({
 }).$mount('#app')
 ```
 
-Vue2 包当前仍需要显式引入 `dist/style.css`，否则页面能渲染但不会带基础样式。
+Vue2 入口会自动带上样式，不需要再额外 import CSS。
 
 ### React
 
