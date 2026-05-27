@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### `v1.0.13` 最新发布与文档站同步版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.13`、Vue2 包 `@flyfish-group/file-viewer@1.0.13`、React 包 `@flyfish-group/file-viewer-react@1.0.13` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.13` 统一抬升到最新版本
+- 文档站首页、快速开始、分发说明、支持格式页和 README 中的安装示例同步刷新到 `1.0.13`
+- 公开成品仓库、Demo 静态产物和文档站静态产物重新构建，方便直接下载和验收
+- 继续保持 Vue3 / Vue2 / React / 纯 JS 的集成路径、按需异步加载、示例分组和 PDF / OFD / 压缩包 / 邮件 / CAD / 绘图 / 电子书预览链路一致
+
 ### `v1.0.12` 完整格式、成品仓库与 npm 同步版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.12`、Vue2 包 `@flyfish-group/file-viewer@1.0.12`、React 包 `@flyfish-group/file-viewer-react@1.0.12` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.12` 统一对齐到 npm `latest`
