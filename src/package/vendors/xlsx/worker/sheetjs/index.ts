@@ -1,8 +1,9 @@
 import { refWorker } from '@/package/common/worker-ref'
+import SheetWorker from './sheet.worker.ts?worker&inline'
 
 export default {
   create() {
-    return refWorker('sheetjs.worker.js').defaults(() =>
-      new Worker(new URL('./sheet.worker.ts', import.meta.url), { type: 'module' }))
+    return refWorker('sheet.worker.js').defaults(() =>
+      new SheetWorker())
   }
 }

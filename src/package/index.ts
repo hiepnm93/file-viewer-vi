@@ -1,4 +1,4 @@
-import './style.css'
+import styleHref from './style.css?url'
 import FileViewer from './components/FileViewer'
 import type { App, Component } from 'vue'
 
@@ -39,6 +39,19 @@ class Installer implements FileViewerInstaller {
     this.installed = true
   }
 }
+
+function ensureLibraryStyles(): void {
+  if (typeof document === 'undefined') return
+  if (document.querySelector('link[data-file-viewer-style="true"]')) return
+
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.href = styleHref
+  link.dataset.fileViewerStyle = 'true'
+  document.head.appendChild(link)
+}
+
+ensureLibraryStyles()
 
 export default new Installer()
 

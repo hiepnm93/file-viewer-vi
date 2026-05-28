@@ -21,6 +21,6 @@ export default class WorkerRefImpl implements WorkerRef {
 }
 
 export function refWorker(_name: string, _module: boolean = false): WorkerRef {
-  // Let Vite/Rollup transform each caller's `new URL(..., import.meta.url)` worker path.
+  // Keep the old extension point while defaulting to bundled inline workers.
   return new WorkerRefImpl(null)
 }
