@@ -3,13 +3,14 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 101 个扩展名和 Vue3、Vue2、React、纯 JS、iframe 多种接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 135 个扩展名和 Vue3、Vue2、React、纯 JS、iframe 多种接入方式',
   cleanUrls: true,
   lastUpdated: true,
   head: [
     ['meta', { name: 'theme-color', content: '#1d6fd6' }],
     ['meta', { property: 'og:title', content: 'Flyfish Viewer' }],
-    ['meta', { property: 'og:description', content: '纯前端多格式文件预览组件，覆盖 Office、PDF、OFD、CAD、3D、电子书、绘图、代码、媒体等业务附件。' }]
+    ['meta', { property: 'og:description', content: '纯前端多格式文件预览组件，覆盖 Office、PDF、OFD、CAD、3D、电子书、绘图、代码、媒体等业务附件。' }],
+    ['link', { rel: 'preload', as: 'image', href: '/_images/home-hero-premium.webp', type: 'image/webp' }]
   ],
   themeConfig: {
     logo: '/_media/logo.svg',
