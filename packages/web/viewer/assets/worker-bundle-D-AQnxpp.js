@@ -1,1 +1,0 @@
-var e=``+new URL(`worker-bundle-Dx5mKZOL.js`,import.meta.url).href;export{e as default};
