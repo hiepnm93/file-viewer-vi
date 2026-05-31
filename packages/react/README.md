@@ -3,7 +3,7 @@
 React 文件预览组件。只提供私有化部署路线: 依赖的 `@flyfish-group/file-viewer-web` 会随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.14
+npm install @flyfish-group/file-viewer-react@1.0.16
 ```
 
 pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
@@ -16,6 +16,9 @@ export function Preview() {
     <div style={{ height: '100vh' }}>
       <FileViewer
         url="https://example.com/demo.docx"
+        onViewerEvent={(event) => {
+          console.log(event.type, event.event, event.payload)
+        }}
         options={{
           toolbar: true,
           watermark: { text: '内部预览', opacity: 0.14 },
@@ -42,4 +45,4 @@ export function Preview() {
 <FileViewer viewerUrl="/vendor/file-viewer/index.html" url={url} />
 ```
 
-`options` 会透传给 Vue 基线预览器，可配置下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。PDF 打印和导出会逐页生成完整页面，不依赖当前 iframe 视口或已渲染 canvas。
+`options` 会透传给 Vue 基线预览器，可配置下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。PDF 打印和导出会逐页生成完整页面，不依赖当前 iframe 视口或已渲染 canvas。生命周期和内置操作事件会通过 `onViewerEvent` 回传给宿主，适合记录加载耗时、审计下载/打印尝试和同步外部状态。

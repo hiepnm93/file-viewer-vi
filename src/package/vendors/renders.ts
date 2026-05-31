@@ -14,18 +14,18 @@ const handlers: Array<FileHandlerComposite> = [
   // 使用docxjs支持，目前效果最好的渲染器
   {
     accepts: ['docx'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDocx } = await import('./word')
-      const rendered = await renderDocx(buffer, target)
+      const rendered = await renderDocx(buffer, target, context)
       window.dispatchEvent(new Event('resize'))
       return rendered
     }
   },
   {
     accepts: ['doc'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDoc } = await import('./word')
-      return renderDoc(buffer, target)
+      return renderDoc(buffer, target, context)
     }
   },
   // 使用pptx2html，已通过默认值更替

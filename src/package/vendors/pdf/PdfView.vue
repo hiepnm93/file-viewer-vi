@@ -17,18 +17,49 @@ const SCALE_STEP = 0.1
 const FIT_HORIZONTAL_PADDING = 28
 const PAGE_BORDER_WIDTH = 18
 const PDF_EXPORT_MAX_PAGE_PIXELS = 8_000_000
+type PdfNavMode = 'pages' | 'outline'
+interface PdfOutlineItemView {
+  id: string;
+  title: string;
+  dest: string | unknown[] | null;
+  items: PdfOutlineItemView[];
+  expanded: boolean;
+}
+interface PdfFlattenedOutlineItem {
+  item: PdfOutlineItemView;
+  depth: number;
+}
 
 // PDF.js 的滚动容器。
 const container = ref<HTMLDivElement | null>(null)
 const navVisible = ref(true)
+const navMode = ref<PdfNavMode>('pages')
 const loadStatus = ref<'loading' | 'ready' | 'error'>('loading')
 const errorMessage = ref('')
 const currentPage = ref(1)
 const pageCount = ref(0)
 const currentScale = ref(1)
 const autoFitWidth = ref(true)
+const outlineItems = ref<PdfOutlineItemView[]>([])
 
 const pages = computed(() => Array.from({ length: pageCount.value }, (_, index) => index + 1))
+const outlineCount = computed(() => {
+  const countItems = (items: PdfOutlineItemView[]): number => items.reduce((total, item) => total + 1 + countItems(item.items), 0)
+  return countItems(outlineItems.value)
+})
+const flattenedOutlineItems = computed<PdfFlattenedOutlineItem[]>(() => {
+  const result: PdfFlattenedOutlineItem[] = []
+  const visit = (items: PdfOutlineItemView[], depth: number) => {
+    items.forEach(item => {
+      result.push({ item, depth })
+      if (item.expanded && item.items.length) {
+        visit(item.items, depth + 1)
+      }
+    })
+  }
+  visit(outlineItems.value, 0)
+  return result
+})
 const scaleText = computed(() => `${Math.round(currentScale.value * 100)}%`)
 const canGoPrevious = computed(() => currentPage.value > 1)
 const canGoNext = computed(() => currentPage.value < pageCount.value)
@@ -47,6 +78,7 @@ type PdfResource = {
 // PDF.js 实例上下文统一保存在这里，便于工具栏和导航窗格操作同一个 viewer。
 const context = {
   viewer: null as null | PDFViewer,
+  linkService: null as null | PDFLinkService,
   resource: null as null | PdfResource,
   document: null as null | PdfDocumentProxy,
   search: ''
@@ -86,6 +118,37 @@ function escapeAttribute(value: string) {
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+}
+
+function buildOutlineItems(items: Array<{ title?: string, dest?: string | unknown[] | null, items?: unknown[] }>, prefix = 'outline') {
+  return items.map((item, index): PdfOutlineItemView => {
+    const id = `${prefix}-${index}`
+    const children = Array.isArray(item.items)
+      ? buildOutlineItems(item.items as Array<{ title?: string, dest?: string | unknown[] | null, items?: unknown[] }>, id)
+      : []
+    return {
+      id,
+      title: item.title || `目录 ${index + 1}`,
+      dest: item.dest || null,
+      items: children,
+      expanded: index < 4
+    }
+  })
+}
+
+async function loadOutline(pdfDocument: PdfDocumentProxy) {
+  try {
+    const outline = await pdfDocument.getOutline()
+    if (destroyed || context.document !== pdfDocument) {
+      return
+    }
+    outlineItems.value = Array.isArray(outline)
+      ? buildOutlineItems(outline as Array<{ title?: string, dest?: string | unknown[] | null, items?: unknown[] }>)
+      : []
+  } catch (error) {
+    console.warn('PDF 大纲读取失败', error)
+    outlineItems.value = []
+  }
 }
 
 function getPdfExportRatio(width: number, height: number, mode: FileRenderExportOptions['mode']) {
@@ -137,6 +200,7 @@ async function loadFile() {
   loadStatus.value = 'loading'
   errorMessage.value = ''
   context.document = null
+  outlineItems.value = []
   props.exportAdapter?.(null)
   let resource: PdfResource | null = null
 
@@ -164,6 +228,7 @@ async function loadFile() {
       enableAutoLinking: false
     })
     context.viewer = pdfViewer
+    context.linkService = pdfLinkService
     pdfLinkService.setViewer(pdfViewer)
 
     eventBus.on('pagesinit', () => {
@@ -212,6 +277,7 @@ async function loadFile() {
     props.exportAdapter?.({
       toHtml: renderPdfPagesForExport
     })
+    void loadOutline(pdfDocument)
 
     pdfViewer.setDocument(pdfDocument)
     pdfLinkService.setDocument(pdfDocument, null)
@@ -299,6 +365,10 @@ function goToPage(pageNumber: number) {
   currentPage.value = nextPage
 }
 
+function setNavMode(mode: PdfNavMode) {
+  navMode.value = mode
+}
+
 function toggleNav() {
   navVisible.value = !navVisible.value
   // 导航窗格改变宽度后，默认保持“适合宽度”，避免页面被侧栏挤出可视区。
@@ -313,6 +383,20 @@ function toggleNav() {
 
 function resetScale() {
   fitToWidth()
+}
+
+function toggleOutlineItem(item: PdfOutlineItemView) {
+  if (!item.items.length) {
+    return
+  }
+  item.expanded = !item.expanded
+}
+
+function goToOutlineItem(item: PdfOutlineItemView) {
+  if (!item.dest || !context.linkService) {
+    return
+  }
+  void context.linkService.goToDestination(item.dest)
 }
 
 onMounted(() => {
@@ -333,7 +417,9 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
   context.viewer = null
+  context.linkService = null
   context.document = null
+  outlineItems.value = []
   props.exportAdapter?.(null)
   const resource = context.resource
   context.resource = null
@@ -413,10 +499,30 @@ onBeforeUnmount(() => {
     <div class='pdf-content'>
       <aside v-if='navVisible' class='pdf-nav-pane'>
         <div class='pdf-nav-head'>
-          <span>页面导航</span>
-          <strong>{{ pageCount }} 页</strong>
+          <span>{{ navMode === 'pages' ? '页面导航' : '目录导航' }}</span>
+          <strong>{{ navMode === 'pages' ? `${pageCount} 页` : `${outlineCount} 项` }}</strong>
         </div>
-        <div class='pdf-page-list'>
+        <div class='pdf-nav-tabs' role='tablist' aria-label='PDF 导航类型'>
+          <button
+            type='button'
+            role='tab'
+            :aria-selected="navMode === 'pages' ? 'true' : 'false'"
+            :class="{ active: navMode === 'pages' }"
+            @click='setNavMode("pages")'
+          >
+            页面
+          </button>
+          <button
+            type='button'
+            role='tab'
+            :aria-selected="navMode === 'outline' ? 'true' : 'false'"
+            :class="{ active: navMode === 'outline' }"
+            @click='setNavMode("outline")'
+          >
+            目录
+          </button>
+        </div>
+        <div v-if='navMode === "pages"' class='pdf-page-list'>
           <button
             v-for='page in pages'
             :key='page'
@@ -428,6 +534,27 @@ onBeforeUnmount(() => {
             <span class='pdf-page-thumb'>{{ page }}</span>
             <span class='pdf-page-label'>第 {{ page }} 页</span>
           </button>
+        </div>
+        <div v-else class='pdf-outline-list'>
+          <button
+            v-for='entry in flattenedOutlineItems'
+            :key='entry.item.id'
+            class='pdf-outline-button'
+            type='button'
+            :style="{ '--outline-depth': entry.depth }"
+            @click='goToOutlineItem(entry.item)'
+          >
+            <span
+              class='pdf-outline-toggle'
+              :class="{ 'pdf-outline-toggle--open': entry.item.expanded, 'pdf-outline-toggle--empty': !entry.item.items.length }"
+              aria-hidden='true'
+              @click.stop='toggleOutlineItem(entry.item)'
+            />
+            <span class='pdf-outline-title'>{{ entry.item.title }}</span>
+          </button>
+          <div v-if='!outlineCount' class='pdf-outline-empty'>
+            当前 PDF 没有可用目录
+          </div>
         </div>
       </aside>
 
@@ -599,6 +726,35 @@ onBeforeUnmount(() => {
     font-size: 12px;
 }
 
+.pdf-nav-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid #e3e9f1;
+    background: #f8fafc;
+}
+
+.pdf-nav-tabs button {
+    min-width: 0;
+    height: 30px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #64748b;
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pdf-nav-tabs button:hover,
+.pdf-nav-tabs button.active {
+    border-color: #b9d4f6;
+    color: #1769d8;
+    background: #edf5ff;
+}
+
 .pdf-page-list {
     flex: 1;
     min-height: 0;
@@ -657,6 +813,88 @@ onBeforeUnmount(() => {
     font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.pdf-outline-list {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 8px;
+    overflow-y: auto;
+}
+
+.pdf-outline-button {
+    --outline-depth: 0;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 32px;
+    padding: 5px 7px 5px calc(7px + var(--outline-depth) * 14px);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #334155;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pdf-outline-button:hover {
+    border-color: #c7d7eb;
+    background: #ffffff;
+}
+
+.pdf-outline-toggle {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    color: #64748b;
+}
+
+.pdf-outline-toggle::before {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    content: '';
+    transform: rotate(-45deg);
+    transition: transform 0.16s ease;
+}
+
+.pdf-outline-toggle--open::before {
+    transform: rotate(45deg);
+}
+
+.pdf-outline-toggle--empty::before {
+    display: none;
+}
+
+.pdf-outline-title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pdf-outline-empty {
+    margin: 24px 8px;
+    padding: 14px 10px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #64748b;
+    background: #ffffff;
+    font-size: 12px;
+    text-align: center;
 }
 
 .pdfViewer {

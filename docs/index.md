@@ -59,7 +59,7 @@ titleTemplate: false
 <article>
 <span>01</span>
 <h3>打开即适配阅读宽度</h3>
-<p>PDF 和 Word 会按当前视口计算默认缩放，导航窗格开启时也尽量保留可读区域，PDF 打印和导出也会逐页输出完整内容。</p>
+<p>PDF 和 Word 会按当前视口计算默认缩放，PDF 支持页侧边栏和目录树侧边栏切换，Word / PDF 打印都会尽量输出完整页面。</p>
 </article>
 <article>
 <span>02</span>
@@ -93,7 +93,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>
-<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、导航窗格和宽度自适应，PPTX 会尽量保留模板背景、组合元素和矢量插图。</p>
+<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、页面/目录导航和宽度自适应，PPTX 会尽量保留模板背景、组合元素和矢量插图。</p>
 </article>
 <article class="doc-card">
 <h3>接入边界清晰</h3>
@@ -120,19 +120,19 @@ titleTemplate: false
 <div class="doc-path-grid">
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
-<span>安装 @flyfish-group/file-viewer3@1.0.14，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
+<span>安装 @flyfish-group/file-viewer3@1.0.16，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@1.0.14，使用 Vue.use(FileViewer)，安装器会自动带上样式。</span>
+<span>安装 @flyfish-group/file-viewer@1.0.16，使用 Vue.use(FileViewer)，安装器会自动带上样式。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
-<span>安装 @flyfish-group/file-viewer-react@1.0.14，通过 iframe 加载私有化 viewer。</span>
+<span>安装 @flyfish-group/file-viewer-react@1.0.16，通过 iframe 加载私有化 viewer。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @flyfish-group/file-viewer-web@1.0.14，用 helper 创建和同步 iframe。</span>
+<span>安装 @flyfish-group/file-viewer-web@1.0.16，用 helper 创建和同步 iframe。</span>
 </a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>

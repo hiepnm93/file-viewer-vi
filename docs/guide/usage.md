@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.14`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.14`，React 使用 `@flyfish-group/file-viewer-react@1.0.14`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.14`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.16`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.16`，React 使用 `@flyfish-group/file-viewer-react@1.0.16`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.16`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -179,11 +179,64 @@ const options = {
 
 图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
 
+## 生命周期钩子和按钮前置校验
+
+Vue2 / Vue3 组件可以直接通过 `options.hooks` 接收文档生命周期。每个回调都会拿到同一套上下文: `type`、`filename`、`source`、`url`、`file`、`size`、`version`、`timestamp`，加载完成时还会带上 `duration`。
+
+```ts
+const options = {
+  hooks: {
+    onLoadStart(context) {
+      console.log('开始加载', context.type, context.filename)
+    },
+    onLoadComplete(context) {
+      console.log('加载完成', context.duration)
+    },
+    onUnloadStart(context) {
+      console.log('开始卸载', context.reason)
+    },
+    onUnloadComplete(context) {
+      console.log('卸载完成', context.filename)
+    }
+  },
+  async beforeOperation(context) {
+    if (context.operation === 'print') {
+      return await checkCanPrint(context.filename)
+    }
+    return true
+  },
+  toolbar: {
+    download: true,
+    print: true,
+    exportHtml: true,
+    beforeDownload(context) {
+      return confirm(`下载 ${context.filename}?`)
+    }
+  }
+}
+```
+
+内置操作当前包括 `download`、`print` 和 `export-html`。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意钩子返回 `false` 都会取消本次操作。
+
+React、纯 JS 和 iframe 集成无法把函数序列化进 iframe 查询参数，但可以通过事件监听拿到同样的生命周期和操作上下文。纯 JS 使用 `onEvent`，React 使用 `onViewerEvent`。
+
+```ts
+mountViewerFrame(container, {
+  url: '/files/demo.pdf',
+  onEvent(event) {
+    if (event.type === 'flyfish-viewer:lifecycle') {
+      console.log(event.event, event.payload)
+    }
+  }
+})
+```
+
 ## 打印、导出和水印的交付行为
 
 - 下载原文件会保留用户传入的原始二进制内容，不会把渲染后的页面反向写回文件。
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
+- Word 打印和导出会清理预览阶段的缩放、绝对定位和滚动容器，把 `.docx` / `.doc` 还原成完整白色页面，避免只打印当前视口或第一页。
 - 非 PDF 格式会克隆当前渲染结果，并把 canvas 转成图片，保证图纸、3D、绘图、表格和文档在导出 HTML 时仍有可读内容。
 - 水印会同时参与预览、打印和 HTML 导出。文字水印适合内部资料、审批流和归档场景；图片水印适合品牌 Logo 或业务系统标识。
 

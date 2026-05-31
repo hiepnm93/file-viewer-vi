@@ -36,6 +36,19 @@ export interface ViewerRuntimeOptions {
   archive?: ViewerArchiveOptions
 }
 
+export type ViewerFrameEventType = 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation'
+
+export interface ViewerFrameEventPayload {
+  type: ViewerFrameEventType
+  event: string
+  payload: Record<string, unknown>
+}
+
+export type ViewerFrameEventHandler = (
+  event: ViewerFrameEventPayload,
+  rawEvent: MessageEvent
+) => void
+
 export interface ViewerFrameOptions {
   /**
    * 私有化部署后的 Vue 基线预览器页面地址。
@@ -71,6 +84,10 @@ export interface ViewerFrameOptions {
    * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
    */
   options?: ViewerRuntimeOptions
+  /**
+   * iframe 模式下接收基线预览器抛出的生命周期和操作事件。
+   */
+  onEvent?: ViewerFrameEventHandler
 }
 
 export interface CreateViewerFrameOptions extends ViewerFrameOptions {
@@ -139,6 +156,14 @@ const appendJsonSearchParam = (target: URL, key: string, value: unknown) => {
     return
   }
   target.searchParams.set(key, JSON.stringify(value))
+}
+
+const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const candidate = value as ViewerFrameEventPayload
+  return candidate.type === 'flyfish-viewer:lifecycle' || candidate.type === 'flyfish-viewer:operation'
 }
 
 export const getCurrentOrigin = () => {
@@ -270,8 +295,15 @@ export const mountViewerFrame = (
   const handleLoad = () => {
     postFileToViewer(frame, options)
   }
+  const handleMessage = (event: MessageEvent) => {
+    if (event.source !== frame.contentWindow || !isViewerFrameEvent(event.data)) {
+      return
+    }
+    options.onEvent?.(event.data, event)
+  }
 
   frame.addEventListener('load', handleLoad)
+  window.addEventListener('message', handleMessage)
   container.appendChild(frame)
 
   return {
@@ -281,6 +313,7 @@ export const mountViewerFrame = (
     },
     destroy() {
       frame.removeEventListener('load', handleLoad)
+      window.removeEventListener('message', handleMessage)
       frame.remove()
     },
     postFile() {

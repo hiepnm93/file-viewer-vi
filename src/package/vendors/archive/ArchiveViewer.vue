@@ -4,6 +4,8 @@ import type { FileViewerArchiveOptions, FileViewerOptions, Rendered } from '@/pa
 import { createArchiveCacheKey, flattenArchiveObject, formatBytes, type ArchiveEntryView } from './shared'
 import { readArchiveCache, writeArchiveCache } from './cache'
 import { renderNestedBuffer } from '../nestedRender'
+import libarchiveWorkerSource from 'libarchive.js/dist/worker-bundle.js?raw'
+import libarchiveWasmUrl from 'libarchive.js/dist/libarchive.wasm?url'
 
 const DEFAULT_MAX_ARCHIVE_SIZE = 320 * 1024 * 1024
 const DEFAULT_MAX_ENTRY_PREVIEW_SIZE = 64 * 1024 * 1024
@@ -52,6 +54,15 @@ const filteredEntries = computed(() => {
   return source.slice(0, MAX_LISTED_ENTRIES)
 })
 
+const createBundledWorkerUrl = () => {
+  const wasmUrlLiteral = JSON.stringify(libarchiveWasmUrl)
+  const workerSource = libarchiveWorkerSource
+    .replace(/new URL\((['"])libarchive\.wasm\1\s*,\s*import\.meta\.url\)\.href/g, wasmUrlLiteral)
+  const workerUrl = URL.createObjectURL(new Blob([workerSource], { type: 'application/javascript' }))
+  objectUrls.push(workerUrl)
+  return workerUrl
+}
+
 const resolveWorkerUrl = async () => {
   if (props.options?.workerUrl) {
     return props.options.workerUrl
@@ -59,14 +70,14 @@ const resolveWorkerUrl = async () => {
   const publicWorkerUrl = new URL('/vendor/libarchive/worker-bundle.js', window.location.href).toString()
   try {
     const response = await fetch(publicWorkerUrl, { method: 'HEAD' })
-    if (response.ok) {
+    const contentType = response.headers.get('content-type') || ''
+    if (response.ok && /javascript|ecmascript|octet-stream/i.test(contentType)) {
       return publicWorkerUrl
     }
   } catch {
     // 私有化部署未复制 worker 时继续回退到 bundler 产物。
   }
-  const workerAsset = await import('libarchive.js/dist/worker-bundle.js?url')
-  return workerAsset.default
+  return createBundledWorkerUrl()
 }
 
 const clearNestedPreview = () => {

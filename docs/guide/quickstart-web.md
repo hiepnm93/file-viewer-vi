@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.14
+npm install --save @flyfish-group/file-viewer-web@1.0.16
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -39,6 +39,9 @@ pnpm exec file-viewer-copy-assets ./public/file-viewer
 
   mountViewerFrame(document.getElementById('viewer'), {
     url: '/files/demo.pdf',
+    onEvent(event) {
+      console.log(event.type, event.event, event.payload)
+    },
     options: {
       toolbar: true,
       watermark: { text: '内部资料', opacity: 0.14 },
@@ -118,6 +121,8 @@ await copyViewerAssets({
 - `toolbar`: 控制下载原文件、完整打印和导出 HTML。
 - `watermark`: 配置文字或图片水印。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
+
+生命周期和内置操作事件会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle` 和 `flyfish-viewer:operation`。由于 iframe 查询参数不能序列化函数，按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`；iframe 模式适合做日志、审计和状态同步。
 
 ## 构建上线
 

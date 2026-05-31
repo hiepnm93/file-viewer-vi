@@ -1,6 +1,6 @@
 // 异步模块加载
 import type { Options, renderAsync } from 'docx-preview'
-import type { AppWrapper } from '@/package/common/type'
+import type { AppWrapper, FileRenderContext } from '@/package/common/type'
 
 const loadLibrary = (() => {
   const loader = {
@@ -192,10 +192,30 @@ function makeDocxResponsive(target: HTMLDivElement) {
   }
 }
 
+function prepareDocxCloneForExport(target: HTMLDivElement) {
+  const clone = target.cloneNode(true) as HTMLElement
+  clone.querySelectorAll<HTMLElement>('.docx-page-frame').forEach(frame => {
+    frame.style.height = 'auto'
+    frame.style.minHeight = '0'
+    frame.style.overflow = 'visible'
+
+    const page = frame.firstElementChild
+    if (page instanceof HTMLElement) {
+      page.style.position = 'relative'
+      page.style.top = 'auto'
+      page.style.left = 'auto'
+      page.style.margin = '0 auto'
+      page.style.transform = 'none'
+      page.style.overflow = 'visible'
+    }
+  })
+  return clone.innerHTML
+}
+
 /**
  * 渲染docx文件
  */
-export default async function(buffer: ArrayBuffer, target: HTMLDivElement): Promise<AppWrapper> {
+export default async function(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext): Promise<AppWrapper> {
   const { defaultOptions, renderAsync } = await loadLibrary()
   const docxOptions = Object.assign(defaultOptions, {
     debug: true,
@@ -203,10 +223,17 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement): Prom
   })
   await renderAsync(buffer, target, undefined, docxOptions)
   const disposeResponsive = makeDocxResponsive(target)
+  context?.registerExportAdapter?.({
+    beforeSnapshot: () => {
+      window.dispatchEvent(new Event('resize'))
+    },
+    toHtml: () => prepareDocxCloneForExport(target)
+  })
 
   return {
     $el: target,
     unmount() {
+      context?.registerExportAdapter?.(null)
       disposeResponsive()
       target.innerHTML = ''
     }

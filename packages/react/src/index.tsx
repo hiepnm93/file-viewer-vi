@@ -14,10 +14,11 @@ import {
   buildViewerSrc,
   postFileToViewer,
   type FileRef,
+  type ViewerFrameEventHandler,
   type ViewerFrameOptions
 } from '@flyfish-group/file-viewer-web'
 
-export type { FileRef, ViewerFrameOptions } from '@flyfish-group/file-viewer-web'
+export type { FileRef, ViewerFrameEventHandler, ViewerFrameOptions } from '@flyfish-group/file-viewer-web'
 
 export interface FileViewerHandle {
   iframe: HTMLIFrameElement | null
@@ -60,6 +61,10 @@ export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameEle
    * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
    */
   options?: ViewerFrameOptions['options']
+  /**
+   * iframe 模式下接收基线预览器抛出的生命周期和操作事件。
+   */
+  onViewerEvent?: ViewerFrameEventHandler
 }
 
 const defaultStyle: CSSProperties = {
@@ -79,6 +84,7 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     targetOrigin,
     params,
     options,
+    onViewerEvent,
     onLoad,
     style,
     title = 'Flyfish Viewer 文件预览',
@@ -128,6 +134,23 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
       postFile()
     }
   }, [frameReady, postFile])
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.source !== iframeRef.current?.contentWindow) {
+        return
+      }
+      if (
+        event.data?.type !== 'flyfish-viewer:lifecycle' &&
+        event.data?.type !== 'flyfish-viewer:operation'
+      ) {
+        return
+      }
+      onViewerEvent?.(event.data, event)
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [onViewerEvent])
 
   const handleLoad = useCallback((event: SyntheticEvent<HTMLIFrameElement>) => {
     setFrameReady(true)

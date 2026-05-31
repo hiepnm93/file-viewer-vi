@@ -6,7 +6,12 @@ import type {
   FileRef,
   FileRenderExportAdapter,
   FileRenderExportMode,
+  FileViewerBeforeOperation,
+  FileViewerLifecycleContext,
+  FileViewerLifecyclePhase,
   FileViewerOptions,
+  FileViewerOperationContext,
+  FileViewerOperationType,
   FileViewerToolbarOptions,
   FileViewerWatermarkOptions,
   Rendered
@@ -35,6 +40,15 @@ const props = defineProps<{
    * 目前覆盖内置操作栏、水印，以及压缩包内文件预览的缓存/体积限制。
    */
   options?: FileViewerOptions
+}>()
+
+const emit = defineEmits<{
+  (event: 'load-start', context: FileViewerLifecycleContext): void;
+  (event: 'load-complete', context: FileViewerLifecycleContext): void;
+  (event: 'unload-start', context: FileViewerLifecycleContext): void;
+  (event: 'unload-complete', context: FileViewerLifecycleContext): void;
+  (event: 'operation-before', context: FileViewerOperationContext): void;
+  (event: 'operation-cancel', context: FileViewerOperationContext): void;
 }>()
 
 const PREVIEW_MESSAGE = {
@@ -125,8 +139,23 @@ const {
 
 let activeRendered: Rendered | undefined
 let activeExportAdapter: FileRenderExportAdapter | null = null
+let activeDocumentContext: FileViewerLifecycleContext | null = null
 let renderVersion = 0
 let pendingDownloadController: AbortController | null = null
+const loadStartedAt = new Map<number, number>()
+
+const lifecycleHookName: Record<FileViewerLifecyclePhase, keyof NonNullable<FileViewerOptions['hooks']>> = {
+  'load-start': 'onLoadStart',
+  'load-complete': 'onLoadComplete',
+  'unload-start': 'onUnloadStart',
+  'unload-complete': 'onUnloadComplete'
+}
+
+const operationLabels: Record<FileViewerOperationType, string> = {
+  download: '下载原始文件',
+  print: '打印完整渲染内容',
+  'export-html': '导出渲染 HTML'
+}
 
 const normalizeFilename = (name: string) => {
   try {
@@ -153,6 +182,151 @@ const getSourceFilename = () => {
     return getFilenameFromUrl(props.url)
   }
   return ''
+}
+
+const getFilenameExtension = (name: string) => {
+  const dot = name.lastIndexOf('.')
+  return dot >= 0 ? name.substring(dot + 1).toLowerCase() : ''
+}
+
+const toSerializableContext = (
+  context: FileViewerLifecycleContext | FileViewerOperationContext
+) => {
+  const { file: _file, ...serializable } = context
+  return {
+    ...serializable,
+    hasFile: !!context.file
+  }
+}
+
+const postViewerEvent = (
+  type: 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation',
+  event: string,
+  context: FileViewerLifecycleContext | FileViewerOperationContext
+) => {
+  if (typeof window === 'undefined' || window.parent === window) {
+    return
+  }
+  window.parent.postMessage({
+    type,
+    event,
+    payload: toSerializableContext(context)
+  }, '*')
+}
+
+const buildLifecycleContext = ({
+  phase,
+  version,
+  source,
+  file,
+  sourceUrl,
+  reason
+}: {
+  phase: FileViewerLifecyclePhase;
+  version: number;
+  source: FileViewerLifecycleContext['source'];
+  file?: File | null;
+  sourceUrl?: string;
+  reason?: FileViewerLifecycleContext['reason'];
+}): FileViewerLifecycleContext => {
+  const name = normalizeFilename(file?.name || filename.value || (sourceUrl ? getFilenameFromUrl(sourceUrl) : ''))
+  const startedAt = loadStartedAt.get(version)
+  const now = Date.now()
+  return {
+    phase,
+    type: getFilenameExtension(name),
+    filename: name,
+    source,
+    url: sourceUrl,
+    file: file || undefined,
+    size: file?.size ?? currentBuffer.value?.byteLength,
+    version,
+    timestamp: now,
+    duration: phase === 'load-complete' && startedAt ? now - startedAt : undefined,
+    reason
+  }
+}
+
+const notifyLifecycle = (context: FileViewerLifecycleContext) => {
+  if (context.phase === 'load-start') {
+    emit('load-start', context)
+  } else if (context.phase === 'load-complete') {
+    emit('load-complete', context)
+  } else if (context.phase === 'unload-start') {
+    emit('unload-start', context)
+  } else {
+    emit('unload-complete', context)
+  }
+  const hook = props.options?.hooks?.[lifecycleHookName[context.phase]]
+  if (hook) {
+    void Promise.resolve(hook(context)).catch(error => {
+      console.error(`FileViewer ${context.phase} hook failed`, error)
+    })
+  }
+  postViewerEvent('flyfish-viewer:lifecycle', context.phase, context)
+}
+
+const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
+  const base = activeDocumentContext || buildLifecycleContext({
+    phase: 'load-complete',
+    version: renderVersion,
+    source: props.file ? 'file' : (props.url ? 'url' : 'empty'),
+    file: currentFile.value,
+    sourceUrl: props.url
+  })
+  const { phase: _phase, ...context } = base
+  return {
+    ...context,
+    operation,
+    label: operationLabels[operation],
+    timestamp: Date.now()
+  }
+}
+
+const getToolbarBeforeOperation = (operation: FileViewerOperationType): Array<FileViewerBeforeOperation | undefined> => {
+  const toolbar = props.options?.toolbar
+  if (!toolbar || typeof toolbar !== 'object') {
+    return []
+  }
+  const specificHook = operation === 'download'
+    ? toolbar.beforeDownload
+    : operation === 'print'
+      ? toolbar.beforePrint
+      : toolbar.beforeExportHtml
+  return [toolbar.beforeOperation, specificHook]
+}
+
+const runBeforeOperation = async (operation: FileViewerOperationType) => {
+  const context = buildOperationContext(operation)
+  emit('operation-before', context)
+  postViewerEvent('flyfish-viewer:operation', 'operation-before', context)
+
+  const hooks = [
+    props.options?.beforeOperation,
+    ...getToolbarBeforeOperation(operation)
+  ]
+
+  try {
+    for (const hook of hooks) {
+      if (!hook) {
+        continue
+      }
+      const result = await hook(context)
+      if (result === false) {
+        emit('operation-cancel', context)
+        postViewerEvent('flyfish-viewer:operation', 'operation-cancel', context)
+        return false
+      }
+    }
+  } catch (nextError) {
+    console.error(nextError)
+    showError(formatErrorMessage('操作前置校验失败', nextError))
+    emit('operation-cancel', context)
+    postViewerEvent('flyfish-viewer:operation', 'operation-cancel', context)
+    return false
+  }
+
+  return true
 }
 
 const escapeXml = (value: string) => value
@@ -215,10 +389,11 @@ const watermarkInlineStyle = computed(() => {
 
 // 每次开始新的预览任务时都生成一个版本号。
 // 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
-const createRequestVersion = () => {
+const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
   renderVersion += 1
   pendingDownloadController?.abort()
   pendingDownloadController = null
+  clearRenderedContent(reason)
   currentFile.value = null
   currentBuffer.value = null
   clearError()
@@ -276,18 +451,41 @@ const wrapFileRef = (data: FileRef, nextFilename?: string) => {
 }
 
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
-const clearRenderedContent = () => {
-  activeRendered?.unmount?.()
-  activeRendered = undefined
-  activeExportAdapter = null
-
-  const out = output.value
-  if (!out) {
-    return
+const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
+  const context = activeDocumentContext
+  if (context) {
+    notifyLifecycle({
+      ...context,
+      phase: 'unload-start',
+      timestamp: Date.now(),
+      reason
+    })
   }
 
-  while (out.firstChild) {
-    out.removeChild(out.firstChild)
+  try {
+    activeRendered?.unmount?.()
+  } catch (nextError) {
+    console.warn('预览内容卸载失败', nextError)
+  } finally {
+    activeRendered = undefined
+    activeDocumentContext = null
+    activeExportAdapter = null
+
+    const out = output.value
+    if (out) {
+      while (out.firstChild) {
+        out.removeChild(out.firstChild)
+      }
+    }
+  }
+
+  if (context) {
+    notifyLifecycle({
+      ...context,
+      phase: 'unload-complete',
+      timestamp: Date.now(),
+      reason
+    })
   }
 }
 
@@ -301,7 +499,7 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
     return undefined
   }
 
-  clearRenderedContent()
+  clearRenderedContent('replace')
 
   const child = document.createElement('div')
   child.className = 'file-render'
@@ -331,7 +529,12 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
 }
 
 // 文件读取和渲染拆成一个独立步骤，方便后续给不同来源复用。
-const readAndRenderFile = async (file: File, version: number, sourceUrl?: string) => {
+const readAndRenderFile = async (
+  file: File,
+  version: number,
+  sourceUrl?: string,
+  source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
+) => {
   filename.value = normalizeFilename(file.name || '')
   const arrayBuffer = await readBuffer(file)
   if (!(arrayBuffer instanceof ArrayBuffer) || !isCurrentRequest(version)) {
@@ -346,13 +549,32 @@ const readAndRenderFile = async (file: File, version: number, sourceUrl?: string
     return
   }
   activeRendered = rendered
+  const context = buildLifecycleContext({
+    phase: 'load-complete',
+    version,
+    source,
+    file,
+    sourceUrl
+  })
+  activeDocumentContext = context
+  notifyLifecycle(context)
+  loadStartedAt.delete(version)
 }
 
 const previewLocalFile = async (source: FileRef, version: number) => {
+  const file = wrapFileRef(source)
+  filename.value = normalizeFilename(file.name || '')
+  loadStartedAt.set(version, Date.now())
+  notifyLifecycle(buildLifecycleContext({
+    phase: 'load-start',
+    version,
+    source: 'file',
+    file
+  }))
   startLoading(PREVIEW_MESSAGE.reading)
 
   try {
-    await readAndRenderFile(wrapFileRef(source), version)
+    await readAndRenderFile(file, version, undefined, 'file')
   } catch (nextError) {
     if (!isCurrentRequest(version)) {
       return
@@ -360,6 +582,7 @@ const previewLocalFile = async (source: FileRef, version: number) => {
     console.error(nextError)
     showError(formatErrorMessage('读取文件异常', nextError))
   } finally {
+    loadStartedAt.delete(version)
     finishLoading(version)
   }
 }
@@ -368,6 +591,13 @@ const previewLocalFile = async (source: FileRef, version: number) => {
 const previewRemoteFile = async (url: string, version: number) => {
   const nextFilename = getFilenameFromUrl(url)
   filename.value = nextFilename
+  loadStartedAt.set(version, Date.now())
+  notifyLifecycle(buildLifecycleContext({
+    phase: 'load-start',
+    version,
+    source: 'url',
+    sourceUrl: url
+  }))
   startLoading(PREVIEW_MESSAGE.downloading)
 
   const controller = new AbortController()
@@ -391,7 +621,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     }
 
     setLoadingMessage(PREVIEW_MESSAGE.reading)
-    await readAndRenderFile(wrapFileRef(data, nextFilename), version, url)
+    await readAndRenderFile(wrapFileRef(data, nextFilename), version, url, 'url')
   } catch (nextError) {
     if (!isCurrentRequest(version) || isAbortError(nextError)) {
       return
@@ -402,6 +632,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     if (pendingDownloadController === controller) {
       pendingDownloadController = null
     }
+    loadStartedAt.delete(version)
     finishLoading(version)
   }
 }
@@ -418,7 +649,8 @@ const resetViewer = () => {
 // 统一入口只负责决定“读本地”还是“拉远端”，
 // 具体的下载、读取和挂载细节都下沉到独立 helper。
 const refreshPreview = async () => {
-  const version = createRequestVersion()
+  const hasSource = !!props.file || !!props.url
+  const version = createRequestVersion(hasSource ? 'replace' : 'reset')
 
   if (props.file) {
     await previewLocalFile(props.file, version)
@@ -512,6 +744,41 @@ const waitForImages = async (root: HTMLElement) => {
   }))
 }
 
+const waitForPrintWindowReady = async (printWindow: Window) => {
+  const { document: printDocument } = printWindow
+  if (printDocument.readyState !== 'complete') {
+    await new Promise<void>(resolve => {
+      printWindow.addEventListener('load', () => resolve(), { once: true })
+      printWindow.setTimeout(() => resolve(), 1200)
+    })
+  }
+
+  await Promise.all(Array.from(printDocument.images).map(async image => {
+    if (image.complete) {
+      return
+    }
+    if ('decode' in image) {
+      try {
+        await image.decode()
+        return
+      } catch {
+        // 图片解码失败不阻塞打印，浏览器仍会尝试按现有资源输出。
+      }
+    }
+    await new Promise<void>(resolve => {
+      image.addEventListener('load', () => resolve(), { once: true })
+      image.addEventListener('error', () => resolve(), { once: true })
+      printWindow.setTimeout(() => resolve(), 1500)
+    })
+  }))
+
+  await new Promise<void>(resolve => {
+    printWindow.requestAnimationFrame(() => {
+      printWindow.requestAnimationFrame(() => resolve())
+    })
+  })
+}
+
 const prepareRenderedContentForSnapshot = async (source: HTMLElement) => {
   await activeExportAdapter?.beforeSnapshot?.()
   await waitForNextPaint()
@@ -545,6 +812,18 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
     .viewer-export-content .pdf-content,
     .viewer-export-content .pdf-viewport,
     .viewer-export-content .pdf-wrapper,
+    .viewer-export-content .docx-fit-viewer,
+    .viewer-export-content .docx-wrapper,
+    .viewer-export-content .msdoc-stage,
+    .viewer-export-content .code-viewer,
+    .viewer-export-content .markdown-viewer,
+    .viewer-export-content .email-shell,
+    .viewer-export-content .archive-shell,
+    .viewer-export-content .eda-shell,
+    .viewer-export-content .ebook-shell,
+    .viewer-export-content .umd-shell,
+    .viewer-export-content .drawing-shell,
+    .viewer-export-content .audio-shell,
     .viewer-export-content .cad-shell,
     .viewer-export-content .cad-body,
     .viewer-export-content .cad-canvas-wrap,
@@ -555,6 +834,47 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       height: auto !important;
       min-height: 0 !important;
       max-height: none !important;
+      overflow: visible !important;
+    }
+    .viewer-export-content .docx-wrapper {
+      display: block !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    .viewer-export-content .docx-page-frame,
+    .viewer-export-content .msdoc-page {
+      position: relative !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 0 !important;
+      margin: 0 auto 18px !important;
+      overflow: visible !important;
+      break-after: page;
+      page-break-after: always;
+    }
+    .viewer-export-content .docx-page-frame:last-child,
+    .viewer-export-content .msdoc-page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .viewer-export-content .docx-page-frame > section.docx {
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      max-width: 100% !important;
+      margin: 0 auto !important;
+      overflow: visible !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .viewer-export-content .msdoc-stage {
+      display: block !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    .viewer-export-content .msdoc-page > .msdoc-root {
+      margin: 0 auto !important;
+      box-shadow: none !important;
       overflow: visible !important;
     }
     .viewer-export-content .pdf-toolbar,
@@ -624,6 +944,17 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
         overflow: visible;
         box-shadow: none;
       }
+      .viewer-export-content .docx-page-frame,
+      .viewer-export-content .msdoc-page {
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      .viewer-export-content .docx-page-frame > section.docx,
+      .viewer-export-content .msdoc-page > .msdoc-root {
+        width: 100% !important;
+        max-width: 100% !important;
+        border: 0 !important;
+      }
     }
   </style>
 </head>
@@ -654,10 +985,13 @@ const buildRenderedHtmlDocument = async (mode: FileRenderExportMode = 'export') 
   return buildExportHtmlDocument(clone.innerHTML, title)
 }
 
-const downloadOriginalFile = () => {
+const downloadOriginalFile = async () => {
   const buffer = currentBuffer.value
   const file = currentFile.value
   if (!buffer || !file) {
+    return
+  }
+  if (!await runBeforeOperation('download')) {
     return
   }
   triggerBlobDownload(new Blob([buffer], { type: file.type || 'application/octet-stream' }), file.name || 'preview.bin')
@@ -665,6 +999,9 @@ const downloadOriginalFile = () => {
 
 const exportRenderedHtml = async () => {
   try {
+    if (!await runBeforeOperation('export-html')) {
+      return
+    }
     const html = await buildRenderedHtmlDocument('export')
     const baseName = displayFilename.value || 'preview'
     triggerBlobDownload(new Blob([html], { type: 'text/html;charset=utf-8' }), `${baseName}.rendered.html`)
@@ -675,6 +1012,9 @@ const exportRenderedHtml = async () => {
 
 const printRenderedHtml = async () => {
   try {
+    if (!await runBeforeOperation('print')) {
+      return
+    }
     const html = await buildRenderedHtmlDocument('print')
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
@@ -684,9 +1024,8 @@ const printRenderedHtml = async () => {
     printWindow.document.write(html)
     printWindow.document.close()
     printWindow.focus()
-    printWindow.setTimeout(() => {
-      printWindow.print()
-    }, 500)
+    await waitForPrintWindowReady(printWindow)
+    printWindow.print()
   } catch (nextError) {
     showError(formatErrorMessage('打印失败', nextError))
   }
@@ -697,8 +1036,7 @@ watch([() => props.file, () => props.url], () => {
 }, { immediate: true })
 
 onBeforeUnmount(() => {
-  createRequestVersion()
-  clearRenderedContent()
+  createRequestVersion('component-unmount')
   resetLoading()
 })
 </script>

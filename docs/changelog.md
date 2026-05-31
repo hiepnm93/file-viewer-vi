@@ -4,6 +4,23 @@
 
 ## 当前主线
 
+### `v1.0.16` 双分支同步、导航与打印钩子版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.16`、Vue2 包 `@flyfish-group/file-viewer@1.0.16`、React 包 `@flyfish-group/file-viewer-react@1.0.16` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.16` 统一推进到连续版本
+- PDF 导航窗格继续完善“页面 / 目录”切换，目录模式支持树形层级、展开折叠和定位跳转，便于用户在长文档中快速预览
+- Word、DOC 和大部分文档预览统一增强打印 / HTML 导出，清理预览缩放、滚动容器和固定高度，避免只打印一页或页面被截断
+- 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，iframe 适配器同步透出事件
+- 文档站、README、集成说明、分发说明和公开成品包说明同步刷新到 `1.0.16`
+
+### `v1.0.15` 预览交互、打印与集成钩子增强版本
+
+- PDF 导航窗格新增“页面 / 目录”切换，目录模式会读取 PDF 大纲并以可展开树形结构跳转，页面模式继续保留页侧边栏
+- 增强 Word 和通用文档打印导出，`.docx` / `.doc` 会使用专属导出适配器清理预览缩放、绝对定位和滚动容器，避免只打印一页或页面被截断
+- 新增 `options.hooks` 生命周期钩子，覆盖文档开始加载、加载完成、开始卸载和卸载完成，并提供文件类型、文件名、来源、URL、大小、版本和耗时上下文
+- 新增 `options.beforeOperation` 与 toolbar 级前置操作钩子，下载、打印、导出 HTML 前都可以返回 `false` 取消，便于接入权限校验、审计确认和业务二次弹窗
+- React / 纯 JS iframe 适配层新增 viewer 事件监听入口，基线预览器会通过 `postMessage` 向宿主同步生命周期和操作事件
+- 文档、README 和四条 npm 包线版本说明同步刷新到 `1.0.15`
+
 ### `v1.0.14` 最新发布与文档站同步版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.14`、Vue2 包 `@flyfish-group/file-viewer@1.0.14`、React 包 `@flyfish-group/file-viewer-react@1.0.14` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.14` 统一抬升到最新版本

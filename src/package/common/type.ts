@@ -54,6 +54,13 @@ export interface FileViewerToolbarOptions {
   download?: boolean;
   print?: boolean;
   exportHtml?: boolean;
+  /**
+   * 内置操作按钮执行前的统一前置钩子。返回 `false` 时会取消本次操作。
+   */
+  beforeOperation?: FileViewerBeforeOperation;
+  beforeDownload?: FileViewerBeforeOperation;
+  beforePrint?: FileViewerBeforeOperation;
+  beforeExportHtml?: FileViewerBeforeOperation;
 }
 
 /**
@@ -79,6 +86,42 @@ export interface FileViewerArchiveOptions {
   maxEntryPreviewSize?: number;
 }
 
+export type FileViewerSourceType = 'file' | 'url' | 'empty';
+
+export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
+
+export interface FileViewerLifecycleContext {
+  phase: FileViewerLifecyclePhase;
+  type: string;
+  filename: string;
+  source: FileViewerSourceType;
+  url?: string;
+  file?: File;
+  size?: number;
+  version: number;
+  timestamp: number;
+  duration?: number;
+  reason?: 'replace' | 'reset' | 'component-unmount';
+}
+
+export interface FileViewerLifecycleHooks {
+  onLoadStart?: (context: FileViewerLifecycleContext) => void | Promise<void>;
+  onLoadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
+  onUnloadStart?: (context: FileViewerLifecycleContext) => void | Promise<void>;
+  onUnloadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
+}
+
+export type FileViewerOperationType = 'download' | 'print' | 'export-html';
+
+export interface FileViewerOperationContext extends Omit<FileViewerLifecycleContext, 'phase'> {
+  operation: FileViewerOperationType;
+  label: string;
+}
+
+export type FileViewerBeforeOperation = (
+  context: FileViewerOperationContext
+) => boolean | void | Promise<boolean | void>;
+
 /**
  * 预览器通用配置。
  */
@@ -86,6 +129,15 @@ export interface FileViewerOptions {
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;
   archive?: FileViewerArchiveOptions;
+  /**
+   * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
+   * iframe 集成时同名事件会通过 `postMessage` 向宿主发送。
+   */
+  hooks?: FileViewerLifecycleHooks;
+  /**
+   * 内置操作按钮执行前的全局前置钩子。返回 `false` 时会取消本次操作。
+   */
+  beforeOperation?: FileViewerBeforeOperation;
 }
 
 /**

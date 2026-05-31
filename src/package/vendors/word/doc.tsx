@@ -1,5 +1,5 @@
 import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
-import type { AppWrapper } from '@/package/common/type'
+import type { AppWrapper, FileRenderContext } from '@/package/common/type'
 
 const PAGE_BREAK_MARKER = '<span class="msdoc-page-break"></span>'
 const EMPTY_PAGE_HTML = '<p class="msdoc-paragraph"><br></p>'
@@ -65,10 +65,20 @@ function wrapAsWordPages(html: string): string {
   )).join('')}</div>`
 }
 
+function prepareMsDocCloneForExport(target: HTMLDivElement) {
+  const clone = target.cloneNode(true) as HTMLElement
+  clone.querySelectorAll<HTMLElement>('.msdoc-stage, .msdoc-page, .msdoc-root').forEach(node => {
+    node.style.height = 'auto'
+    node.style.maxHeight = 'none'
+    node.style.overflow = 'visible'
+  })
+  return clone.innerHTML
+}
+
 /**
  * 渲染 doc 文件
  */
-export default async function render(buffer: ArrayBuffer, target: HTMLDivElement): Promise<AppWrapper> {
+export default async function render(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext): Promise<AppWrapper> {
   const rendered = await parseMsDocToHtml(buffer, {
     renderOptions: {
       css: `${defaultMsDocCss()}\n${WORD_PAGE_CSS}`
@@ -76,10 +86,14 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   })
 
   target.innerHTML = `<style data-msdoc>${rendered.css}</style>${wrapAsWordPages(rendered.html)}`
+  context?.registerExportAdapter?.({
+    toHtml: () => prepareMsDocCloneForExport(target)
+  })
 
   return {
     $el: target,
     unmount() {
+      context?.registerExportAdapter?.(null)
       target.innerHTML = ''
     }
   }

@@ -62,7 +62,14 @@ export {
 export type {
   FileRef,
   FileViewerArchiveOptions,
+  FileViewerBeforeOperation,
+  FileViewerLifecycleContext,
+  FileViewerLifecycleHooks,
+  FileViewerLifecyclePhase,
+  FileViewerOperationContext,
+  FileViewerOperationType,
   FileViewerOptions,
+  FileViewerSourceType,
   FileViewerToolbarOptions,
   FileViewerWatermarkOptions
 } from './common/type'
