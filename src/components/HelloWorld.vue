@@ -18,6 +18,16 @@ const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
 const runtimeOptions = ref<FileViewerOptions>({})
 
+type ViewerAction = 'download' | 'print' | 'exportHtml'
+
+type FileViewerExpose = {
+  downloadOriginalFile: () => Promise<void>
+  printRenderedHtml: () => Promise<void>
+  exportRenderedHtml: () => Promise<void>
+}
+
+const fileViewerRef = ref<FileViewerExpose | null>(null)
+
 type PresetFile = {
   name: string
   url: string
@@ -417,14 +427,44 @@ const previewType = computed(() => {
   return ext.toUpperCase()
 })
 
+const externalToolbar = computed(() => {
+  const toolbar = runtimeOptions.value.toolbar
+  if (toolbar === false) {
+    return {
+      download: false,
+      print: false,
+      exportHtml: false
+    }
+  }
+  if (toolbar && typeof toolbar === 'object') {
+    return {
+      download: toolbar.download !== false,
+      print: toolbar.print !== false,
+      exportHtml: toolbar.exportHtml !== false
+    }
+  }
+  return {
+    download: true,
+    print: true,
+    exportHtml: true
+  }
+})
+
+const showExternalToolbar = computed(() => {
+  const toolbar = externalToolbar.value
+  return toolbar.download || toolbar.print || toolbar.exportHtml
+})
+
+const viewerActionDisabled = computed(() => !file.value && !preview.value)
+
 const viewerOptions = computed<FileViewerOptions>(() => ({
-  toolbar: true,
   archive: {
     workerUrl: '/vendor/libarchive/worker-bundle.js',
     cache: true,
     ...runtimeOptions.value.archive
   },
   ...runtimeOptions.value,
+  toolbar: hidden.value ? runtimeOptions.value.toolbar ?? true : false,
   watermark: watermarkEnabled.value
     ? {
         text: 'Flyfish Viewer',
@@ -439,6 +479,18 @@ const viewerOptions = computed<FileViewerOptions>(() => ({
       }
     : runtimeOptions.value.watermark
 }))
+
+function triggerViewerAction(action: ViewerAction) {
+  if (action === 'download') {
+    void fileViewerRef.value?.downloadOriginalFile()
+    return
+  }
+  if (action === 'print') {
+    void fileViewerRef.value?.printRenderedHtml()
+    return
+  }
+  void fileViewerRef.value?.exportRenderedHtml()
+}
 
 listenForFile((body, target, options) => {
   hidden.value = true
@@ -708,26 +760,60 @@ function updateSampleMenuGeometry() {
               <span class='viewer-type'>{{ previewType }}</span>
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
-            <button
-              type='button'
-              class='viewer-tool-button'
-              :class='{ active: watermarkEnabled }'
-              title='切换水印'
-              @click='watermarkEnabled = !watermarkEnabled'
-            >
-              水印
-            </button>
+            <div class='viewer-tools'>
+              <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
+                <button
+                  v-if='externalToolbar.download'
+                  type='button'
+                  class='viewer-tool-button'
+                  :disabled='viewerActionDisabled'
+                  title='下载原始文件'
+                  @click='triggerViewerAction("download")'
+                >
+                  下载
+                </button>
+                <button
+                  v-if='externalToolbar.print'
+                  type='button'
+                  class='viewer-tool-button'
+                  :disabled='viewerActionDisabled'
+                  title='打印完整渲染内容'
+                  @click='triggerViewerAction("print")'
+                >
+                  打印
+                </button>
+                <button
+                  v-if='externalToolbar.exportHtml'
+                  type='button'
+                  class='viewer-tool-button'
+                  :disabled='viewerActionDisabled'
+                  title='导出当前渲染后的 HTML'
+                  @click='triggerViewerAction("exportHtml")'
+                >
+                  HTML
+                </button>
+              </div>
+              <button
+                type='button'
+                class='viewer-tool-button'
+                :class='{ active: watermarkEnabled }'
+                title='切换水印'
+                @click='watermarkEnabled = !watermarkEnabled'
+              >
+                水印
+              </button>
+            </div>
           </div>
 
           <div class='viewport'>
-            <file-viewer :file='file' :url='preview' :options='viewerOptions' />
+            <file-viewer ref='fileViewerRef' :file='file' :url='preview' :options='viewerOptions' />
           </div>
         </section>
       </div>
 
       <section v-else class='viewer-panel standalone'>
         <div class='viewport'>
-          <file-viewer :file='file' :url='preview' :options='viewerOptions' />
+          <file-viewer ref='fileViewerRef' :file='file' :url='preview' :options='viewerOptions' />
         </div>
       </section>
     </main>
@@ -1492,6 +1578,23 @@ function updateSampleMenuGeometry() {
   text-overflow: ellipsis;
 }
 
+.viewer-tools {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewer-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(20, 35, 53, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
 .viewer-tool-button {
   height: 32px;
   flex-shrink: 0;
@@ -1504,6 +1607,18 @@ function updateSampleMenuGeometry() {
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.viewer-action-group .viewer-tool-button {
+  min-width: 48px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.viewer-tool-button:disabled {
+  color: #a9b4c0;
+  cursor: not-allowed;
+  opacity: 0.68;
 }
 
 .viewer-tool-button.active {
@@ -1586,6 +1701,12 @@ function updateSampleMenuGeometry() {
 
   .viewer-path {
     width: 100%;
+  }
+
+  .viewer-tools {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   .control-panel {

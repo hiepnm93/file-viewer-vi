@@ -1031,6 +1031,12 @@ const printRenderedHtml = async () => {
   }
 }
 
+defineExpose({
+  downloadOriginalFile,
+  printRenderedHtml,
+  exportRenderedHtml
+})
+
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()
 }, { immediate: true })
@@ -1073,28 +1079,30 @@ onBeforeUnmount(() => {
           HTML
         </button>
       </div>
-      <div ref='output' class='content' :class='{ hidden: loading || !!error }' />
-      <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
+      <div class='viewer-content-shell'>
+        <div ref='output' class='content' :class='{ hidden: loading || !!error }' />
+        <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
 
-      <div v-if='loading' class='state-panel loading-panel'>
-        <div class='loading-card'>
-          <div class='loading-icon'>{{ loadingTheme.badge }}</div>
-          <div class='loading-copy'>
-            <span class='loading-kicker'>{{ loadingTheme.label }}</span>
-            <strong>{{ message }}</strong>
-            <p>{{ loadingTheme.hint }}</p>
+        <div v-if='loading' class='state-panel loading-panel'>
+          <div class='loading-card'>
+            <div class='loading-icon'>{{ loadingTheme.badge }}</div>
+            <div class='loading-copy'>
+              <span class='loading-kicker'>{{ loadingTheme.label }}</span>
+              <strong>{{ message }}</strong>
+              <p>{{ loadingTheme.hint }}</p>
+            </div>
+            <span class='loading-ring' />
           </div>
-          <span class='loading-ring' />
         </div>
-      </div>
 
-      <div v-else-if='error' class='state-panel error-panel'>
-        <div class='error-card'>
-          <strong>预览失败</strong>
-          <p>{{ error }}</p>
+        <div v-else-if='error' class='state-panel error-panel'>
+          <div class='error-card'>
+            <strong>预览失败</strong>
+            <p>{{ error }}</p>
+          </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
 </template>
@@ -1113,23 +1121,21 @@ onBeforeUnmount(() => {
   position: relative;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .viewer-actions {
-  position: absolute;
-  z-index: 35;
-  top: 12px;
-  right: 12px;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
-  padding: 5px;
-  border-radius: 12px;
-  border: 1px solid rgba(20, 35, 53, 0.08);
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 12px 28px rgba(17, 30, 45, 0.1);
-  backdrop-filter: blur(12px);
+  min-height: 45px;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(20, 35, 53, 0.06);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .viewer-actions button {
@@ -1154,6 +1160,13 @@ onBeforeUnmount(() => {
 .viewer-actions button:disabled {
   color: #aab5c0;
   cursor: not-allowed;
+}
+
+.viewer-content-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .content {
