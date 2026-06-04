@@ -1698,6 +1698,275 @@ function updateSampleMenuGeometry() {
   box-shadow: none;
 }
 
+@media (prefers-color-scheme: dark) {
+  .demo-shell {
+    background:
+      linear-gradient(135deg, #0f171d 0%, #14231f 52%, #111923 100%);
+    color: #e7f1f5;
+  }
+
+  .control-panel,
+  .viewer-panel {
+    border-color: rgba(177, 202, 195, 0.14);
+    background: rgba(16, 25, 30, 0.82);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  }
+
+  .brand-card {
+    background:
+      linear-gradient(135deg, rgba(22, 52, 55, 0.96), rgba(17, 91, 65, 0.9));
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
+  }
+
+  .current-card,
+  .sample-trigger,
+  .upload-card {
+    background: rgba(22, 32, 39, 0.9);
+    box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.12);
+  }
+
+  .current-badge,
+  .upload-icon {
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
+  }
+
+  .current-copy span,
+  .field-label,
+  .sample-trigger-copy span,
+  .sample-trigger-copy em,
+  .sample-card-copy span,
+  .sample-group-header em,
+  .viewer-path,
+  .viewer-type {
+    color: #9eb0bf;
+  }
+
+  .current-copy strong,
+  .sample-trigger-copy strong,
+  .sample-card-copy strong,
+  .sample-group-header .sample-group-title,
+  .upload-card strong,
+  .viewer-copy strong {
+    color: #eff7fb;
+  }
+
+  .mode-switch {
+    background: rgba(167, 185, 198, 0.12);
+  }
+
+  .mode-button {
+    color: #9eb0bf;
+  }
+
+  .mode-button.active {
+    background: rgba(239, 247, 251, 0.12);
+    color: #f4fbff;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+  }
+
+  .compact-field {
+    border-color: rgba(167, 185, 198, 0.14);
+    background: rgba(9, 15, 20, 0.72);
+    color: #eff7fb;
+  }
+
+  .compact-field::placeholder {
+    color: #718493;
+  }
+
+  .compact-field:focus {
+    border-color: rgba(45, 212, 154, 0.4);
+    box-shadow: 0 0 0 4px rgba(45, 212, 154, 0.12);
+  }
+
+  .sample-picker.open .sample-trigger,
+  .sample-trigger:hover {
+    border-color: rgba(96, 165, 250, 0.26);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+  }
+
+  .sample-trigger-action {
+    background: rgba(96, 165, 250, 0.16);
+    color: #9cc7ff;
+  }
+
+  .sample-menu {
+    border-color: rgba(167, 185, 198, 0.16);
+    background: rgba(14, 22, 28, 0.96);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.42),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  .sample-group {
+    background: rgba(22, 32, 39, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.1);
+  }
+
+  .sample-group--open {
+    background: rgba(24, 38, 42, 0.9);
+    box-shadow:
+      inset 0 0 0 1px rgba(45, 212, 154, 0.24),
+      0 10px 24px rgba(0, 0, 0, 0.22);
+  }
+
+  .sample-group-header:hover {
+    background: rgba(45, 212, 154, 0.1);
+  }
+
+  .sample-group-header strong {
+    background: rgba(167, 185, 198, 0.12);
+    color: #b8c7d5;
+  }
+
+  .sample-group-header i {
+    border-color: #9eb0bf;
+  }
+
+  .sample-card {
+    border-color: rgba(167, 185, 198, 0.14);
+    background: rgba(13, 21, 27, 0.7);
+    color: #eff7fb;
+  }
+
+  .sample-card.active {
+    border-color: rgba(45, 212, 154, 0.42);
+    background: rgba(45, 212, 154, 0.14);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+  }
+
+  .sample-file-icon {
+    background: linear-gradient(145deg, #253542, #16222b);
+    color: #c8d8e4;
+    box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.18);
+  }
+
+  .sample-file-icon::before {
+    background: rgba(236, 244, 248, 0.16);
+    box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.22);
+  }
+
+  .sample-file-icon[data-family='word'] {
+    background: linear-gradient(145deg, #183759, #102235);
+    color: #93c5fd;
+  }
+
+  .sample-file-icon[data-family='sheet'] {
+    background: linear-gradient(145deg, #153d2d, #10261d);
+    color: #86efac;
+  }
+
+  .sample-file-icon[data-family='slide'] {
+    background: linear-gradient(145deg, #4b2d17, #2b1d13);
+    color: #fdba74;
+  }
+
+  .sample-file-icon[data-family='pdf'] {
+    background: linear-gradient(145deg, #4b1f25, #2a1418);
+    color: #fca5a5;
+  }
+
+  .sample-file-icon[data-family='layout'],
+  .sample-file-icon[data-family='drawing'],
+  .sample-file-icon[data-family='ebook'] {
+    background: linear-gradient(145deg, #312653, #1f1a34);
+    color: #c4b5fd;
+  }
+
+  .sample-file-icon[data-family='cad'],
+  .sample-file-icon[data-family='eda'],
+  .sample-file-icon[data-family='audio'] {
+    background: linear-gradient(145deg, #17444d, #10292e);
+    color: #67e8f9;
+  }
+
+  .sample-file-icon[data-family='model'],
+  .sample-file-icon[data-family='text'] {
+    background: linear-gradient(145deg, #31421f, #1c2916);
+    color: #bef264;
+  }
+
+  .sample-file-icon[data-family='archive'] {
+    background: linear-gradient(145deg, #4a3416, #2a2114);
+    color: #facc15;
+  }
+
+  .sample-file-icon[data-family='email'] {
+    background: linear-gradient(145deg, #183a62, #112337);
+    color: #93c5fd;
+  }
+
+  .sample-file-icon[data-family='code'],
+  .sample-file-icon[data-family='video'] {
+    background: linear-gradient(145deg, #273044, #171f2d);
+    color: #cbd5e1;
+  }
+
+  .sample-file-icon[data-family='image'] {
+    background: linear-gradient(145deg, #4a2340, #2b1827);
+    color: #f9a8d4;
+  }
+
+  .primary-button {
+    background: linear-gradient(135deg, #15935f 0%, #2dd493 100%);
+    box-shadow: 0 16px 32px rgba(21, 147, 95, 0.26);
+  }
+
+  .upload-card {
+    border-color: rgba(45, 212, 154, 0.24);
+    background:
+      linear-gradient(135deg, rgba(45, 212, 154, 0.1), transparent 58%),
+      rgba(22, 32, 39, 0.9);
+  }
+
+  .upload-title {
+    color: #61e5b4;
+  }
+
+  .viewer-toolbar {
+    border-bottom-color: rgba(167, 185, 198, 0.12);
+  }
+
+  .viewer-status {
+    background: #2dd493;
+    box-shadow: 0 0 0 5px rgba(45, 212, 154, 0.14);
+  }
+
+  .viewer-type {
+    background: rgba(167, 185, 198, 0.12);
+  }
+
+  .viewer-action-group {
+    border-color: rgba(167, 185, 198, 0.13);
+    background: rgba(9, 15, 20, 0.54);
+  }
+
+  .viewer-tool-button {
+    border-color: rgba(167, 185, 198, 0.13);
+    background: rgba(22, 32, 39, 0.78);
+    color: #b8c7d5;
+  }
+
+  .viewer-tool-button:disabled {
+    color: #607482;
+  }
+
+  .viewer-tool-button.active {
+    border-color: rgba(45, 212, 154, 0.36);
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
+  }
+
+  .viewport :deep(.file-viewer) {
+    box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.12);
+  }
+
+  .hidden .viewer-panel {
+    background: #0f171d;
+  }
+}
+
 @media (max-width: 1100px) {
   .layout-shell {
     grid-template-columns: minmax(0, 1fr);

@@ -12,6 +12,7 @@ html {
   height: 100%;
   overflow: hidden;
   background: #eef5f1;
+  color-scheme: light dark;
   font-family: Aptos, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -38,5 +39,12 @@ body,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background: #0f171d;
+  }
 }
 </style>

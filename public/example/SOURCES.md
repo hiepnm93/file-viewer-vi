@@ -1,17 +1,18 @@
 # Public Sample Sources
 
-本目录中的 PDF、CAD、3D 模型、绘图、音频、EPUB 和 MSG 示例文件使用可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库，并同步更新本文件与 `README.md`。
+本目录中的 CAD、3D 模型、绘图、音频、EPUB 和 MSG 示例文件使用可追溯的公开样本或项目内最小夹具；PDF、DOCX、UMD、EML、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库，并同步更新本文件与 `README.md`。
 
 | Local file | Source | License | Purpose |
 | --- | --- | --- | --- |
 | `drawing.dxf` | `https://github.com/mozman/ezdxf/blob/master/examples_dxf/wipeout_door.dxf` | MIT | Real DXF CAD drawing for pan, zoom and layer smoke tests |
-| `pdf.pdf` | `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf` | W3C public test resource | Small real PDF sample for fast toolbar, scale and page navigation smoke tests |
+| `word.docx` | Project-generated rich DOCX fixture | Apache-2.0 | Multi-page Word preview, responsive white paper and print/export smoke tests |
+| `pdf.pdf` | Project-generated rich PDF fixture | Apache-2.0 | Multi-page PDF toolbar, scale, sidebar, print and dark-shell isolation smoke tests |
 | `sample.dwg` | `https://github.com/dshn06/cad-webviewer-unity/blob/main/cad-webview/public/cad-data/data/baseline-sample.dwg` | MIT | Real DWG sample for compatibility preview and geometry-limit messaging |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | Project-generated minimal fixtures | Apache-2.0 | Three.js model rendering and engineering-format fallback smoke tests |
 | `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for official restore/export smoke tests |
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
-| `archive.zip` / `archive.tar.gz` | Project-packaged PDF, DOCX, Markdown, TypeScript and JSON sample set | Apache-2.0 | Archive directory, lazy extraction, cache and nested preview smoke tests |
+| `archive.zip` / `archive.tar.gz` | Project-packaged rich PDF, DOCX, Markdown, TypeScript and JSON sample set | Apache-2.0 | Archive directory, lazy extraction, cache and nested preview smoke tests |
 | `sample.eml` | Project-generated MIME email fixture | Apache-2.0 | EML headers, text/html body, attachment download and attachment preview smoke tests |
 | `sample.msg` | `https://github.com/HiraokaHyperTools/msgreader/blob/master/test/A%20memo.msg` | MIT | Outlook MSG parsing smoke test through @kenjiuno/msgreader |
 | `sample.olb` / `sample.dra` | Project-generated CFB EDA fixtures | Apache-2.0 | OLB/DRA structure tree, entity, property and readable-string smoke tests |
@@ -22,7 +23,8 @@
 运行时说明:
 
 - `sample.dwg` 是真实 DWG 文件；运行时会尽量识别误命名 DXF 或提取内嵌预览图，完整几何仍建议业务侧转换为 DXF。
-- `pdf.pdf` 是 W3C 公开测试 PDF，体积很小，适合保证线上 demo 和浏览器烟测快速进入 PDF 渲染状态。
+- `word.docx` 是项目内生成的多页 DOCX，覆盖标题、段落、表格、列表、分页、白色纸张和完整打印回归。
+- `pdf.pdf` 是项目内生成的 5 页 PDF，覆盖缩放、页侧边栏、树形导航、打印、导出和暗色外壳隔离回归。
 - `model.gltf`、`model.obj`、`model.stl`、`model.ply` 和 `model.step` 是最小 3D fixture，用于验证 Three.js 预览和工程格式转换提示。
 - `flow.excalidraw` 先经过 `@excalidraw/excalidraw` 的官方 `restore`，再用 `exportToSvg` 输出只读预览，以兼容公开样例中常见的精简字段。
 - `process.drawio` 由 diagrams.net 官方 `GraphViewer` 解析，组件不自行实现 draw.io 方言解析。

@@ -170,7 +170,7 @@ const options = {
 
 | 选项 | 说明 |
 | --- | --- |
-| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐 |
+| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
@@ -237,7 +237,7 @@ mountViewerFrame(container, {
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
 - Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色页面，避免只打印当前视口或第一页。
-- 图片、Markdown、代码、PPTX、OFD、CAD、绘图、UMD、OLB/DRA 等可以稳定克隆当前渲染结果的格式会保留打印按钮；表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
+- 图片、Markdown、代码、PPTX、OFD、CAD、绘图、UMD、OLB/DRA 等可以稳定克隆当前渲染结果的格式会保留打印按钮；Excel 当前使用 `styled-exceljs` + `e-virt-table` 虚拟渲染，完整工作表不会一次性存在于 DOM 中，因此表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
 - 导出 HTML 会尽量克隆当前渲染结果，并把 canvas 转成图片，保证图纸、绘图、文档和代码在离线 HTML 中仍有可读内容。
 - 水印会同时参与预览、打印和 HTML 导出。文字水印适合内部资料、审批流和归档场景；图片水印适合品牌 Logo 或业务系统标识。
 

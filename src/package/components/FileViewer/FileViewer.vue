@@ -1259,6 +1259,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   background: #ffffff;
+  color-scheme: light dark;
 }
 
 .viewer-stage {
@@ -1430,6 +1431,60 @@ onBeforeUnmount(() => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .file-viewer {
+    background: #0f171d;
+  }
+
+  .viewer-actions {
+    border-bottom-color: rgba(167, 185, 198, 0.12);
+    background: rgba(14, 22, 28, 0.94);
+  }
+
+  .viewer-actions button {
+    color: #b8c7d5;
+  }
+
+  .viewer-actions button:hover:not(:disabled) {
+    background: rgba(45, 212, 154, 0.14);
+    color: #5ee0ae;
+  }
+
+  .viewer-actions button:disabled {
+    color: #667888;
+  }
+
+  .content {
+    background: #141c23;
+  }
+
+  .state-panel {
+    background:
+      linear-gradient(180deg, rgba(15, 23, 30, 0.92), rgba(11, 17, 22, 0.98));
+  }
+
+  .loading-card,
+  .error-card {
+    background: rgba(19, 29, 37, 0.94);
+    border-color: rgba(139, 161, 177, 0.16);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34);
+  }
+
+  .loading-copy strong,
+  .error-card strong {
+    color: #eff7fb;
+  }
+
+  .loading-copy p,
+  .error-card p {
+    color: #9eb0bf;
+  }
+
+  .error-card strong {
+    color: #ff9c91;
   }
 }
 </style>
