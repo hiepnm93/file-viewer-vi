@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.16`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
+当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.17`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
 
 ## 安装
 
@@ -126,6 +126,8 @@ file.value = new File([blob], 'contract.pdf', { type: blob.type })
 />
 ```
 
+`toolbar.print` 表示业务允许打印，最终按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐。Word / PDF 会输出完整页面；表格、压缩包、邮件、EPUB、音视频、3D / 模型等不适合直接打印的链路会自动隐藏打印按钮。
+
 ## 常见接入建议
 
 ### 给容器一个明确高度
@@ -170,7 +172,7 @@ import { FileViewer } from '@flyfish-group/file-viewer3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.16`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.17`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 

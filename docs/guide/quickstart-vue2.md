@@ -3,7 +3,7 @@
 <div class="doc-kicker">For Vue 2.7 Projects</div>
 
 <p class="doc-lead">
-  Vue2 包已经同步发布到 <code>@flyfish-group/file-viewer@1.0.16</code>。
+  Vue2 包已经同步发布到 <code>@flyfish-group/file-viewer@1.0.17</code>。
   它面向 Vue2.7 项目，格式能力、示例文件和 iframe 体验与 v3 分支保持一致。
 </p>
 
@@ -98,10 +98,12 @@ export default {
 
 Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码高亮、图片、音频和视频。差异主要在包名和插件注册入口:
 
+两条分支也共享同一套打印能力判断: `toolbar.print` 只表示业务允许打印，真实按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐。Word / PDF 会输出完整页面，不适合直接打印的表格、压缩包、邮件、EPUB、音视频、3D / 模型等链路会隐藏打印按钮。
+
 | 版本 | npm 包 | 最新版本 | 注册方式 |
 | --- | --- | --- | --- |
-| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.16` | `Vue.use(FileViewer)` |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.16` | `createApp(App).use(FileViewer)` |
+| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.17` | `Vue.use(FileViewer)` |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.17` | `createApp(App).use(FileViewer)` |
 
 <div class="doc-note">
   如果一个预览器需要被多个不同技术栈系统复用，仍然建议优先看 <a href="/guide/iframe">Iframe 嵌入</a>，这样升级预览能力时不需要逐个业务项目发版。

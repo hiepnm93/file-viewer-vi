@@ -275,6 +275,7 @@ async function loadFile() {
     currentPage.value = 1
     context.document = pdfDocument
     props.exportAdapter?.({
+      includeDocumentStyles: false,
       toHtml: renderPdfPagesForExport
     })
     void loadOutline(pdfDocument)

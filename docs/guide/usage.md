@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.16`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.16`，React 使用 `@flyfish-group/file-viewer-react@1.0.16`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.16`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.17`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.17`，React 使用 `@flyfish-group/file-viewer-react@1.0.17`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.17`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -170,7 +170,7 @@ const options = {
 
 | 选项 | 说明 |
 | --- | --- |
-| `toolbar` | `true` 或对象；控制下载原文件、打印完整渲染结果和导出渲染后 HTML |
+| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
@@ -216,7 +216,7 @@ const options = {
 }
 ```
 
-内置操作当前包括 `download`、`print` 和 `export-html`。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意钩子返回 `false` 都会取消本次操作。
+内置操作当前包括 `download`、`print` 和 `export-html`。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部操作按钮。
 
 React、纯 JS 和 iframe 集成无法把函数序列化进 iframe 查询参数，但可以通过事件监听拿到同样的生命周期和操作上下文。纯 JS 使用 `onEvent`，React 使用 `onViewerEvent`。
 
@@ -236,8 +236,9 @@ mountViewerFrame(container, {
 - 下载原文件会保留用户传入的原始二进制内容，不会把渲染后的页面反向写回文件。
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
-- Word 打印和导出会清理预览阶段的缩放、绝对定位和滚动容器，把 `.docx` / `.doc` 还原成完整白色页面，避免只打印当前视口或第一页。
-- 非 PDF 格式会克隆当前渲染结果，并把 canvas 转成图片，保证图纸、3D、绘图、表格和文档在导出 HTML 时仍有可读内容。
+- Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色页面，避免只打印当前视口或第一页。
+- 图片、Markdown、代码、PPTX、OFD、CAD、绘图、UMD、OLB/DRA 等可以稳定克隆当前渲染结果的格式会保留打印按钮；表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
+- 导出 HTML 会尽量克隆当前渲染结果，并把 canvas 转成图片，保证图纸、绘图、文档和代码在离线 HTML 中仍有可读内容。
 - 水印会同时参与预览、打印和 HTML 导出。文字水印适合内部资料、审批流和归档场景；图片水印适合品牌 Logo 或业务系统标识。
 
 ## 典型切换方式

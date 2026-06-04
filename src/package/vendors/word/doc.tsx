@@ -87,6 +87,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
 
   target.innerHTML = `<style data-msdoc>${rendered.css}</style>${wrapAsWordPages(rendered.html)}`
   context?.registerExportAdapter?.({
+    includeDocumentStyles: false,
     toHtml: () => prepareMsDocCloneForExport(target)
   })
 

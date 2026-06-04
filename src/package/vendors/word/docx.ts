@@ -194,6 +194,13 @@ function makeDocxResponsive(target: HTMLDivElement) {
 
 function prepareDocxCloneForExport(target: HTMLDivElement) {
   const clone = target.cloneNode(true) as HTMLElement
+  const printDocument = document.createElement('div')
+  printDocument.className = 'docx-print-document'
+  const scopedStyles = Array.from(clone.querySelectorAll('style'))
+    .filter(style => !style.textContent?.includes('.docx-fit-viewer'))
+    .map(style => style.outerHTML)
+    .join('')
+
   clone.querySelectorAll<HTMLElement>('.docx-page-frame').forEach(frame => {
     frame.style.height = 'auto'
     frame.style.minHeight = '0'
@@ -208,8 +215,11 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
       page.style.transform = 'none'
       page.style.overflow = 'visible'
     }
+
+    printDocument.appendChild(frame.cloneNode(true))
   })
-  return clone.innerHTML
+
+  return printDocument.childElementCount ? `${scopedStyles}${printDocument.outerHTML}` : clone.innerHTML
 }
 
 /**
@@ -224,6 +234,7 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
   await renderAsync(buffer, target, undefined, docxOptions)
   const disposeResponsive = makeDocxResponsive(target)
   context?.registerExportAdapter?.({
+    includeDocumentStyles: false,
     beforeSnapshot: () => {
       window.dispatchEvent(new Event('resize'))
     },

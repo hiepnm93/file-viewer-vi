@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.16
+npm install --save @flyfish-group/file-viewer-web@1.0.17
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -118,11 +118,11 @@ await copyViewerAssets({
 
 `options` 会被序列化到 iframe 查询参数中，当前支持:
 
-- `toolbar`: 控制下载原文件、完整打印和导出 HTML。
+- `toolbar`: 声明是否允许下载原文件、完整打印和导出 HTML；打印按钮仍会按当前格式和渲染链路动态显隐。
 - `watermark`: 配置文字或图片水印。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
 
-生命周期和内置操作事件会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle` 和 `flyfish-viewer:operation`。由于 iframe 查询参数不能序列化函数，按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`；iframe 模式适合做日志、审计和状态同步。
+生命周期、操作能力变化和内置操作事件会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle` 和 `flyfish-viewer:operation`，其中 `operation-availability-change` 可用于同步外部下载、打印和导出按钮。由于 iframe 查询参数不能序列化函数，按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`；iframe 模式适合做日志、审计和状态同步。
 
 ## 构建上线
 

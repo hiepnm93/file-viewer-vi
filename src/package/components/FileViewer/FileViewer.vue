@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import axios from 'axios'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { resolvePrintAvailability } from '../../common/printCapability'
 import { readBuffer } from '../../common/util'
 import type {
   FileRef,
@@ -9,6 +10,7 @@ import type {
   FileViewerBeforeOperation,
   FileViewerLifecycleContext,
   FileViewerLifecyclePhase,
+  FileViewerOperationAvailability,
   FileViewerOptions,
   FileViewerOperationContext,
   FileViewerOperationType,
@@ -49,6 +51,7 @@ const emit = defineEmits<{
   (event: 'unload-complete', context: FileViewerLifecycleContext): void;
   (event: 'operation-before', context: FileViewerOperationContext): void;
   (event: 'operation-cancel', context: FileViewerOperationContext): void;
+  (event: 'operation-availability-change', availability: FileViewerOperationAvailability): void;
 }>()
 
 const PREVIEW_MESSAGE = {
@@ -93,8 +96,33 @@ const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
   }
 })
 
-const showToolbar = computed(() => {
+const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
+const renderedReady = ref(false)
+
+const operationAvailability = computed<FileViewerOperationAvailability>(() => {
+  const hasBuffer = !!currentBuffer.value
+  const hasRenderableOutput = hasBuffer && renderedReady.value && !error.value
+  const adapter = activeExportAdapter.value
+
+  return {
+    download: hasBuffer,
+    print: hasRenderableOutput && resolvePrintAvailability(currentExtend.value, adapter, renderedReady.value),
+    exportHtml: hasRenderableOutput && adapter?.exportHtml !== false
+  }
+})
+
+const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
   const toolbar = normalizedToolbar.value
+  const availability = operationAvailability.value
+  return {
+    download: toolbar.download && availability.download,
+    print: toolbar.print && availability.print,
+    exportHtml: toolbar.exportHtml && availability.exportHtml
+  }
+})
+
+const showToolbar = computed(() => {
+  const toolbar = visibleToolbar.value
   return toolbar.download || toolbar.print || toolbar.exportHtml
 })
 
@@ -138,7 +166,6 @@ const {
 } = useLoading(currentExtend)
 
 let activeRendered: Rendered | undefined
-let activeExportAdapter: FileRenderExportAdapter | null = null
 let activeDocumentContext: FileViewerLifecycleContext | null = null
 let renderVersion = 0
 let pendingDownloadController: AbortController | null = null
@@ -211,6 +238,17 @@ const postViewerEvent = (
     type,
     event,
     payload: toSerializableContext(context)
+  }, '*')
+}
+
+const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
+  if (typeof window === 'undefined' || window.parent === window) {
+    return
+  }
+  window.parent.postMessage({
+    type: 'flyfish-viewer:operation',
+    event: 'operation-availability-change',
+    payload: availability
   }, '*')
 }
 
@@ -450,6 +488,18 @@ const wrapFileRef = (data: FileRef, nextFilename?: string) => {
   throw new Error('不支持的文件类型格式！')
 }
 
+const disposeRendered = (rendered?: Rendered) => {
+  if (!rendered) {
+    return
+  }
+  const disposable = rendered as { unmount?: () => void; $destroy?: () => void }
+  if (disposable.unmount) {
+    disposable.unmount()
+    return
+  }
+  disposable.$destroy?.()
+}
+
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
 const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
   const context = activeDocumentContext
@@ -463,13 +513,14 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
   }
 
   try {
-    activeRendered?.unmount?.()
+    disposeRendered(activeRendered)
   } catch (nextError) {
     console.warn('预览内容卸载失败', nextError)
   } finally {
     activeRendered = undefined
     activeDocumentContext = null
-    activeExportAdapter = null
+    activeExportAdapter.value = null
+    renderedReady.value = false
 
     const out = output.value
     if (out) {
@@ -490,7 +541,7 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
 }
 
 const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
-  activeExportAdapter = adapter
+  activeExportAdapter.value = adapter
 }
 
 const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number, sourceUrl?: string) => {
@@ -513,7 +564,7 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
       registerExportAdapter
     })
     if (!isCurrentRequest(version)) {
-      rendered?.unmount?.()
+      disposeRendered(rendered)
       if (child.parentNode === out) {
         out.removeChild(child)
       }
@@ -545,10 +596,11 @@ const readAndRenderFile = async (
 
   const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
-    rendered?.unmount?.()
+    disposeRendered(rendered)
     return
   }
   activeRendered = rendered
+  renderedReady.value = true
   const context = buildLifecycleContext({
     phase: 'load-complete',
     version,
@@ -642,6 +694,7 @@ const resetViewer = () => {
   filename.value = ''
   currentFile.value = null
   currentBuffer.value = null
+  renderedReady.value = false
   clearRenderedContent()
   resetLoading()
 }
@@ -780,16 +833,16 @@ const waitForPrintWindowReady = async (printWindow: Window) => {
 }
 
 const prepareRenderedContentForSnapshot = async (source: HTMLElement) => {
-  await activeExportAdapter?.beforeSnapshot?.()
+  await activeExportAdapter.value?.beforeSnapshot?.()
   await waitForNextPaint()
   await waitForImages(source)
 }
 
-const buildExportHtmlDocument = (contentHtml: string, title: string) => {
+const buildExportHtmlDocument = (contentHtml: string, title: string, includeDocumentStyles = true) => {
   const watermark = watermarkInlineStyle.value
     ? `<div class="viewer-export-watermark" style="${watermarkInlineStyle.value}"></div>`
     : ''
-  const styles = collectDocumentStyles()
+  const styles = includeDocumentStyles ? collectDocumentStyles() : ''
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -803,7 +856,7 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
     html, body { margin: 0; min-height: 100%; background: #f2f4f7; color: #172033; font-family: Aptos, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
     body { padding: 24px; }
     .viewer-export-shell { position: relative; min-height: calc(100vh - 48px); overflow: visible; background: #f2f4f7; }
-    .viewer-export-content { position: relative; z-index: 1; width: 100%; min-height: 100%; overflow: visible; }
+    .viewer-export-content { position: relative; z-index: 1; contain: none; width: 100%; min-height: 100%; overflow: visible; }
     .viewer-export-content .file-render,
     .viewer-export-content .file-viewer,
     .viewer-export-content .viewer-stage,
@@ -830,6 +883,7 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
     .viewer-export-content .dwg-preview-frame {
       position: relative !important;
       inset: auto !important;
+      contain: none !important;
       width: 100% !important;
       height: auto !important;
       min-height: 0 !important;
@@ -841,6 +895,12 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       padding: 0 !important;
       background: transparent !important;
     }
+    .viewer-export-content .docx-print-document {
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
     .viewer-export-content .docx-page-frame,
     .viewer-export-content .msdoc-page {
       position: relative !important;
@@ -849,6 +909,8 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       min-height: 0 !important;
       margin: 0 auto 18px !important;
       overflow: visible !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
       break-after: page;
       page-break-after: always;
     }
@@ -866,6 +928,8 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       overflow: visible !important;
       transform: none !important;
       box-shadow: none !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
     .viewer-export-content .msdoc-stage {
       display: block !important;
@@ -879,7 +943,11 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
     }
     .viewer-export-content .pdf-toolbar,
     .viewer-export-content .pdf-nav-pane,
-    .viewer-export-content .viewer-actions {
+    .viewer-export-content .viewer-actions,
+    .viewer-export-content .code-toolbar,
+    .viewer-export-content .umd-toolbar,
+    .viewer-export-content .drawing-toolbar,
+    .viewer-export-content .cad-toolbar {
       display: none !important;
     }
     .viewer-export-content .pdf-content,
@@ -911,6 +979,8 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       overflow: hidden;
       background: #ffffff;
       box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+      break-inside: avoid;
+      page-break-inside: avoid;
       break-after: page;
       page-break-after: always;
     }
@@ -922,6 +992,62 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       display: block;
       width: 100%;
       height: auto;
+    }
+    .viewer-export-content .pptx-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      transform: none !important;
+    }
+    .viewer-export-content .pptx-wrapper .slide {
+      margin: 0 auto 18px !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-after: page;
+      page-break-after: always;
+      box-shadow: none !important;
+    }
+    .viewer-export-content .pptx-wrapper .slide:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .viewer-export-content .ofd-stage {
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+    .viewer-export-content .ofd-page,
+    .viewer-export-content .drawing-svg,
+    .viewer-export-content .cad-canvas-wrap,
+    .viewer-export-content .dwg-preview-frame {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-after: page;
+      page-break-after: always;
+      box-shadow: none !important;
+    }
+    .viewer-export-content .ofd-page:last-child,
+    .viewer-export-content .drawing-svg:last-child,
+    .viewer-export-content .cad-canvas-wrap:last-child,
+    .viewer-export-content .dwg-preview-frame:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .viewer-export-content .code-area {
+      overflow: visible !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+    }
+    .viewer-export-content .umd-body,
+    .viewer-export-content .umd-stage-wrap,
+    .viewer-export-content .umd-stage {
+      display: block !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+    .viewer-export-content .umd-toc {
+      display: none !important;
     }
     img, canvas, svg, video { max-width: 100%; }
     @media print {
@@ -951,9 +1077,15 @@ const buildExportHtmlDocument = (contentHtml: string, title: string) => {
       }
       .viewer-export-content .docx-page-frame > section.docx,
       .viewer-export-content .msdoc-page > .msdoc-root {
-        width: 100% !important;
         max-width: 100% !important;
         border: 0 !important;
+      }
+      .viewer-export-content .pptx-wrapper .slide,
+      .viewer-export-content .ofd-page,
+      .viewer-export-content .drawing-svg,
+      .viewer-export-content .cad-canvas-wrap,
+      .viewer-export-content .dwg-preview-frame {
+        box-shadow: none !important;
       }
     }
   </style>
@@ -974,9 +1106,11 @@ const buildRenderedHtmlDocument = async (mode: FileRenderExportMode = 'export') 
   }
 
   const title = escapeXml(displayFilename.value || 'file-viewer-preview')
-  if (activeExportAdapter?.toHtml) {
-    const contentHtml = await activeExportAdapter.toHtml({ mode, title })
-    return buildExportHtmlDocument(contentHtml, title)
+  const adapter = activeExportAdapter.value
+  const toHtml = adapter?.toHtml
+  if (toHtml) {
+    const contentHtml = await toHtml({ mode, title })
+    return buildExportHtmlDocument(contentHtml, title, adapter.includeDocumentStyles !== false)
   }
 
   await prepareRenderedContentForSnapshot(out)
@@ -1012,6 +1146,9 @@ const exportRenderedHtml = async () => {
 
 const printRenderedHtml = async () => {
   try {
+    if (!operationAvailability.value.print) {
+      throw new Error('当前文件类型不支持完整打印，请下载原文件后在本地应用中打印')
+    }
     if (!await runBeforeOperation('print')) {
       return
     }
@@ -1034,8 +1171,15 @@ const printRenderedHtml = async () => {
 defineExpose({
   downloadOriginalFile,
   printRenderedHtml,
-  exportRenderedHtml
+  exportRenderedHtml,
+  getOperationAvailability: () => ({ ...operationAvailability.value })
 })
+
+watch(operationAvailability, availability => {
+  const payload = { ...availability }
+  emit('operation-availability-change', payload)
+  postViewerAvailability(payload)
+}, { immediate: true })
 
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()
@@ -1052,7 +1196,7 @@ onBeforeUnmount(() => {
     <div class='viewer-stage'>
       <div v-if='showToolbar' class='viewer-actions'>
         <button
-          v-if='normalizedToolbar.download'
+          v-if='visibleToolbar.download'
           type='button'
           :disabled='toolbarDisabled'
           title='下载原始文件'
@@ -1061,7 +1205,7 @@ onBeforeUnmount(() => {
           下载
         </button>
         <button
-          v-if='normalizedToolbar.print'
+          v-if='visibleToolbar.print'
           type='button'
           :disabled='toolbarDisabled'
           title='打印完整渲染内容'
@@ -1070,7 +1214,7 @@ onBeforeUnmount(() => {
           打印
         </button>
         <button
-          v-if='normalizedToolbar.exportHtml'
+          v-if='visibleToolbar.exportHtml'
           type='button'
           :disabled='toolbarDisabled'
           title='导出当前渲染后的 HTML'

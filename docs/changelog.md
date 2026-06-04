@@ -4,13 +4,14 @@
 
 ## 当前主线
 
-### `v1.0.16` 双分支同步、导航与打印钩子版本
+### `v1.0.17` 打印能力矩阵与完整页打印版本
 
-- Vue3 包 `@flyfish-group/file-viewer3@1.0.16`、Vue2 包 `@flyfish-group/file-viewer@1.0.16`、React 包 `@flyfish-group/file-viewer-react@1.0.16` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.16` 统一推进到连续版本
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.17`、Vue2 包 `@flyfish-group/file-viewer@1.0.17`、React 包 `@flyfish-group/file-viewer-react@1.0.17` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.17` 统一推进到连续版本
 - PDF 导航窗格继续完善“页面 / 目录”切换，目录模式支持树形层级、展开折叠和定位跳转，便于用户在长文档中快速预览
-- Word、DOC 和大部分文档预览统一增强打印 / HTML 导出，清理预览缩放、滚动容器和固定高度，避免只打印一页或页面被截断
-- 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，iframe 适配器同步透出事件
-- 文档站、README、集成说明、分发说明和公开成品包说明同步刷新到 `1.0.16`
+- Word、DOC 和 PDF 预览统一增强打印 / HTML 导出，专属导出适配器会移除预览缩放、滚动容器和 Demo 全局布局样式，避免只打印一页或页面被截断
+- 新增打印能力动态判断，表格、压缩包、邮件、EPUB、音视频、3D 等不适合直接打印的渲染链路会自动隐藏打印按钮，避免用户进入错误打印流程
+- 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，iframe 适配器同步透出事件和操作能力变化
+- 文档站、README、集成说明、分发说明和公开成品包说明同步刷新到 `1.0.17`
 
 ### `v1.0.15` 预览交互、打印与集成钩子增强版本
 

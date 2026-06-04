@@ -61,11 +61,15 @@ export {
 
 export type {
   FileRef,
+  FileRenderExportAdapter,
+  FileRenderExportMode,
+  FileRenderExportOptions,
   FileViewerArchiveOptions,
   FileViewerBeforeOperation,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
   FileViewerLifecyclePhase,
+  FileViewerOperationAvailability,
   FileViewerOperationContext,
   FileViewerOperationType,
   FileViewerOptions,

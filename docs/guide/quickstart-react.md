@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-react@1.0.16
+npm install --save @flyfish-group/file-viewer-react@1.0.17
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -27,7 +27,7 @@ pnpm approve-builds
 pnpm exec file-viewer-copy-assets ./public/file-viewer
 ```
 
-`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.16`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
+`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.17`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
 
 ```txt
 /file-viewer/index.html
@@ -120,7 +120,7 @@ npx file-viewer-copy-assets ./public/vendor/file-viewer
 
 组件支持普通 iframe 属性，例如 `className`、`style`、`allow`、`sandbox`、`loading`。
 
-React 包无法把函数序列化到 iframe 查询参数里，因此按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`。React 的 `onViewerEvent` 更适合记录加载耗时、同步外部状态、审计下载/打印尝试等场景。
+React 包无法把函数序列化到 iframe 查询参数里，因此按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`。React 的 `onViewerEvent` 更适合记录加载耗时、同步外部状态、审计下载/打印尝试等场景；其中 `operation-availability-change` 会告诉宿主当前文件是否真正支持打印。
 
 ## 本地调试
 

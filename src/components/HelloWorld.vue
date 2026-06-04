@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { listenForFile } from '@/components/utils'
-import type { FileRef, FileViewerOptions } from '@/package/common/type'
+import type { FileRef, FileViewerOperationAvailability, FileViewerOptions } from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
 
 const hidden = ref(false)
@@ -24,9 +24,15 @@ type FileViewerExpose = {
   downloadOriginalFile: () => Promise<void>
   printRenderedHtml: () => Promise<void>
   exportRenderedHtml: () => Promise<void>
+  getOperationAvailability: () => FileViewerOperationAvailability
 }
 
 const fileViewerRef = ref<FileViewerExpose | null>(null)
+const viewerAvailability = ref<FileViewerOperationAvailability>({
+  download: false,
+  print: false,
+  exportHtml: false
+})
 
 type PresetFile = {
   name: string
@@ -450,8 +456,18 @@ const externalToolbar = computed(() => {
   }
 })
 
-const showExternalToolbar = computed(() => {
+const visibleExternalToolbar = computed(() => {
   const toolbar = externalToolbar.value
+  const availability = viewerAvailability.value
+  return {
+    download: toolbar.download && availability.download,
+    print: toolbar.print && availability.print,
+    exportHtml: toolbar.exportHtml && availability.exportHtml
+  }
+})
+
+const showExternalToolbar = computed(() => {
+  const toolbar = visibleExternalToolbar.value
   return toolbar.download || toolbar.print || toolbar.exportHtml
 })
 
@@ -490,6 +506,10 @@ function triggerViewerAction(action: ViewerAction) {
     return
   }
   void fileViewerRef.value?.exportRenderedHtml()
+}
+
+function handleViewerAvailabilityChange(availability: FileViewerOperationAvailability) {
+  viewerAvailability.value = availability
 }
 
 listenForFile((body, target, options) => {
@@ -763,7 +783,7 @@ function updateSampleMenuGeometry() {
             <div class='viewer-tools'>
               <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
                 <button
-                  v-if='externalToolbar.download'
+                  v-if='visibleExternalToolbar.download'
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
@@ -773,7 +793,7 @@ function updateSampleMenuGeometry() {
                   下载
                 </button>
                 <button
-                  v-if='externalToolbar.print'
+                  v-if='visibleExternalToolbar.print'
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
@@ -783,7 +803,7 @@ function updateSampleMenuGeometry() {
                   打印
                 </button>
                 <button
-                  v-if='externalToolbar.exportHtml'
+                  v-if='visibleExternalToolbar.exportHtml'
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
@@ -806,14 +826,26 @@ function updateSampleMenuGeometry() {
           </div>
 
           <div class='viewport'>
-            <file-viewer ref='fileViewerRef' :file='file' :url='preview' :options='viewerOptions' />
+            <file-viewer
+              ref='fileViewerRef'
+              :file='file'
+              :url='preview'
+              :options='viewerOptions'
+              @operation-availability-change='handleViewerAvailabilityChange'
+            />
           </div>
         </section>
       </div>
 
       <section v-else class='viewer-panel standalone'>
         <div class='viewport'>
-          <file-viewer ref='fileViewerRef' :file='file' :url='preview' :options='viewerOptions' />
+          <file-viewer
+            ref='fileViewerRef'
+            :file='file'
+            :url='preview'
+            :options='viewerOptions'
+            @operation-availability-change='handleViewerAvailabilityChange'
+          />
         </div>
       </section>
     </main>
