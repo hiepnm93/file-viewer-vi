@@ -14,6 +14,7 @@ import { getTintColor, indexedColors } from './color'
 
 const EXCEL_DEFAULT_COLUMN_WIDTH = 8.43
 const EXCEL_DEFAULT_ROW_HEIGHT_PT = 15
+const EXCEL_DEFAULT_TEXT_COLOR = '#202124'
 const AUTO_FIT_MIN_WIDTH = 24
 const AUTO_FIT_PADDING = 8
 
@@ -229,6 +230,23 @@ const normalizeColor = (color?: StyleColor) => {
   return undefined
 }
 
+const isAutomaticPaletteColor = (color?: StyleColor) => {
+  if (!color) {
+    return false
+  }
+  const indexed = typeof color.indexed === 'number' ? color.indexed : color.index
+  return indexed === 32767
+}
+
+const normalizeFontColor = (color?: StyleColor) => {
+  // BIFF/XLS 会把“自动字体色”解析成 indexed 32767，部分文件还会附带
+  // FFFFFF 的 rgb 值。Excel 实际显示为默认黑色，不能当成显式白色。
+  if (isAutomaticPaletteColor(color)) {
+    return EXCEL_DEFAULT_TEXT_COLOR
+  }
+  return normalizeColor(color)
+}
+
 const borderWidthFromStyle = (borderStyle?: string) => {
   switch (borderStyle) {
     case 'hair':
@@ -295,7 +313,7 @@ const getCellStyle = (cellStyle?: Record<string, any>) => {
   }
 
   const font = cellStyle?.font || {}
-  const fontColor = normalizeColor(font.color || cellStyle?.color)
+  const fontColor = normalizeFontColor(font.color || cellStyle?.color)
   if (fontColor) {
     style.color = fontColor
   }
