@@ -19,10 +19,18 @@ const publicRepoDir = resolve(
 )
 const skipBuild = args.includes('--skip-build')
 const keepOldArtifacts = args.includes('--keep-old-artifacts')
+const skipVue2Tarball = args.includes('--skip-vue2-tarball')
 const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
 const version = packageJson.version
 const webPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'web', 'package.json'), 'utf8'))
 const reactPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'react', 'package.json'), 'utf8'))
+const vue2Tarball = resolve(
+  readArg(
+    '--vue2-tarball',
+    process.env.FILE_VIEWER_VUE2_TARBALL ||
+      join(sourceRoot, '..', 'file-viewer', `flyfish-group-file-viewer-${version}.tgz`)
+  )
+)
 const releaseDir = join(sourceRoot, '.release', `file-viewer-v3-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
 const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
@@ -50,6 +58,16 @@ async function assertDirectory(path, label) {
   const info = await stat(path)
   if (!info.isDirectory()) {
     throw new Error(`${label} is not a directory: ${path}`)
+  }
+}
+
+async function assertFile(path, label) {
+  if (!existsSync(path)) {
+    throw new Error(`${label} does not exist: ${path}`)
+  }
+  const info = await stat(path)
+  if (!info.isFile()) {
+    throw new Error(`${label} is not a file: ${path}`)
   }
 }
 
@@ -91,7 +109,7 @@ async function removeOldArtifacts(artifactsDir) {
     if (/^file-viewer-v3-.*-(demo|adapter-demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
     }
-    if (/^flyfish-group-file-viewer(3|-web|-react)-.*\.tgz$/.test(entry)) {
+    if (/^flyfish-group-file-viewer(3|-web|-react)?-.*\.tgz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
     }
   }
@@ -162,6 +180,13 @@ async function writeReleaseManifest(repoDir) {
       [webPackageJson.name]: webPackageJson.version,
       [reactPackageJson.name]: reactPackageJson.version
     },
+    vue2Package: skipVue2Tarball
+      ? null
+      : {
+          name: '@flyfish-group/file-viewer',
+          version,
+          tarball: basename(vue2Tarball)
+        },
     publicRepo: repoDir,
     artifactOnly: true,
     allowedRoots: ['README.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
@@ -221,6 +246,10 @@ await cp(join(sourceRoot, 'package.json'), join(publicRepoDir, 'package.json'), 
 
 const npmTarball = await findPackedNpmTarball()
 await cp(npmTarball, join(artifactsDir, basename(npmTarball)), { force: true })
+if (!skipVue2Tarball) {
+  await assertFile(vue2Tarball, 'Vue2 npm tarball')
+  await cp(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), { force: true })
+}
 for (const adapterTarball of await findAdapterTarballs()) {
   await cp(adapterTarball, join(artifactsDir, basename(adapterTarball)), { force: true })
 }

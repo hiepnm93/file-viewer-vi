@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
+import { buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
 import type { FileRenderExportOptions, FileRenderExportAdapter, FileViewerPdfOptions } from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
@@ -167,6 +168,34 @@ function getPdfExportRatio(width: number, height: number, mode: FileRenderExport
   return Math.max(0.75, Math.min(preferredRatio, maxRatio))
 }
 
+async function getPdfPrintPageSize(pageNumber = 1) {
+  const pdfDocument = context.document
+  if (!pdfDocument) {
+    throw new Error('PDF 尚未加载完成，请稍后再试')
+  }
+
+  const page = await pdfDocument.getPage(Math.min(Math.max(pageNumber, 1), pdfDocument.numPages))
+  const viewport = page.getViewport({
+    scale: PixelsPerInch.PDF_TO_CSS_UNITS,
+    rotation: currentRotation.value
+  })
+
+  ;(page as { cleanup?: () => void }).cleanup?.()
+  return {
+    width: Math.ceil(viewport.width),
+    height: Math.ceil(viewport.height)
+  }
+}
+
+async function buildPdfPrintStyle() {
+  const size = await getPdfPrintPageSize()
+  return buildPrintPageStyle({
+    selector: '.viewer-export-content .pdf-export-page',
+    width: size.width,
+    height: size.height
+  })
+}
+
 async function renderPdfPagesForExport(options: FileRenderExportOptions) {
   const pdfDocument = context.document
   if (!pdfDocument) {
@@ -184,6 +213,8 @@ async function renderPdfPagesForExport(options: FileRenderExportOptions) {
       scale: PixelsPerInch.PDF_TO_CSS_UNITS,
       rotation: currentRotation.value
     })
+    const pageWidth = Math.ceil(baseViewport.width)
+    const pageHeight = Math.ceil(baseViewport.height)
     const exportRatio = getPdfExportRatio(baseViewport.width, baseViewport.height, options.mode)
     const renderViewport = page.getViewport({
       scale: PixelsPerInch.PDF_TO_CSS_UNITS * exportRatio,
@@ -200,7 +231,13 @@ async function renderPdfPagesForExport(options: FileRenderExportOptions) {
     await page.render({ canvas, canvasContext, viewport: renderViewport }).promise
 
     const pageTitle = `${options.title} - 第 ${pageNumber} 页`
-    pagesHtml.push(`<section class="pdf-export-page" style="width:${Math.ceil(baseViewport.width)}px" aria-label="${escapeAttribute(pageTitle)}"><img src="${canvas.toDataURL('image/png')}" alt="${escapeAttribute(pageTitle)}" /></section>`)
+    const pageStyle = [
+      `--viewer-print-page-width:${formatCssPixels(pageWidth)}`,
+      `--viewer-print-page-height:${formatCssPixels(pageHeight)}`,
+      `width:${formatCssPixels(pageWidth)}`,
+      `height:${formatCssPixels(pageHeight)}`
+    ].join(';')
+    pagesHtml.push(`<section class="pdf-export-page viewer-print-page" style="${pageStyle}" aria-label="${escapeAttribute(pageTitle)}"><img src="${canvas.toDataURL('image/png')}" alt="${escapeAttribute(pageTitle)}" /></section>`)
 
     canvas.width = 0
     canvas.height = 0
@@ -293,6 +330,7 @@ async function loadFile() {
     context.document = pdfDocument
     props.exportAdapter?.({
       includeDocumentStyles: false,
+      printStyle: buildPdfPrintStyle,
       toHtml: renderPdfPagesForExport
     })
     void loadOutline(pdfDocument)

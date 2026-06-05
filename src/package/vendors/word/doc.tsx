@@ -1,8 +1,13 @@
 import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
+import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
 import type { AppWrapper, FileRenderContext } from '@/package/common/type'
 
 const PAGE_BREAK_MARKER = '<span class="msdoc-page-break"></span>'
 const EMPTY_PAGE_HTML = '<p class="msdoc-paragraph"><br></p>'
+const MSDOC_PAGE_SIZE = {
+  width: 794,
+  height: 1123
+}
 
 const WORD_PAGE_CSS = `
 .msdoc-stage{
@@ -104,7 +109,34 @@ function prepareMsDocCloneForExport(target: HTMLDivElement) {
     node.style.maxHeight = 'none'
     node.style.overflow = 'visible'
   })
+
+  clone.querySelectorAll<HTMLElement>('.msdoc-page').forEach(page => {
+    applyPrintPageSize(page, MSDOC_PAGE_SIZE, { heightMode: 'min' })
+
+    const root = page.querySelector<HTMLElement>('.msdoc-root')
+    if (!root) {
+      return
+    }
+
+    root.style.width = formatCssPixels(MSDOC_PAGE_SIZE.width)
+    root.style.maxWidth = 'none'
+    root.style.minHeight = formatCssPixels(MSDOC_PAGE_SIZE.height)
+    root.style.height = 'auto'
+    root.style.boxShadow = 'none'
+    root.style.border = '0'
+    root.style.overflow = 'visible'
+  })
+
   return clone.innerHTML
+}
+
+function buildMsDocPrintStyle() {
+  return buildPrintPageStyle({
+    selector: '.viewer-export-content .msdoc-page',
+    width: MSDOC_PAGE_SIZE.width,
+    height: MSDOC_PAGE_SIZE.height,
+    heightMode: 'min'
+  })
 }
 
 /**
@@ -120,6 +152,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   target.innerHTML = `<style data-msdoc>${rendered.css}</style>${wrapAsWordPages(rendered.html)}`
   context?.registerExportAdapter?.({
     includeDocumentStyles: false,
+    printStyle: buildMsDocPrintStyle,
     toHtml: () => prepareMsDocCloneForExport(target)
   })
 

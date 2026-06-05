@@ -1,6 +1,13 @@
 // 异步模块加载
 import type { Options, renderAsync } from 'docx-preview'
+import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels, getElementPrintPageSize } from '@/package/common/printLayout'
+import type { PrintPageSize } from '@/package/common/printLayout'
 import type { AppWrapper, FileRenderContext } from '@/package/common/type'
+
+const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
+  width: 794,
+  height: 1123
+}
 
 const loadLibrary = (() => {
   const loader = {
@@ -192,7 +199,55 @@ function makeDocxResponsive(target: HTMLDivElement) {
   }
 }
 
+function getDocxPageElement(frame: HTMLElement) {
+  const page = frame.firstElementChild
+  return page instanceof HTMLElement ? page : null
+}
+
+function getDocxFramePrintSize(frame: HTMLElement | undefined) {
+  const page = frame ? getDocxPageElement(frame) : null
+  return page ? getElementPrintPageSize(page, DOCX_DEFAULT_PAGE_SIZE) : DOCX_DEFAULT_PAGE_SIZE
+}
+
+function normalizeDocxPageForPrint(frame: HTMLElement, pageSize: PrintPageSize) {
+  const pageWidth = formatCssPixels(pageSize.width)
+  const pageHeight = formatCssPixels(pageSize.height)
+
+  applyPrintPageSize(frame, pageSize)
+  frame.style.margin = '0 auto 18px'
+
+  const page = getDocxPageElement(frame)
+  if (!page) {
+    return
+  }
+
+  page.style.position = 'relative'
+  page.style.top = 'auto'
+  page.style.left = 'auto'
+  page.style.width = pageWidth
+  page.style.maxWidth = 'none'
+  page.style.minHeight = pageHeight
+  page.style.height = pageHeight
+  page.style.margin = '0 auto'
+  page.style.transform = 'none'
+  page.style.transformOrigin = 'top left'
+  page.style.overflow = 'hidden'
+  page.style.boxShadow = 'none'
+}
+
+function buildDocxPrintStyle(target: HTMLDivElement) {
+  const firstFrame = target.querySelector<HTMLElement>('.docx-page-frame')
+  const pageSize = getDocxFramePrintSize(firstFrame || undefined)
+
+  return buildPrintPageStyle({
+    selector: '.viewer-export-content .docx-page-frame',
+    width: pageSize.width,
+    height: pageSize.height
+  })
+}
+
 function prepareDocxCloneForExport(target: HTMLDivElement) {
+  const liveFrames = Array.from(target.querySelectorAll<HTMLElement>('.docx-page-frame'))
   const clone = target.cloneNode(true) as HTMLElement
   const printDocument = document.createElement('div')
   printDocument.className = 'docx-print-document'
@@ -201,21 +256,8 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
     .map(style => style.outerHTML)
     .join('')
 
-  clone.querySelectorAll<HTMLElement>('.docx-page-frame').forEach(frame => {
-    frame.style.height = 'auto'
-    frame.style.minHeight = '0'
-    frame.style.overflow = 'visible'
-
-    const page = frame.firstElementChild
-    if (page instanceof HTMLElement) {
-      page.style.position = 'relative'
-      page.style.top = 'auto'
-      page.style.left = 'auto'
-      page.style.margin = '0 auto'
-      page.style.transform = 'none'
-      page.style.overflow = 'visible'
-    }
-
+  clone.querySelectorAll<HTMLElement>('.docx-page-frame').forEach((frame, index) => {
+    normalizeDocxPageForPrint(frame, getDocxFramePrintSize(liveFrames[index]))
     printDocument.appendChild(frame.cloneNode(true))
   })
 
@@ -238,6 +280,7 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
     beforeSnapshot: () => {
       window.dispatchEvent(new Event('resize'))
     },
+    printStyle: () => buildDocxPrintStyle(target),
     toHtml: () => prepareDocxCloneForExport(target)
   })
 

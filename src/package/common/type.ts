@@ -208,6 +208,11 @@ export interface FileRenderExportAdapter {
    */
   includeDocumentStyles?: boolean;
   beforeSnapshot?: () => Promise<void> | void;
+  /**
+   * 打印专用样式。适合 PDF / Word 等有真实页面尺寸的格式输出 `@page size`，
+   * 避免浏览器默认纸张或外层容器把页面缩放、裁切。
+   */
+  printStyle?: string | ((options: FileRenderExportOptions) => Promise<string> | string);
   toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
 }
 

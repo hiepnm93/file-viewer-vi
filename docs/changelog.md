@@ -4,6 +4,15 @@
 
 ## 当前主线
 
+### `v1.0.19` 页面尺寸感知打印与入口组件瘦身版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.19`、Vue2 包 `@flyfish-group/file-viewer@1.0.19`、React 包 `@flyfish-group/file-viewer-react@1.0.19` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.19` 统一推进到连续版本
+- PDF 打印会按真实页面 CSS 尺寸生成完整高保真页图，并通过 `@page size` 固定输出纸张大小，避免导航窗格、视口宽度或缩放状态导致页面被挤压、裁切或只打印当前页
+- DOCX / DOC 打印保留白色纸张和文档页尺寸，导出窗口只包含主体页面，避免把 Demo 外壳、工具栏、滚动容器或预览缩放带入打印结果
+- 新增 `printStyle` 渲染适配器能力，PDF、DOCX、DOC 等有真实页面尺寸的格式可以按文件自身尺寸输出打印样式，后续格式可复用同一机制
+- 将下载、打印、导出 HTML 的实现从 `FileViewer.vue` 抽离到 `useViewerExport` 和导出模板 helper，入口组件回归预览状态、生命周期和操作可用性的单一职责
+- 补充打印页尺寸与导出模板单测，并同步刷新文档站、README、Demo 示例版本、公开成品包和 npm 版本说明到 `1.0.19`
+
 ### `v1.0.18` 公开 issue 修复与真实 PDF 示例版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.18`、Vue2 包 `@flyfish-group/file-viewer@1.0.18`、React 包 `@flyfish-group/file-viewer-react@1.0.18` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.18` 统一推进到连续版本
