@@ -302,12 +302,13 @@ async function loadFile() {
       currentScale.value = clampScale(scale)
     })
 
-    // cMap 使用远程按需加载，保证中文和表单类 PDF 在部署环境中仍能正常显示。
+    // cMap/wasm 使用远程按需加载，保证中文、色彩空间和表单类 PDF 在部署环境中仍能正常显示。
     const worker = createPdfWorker()
     const loadingTask = getDocument({
       data: props.data,
       worker: worker || undefined,
       cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/cmaps/`,
+      wasmUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/wasm/`,
       useWorkerFetch: true,
       cMapPacked: true,
       enableXfa: true
