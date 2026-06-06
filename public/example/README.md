@@ -21,7 +21,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提
 - `ppt.pptx`: 验证 `pptx` 幻灯片渲染、组合图形、主题背景和图片资源
 - `pdf.pdf`: 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》验证长文档阅读、缩放工具栏、页面/目录导航、完整打印和 HTML 导出
 - `ofd.ofd`: 验证 `ofd.js` 在线预览
-- `report.typ`: 验证 Typst WASM 编译、按页 SVG 预览、打印和 HTML 导出
+- `report.typ`: 验证 Typst 源文件直接读取、浏览器 WASM 编译、按页预览、打印和 HTML 导出链路
 - `drawing.dxf`: 使用公开 DXF CAD 样例验证图纸预览
 - `sample.dwg`: 使用公开 DWG 样例验证 DWG 兼容预览和原因提示
 - `model.gltf`: 使用项目内最小 glTF 验证 Web 3D 预览
@@ -122,6 +122,6 @@ DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 已换成真实公开 DWG
 
 `audio.mp3` 与 `audio.ogg` 用于验证浏览器原生音频播放能力；`book.epub` 用于验证 `epubjs` 的目录、章节资源和滚动阅读能力；`book.umd` 用于验证早期移动电子书的文件头、元数据、章节偏移、章节标题和 zlib 正文段。
 
-`report.typ` 用于验证 Typst 文档的浏览器端 WASM 编译与 SVG 渲染链路，示例包含标题、指标块、表格、数学公式、代码块和多页输出，便于回归页面尺寸、打印和 HTML 导出。
+`report.typ` 用于验证 Typst 文档入口，示例包含标题、指标块、表格、数学公式、代码块和多页输出。线上 Demo 会直接读取该源文件，通过浏览器端 WASM 编译与 SVG 渲染链路完成预览、打印和 HTML 导出。
 
 `archive.zip` 与 `archive.tar.gz` 用于验证 `libarchive.js` 的 Worker 目录读取、按需解压、IndexedDB 缓存和压缩包内文件继续预览。`sample.eml` 与 `sample.msg` 用于验证邮件头信息、HTML/文本正文、附件下载和附件预览。`sample.olb` 与 `sample.dra` 是 CFB 容器夹具，用于验证 OLB / DRA 的结构树、对象候选、属性、文本片段和可读字符串预览。

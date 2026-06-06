@@ -5,7 +5,7 @@ import type { FileRenderContext } from '@/package/common/type'
 const TypstViewer = defineAsyncComponent(() => import('./TypstViewer.vue'))
 
 /**
- * Render Typst documents through the browser WASM compiler/renderer stack.
+ * Render Typst source documents through the browser WASM compiler/renderer stack.
  *
  * The heavy Typst runtime is kept behind this async vendor entry so normal
  * Office/PDF/image previews do not pay for the WASM compiler on first load.
@@ -22,6 +22,7 @@ export default async function renderTypst(
       <TypstViewer
         source={source}
         filename={context?.filename}
+        compilerWasmUrl={context?.options?.typst?.compilerWasmUrl}
         exportAdapter={context?.registerExportAdapter}
       />
     )

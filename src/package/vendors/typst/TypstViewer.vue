@@ -1,14 +1,20 @@
 <script setup lang='ts'>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { $typst } from '@myriaddreamin/typst.ts'
-import typstCompilerWasmUrl from '@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url'
 import typstRendererWasmUrl from '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url'
 import { formatCssPixels, type PrintPageSize } from '@/package/common/printLayout'
 import type { FileRenderExportAdapter } from '@/package/common/type'
 
+declare global {
+  interface Window {
+    __FLYFISH_TYPST_COMPILER_WASM_URL__?: string;
+  }
+}
+
 const props = defineProps<{
   source: string,
   filename?: string,
+  compilerWasmUrl?: string,
   exportAdapter?: (adapter: FileRenderExportAdapter | null) => void
 }>()
 
@@ -24,16 +30,25 @@ const pages = ref<TypstRenderedPage[]>([])
 const errorMessage = ref('')
 let renderToken = 0
 let runtimeConfigured = false
+const DEFAULT_TYPST_COMPILER_WASM_URL = 'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm'
+
+const resolveTypstCompilerWasmUrl = () => {
+  return props.compilerWasmUrl ||
+    window.__FLYFISH_TYPST_COMPILER_WASM_URL__ ||
+    import.meta.env.VITE_TYPST_COMPILER_WASM_URL ||
+    DEFAULT_TYPST_COMPILER_WASM_URL
+}
 
 const ensureTypstRuntime = () => {
   if (runtimeConfigured) {
     return
   }
 
-  // Keep the heavy Typst compiler and renderer WASM out of the main bundle and
-  // bind them explicitly so the preview works with pnpm, npm and yarn layouts.
+  // Cloudflare Pages limits a single uploaded file to 25 MiB. The Typst
+  // compiler WASM is larger than that, so load it lazily from a configurable
+  // CDN URL while keeping the smaller renderer WASM in the local async chunk.
   $typst.setCompilerInitOptions({
-    getModule: () => typstCompilerWasmUrl
+    getModule: resolveTypstCompilerWasmUrl
   })
   $typst.setRendererInitOptions({
     getModule: () => typstRendererWasmUrl

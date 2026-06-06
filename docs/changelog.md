@@ -7,6 +7,7 @@
 ### 下一版本: 性能与边缘部署优化
 
 - 新增 Typst 原生预览入口，支持 `.typ` / `.typst` 通过浏览器 WASM 编译和 SVG 渲染按页预览，并接入完整打印、导出 HTML、Demo 示例和文档矩阵
+- Typst compiler WASM 从主构建产物中拆出，默认通过固定 CDN 地址按需加载，也支持 `options.typst.compilerWasmUrl` 指向私有化部署地址，避免影响非 Typst 文件首屏加载
 - PDF 远端 URL 加载链路新增渐进读取策略: 同源 PDF 默认直接交给 PDF.js 通过 URL 读取，服务端支持 Range 时自动分片加载，避免先整包下载 Blob 后才开始建页；跨域 URL 默认保持旧的兼容下载链路
 - 新增 `options.pdf.streaming`、`options.pdf.rangeChunkSize` 和 `options.pdf.withCredentials`，可按业务文件服务能力控制 PDF 渐进读取、Range 分片大小和凭据策略
 - 下载按钮支持 URL 源文件回退，流式 PDF 没有预下载 buffer 时也可以触发原始文件下载

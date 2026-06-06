@@ -187,7 +187,17 @@ const options = {
 
 图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
 
-Typst 文件通过 `.typ` / `.typst` 扩展名识别，命中后才加载浏览器 WASM 编译器和 SVG 渲染链路。当前预览面向单文件 Typst 源文档；如果文档依赖同目录图片、字体或拆分源码，建议在业务侧先打包成压缩包预览，或在分发前生成 PDF。
+Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler WASM 使用固定 CDN 地址，也可以按私有化部署要求指定自己的地址。
+
+```ts
+const options = {
+  typst: {
+    compilerWasmUrl: 'https://cdn.example.com/typst/typst_ts_web_compiler_bg.wasm'
+  }
+}
+```
+
+当前浏览器端编译更适合单文件 Typst 源文档；如果文档依赖同目录图片、字体或拆分源码，建议在业务侧先打包成压缩包预览，保留完整项目结构后再选择内部 `.typ` 文件。
 
 <div class="doc-note">
   性能敏感的 PDF 建议使用同源静态地址，并让文件服务支持 Range 请求。这样 PDF.js 可以先建立页面结构，再按需渲染当前页和附近页面；不支持 Range 时仍会走 PDF.js URL 渐进读取，避免外层预览器重复整包缓冲。鉴权接口、无后缀下载接口或跨域签名 URL 则建议继续由业务侧取回 Blob 后包装为 File，稳定性更高。
@@ -298,7 +308,7 @@ async function useLocal(blob: Blob) {
 
 `.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。`.dxf` 会使用 CAD 预览器显示图纸。DWG 会先识别误命名 DXF，再尝试提取真实 DWG 的内嵌预览图；完整几何解析仍建议在业务侧转换为 DXF，避免把 GPL 或闭源 DWG 解析运行时打入组件包。
 
-`.typ` / `.typst` 会加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构，或预先生成 PDF。
+`.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
 `.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署时请确认 `/vendor/libarchive/worker-bundle.js` 和同目录下的 `libarchive.wasm` 可访问，或者通过 `options.archive.workerUrl` 指定自己的静态地址。
 

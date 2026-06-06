@@ -12,7 +12,7 @@
 | `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for official restore/export smoke tests |
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
-| `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Browser WASM compile, paged SVG, print and rendered HTML smoke tests |
+| `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Direct Typst source preview and browser WASM smoke tests |
 | `archive.zip` / `archive.tar.gz` | Project-packaged rich PDF, DOCX, Markdown, TypeScript and JSON sample set | Apache-2.0 | Archive directory, lazy extraction, cache and nested preview smoke tests |
 | `sample.eml` | Project-generated MIME email fixture | Apache-2.0 | EML headers, text/html body, attachment download and attachment preview smoke tests |
 | `sample.msg` | `https://github.com/HiraokaHyperTools/msgreader/blob/master/test/A%20memo.msg` | MIT | Outlook MSG parsing smoke test through @kenjiuno/msgreader |
@@ -32,7 +32,7 @@
 - `audio.mp3` 与 `audio.ogg` 只用于验证浏览器原生音频播放能力；不同浏览器对编码的支持存在差异。
 - `book.epub` 来自 Project Gutenberg，运行时由 `epubjs` 解析 EPUB 包、目录和章节资源。
 - `book.umd` 由项目内生成，覆盖 UMD 文件头、元数据、章节偏移、章节标题和 zlib 压缩正文段。
-- `report.typ` 由项目内编写，覆盖 Typst 标题、表格、公式、代码块、多页输出、页面尺寸和打印/HTML 导出。
+- `report.typ` 由项目内编写，覆盖 Typst 标题、表格、公式、代码块、多页输出、页面尺寸和打印/HTML 导出，线上 Demo 会直接读取源文件并通过浏览器端 WASM 编译预览。
 - `archive.zip` 与 `archive.tar.gz` 由本目录中的 PDF、DOCX、Markdown、TypeScript 和 JSON 示例打包，用于验证 `libarchive.js` Worker、按需解压、IndexedDB 缓存和内部文件继续预览。
 - `sample.eml` 是标准 MIME fixture，用于验证 EML 头信息、HTML/文本正文和附件链路。
 - `sample.msg` 来自 `HiraokaHyperTools/msgreader` 测试样例，用于验证 Outlook MSG 解析。

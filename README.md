@@ -64,7 +64,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 | PowerPoint | `pptx` | 浏览幻灯片内容，增强组合图形、主题背景、图片裁剪与 EMF 矢量图预览 | 汇报材料、课件、方案 |
 | PDF | `pdf` | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
-| Typst | `typ`、`typst` | 基于 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译和 SVG 渲染链路，按页保留页面尺寸，支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |
+| Typst | `typ`、`typst` | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | 基于 `libarchive.js` 的 WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | EML 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览 | 邮件归档、工单邮件、客户来信附件 |
 | EDA | `olb`、`dra` | 使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器，展示结构树、元件/封装/Padstack 候选、属性、诊断和可读字符串；退化时提供安全二进制索引 | 元件库、封装图纸、EDA 附件初筛 |
@@ -218,7 +218,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 - PPTX 渲染器会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
-- OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
+- OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler WASM 可通过 `options.typst.compilerWasmUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
 - `options.watermark` 支持文字或图片水印；`options.toolbar` 可控制下载原文件、打印完整渲染结果和导出 HTML；`options.hooks` 可接收加载/卸载生命周期；`options.beforeOperation` 可在下载、打印、导出前做权限校验；打印按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Word / PDF 会生成完整页面，Excel 等虚拟表格会隐藏打印按钮，避免只打印当前视口或第一页
 
 ```ts

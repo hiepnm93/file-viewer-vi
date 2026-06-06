@@ -121,6 +121,16 @@ export interface FileViewerPdfOptions {
   withCredentials?: boolean;
 }
 
+/**
+ * Typst 预览配置。
+ */
+export interface FileViewerTypstOptions {
+  /**
+   * Typst compiler WASM 地址。需要浏览器端编译时才会加载。
+   */
+  compilerWasmUrl?: string;
+}
+
 export type FileViewerSourceType = 'file' | 'url' | 'empty';
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
@@ -178,6 +188,7 @@ export interface FileViewerOptions {
   toolbar?: boolean | FileViewerToolbarOptions;
   archive?: FileViewerArchiveOptions;
   pdf?: FileViewerPdfOptions;
+  typst?: FileViewerTypstOptions;
   /**
    * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
    * iframe 集成时同名事件会通过 `postMessage` 向宿主发送。
