@@ -13,7 +13,7 @@ viewer:
   groups:
     documents:
       label: Documents
-      formats: [doc, docx, pdf, ofd]
+      formats: [doc, docx, pdf, ofd, typ, typst]
       defaultScale: fit-width
     drawings:
       label: Drawings

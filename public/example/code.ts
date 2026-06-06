@@ -23,6 +23,8 @@ const chunkMap: Record<string, RenderPlan['kind']> = {
   docx: 'document',
   pdf: 'document',
   ofd: 'document',
+  typ: 'document',
+  typst: 'document',
   xlsx: 'sheet',
   csv: 'sheet',
   dxf: 'drawing',
@@ -33,10 +35,10 @@ const chunkMap: Record<string, RenderPlan['kind']> = {
 }
 
 export const activeSource = ref<PreviewSource>({
-  id: 'sample-ofd',
-  filename: 'invoice.ofd',
-  url: '/example/ofd.ofd',
-  updatedAt: '2026-05-19T10:00:00+08:00'
+  id: 'sample-typst',
+  filename: 'report.typ',
+  url: '/example/report.typ',
+  updatedAt: '2026-06-06T17:40:00+08:00'
 })
 
 export const status = ref<PreviewStatus>('idle')

@@ -70,6 +70,14 @@ const handlers: Array<FileHandlerComposite> = [
       return renderOfd(buffer, target)
     }
   },
+  // Typst 使用 WASM 编译器和 SVG 渲染链路，只有打开 .typ/.typst 时才加载重型运行时。
+  {
+    accepts: ['typ', 'typst'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      const { default: renderTypst } = await import('./typst')
+      return renderTypst(buffer, target, type, context)
+    }
+  },
   // 压缩包依赖 libarchive.js 的 WASM Worker。只在命中压缩包扩展名时加载，并且内部文件按点击解压。
   {
     accepts: ARCHIVE_EXTENSIONS,
@@ -182,7 +190,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

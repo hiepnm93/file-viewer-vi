@@ -1,5 +1,5 @@
 const RENDERER_GROUPS = {
-  document: ['doc', 'docx', 'pdf', 'ofd'],
+  document: ['doc', 'docx', 'pdf', 'ofd', 'typ', 'typst'],
   sheet: ['xlsx', 'xls', 'csv', 'ods'],
   drawing: ['dxf', 'dwg'],
   source: ['js', 'ts', 'tsx', 'vue', 'json', 'yaml']
@@ -49,7 +49,7 @@ export async function createPreviewFile(url, fallbackName = 'download.bin') {
   return new File([blob], name, { type: blob.type })
 }
 
-const samples = ['invoice.ofd', 'drawing.dxf', 'component.vue', 'archive.unknown']
+const samples = ['invoice.ofd', 'report.typ', 'drawing.dxf', 'component.vue', 'archive.unknown']
 const summary = samples.map(resolvePreviewMeta)
 
 console.table(summary)

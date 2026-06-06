@@ -7,6 +7,8 @@
       <format extension="docx" renderer="docx-preview" async="true" />
       <format extension="pdf" renderer="pdfjs-dist" navigation="true" />
       <format extension="ofd" renderer="DLTech21/ofd.js" async="true" />
+      <format extension="typ" renderer="typst.ts" async="true" paged="true" />
+      <format extension="typst" renderer="typst.ts" async="true" paged="true" />
     </group>
     <group id="drawing" label="CAD">
       <format extension="dxf" renderer="@cadview/core" pan="true" zoom="true" />

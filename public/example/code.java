@@ -7,6 +7,7 @@ public final class PreviewFile {
     private static final Map<String, String> RENDERERS = Map.of(
         "pdf", "pdfjs-dist",
         "ofd", "DLTech21/ofd.js",
+        "typ", "typst.ts",
         "dxf", "@cadview/core",
         "json", "highlight.js"
     );
@@ -36,6 +37,7 @@ public final class PreviewFile {
         List<PreviewFile> files = List.of(
             new PreviewFile("contract.pdf", 827_000),
             new PreviewFile("invoice.ofd", 4_278_691),
+            new PreviewFile("report.typ", 18_000),
             new PreviewFile("snippet.java", 2_400)
         );
 

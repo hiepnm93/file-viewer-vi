@@ -255,7 +255,7 @@ export interface FileRenderContext {
 /**
  * 文件处理逻辑，用于声明具体格式的异步渲染器。
  *
- * 渲染器只在命中文件扩展名时被按需加载，避免 PDF、OFD、压缩包、
+ * 渲染器只在命中文件扩展名时被按需加载，避免 PDF、OFD、Typst、压缩包、
  * 邮件、CAD、3D、Office 等重型依赖进入无关格式的首屏路径。
  *
  * @param buffer 二进制缓存

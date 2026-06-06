@@ -10,6 +10,7 @@ public static class Program
         {
             ["pdf"] = "pdfjs-dist",
             ["ofd"] = "DLTech21/ofd.js",
+            ["typ"] = "typst.ts",
             ["dxf"] = "@cadview/core",
             ["cs"] = "highlight.js",
             ["json"] = "highlight.js"
@@ -17,7 +18,7 @@ public static class Program
 
     public static void Main()
     {
-        var files = new[] { "contract.pdf", "invoice.ofd", "program.cs", "archive.bin" };
+        var files = new[] { "contract.pdf", "invoice.ofd", "report.typ", "program.cs", "archive.bin" };
         var rows = files.Select(CreatePreviewPlan);
 
         foreach (var row in rows)

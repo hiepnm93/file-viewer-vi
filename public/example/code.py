@@ -21,6 +21,8 @@ class PreviewFile:
 RENDERERS = {
     "pdf": "pdfjs-dist",
     "ofd": "DLTech21/ofd.js",
+    "typ": "typst.ts",
+    "typst": "typst.ts",
     "dxf": "@cadview/core",
     "json": "highlight.js",
     "py": "highlight.js",
@@ -41,6 +43,7 @@ def build_preview_queue(files: Iterable[PreviewFile]) -> list[dict[str, str]]:
 
 samples = [
     PreviewFile("invoice.ofd", 428000),
+    PreviewFile("report.typ", 18000),
     PreviewFile("drawing.dxf", 93000),
     PreviewFile("trace.log", 12000),
 ]

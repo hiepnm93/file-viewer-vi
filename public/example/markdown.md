@@ -25,6 +25,7 @@ fences.
 | Source code | `code.ts` | highlight.js, language loaded on demand | Available |
 | Word | `word.docx` | Dedicated page export adapter | Available |
 | PDF | `pdf.pdf` | Dedicated page export adapter | Available |
+| Typst | `report.typ` | WASM compile + paged SVG export adapter | Available |
 | Excel | `excel.xlsx` | Virtual table for large sheets | Hidden by design |
 
 ## Integration Notes
@@ -73,7 +74,7 @@ the paper, and table borders should stay visible without looking heavy.
 {
   "viewer": "flyfish",
   "theme": "isolated document surface",
-  "formats": ["pdf", "docx", "xlsx", "ofd", "markdown", "code"],
+  "formats": ["pdf", "docx", "xlsx", "ofd", "typst", "markdown", "code"],
   "buttons": {
     "download": true,
     "print": "dynamic",

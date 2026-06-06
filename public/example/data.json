@@ -13,7 +13,7 @@
   "features": [
     {
       "group": "document",
-      "extensions": ["doc", "docx", "pdf", "ofd"],
+      "extensions": ["doc", "docx", "pdf", "ofd", "typ", "typst"],
       "lazyLoaded": true,
       "defaultScale": "fit-width"
     },
@@ -46,5 +46,5 @@
     "build": true,
     "browserSmoke": ["sample-picker", "code-preview", "pdf-toolbar"]
   },
-  "updatedAt": "2026-05-22T10:20:00+08:00"
+  "updatedAt": "2026-06-06T17:40:00+08:00"
 }

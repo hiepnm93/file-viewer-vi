@@ -16,6 +16,7 @@ type PreviewFile struct {
 var renderers = map[string]string{
 	".pdf":  "pdfjs-dist",
 	".ofd":  "DLTech21/ofd.js",
+	".typ":  "typst.ts",
 	".dxf":  "@cadview/core",
 	".json": "highlight.js",
 }
@@ -35,7 +36,7 @@ func planPreview(name string) PreviewFile {
 }
 
 func main() {
-	files := []string{"contract.pdf", "invoice.ofd", "component.vue"}
+	files := []string{"contract.pdf", "invoice.ofd", "report.typ", "component.vue"}
 	plans := make([]PreviewFile, 0, len(files))
 	for _, name := range files {
 		plans = append(plans, planPreview(name))

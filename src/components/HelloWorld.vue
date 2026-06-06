@@ -49,13 +49,14 @@ type SampleGroup = {
 const sampleGroups: SampleGroup[] = [
   {
     title: '文档',
-    description: 'Word / PDF / OFD',
+    description: 'Word / PDF / OFD / Typst',
     family: 'word',
     items: [
       { name: 'DOC', url: '/example/test.doc' },
       { name: 'DOCX', url: '/example/word.docx' },
       { name: 'PDF 技术说明', url: '/example/pdf.pdf' },
-      { name: 'OFD', url: '/example/ofd.ofd' }
+      { name: 'OFD', url: '/example/ofd.ofd' },
+      { name: 'Typst', url: '/example/report.typ' }
     ]
   },
   {
@@ -209,7 +210,7 @@ const extraUploadExtensions = [
   'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp',
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
-  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'olb', 'dra'
+  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'olb', 'dra', 'typst'
 ]
 
 const uploadAccept = Array.from(new Set([
@@ -236,6 +237,8 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   pptx: { icon: 'P', family: 'slide' },
   pdf: { icon: 'PDF', family: 'pdf' },
   ofd: { icon: 'OFD', family: 'layout' },
+  typ: { icon: 'TYP', family: 'layout' },
+  typst: { icon: 'TYP', family: 'layout' },
   dxf: { icon: 'CAD', family: 'cad' },
   dwg: { icon: 'CAD', family: 'cad' },
   glb: { icon: '3D', family: 'model' },

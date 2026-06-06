@@ -13,7 +13,7 @@ const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'sv
  * 它们的在线预览常依赖分页引擎、虚拟渲染或 Worker 生命周期，直接克隆
  * DOM 很容易只得到当前页或当前视口。
  */
-export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = ['docx', 'doc', 'pdf']
+export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = ['docx', 'doc', 'pdf', 'typ', 'typst']
 
 /**
  * 这些格式的预览结果是完整 DOM / SVG / Canvas 截图，解除滚动容器裁切后

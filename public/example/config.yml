@@ -9,6 +9,9 @@ demo:
     - name: invoice.ofd
       category: document
       expected: ofd-pages
+    - name: report.typ
+      category: document
+      expected: typst-pages
     - name: drawing.dxf
       category: drawing
       expected: canvas-pan-zoom

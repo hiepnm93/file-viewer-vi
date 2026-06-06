@@ -96,7 +96,7 @@ export default {
 
 ## 与 Vue3 版本保持一致
 
-Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码高亮、图片、音频和视频。差异主要在包名和插件注册入口:
+Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码高亮、图片、音频和视频。差异主要在包名和插件注册入口:
 
 两条分支也共享同一套打印能力判断: `toolbar.print` 只表示业务允许打印，真实按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐。Word / PDF 会输出完整页面，不适合直接打印的表格、压缩包、邮件、EPUB、音视频、3D / 模型等链路会隐藏打印按钮。
 

@@ -17,7 +17,7 @@
 
 ## 主示例页
 
-主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、压缩包、邮件、OLB/DRA、DXF、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
+主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、DXF、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
 
 - 快速演示当前项目支持哪些文件类型
 - 用本地上传验证 `file` 方案
@@ -67,7 +67,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 仓库中当前提供的示例文件位于 `public/example/`:
 
-代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx`、`markdown.md` 使用更丰富的多页/长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，便于验证暗色模式、宽度适配、页面 / 目录导航、打印和导出效果。CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `public/example/SOURCES.md`。
+代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx`、`markdown.md` 使用更丰富的多页/长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，`report.typ` 使用项目内编写的多页 Typst 报告，便于验证暗色模式、宽度适配、页面 / 目录导航、打印和导出效果。CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `public/example/SOURCES.md`。
 
 | 文件 | 用途 | 对应能力 |
 | --- | --- | --- |
@@ -84,6 +84,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `ppt.pptx` | 验证演示文稿渲染、组合图形、主题背景和图片资源 | `pptx` |
 | `pdf.pdf` | 项目方提供的 13 页真实技术说明 PDF，验证多页阅读、缩放工具栏、页面/目录导航窗格、完整打印和 HTML 导出 | `pdf` |
 | `ofd.ofd` | 验证 OFD 在线预览 | `ofd` |
+| `report.typ` | 验证 Typst WASM 编译、按页 SVG 预览、页面尺寸、完整打印和 HTML 导出 | `typ` |
 | `drawing.dxf` | 使用公开 DXF 样例验证 CAD 图纸预览、平移、缩放和图层控制 | `dxf` |
 | `sample.dwg` | 使用公开 DWG 样例验证 DWG 内嵌预览图提取和原因提示 | `dwg` |
 | `model.gltf` | 使用项目内嵌入数据的最小 glTF 验证 Web 3D 预览 | `gltf` |
