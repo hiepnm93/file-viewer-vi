@@ -13,6 +13,8 @@
 | --- | --- | --- |
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
+| 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL 和同步滚动 |
+| Docker 镜像发布目标 | `flyfishdev/file-viewer:1.0.20` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.20`，样式会随安装器自动带入 |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.20`，安装器会自动带上样式 |
 | npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.20` |
@@ -114,6 +116,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 - `dist/`: 混淆压缩后的组件库产物
 - `demo/`: 可独立部署的私有化预览器静态站点
 - `docs/`: VitePress 文档静态站点
+- `Dockerfile` / Docker Hub 标签: 可直接部署的静态镜像构建与发布信息
 - `example/`: 完整样例文件列表
 - `artifacts/`: npm tarball、适配包 tarball、Demo tarball、文档 tarball
 - `packages/web/viewer/`: React、纯 JS 和 iframe 适配层共用的 Vue3 基线 viewer 产物
@@ -166,6 +169,23 @@ pnpm release:adapters:publish
 ```
 
 `release:adapters:pack` 会先构建 Vue3 基线 viewer 并同步到 `packages/web/viewer`，再分别打包 `@flyfish-group/file-viewer-web` 和 `@flyfish-group/file-viewer-react`。发布前请确认 tarball 中包含 `viewer/index.html`、`viewer/assets/*`、`dist/*` 和 README，且没有 `.DS_Store`。
+
+## Docker 镜像发布
+
+Docker 镜像用于一键部署主 Demo 和文档比对页。发布前先确保 Docker Hub 已登录，并且当前账号对 `flyfishdev/file-viewer` 有推送权限:
+
+```bash
+docker login
+DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
+```
+
+默认会推送 `1.0.20` 和 `latest` 两个标签，并生成 `linux/amd64` / `linux/arm64` 多架构 manifest。发布后至少验证:
+
+```bash
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.20
+```
+
+然后打开 `/`、`/compare.html` 和 `/healthz`。
 
 ## 授权和贡献
 

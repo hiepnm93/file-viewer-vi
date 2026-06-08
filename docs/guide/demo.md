@@ -12,6 +12,7 @@
 | 入口 | 地址 | 适合做什么 |
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
+| 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传和同步滚动 |
 | iframe 示例页 | `/example/embedded.html` | 验证独立部署与二进制推送协议 |
 | 适配层 Demo | `packages/demo` | 同时验证 React 组件和纯 JS helper 的私有化 iframe 集成 |
 
@@ -27,6 +28,24 @@
   <img src="/_images/demo-main.png" alt="主示例页截图" />
   <p class="doc-caption">主示例页提供分组样例文件盒子、URL 预览和上传预览，是最直接的联调入口。</p>
 </div>
+
+## 文档比对页
+
+文档比对页是独立入口，不会出现在主预览流程里。它适合让用户快速核对两份附件的版式差异，例如旧版合同与新版 Word、PDF 与源文档、PPTX 不同版本或 Markdown 与导出物。
+
+直接访问:
+
+```text
+/compare.html
+```
+
+也可以用查询参数预置左右文件:
+
+```text
+/compare.html?left=/example/test.doc&right=/example/word.docx
+```
+
+页面默认关闭预览器内部操作栏，左右内容各自独立渲染；开启“同步滚动”后会按滚动比例联动，便于视觉比对。
 
 ## Word 页面效果
 

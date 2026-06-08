@@ -12,6 +12,8 @@
 - npm(纯 JS): [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
 - 官方文档: [doc.flyfish.dev](https://doc.flyfish.dev)
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
+- 文档比对 Demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- Docker 镜像发布目标: `flyfishdev/file-viewer:1.0.20`
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
@@ -47,8 +49,10 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放；PDF 兼容旋转页和页面 / 目录导航，Excel 会尽量还原图片和自动文本色，避免“内容能打开但不好读”的落差。
 - **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
+- **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传和同步滚动，不污染主预览入口。
 - **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
 - **组件和独立站两用。** 既支持在 Vue 项目里直接作为组件使用，也支持独立部署后通过 iframe 嵌入到任意系统，方便多业务线复用。
+- **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
 - **适合成品交付。** 公开成品仓库、混淆压缩产物、npm tarball、静态部署产物和私有化 iframe 适配包都一起维护，便于下载、验收和二次接入。
 
 ## 支持格式
@@ -209,9 +213,34 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 确认无误后，`packages/demo/dist` 可以作为普通静态目录部署；其中已经包含 `file-viewer/index.html`、`vendor/file-viewer/index.html` 和演示文件。
 
+### 5. Docker 一键部署
+
+适合内网、私有云、客户现场或希望直接运行完整 Demo 的场景。镜像发布后可直接运行:
+
+```bash
+docker run -d \
+  --name flyfish-viewer \
+  --restart unless-stopped \
+  -p 8080:80 \
+  flyfishdev/file-viewer:1.0.20
+```
+
+访问:
+
+- 主预览: `http://localhost:8080/`
+- 文档比对: `http://localhost:8080/compare.html`
+
+源码仓库内也提供 `Dockerfile`，本地构建运行:
+
+```bash
+pnpm docker:build
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.20
+```
+
 ## 使用说明
 
 - 组件支持两条主要输入路径: `url?: string` 与 `file?: File`
+- 独立文档比对页位于 `/compare.html`，可通过 `?left=/example/test.doc&right=/example/word.docx` 预置左右文件
 - 当 `file` 和 `url` 同时存在时，会优先渲染 `file`
 - 如果业务侧拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File`
 - 预览器会填满父容器，请为父容器提供稳定高度
@@ -244,6 +273,8 @@ pnpm dev
 - `pnpm type-check`: 执行 TypeScript 类型检查
 - `pnpm dev:adapters`: 启动 React + 纯 JS 适配层 Demo
 - `pnpm build:adapter-demo`: 构建适配层 Demo
+- `pnpm docker:build`: 构建本机架构 Docker 镜像
+- `pnpm docker:publish`: 推送 Docker Hub `linux/amd64` / `linux/arm64` 多架构镜像；可通过 `DOCKER_IMAGE` 替换命名空间
 - `pnpm release:adapters:pack`: 打包 React / 纯 JS npm tarball
 
 ## 打包发布
@@ -309,6 +340,7 @@ npm publish --access public
 - [组件用法](docs/guide/usage.md)
 - [支持格式](docs/guide/formats.md)
 - [本地开发与打包](docs/guide/development.md)
+- [Docker 部署](docs/guide/docker.md)
 
 ## 开源说明
 

@@ -60,6 +60,15 @@ export default defineConfig(ctx => {
         }
       }
     }
+  } else {
+    config.build = {
+      rollupOptions: {
+        input: {
+          main: fileURLToPath(new URL('index.html', import.meta.url)),
+          compare: fileURLToPath(new URL('compare.html', import.meta.url))
+        }
+      }
+    }
   }
 
   return config
