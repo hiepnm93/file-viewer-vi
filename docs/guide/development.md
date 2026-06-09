@@ -24,7 +24,8 @@ pnpm install
 | `pnpm release:pack` | 类型检查、库构建、混淆并生成 npm tarball |
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
 | `pnpm build:adapters` | 构建 Vue3 基线 viewer、纯 JS 包和 React 包 |
-| `pnpm deploy:cloudflare` | 构建 Demo 并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
+| `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
+| `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docker:build` | 使用 Dockerfile 构建本机架构镜像 |
 | `pnpm docker:publish` | 使用 buildx 推送 `linux/amd64` / `linux/arm64` Docker Hub 镜像 |
 | `pnpm dev:adapters` | 启动 React + 纯 JS 私有化适配层 Demo |
