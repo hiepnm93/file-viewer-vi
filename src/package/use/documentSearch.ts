@@ -3,6 +3,7 @@ import type {
   FileViewerDocumentAnchor,
   FileViewerSearchMatch,
   FileViewerSearchOptions,
+  FileViewerSearchProvider,
   FileViewerSearchState
 } from '@/package/common/type'
 import {
@@ -30,8 +31,20 @@ const SKIP_SELECTOR = [
   '.state-panel',
   '.pdf-toolbar',
   '.pdf-nav-pane',
-  '.flyfish-search-match'
+  '.flyfish-search-match',
+  '.textLayer',
+  '.annotationLayer',
+  '.xfaLayer',
+  'svg',
+  'canvas',
+  'iframe',
+  'video',
+  'audio'
 ].join(',')
+
+type SearchProviderHost = HTMLElement & {
+  __flyfishViewerSearchProvider?: FileViewerSearchProvider;
+}
 
 const normalizeOptions = (options?: boolean | FileViewerSearchOptions): FileViewerSearchOptions => {
   if (options === false) {
@@ -55,6 +68,14 @@ const createSearchRegExp = (query: string, options: FileViewerSearchOptions) => 
 const getSerializableMatches = (matches: InternalSearchMatch[]): FileViewerSearchMatch[] => {
   return matches.map(({ element: _element, ...match }) => match)
 }
+
+const createEmptyState = (query = ''): FileViewerSearchState => ({
+  query,
+  total: 0,
+  currentIndex: -1,
+  current: null,
+  matches: []
+})
 
 const unwrapMark = (mark: HTMLElement) => {
   const parent = mark.parentNode
@@ -122,6 +143,33 @@ export const useDocumentSearch = (
     state.currentIndex = serializable.length ? Math.max(0, Math.min(state.currentIndex, serializable.length - 1)) : -1
     state.current = state.currentIndex >= 0 ? serializable[state.currentIndex] : null
     state.matches = serializable
+  }
+
+  const applyExternalState = (nextState: FileViewerSearchState) => {
+    state.query = nextState.query
+    state.total = nextState.total
+    state.currentIndex = nextState.currentIndex
+    state.current = nextState.current ? { ...nextState.current } : null
+    state.matches = nextState.matches.map(match => ({ ...match }))
+    return state
+  }
+
+  const getSearchProvider = () => {
+    const providerHost = root.value?.querySelector<SearchProviderHost>('[data-viewer-search-provider]')
+    return providerHost?.__flyfishViewerSearchProvider || null
+  }
+
+  const runProviderAction = async (
+    action: (provider: FileViewerSearchProvider) => FileViewerSearchState | Promise<FileViewerSearchState> | undefined,
+    fallbackQuery = state.query
+  ) => {
+    const provider = getSearchProvider()
+    if (!provider) {
+      return null
+    }
+    clearMarks()
+    const nextState = await action(provider)
+    return applyExternalState(nextState || provider.getState?.() || createEmptyState(fallbackQuery))
   }
 
   const clearMarks = () => {
@@ -299,7 +347,19 @@ export const useDocumentSearch = (
       clearMarks()
 
       if (!normalizedQuery || options.value.enabled === false || !root.value) {
+        const providerState = await runProviderAction(provider => provider.clear?.(), normalizedQuery)
+        if (providerState) {
+          return providerState
+        }
         return state
+      }
+
+      const providerState = await runProviderAction(
+        provider => provider.search(normalizedQuery, options.value),
+        normalizedQuery
+      )
+      if (providerState) {
+        return providerState
       }
 
       await nextTick()
@@ -353,15 +413,26 @@ export const useDocumentSearch = (
   }
 
   const search = async (query: string) => runSearch(query, 0)
-  const next = () => setActiveMatch(state.currentIndex + 1)
-  const previous = () => setActiveMatch(state.currentIndex - 1)
+  const next = async () => {
+    const providerState = await runProviderAction(provider => provider.next?.() || provider.getState?.())
+    return providerState || setActiveMatch(state.currentIndex + 1)
+  }
+  const previous = async () => {
+    const providerState = await runProviderAction(provider => provider.previous?.() || provider.getState?.())
+    return providerState || setActiveMatch(state.currentIndex - 1)
+  }
 
-  const clear = () => {
+  const clear = async () => {
     state.query = ''
     disconnectObserver()
     applying = true
     try {
       clearMarks()
+      const providerState = await runProviderAction(provider => provider.clear?.(), '')
+      if (providerState) {
+        return providerState
+      }
+      return state
     } finally {
       applying = false
       resumeObserver()

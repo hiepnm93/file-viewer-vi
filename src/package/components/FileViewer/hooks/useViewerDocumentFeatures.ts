@@ -123,23 +123,23 @@ export const useViewerDocumentFeatures = ({
     return notifySearchChange()
   }
 
-  const clearDocumentSearch = () => {
-    documentSearch.clear()
+  const clearDocumentSearch = async () => {
+    await documentSearch.clear()
     return notifySearchChange()
   }
 
   const clearDocumentState = () => {
-    documentSearch.clear()
+    void documentSearch.clear()
   }
 
-  const nextSearchResult = () => {
-    documentSearch.next()
+  const nextSearchResult = async () => {
+    await documentSearch.next()
     notifyLocationChange()
     return notifySearchChange()
   }
 
-  const previousSearchResult = () => {
-    documentSearch.previous()
+  const previousSearchResult = async () => {
+    await documentSearch.previous()
     notifyLocationChange()
     return notifySearchChange()
   }

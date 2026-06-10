@@ -243,6 +243,21 @@ export interface FileViewerSearchState {
 }
 
 /**
+ * 渲染器自定义搜索提供器。
+ *
+ * PDF.js、EPUB iframe、虚拟表格等格式拥有自己的文本层或虚拟滚动结构，
+ * 不能总是由通用 DOM 高亮直接改写内部节点。渲染器可以在根节点上注册
+ * 该提供器，让 FileViewer 的搜索 API 继续保持统一入口。
+ */
+export interface FileViewerSearchProvider {
+  search: (query: string, options?: FileViewerSearchOptions) => FileViewerSearchState | Promise<FileViewerSearchState>;
+  next?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  previous?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  clear?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  getState?: () => FileViewerSearchState;
+}
+
+/**
  * AI 友好能力配置。
  *
  * 预览器本身不内置云端模型调用；这里提供可选文本切片结构，业务侧可以

@@ -41,9 +41,9 @@ type FileViewerExpose = {
   exportRenderedHtml: () => Promise<void>
   getOperationAvailability: () => FileViewerOperationAvailability
   searchDocument: (query: string) => Promise<FileViewerSearchState>
-  clearDocumentSearch: () => FileViewerSearchState
-  nextSearchResult: () => FileViewerSearchState
-  previousSearchResult: () => FileViewerSearchState
+  clearDocumentSearch: () => Promise<FileViewerSearchState>
+  nextSearchResult: () => Promise<FileViewerSearchState>
+  previousSearchResult: () => Promise<FileViewerSearchState>
 }
 
 const fileViewerRef = ref<FileViewerExpose | null>(null)
@@ -557,7 +557,7 @@ function triggerViewerAction(action: ViewerAction) {
 async function runViewerSearch() {
   const query = viewerSearchQuery.value.trim()
   if (!query) {
-    viewerSearchState.value = fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
+    viewerSearchState.value = await fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
     return
   }
   viewerSearchState.value = await fileViewerRef.value?.searchDocument(query) || viewerSearchState.value
@@ -570,14 +570,14 @@ async function openViewerSearch() {
   viewerSearchInputRef.value?.select()
 }
 
-function closeViewerSearch() {
+async function closeViewerSearch() {
   viewerSearchOpen.value = false
-  viewerSearchState.value = fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
+  viewerSearchState.value = await fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
 }
 
 function resetViewerSearch() {
   viewerSearchQuery.value = ''
-  closeViewerSearch()
+  void closeViewerSearch()
 }
 
 async function nextViewerSearch() {
@@ -588,7 +588,7 @@ async function nextViewerSearch() {
     await runViewerSearch()
     return
   }
-  viewerSearchState.value = fileViewerRef.value?.nextSearchResult() || viewerSearchState.value
+  viewerSearchState.value = await fileViewerRef.value?.nextSearchResult() || viewerSearchState.value
 }
 
 async function previousViewerSearch() {
@@ -599,7 +599,7 @@ async function previousViewerSearch() {
     await runViewerSearch()
     return
   }
-  viewerSearchState.value = fileViewerRef.value?.previousSearchResult() || viewerSearchState.value
+  viewerSearchState.value = await fileViewerRef.value?.previousSearchResult() || viewerSearchState.value
 }
 
 function handleViewerAvailabilityChange(availability: FileViewerOperationAvailability) {
@@ -706,7 +706,7 @@ function handleDocumentKeydown(event: KeyboardEvent) {
     event.preventDefault()
     event.stopPropagation()
     if (viewerSearchOpen.value) {
-      closeViewerSearch()
+      void closeViewerSearch()
       return
     }
     void openViewerSearch()
@@ -716,7 +716,7 @@ function handleDocumentKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     samplePickerOpen.value = false
     if (viewerSearchOpen.value) {
-      closeViewerSearch()
+      void closeViewerSearch()
     }
   }
 }
@@ -949,8 +949,12 @@ function updateSampleMenuGeometry() {
               @keyup.enter='runViewerSearch'
             />
             <span>{{ viewerSearchSummary }}</span>
-            <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
-            <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
+            <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
+              <span class='viewer-search-arrow viewer-search-arrow--up' aria-hidden='true' />
+            </button>
+            <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
+              <span class='viewer-search-arrow viewer-search-arrow--down' aria-hidden='true' />
+            </button>
             <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
               ×
             </button>
@@ -979,8 +983,12 @@ function updateSampleMenuGeometry() {
             @keyup.enter='runViewerSearch'
           />
           <span>{{ viewerSearchSummary }}</span>
-          <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
-          <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
+          <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
+            <span class='viewer-search-arrow viewer-search-arrow--up' aria-hidden='true' />
+          </button>
+          <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
+            <span class='viewer-search-arrow viewer-search-arrow--down' aria-hidden='true' />
+          </button>
           <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
             ×
           </button>
@@ -1829,6 +1837,22 @@ function updateSampleMenuGeometry() {
 .viewer-search-popover button:hover {
   background: rgba(33, 163, 102, 0.1);
   color: #16804f;
+}
+
+.viewer-search-arrow {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+}
+
+.viewer-search-arrow--up {
+  transform: translateY(2px) rotate(45deg);
+}
+
+.viewer-search-arrow--down {
+  transform: translateY(-2px) rotate(225deg);
 }
 
 .viewer-search-close {

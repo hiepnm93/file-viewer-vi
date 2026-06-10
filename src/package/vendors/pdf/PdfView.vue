@@ -4,7 +4,14 @@ import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'p
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import { DEFAULT_PDF_RANGE_CHUNK_SIZE } from '@/package/common/sourceLoading'
 import { buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
-import type { FileRenderExportOptions, FileRenderExportAdapter, FileViewerPdfOptions } from '@/package/common/type'
+import type {
+  FileRenderExportOptions,
+  FileRenderExportAdapter,
+  FileViewerPdfOptions,
+  FileViewerSearchOptions,
+  FileViewerSearchProvider,
+  FileViewerSearchState
+} from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 
@@ -36,6 +43,7 @@ interface PdfFlattenedOutlineItem {
 }
 
 // PDF.js 的滚动容器。
+const shell = ref<HTMLDivElement | null>(null)
 const container = ref<HTMLDivElement | null>(null)
 const navVisible = ref(props.options?.navigation === false ? false : props.options?.defaultNavigationVisible !== false)
 const navMode = ref<PdfNavMode>('pages')
@@ -88,6 +96,8 @@ type PdfResource = {
 const context = {
   viewer: null as null | PDFViewer,
   linkService: null as null | PDFLinkService,
+  eventBus: null as null | EventBus,
+  findController: null as null | PDFFindController,
   resource: null as null | PdfResource,
   document: null as null | PdfDocumentProxy,
   search: ''
@@ -97,7 +107,18 @@ let resizeObserver: ResizeObserver | null = null
 let fitFrame = 0
 let destroyed = false
 let loadVersion = 0
+let pdfSearchState: FileViewerSearchState = createPdfSearchState()
+let pdfMatchesCount = { current: 0, total: 0 }
+let pdfSearchOptions: FileViewerSearchOptions | undefined
+let pdfSearchWaiters: Array<{
+  resolve: (state: FileViewerSearchState) => void;
+  timer: number;
+}> = []
 type PdfNavigationResult = void | PromiseLike<void>
+type PdfFindMatchesCount = { current: number; total: number }
+type PdfSearchProviderHost = HTMLDivElement & {
+  __flyfishViewerSearchProvider?: FileViewerSearchProvider;
+}
 
 function createPdfWorker() {
   if (typeof window === 'undefined' || !('Worker' in window)) {
@@ -111,6 +132,175 @@ function createPdfWorker() {
 function normalizeRotation(rotation: number): PdfRotation {
   const normalized = ((Math.round(rotation / 90) * 90) % 360 + 360) % 360
   return (normalized === 90 || normalized === 180 || normalized === 270 ? normalized : 0) as PdfRotation
+}
+
+function createPdfSearchState(query = ''): FileViewerSearchState {
+  return {
+    query,
+    total: 0,
+    currentIndex: -1,
+    current: null,
+    matches: []
+  }
+}
+
+function resolvePdfSearchWaiters(state: FileViewerSearchState) {
+  const waiters = pdfSearchWaiters
+  pdfSearchWaiters = []
+  waiters.forEach(waiter => {
+    window.clearTimeout(waiter.timer)
+    waiter.resolve(state)
+  })
+}
+
+function readPdfMatchesCount(): PdfFindMatchesCount {
+  const findController = context.findController
+  if (!findController) {
+    return { current: 0, total: 0 }
+  }
+
+  const pageMatches = findController.pageMatches || []
+  const selected = findController.selected
+  const total = pageMatches.reduce((sum, matches) => sum + (matches?.length || 0), 0)
+  let current = 0
+  if (selected && selected.pageIdx >= 0 && selected.matchIdx >= 0 && total > 0) {
+    for (let index = 0; index < selected.pageIdx; index += 1) {
+      current += pageMatches[index]?.length || 0
+    }
+    current += selected.matchIdx + 1
+  }
+  return { current, total }
+}
+
+function commitPdfSearchState(
+  matchesCount: PdfFindMatchesCount = readPdfMatchesCount(),
+  query = context.search,
+  shouldResolve = false
+) {
+  pdfMatchesCount = matchesCount
+  const current = Math.max(0, matchesCount.current || 0)
+  const total = Math.max(0, matchesCount.total || 0)
+  const selected = context.findController?.selected
+  const page = selected && selected.pageIdx >= 0 ? selected.pageIdx + 1 : undefined
+  pdfSearchState = {
+    query,
+    total,
+    currentIndex: current > 0 ? current - 1 : -1,
+    current: current > 0
+      ? {
+          id: `pdf-search-match-${current}`,
+          index: current - 1,
+          text: query,
+          anchor: null,
+          page
+        }
+      : null,
+    matches: []
+  }
+
+  if (shouldResolve) {
+    resolvePdfSearchWaiters(pdfSearchState)
+  }
+  return pdfSearchState
+}
+
+function waitForPdfSearchState(query: string) {
+  return new Promise<FileViewerSearchState>(resolve => {
+    const timer = window.setTimeout(() => {
+      const waiterIndex = pdfSearchWaiters.findIndex(waiter => waiter.resolve === resolve)
+      if (waiterIndex >= 0) {
+        pdfSearchWaiters.splice(waiterIndex, 1)
+      }
+      resolve(commitPdfSearchState(readPdfMatchesCount(), query))
+    }, 1200)
+    pdfSearchWaiters.push({ resolve, timer })
+  })
+}
+
+function handlePdfFindMatchesCount(event: { matchesCount?: PdfFindMatchesCount }) {
+  if (event.matchesCount) {
+    commitPdfSearchState(event.matchesCount, context.search)
+  }
+}
+
+function handlePdfFindControlState(event: {
+  state?: number;
+  matchesCount?: PdfFindMatchesCount;
+  rawQuery?: string | null;
+}) {
+  const query = typeof event.rawQuery === 'string' ? event.rawQuery : context.search
+  context.search = query
+  const matchesCount = event.matchesCount?.total ? event.matchesCount : readPdfMatchesCount()
+  const shouldResolve = event.state !== 3 && (matchesCount.total > 0 || event.state === 1)
+  commitPdfSearchState(matchesCount, query, shouldResolve)
+}
+
+async function runPdfFind(
+  query: string,
+  options: FileViewerSearchOptions | undefined,
+  type: '' | 'again',
+  findPrevious = false
+) {
+  if (!context.eventBus) {
+    return commitPdfSearchState({ current: 0, total: 0 }, query)
+  }
+
+  context.search = query
+  pdfSearchOptions = options || pdfSearchOptions
+  const searchOptions = options || pdfSearchOptions
+  const previousScrollLeft = clampHorizontalScroll(container.value?.scrollLeft || 0)
+  context.eventBus.dispatch('find', {
+    source: shell.value || window,
+    type,
+    query,
+    phraseSearch: true,
+    caseSensitive: !!searchOptions?.caseSensitive,
+    entireWord: !!searchOptions?.wholeWord,
+    highlightAll: true,
+    findPrevious,
+    matchDiacritics: false
+  })
+
+  try {
+    return await waitForPdfSearchState(query)
+  } finally {
+    stabilizeHorizontalScroll(previousScrollLeft)
+  }
+}
+
+function clearPdfFind() {
+  context.search = ''
+  pdfSearchOptions = undefined
+  pdfMatchesCount = { current: 0, total: 0 }
+  context.eventBus?.dispatch('findbarclose', {
+    source: shell.value || window
+  })
+  return commitPdfSearchState(pdfMatchesCount, '', true)
+}
+
+function attachPdfSearchProvider() {
+  const host = shell.value as PdfSearchProviderHost | null
+  if (!host) {
+    return
+  }
+  host.__flyfishViewerSearchProvider = {
+    search: (query, options) => runPdfFind(query, options, '', false),
+    next: () => context.search
+      ? runPdfFind(context.search, undefined, 'again', false)
+      : pdfSearchState,
+    previous: () => context.search
+      ? runPdfFind(context.search, undefined, 'again', true)
+      : pdfSearchState,
+    clear: clearPdfFind,
+    getState: () => pdfSearchState
+  }
+}
+
+function detachPdfSearchProvider() {
+  const host = shell.value as PdfSearchProviderHost | null
+  if (host?.__flyfishViewerSearchProvider) {
+    delete host.__flyfishViewerSearchProvider
+  }
 }
 
 async function destroyPdfResource(resource: PdfResource | null) {
@@ -286,7 +476,12 @@ async function loadFile() {
     })
     context.viewer = pdfViewer
     context.linkService = pdfLinkService
+    context.eventBus = eventBus
+    context.findController = pdfFindController
     pdfLinkService.setViewer(pdfViewer)
+
+    eventBus.on('updatefindmatchescount', handlePdfFindMatchesCount)
+    eventBus.on('updatefindcontrolstate', handlePdfFindControlState)
 
     eventBus.on('pagesinit', () => {
       applyRotation(currentRotation.value)
@@ -560,6 +755,7 @@ function goToOutlineItem(item: PdfOutlineItemView) {
 }
 
 onMounted(() => {
+  attachPdfSearchProvider()
   void loadFile()
 
   if (container.value) {
@@ -578,7 +774,10 @@ onBeforeUnmount(() => {
   resizeObserver = null
   context.viewer = null
   context.linkService = null
+  context.eventBus = null
+  context.findController = null
   context.document = null
+  detachPdfSearchProvider()
   outlineItems.value = []
   props.exportAdapter?.(null)
   const resource = context.resource
@@ -589,7 +788,9 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <div
+    ref='shell'
     class='pdf-shell'
+    data-viewer-search-provider='pdf'
     :class="{ 'pdf-shell--nav-hidden': !navigationEnabled || !navVisible, 'pdf-shell--toolbar-hidden': !toolbarVisible }"
   >
     <div v-if='toolbarVisible' class='pdf-toolbar'>

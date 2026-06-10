@@ -33,9 +33,9 @@ interface ComparePanelState {
 type FileViewerPublicApi = ComponentPublicInstance & {
   getScrollContainer: () => HTMLElement | null;
   searchDocument: (query: string) => Promise<FileViewerSearchState>;
-  clearDocumentSearch: () => FileViewerSearchState;
-  nextSearchResult: () => FileViewerSearchState;
-  previousSearchResult: () => FileViewerSearchState;
+  clearDocumentSearch: () => Promise<FileViewerSearchState>;
+  nextSearchResult: () => Promise<FileViewerSearchState>;
+  previousSearchResult: () => Promise<FileViewerSearchState>;
   getSearchState: () => FileViewerSearchState;
   collectDocumentAnchors: () => Promise<FileViewerDocumentAnchor[]>;
   scrollToLine: (line: number) => Promise<boolean>;
@@ -208,8 +208,12 @@ const compareSearchSummary = computed(() => {
 const runCompareSearch = async () => {
   const query = compareSearchQuery.value.trim()
   if (!query) {
-    leftSearchState.value = leftViewerRef.value?.clearDocumentSearch() || createEmptySearchState()
-    rightSearchState.value = rightViewerRef.value?.clearDocumentSearch() || createEmptySearchState()
+    const [leftState, rightState] = await Promise.all([
+      leftViewerRef.value?.clearDocumentSearch() ?? Promise.resolve(createEmptySearchState()),
+      rightViewerRef.value?.clearDocumentSearch() ?? Promise.resolve(createEmptySearchState())
+    ])
+    leftSearchState.value = leftState
+    rightSearchState.value = rightState
     return
   }
 
@@ -229,8 +233,12 @@ const nextCompareSearch = async () => {
     await runCompareSearch()
     return
   }
-  leftSearchState.value = leftViewerRef.value?.nextSearchResult() || leftSearchState.value
-  rightSearchState.value = rightViewerRef.value?.nextSearchResult() || rightSearchState.value
+  const [leftState, rightState] = await Promise.all([
+    leftViewerRef.value?.nextSearchResult() ?? Promise.resolve(leftSearchState.value),
+    rightViewerRef.value?.nextSearchResult() ?? Promise.resolve(rightSearchState.value)
+  ])
+  leftSearchState.value = leftState
+  rightSearchState.value = rightState
 }
 
 const previousCompareSearch = async () => {
@@ -241,8 +249,12 @@ const previousCompareSearch = async () => {
     await runCompareSearch()
     return
   }
-  leftSearchState.value = leftViewerRef.value?.previousSearchResult() || leftSearchState.value
-  rightSearchState.value = rightViewerRef.value?.previousSearchResult() || rightSearchState.value
+  const [leftState, rightState] = await Promise.all([
+    leftViewerRef.value?.previousSearchResult() ?? Promise.resolve(leftSearchState.value),
+    rightViewerRef.value?.previousSearchResult() ?? Promise.resolve(rightSearchState.value)
+  ])
+  leftSearchState.value = leftState
+  rightSearchState.value = rightState
 }
 
 const goToCompareLine = async () => {
@@ -302,9 +314,13 @@ const handleUnload = (panel: ComparePanelState) => {
             @keyup.enter="runCompareSearch"
           >
           <button type="button" @click="runCompareSearch">搜索</button>
-          <button type="button" @click="previousCompareSearch">上一个</button>
-          <button type="button" @click="nextCompareSearch">下一个</button>
-          <span>{{ compareSearchSummary }}</span>
+          <button type="button" title="上一个搜索结果" aria-label="上一个搜索结果" @click="previousCompareSearch">
+            <span class="compare-search-arrow compare-search-arrow--up" aria-hidden="true" />
+          </button>
+          <button type="button" title="下一个搜索结果" aria-label="下一个搜索结果" @click="nextCompareSearch">
+            <span class="compare-search-arrow compare-search-arrow--down" aria-hidden="true" />
+          </button>
+          <span class="compare-search-summary">{{ compareSearchSummary }}</span>
           <input
             v-model.trim="compareLineTarget"
             class="line-input"
@@ -516,7 +532,7 @@ const handleUnload = (panel: ComparePanelState) => {
 
 .compare-search input,
 .compare-search button,
-.compare-search span {
+.compare-search-summary {
   height: 34px;
   min-width: 0;
   border: 1px solid rgba(20, 42, 59, 0.1);
@@ -548,7 +564,23 @@ const handleUnload = (panel: ComparePanelState) => {
   color: #14794e;
 }
 
-.compare-search span {
+.compare-search-arrow {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+}
+
+.compare-search-arrow--up {
+  transform: translateY(2px) rotate(45deg);
+}
+
+.compare-search-arrow--down {
+  transform: translateY(-2px) rotate(225deg);
+}
+
+.compare-search-summary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -769,7 +801,7 @@ const handleUnload = (panel: ComparePanelState) => {
     grid-template-columns: minmax(140px, 1fr) repeat(3, auto);
   }
 
-  .compare-search span {
+  .compare-search-summary {
     grid-column: 1 / -1;
     justify-content: flex-start;
   }
@@ -839,7 +871,7 @@ const handleUnload = (panel: ComparePanelState) => {
   .sync-toggle,
   .compare-search input,
   .compare-search button,
-  .compare-search span,
+  .compare-search-summary,
   .tool-grid select,
   .tool-grid input[type='text'] {
     border-color: rgba(149, 174, 190, 0.14);
