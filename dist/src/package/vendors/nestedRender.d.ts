@@ -1,4 +1,4 @@
-import { FileRenderContext, Rendered } from '../common/type';
+import { FileRenderContext, Rendered } from '../../../package/common/type';
 /**
  * 压缩包内文件和邮件附件的嵌套预览入口。
  *

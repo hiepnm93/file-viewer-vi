@@ -1,4 +1,4 @@
-import { FileRenderExportAdapter, FileViewerPdfOptions } from '../../common/type';
+import { FileRenderExportAdapter, FileViewerPdfOptions } from '../../../../package/common/type';
 type __VLS_Props = {
     data?: ArrayBuffer;
     url?: string;

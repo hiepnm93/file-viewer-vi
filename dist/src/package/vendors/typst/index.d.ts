@@ -1,4 +1,4 @@
-import { FileRenderContext } from '../../common/type';
+import { FileRenderContext } from '../../../../package/common/type';
 /**
  * Render Typst source documents through the browser WASM compiler/renderer stack.
  *

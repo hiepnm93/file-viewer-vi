@@ -1,5 +1,5 @@
 import { App } from 'vue';
-import { FileRenderContext } from '../../common/type';
+import { FileRenderContext } from '../../../../package/common/type';
 /**
  * 渲染excel
  */

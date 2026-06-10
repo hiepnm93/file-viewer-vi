@@ -1,5 +1,5 @@
 import { ComputedRef, Ref, ShallowRef } from 'vue';
-import { FileRenderExportAdapter, FileViewerOperationAvailability, FileViewerOperationType } from '../../common/type';
+import { FileRenderExportAdapter, FileViewerOperationAvailability, FileViewerOperationType } from '../../../../package/common/type';
 interface UseViewerExportOptions {
     activeExportAdapter: ShallowRef<FileRenderExportAdapter | null>;
     currentBuffer: Ref<ArrayBuffer | null>;

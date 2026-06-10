@@ -130,7 +130,7 @@ var j = class {
 		this[u].set_attach_debug_info(e);
 	}
 }, M;
-(function(e) {})(M || (M = {}));
+M || (M = {});
 function ie() {
 	return new I();
 }
@@ -1510,7 +1510,7 @@ var ve = { class: "typst-viewer" }, ye = { class: "typst-toolbar" }, be = {
 	key: 2,
 	class: "typst-pages",
 	"aria-label": "Typst preview pages"
-}, Ce = ["aria-label"], we = ["innerHTML"], Te = "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm", Ee = /* @__PURE__ */ o(/* @__PURE__ */ g({
+}, Ce = ["aria-label"], we = ["innerHTML"], Te = "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm", Ee = /*#__PURE__*/ o(/* @__PURE__ */ g({
 	__name: "TypstViewer",
 	props: {
 		source: {},
@@ -1666,6 +1666,6 @@ var ve = { class: "typst-viewer" }, ye = { class: "typst-toolbar" }, be = {
 			innerHTML: e.svg
 		}, null, 8, we)], 12, Ce))), 128))]))]));
 	}
-}), [["__scopeId", "data-v-9ea75d18"]]);
+}), [["__scopeId", "data-v-7e2db9f8"]]);
 //#endregion
 export { me as a, I as c, ie as d, Ee as default, pe as i, N as l, Y as n, A as o, K as r, j as s, W as t, F as u };

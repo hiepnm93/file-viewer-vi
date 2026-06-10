@@ -1,4 +1,4 @@
-import { FileViewerOptions } from '../../common/type';
+import { FileViewerOptions } from '../../../../package/common/type';
 type __VLS_Props = {
     data: ArrayBuffer;
     type: 'eml' | 'msg';

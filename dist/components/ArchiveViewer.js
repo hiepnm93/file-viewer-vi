@@ -88,7 +88,7 @@ var R = { class: "archive-viewer" }, z = { class: "archive-sidebar" }, B = { cla
 }, Y = {
 	key: 1,
 	class: "archive-error"
-}, ae = 320 * 1024 * 1024, oe = 64 * 1024 * 1024, se = 5e3, X = /* @__PURE__ */ s(/* @__PURE__ */ p({
+}, ae = 320 * 1024 * 1024, oe = 64 * 1024 * 1024, se = 5e3, X = /*#__PURE__*/ s(/* @__PURE__ */ p({
 	__name: "ArchiveViewer",
 	props: {
 		data: {},

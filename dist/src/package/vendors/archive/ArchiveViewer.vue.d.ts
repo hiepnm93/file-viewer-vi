@@ -1,4 +1,4 @@
-import { FileViewerArchiveOptions } from '../../common/type';
+import { FileViewerArchiveOptions } from '../../../../package/common/type';
 type __VLS_Props = {
     data: ArrayBuffer;
     filename: string;

@@ -1,4 +1,4 @@
-import { FileRef, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOptions, FileViewerOperationContext } from '../../common/type';
+import { FileRef, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOptions, FileViewerOperationContext } from '../../../../package/common/type';
 type __VLS_Props = {
     /**
      * 本地二进制输入。优先级高于 `url`。

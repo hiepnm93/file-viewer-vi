@@ -1,6 +1,6 @@
 import { n as e, t } from "./asyncToGenerator.js";
 import { t as n } from "./chunk-SRAX5OIU.js";
-//#region node_modules/.pnpm/@excalidraw+excalidraw@0.18.1_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_f7851cea3c3be0fee60d382ad5b6fcf5/node_modules/@excalidraw/excalidraw/dist/prod/chunk-EIO257PC.js
+//#region node_modules/.pnpm/@excalidraw+excalidraw@0.18.1_@types+react-dom@19.2.3_@types+react@19.2.17__@types+reac_20b48e3fb533bfb35e3cd3573f75cb5d/node_modules/@excalidraw/excalidraw/dist/prod/chunk-EIO257PC.js
 e();
 var r = (() => {
 	let e = new Uint8Array(128);
@@ -37,9 +37,9 @@ var r = (() => {
 				return e || (e = n(["fs"].join())), r || (r = n(["path"].join())), t = r.normalize(t), a = e.readFileSync(t), i ? a : a.toString();
 			}, h = function(e) {
 				let t = m(e, !0);
-				return t.buffer || (t = new Uint8Array(t)), x(t.buffer), t;
+				return t.buffer || (t = new Uint8Array(t)), b(t.buffer), t;
 			}, process.argv.length > 1 && process.argv[1].replace(/\\/g, "/"), a = process.argv.slice(2), process.on("uncaughtException", (e) => {
-				if (!(e instanceof hr)) throw e;
+				if (!(e instanceof pr)) throw e;
 			}), process.on("unhandledRejection", F), o = function(e) {
 				process.exit(e);
 			}, t.inspect = function() {
@@ -49,7 +49,7 @@ var r = (() => {
 			return read(e);
 		}), h = function(e) {
 			let t;
-			return typeof readbuffer == "function" ? new Uint8Array(readbuffer(e)) : (t = read(e, "binary"), x(typeof t == "object"), t);
+			return typeof readbuffer == "function" ? new Uint8Array(readbuffer(e)) : (t = read(e, "binary"), b(typeof t == "object"), t);
 		}, typeof scriptArgs < "u" ? a = scriptArgs : typeof arguments < "u" && (a = arguments), typeof quit == "function" && (o = function(e) {
 			quit(e);
 		}), typeof print < "u" && (typeof console > "u" && (console = {}), console.log = print, console.warn = console.error = typeof printErr < "u" ? printErr : print);
@@ -78,7 +78,7 @@ var r = (() => {
 			get() {
 				F("Module.quit has been replaced with plain quit_");
 			}
-		}), x(typeof t.memoryInitializerPrefixURL > "u", "Module.memoryInitializerPrefixURL option was removed, use Module.locateFile instead"), x(typeof t.pthreadMainPrefixURL > "u", "Module.pthreadMainPrefixURL option was removed, use Module.locateFile instead"), x(typeof t.cdInitializerPrefixURL > "u", "Module.cdInitializerPrefixURL option was removed, use Module.locateFile instead"), x(typeof t.filePackagePrefixURL > "u", "Module.filePackagePrefixURL option was removed, use Module.locateFile instead"), x(typeof t.read > "u", "Module.read option was removed (modify read_ in JS)"), x(typeof t.readAsync > "u", "Module.readAsync option was removed (modify readAsync in JS)"), x(typeof t.readBinary > "u", "Module.readBinary option was removed (modify readBinary in JS)"), x(typeof t.setWindowTitle > "u", "Module.setWindowTitle option was removed (modify setWindowTitle in JS)"), Object.getOwnPropertyDescriptor(t, "read") || Object.defineProperty(t, "read", {
+		}), b(typeof t.memoryInitializerPrefixURL > "u", "Module.memoryInitializerPrefixURL option was removed, use Module.locateFile instead"), b(typeof t.pthreadMainPrefixURL > "u", "Module.pthreadMainPrefixURL option was removed, use Module.locateFile instead"), b(typeof t.cdInitializerPrefixURL > "u", "Module.cdInitializerPrefixURL option was removed, use Module.locateFile instead"), b(typeof t.filePackagePrefixURL > "u", "Module.filePackagePrefixURL option was removed, use Module.locateFile instead"), b(typeof t.read > "u", "Module.read option was removed (modify read_ in JS)"), b(typeof t.readAsync > "u", "Module.readAsync option was removed (modify readAsync in JS)"), b(typeof t.readBinary > "u", "Module.readBinary option was removed (modify readBinary in JS)"), b(typeof t.setWindowTitle > "u", "Module.setWindowTitle option was removed (modify setWindowTitle in JS)"), Object.getOwnPropertyDescriptor(t, "read") || Object.defineProperty(t, "read", {
 			configurable: !0,
 			get() {
 				F("Module.read has been replaced with plain read_");
@@ -93,7 +93,7 @@ var r = (() => {
 			get() {
 				F("Module.readBinary has been replaced with plain readBinary");
 			}
-		}), mr = pr = fr = function() {
+		}), dr = ur = lr = function() {
 			F("cannot use the stack before compiled code is ready to run, and has provided stack access");
 		};
 		function v(e) {
@@ -104,68 +104,68 @@ var r = (() => {
 				return e % t;
 			},
 			debugger() {}
-		}, te = function(e) {}, y;
-		t.wasmBinary && (y = t.wasmBinary), Object.getOwnPropertyDescriptor(t, "wasmBinary") || Object.defineProperty(t, "wasmBinary", {
+		}, te = function(e) {}, ne;
+		t.wasmBinary && (ne = t.wasmBinary), Object.getOwnPropertyDescriptor(t, "wasmBinary") || Object.defineProperty(t, "wasmBinary", {
 			configurable: !0,
 			get() {
 				F("Module.wasmBinary has been replaced with plain wasmBinary");
 			}
 		});
-		let ne;
-		t.noExitRuntime && (ne = t.noExitRuntime), Object.getOwnPropertyDescriptor(t, "noExitRuntime") || Object.defineProperty(t, "noExitRuntime", {
+		let re;
+		t.noExitRuntime && (re = t.noExitRuntime), Object.getOwnPropertyDescriptor(t, "noExitRuntime") || Object.defineProperty(t, "noExitRuntime", {
 			configurable: !0,
 			get() {
 				F("Module.noExitRuntime has been replaced with plain noExitRuntime");
 			}
 		}), typeof WebAssembly != "object" && F("No WebAssembly support found. Build with -s WASM=0 to target JavaScript instead.");
-		let b, re = new WebAssembly.Table({
+		let y, ie = new WebAssembly.Table({
 			initial: 352,
 			maximum: 352,
 			element: "anyfunc"
-		}), ie = !1;
-		function x(e, t) {
+		}), ae = !1;
+		function b(e, t) {
 			e || F(`Assertion failed: ${t}`);
 		}
-		function ae(e) {
+		function oe(e) {
 			let n = t[`_${e}`];
-			return x(n, `Cannot call unknown function ${e}, make sure it is exported`), n;
+			return b(n, `Cannot call unknown function ${e}, make sure it is exported`), n;
 		}
-		function oe(e, t, n, r, i) {
+		function se(e, t, n, r, i) {
 			let a = {
 				string(e) {
 					let t = 0;
 					if (e != null && e !== 0) {
 						let n = (e.length << 2) + 1;
-						t = fr(n), de(e, t, n);
+						t = lr(n), fe(e, t, n);
 					}
 					return t;
 				},
 				array(e) {
-					let t = fr(e.length);
-					return pe(e, t), t;
+					let t = lr(e.length);
+					return me(e, t), t;
 				}
 			};
 			function o(e) {
-				return t === "string" ? S(e) : t === "boolean" ? !!e : e;
+				return t === "string" ? x(e) : t === "boolean" ? !!e : e;
 			}
-			let s = ae(e), c = [], l = 0;
-			if (x(t !== "array", "Return type should not be \"array\"."), r) for (let e = 0; e < r.length; e++) {
+			let s = oe(e), c = [], l = 0;
+			if (b(t !== "array", "Return type should not be \"array\"."), r) for (let e = 0; e < r.length; e++) {
 				let t = a[n[e]];
-				t ? (l === 0 && (l = mr()), c[e] = t(r[e])) : c[e] = r[e];
+				t ? (l === 0 && (l = dr()), c[e] = t(r[e])) : c[e] = r[e];
 			}
 			let u = s.apply(null, c);
-			return u = o(u), l !== 0 && pr(l), u;
+			return u = o(u), l !== 0 && ur(l), u;
 		}
-		function se(e, t, n, r) {
+		function ce(e, t, n, r) {
 			return function() {
-				return oe(e, t, n, arguments, r);
+				return se(e, t, n, arguments, r);
 			};
 		}
-		let ce = typeof TextDecoder < "u" ? new TextDecoder("utf8") : void 0;
-		function le(e, t, n) {
+		let le = typeof TextDecoder < "u" ? new TextDecoder("utf8") : void 0;
+		function ue(e, t, n) {
 			let r = t + n, i = t;
 			for (; e[i] && !(i >= r);) ++i;
-			if (i - t > 16 && e.subarray && ce) return ce.decode(e.subarray(t, i));
+			if (i - t > 16 && e.subarray && le) return le.decode(e.subarray(t, i));
 			let a = "";
 			for (; t < i;) {
 				let n = e[t++];
@@ -187,10 +187,10 @@ var r = (() => {
 			}
 			return a;
 		}
-		function S(e, t) {
-			return e ? le(T, e, t) : "";
+		function x(e, t) {
+			return e ? ue(w, e, t) : "";
 		}
-		function ue(e, t, n, r) {
+		function de(e, t, n, r) {
 			if (!(r > 0)) return 0;
 			let i = n, a = n + r - 1;
 			for (let r = 0; r < e.length; ++r) {
@@ -215,10 +215,10 @@ var r = (() => {
 			}
 			return t[n] = 0, n - i;
 		}
-		function de(e, t, n) {
-			return x(typeof n == "number", "stringToUTF8(str, outPtr, maxBytesToWrite) is missing the third parameter that specifies the length of the output buffer!"), ue(e, T, t, n);
+		function fe(e, t, n) {
+			return b(typeof n == "number", "stringToUTF8(str, outPtr, maxBytesToWrite) is missing the third parameter that specifies the length of the output buffer!"), de(e, w, t, n);
 		}
-		function fe(e) {
+		function pe(e) {
 			let t = 0;
 			for (let n = 0; n < e.length; ++n) {
 				let r = e.charCodeAt(n);
@@ -227,43 +227,42 @@ var r = (() => {
 			return t;
 		}
 		typeof TextDecoder < "u" && new TextDecoder("utf-16le");
-		function pe(e, t) {
-			x(e.length >= 0, "writeArrayToMemory array must have a length (should be an array or typed array)"), w.set(e, t);
+		function me(e, t) {
+			b(e.length >= 0, "writeArrayToMemory array must have a length (should be an array or typed array)"), C.set(e, t);
 		}
-		let me = 65536;
-		function he(e, t) {
+		let he = 65536;
+		function ge(e, t) {
 			return e % t > 0 && (e += t - e % t), e;
 		}
-		let C, w, T, ge, _e, E, D, ve, ye;
-		function be(e) {
-			C = e, t.HEAP8 = w = new Int8Array(e), t.HEAP16 = ge = new Int16Array(e), t.HEAP32 = E = new Int32Array(e), t.HEAPU8 = T = new Uint8Array(e), t.HEAPU16 = _e = new Uint16Array(e), t.HEAPU32 = D = new Uint32Array(e), t.HEAPF32 = ve = new Float32Array(e), t.HEAPF64 = ye = new Float64Array(e);
+		let S, C, w, _e, ve, T, E, ye, be;
+		function xe(e) {
+			S = e, t.HEAP8 = C = new Int8Array(e), t.HEAP16 = _e = new Int16Array(e), t.HEAP32 = T = new Int32Array(e), t.HEAPU8 = w = new Uint8Array(e), t.HEAPU16 = ve = new Uint16Array(e), t.HEAPU32 = E = new Uint32Array(e), t.HEAPF32 = ye = new Float32Array(e), t.HEAPF64 = be = new Float64Array(e);
 		}
-		let O = 5676992, xe = 5676992;
-		x(!0, "stack must start aligned"), x(xe % 16 == 0, "heap must start aligned");
+		b(!0, "stack must start aligned"), b(!0, "heap must start aligned");
 		let Se = 5242880;
-		t.TOTAL_STACK && x(Se === t.TOTAL_STACK, "the stack size can no longer be determined at runtime");
+		t.TOTAL_STACK && b(Se === t.TOTAL_STACK, "the stack size can no longer be determined at runtime");
 		let Ce = t.TOTAL_MEMORY || 16777216;
 		Object.getOwnPropertyDescriptor(t, "TOTAL_MEMORY") || Object.defineProperty(t, "TOTAL_MEMORY", {
 			configurable: !0,
 			get() {
 				F("Module.TOTAL_MEMORY has been replaced with plain INITIAL_TOTAL_MEMORY");
 			}
-		}), x(Ce >= Se, `TOTAL_MEMORY should be larger than TOTAL_STACK, was ${Ce}! (TOTAL_STACK=${Se})`), x(typeof Int32Array < "u" && typeof Float64Array < "u" && Int32Array.prototype.subarray !== void 0 && Int32Array.prototype.set !== void 0, "JS engine does not provide full typed array support"), b = t.wasmMemory ? t.wasmMemory : new WebAssembly.Memory({ initial: Ce / me }), b && (C = b.buffer), Ce = C.byteLength, x(Ce % me === 0), be(C), E[108480] = xe;
+		}), b(Ce >= Se, `TOTAL_MEMORY should be larger than TOTAL_STACK, was ${Ce}! (TOTAL_STACK=${Se})`), b(typeof Int32Array < "u" && typeof Float64Array < "u" && Int32Array.prototype.subarray !== void 0 && Int32Array.prototype.set !== void 0, "JS engine does not provide full typed array support"), y = t.wasmMemory ? t.wasmMemory : new WebAssembly.Memory({ initial: Ce / he }), y && (S = y.buffer), Ce = S.byteLength, b(Ce % he == 0), xe(S), T[108480] = 5676992;
 		function we() {
-			x((O & 3) == 0), D[(O >> 2) - 1] = 34821223, D[(O >> 2) - 2] = 2310721022, E[0] = 1668509029;
+			b(!0), E[1419247] = 34821223, E[1419246] = 2310721022, T[0] = 1668509029;
 		}
-		function k() {
-			let e = D[(O >> 2) - 1], t = D[(O >> 2) - 2];
-			(e != 34821223 || t != 2310721022) && F(`Stack overflow! Stack cookie has been overwritten, expected hex dwords 0x89BACDFE and 0x02135467, but received 0x${t.toString(16)} ${e.toString(16)}`), E[0] !== 1668509029 && F("Runtime error: The application has corrupted its heap memory area (address zero)!");
+		function D() {
+			let e = E[1419247], t = E[1419246];
+			(e != 34821223 || t != 2310721022) && F(`Stack overflow! Stack cookie has been overwritten, expected hex dwords 0x89BACDFE and 0x02135467, but received 0x${t.toString(16)} ${e.toString(16)}`), T[0] !== 1668509029 && F("Runtime error: The application has corrupted its heap memory area (address zero)!");
 		}
 		function Te(e) {
-			F(`Stack overflow! Attempted to allocate ${e} bytes on the stack, but stack has only ${O - mr() + e} bytes available!`);
+			F(`Stack overflow! Attempted to allocate ${e} bytes on the stack, but stack has only ${5676992 - dr() + e} bytes available!`);
 		}
 		(function() {
 			let e = new Int16Array(1), t = new Int8Array(e.buffer);
 			if (e[0] = 25459, t[0] !== 115 || t[1] !== 99) throw "Runtime error: expected the system to be little-endian!";
 		})();
-		function A(e, t) {
+		function O(e, t) {
 			F(`Invalid function pointer ${e} called with signature '${t}'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this). Build with ASSERTIONS=2 for more info.`);
 		}
 		function Ee(e) {
@@ -277,22 +276,22 @@ var r = (() => {
 				typeof r == "number" ? n.arg === void 0 ? t.dynCall_v(r) : t.dynCall_vi(r, n.arg) : r(n.arg === void 0 ? null : n.arg);
 			}
 		}
-		let De = [], Oe = [], ke = [], Ae = [], j = !1, M = !1;
+		let De = [], Oe = [], ke = [], Ae = [], k = !1, A = !1;
 		function je() {
 			if (t.preRun) for (typeof t.preRun == "function" && (t.preRun = [t.preRun]); t.preRun.length;) Ie(t.preRun.shift());
 			Ee(De);
 		}
 		function Me() {
-			k(), x(!j), j = !0, Ee(Oe);
+			D(), b(!k), k = !0, Ee(Oe);
 		}
 		function Ne() {
-			k(), Ee(ke);
+			D(), Ee(ke);
 		}
 		function Pe() {
-			k(), M = !0;
+			D(), A = !0;
 		}
 		function Fe() {
-			if (k(), t.postRun) for (typeof t.postRun == "function" && (t.postRun = [t.postRun]); t.postRun.length;) Le(t.postRun.shift());
+			if (D(), t.postRun) for (typeof t.postRun == "function" && (t.postRun = [t.postRun]); t.postRun.length;) Le(t.postRun.shift());
 			Ee(Ae);
 		}
 		function Ie(e) {
@@ -301,28 +300,28 @@ var r = (() => {
 		function Le(e) {
 			Ae.unshift(e);
 		}
-		x(Math.imul, "This browser does not support Math.imul(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), x(Math.fround, "This browser does not support Math.fround(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), x(Math.clz32, "This browser does not support Math.clz32(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), x(Math.trunc, "This browser does not support Math.trunc(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill");
-		let N = 0, P = null, Re = null, ze = {};
-		function Be(e) {
-			N++, t.monitorRunDependencies && t.monitorRunDependencies(N), e ? (x(!ze[e]), ze[e] = 1, P === null && typeof setInterval < "u" && (P = setInterval(() => {
-				if (ie) {
-					clearInterval(P), P = null;
+		b(Math.imul, "This browser does not support Math.imul(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), b(Math.fround, "This browser does not support Math.fround(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), b(Math.clz32, "This browser does not support Math.clz32(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill"), b(Math.trunc, "This browser does not support Math.trunc(), build with LEGACY_VM_SUPPORT or POLYFILL_OLD_MATH_FUNCTIONS to add in a polyfill");
+		let j = 0, M = null, N = null, P = {};
+		function Re(e) {
+			j++, t.monitorRunDependencies && t.monitorRunDependencies(j), e ? (b(!P[e]), P[e] = 1, M === null && typeof setInterval < "u" && (M = setInterval(() => {
+				if (ae) {
+					clearInterval(M), M = null;
 					return;
 				}
 				let e = !1;
-				for (let t in ze) e || (e = !0, _("still waiting on run dependencies:")), _(`dependency: ${t}`);
+				for (let t in P) e || (e = !0, _("still waiting on run dependencies:")), _(`dependency: ${t}`);
 				e && _("(end of list)");
 			}, 1e4))) : _("warning: run dependency added without ID");
 		}
-		function Ve(e) {
-			if (N--, t.monitorRunDependencies && t.monitorRunDependencies(N), e ? (x(ze[e]), delete ze[e]) : _("warning: run dependency removed without ID"), N == 0 && (P !== null && (clearInterval(P), P = null), Re)) {
-				let e = Re;
-				Re = null, e();
+		function ze(e) {
+			if (j--, t.monitorRunDependencies && t.monitorRunDependencies(j), e ? (b(P[e]), delete P[e]) : _("warning: run dependency removed without ID"), j == 0 && (M !== null && (clearInterval(M), M = null), N)) {
+				let e = N;
+				N = null, e();
 			}
 		}
 		t.preloadedImages = {}, t.preloadedAudios = {};
 		function F(e) {
-			throw t.onAbort && t.onAbort(e), e += "", g(e), _(e), ie = !0, `abort(${e}) at ${Xe()}`;
+			throw t.onAbort && t.onAbort(e), e += "", g(e), _(e), ae = !0, `abort(${e}) at ${Je()}`;
 		}
 		var I = {
 			error() {
@@ -360,33 +359,33 @@ var r = (() => {
 			}
 		};
 		t.FS_createDataFile = I.createDataFile, t.FS_createPreloadedFile = I.createPreloadedFile;
-		let He = "data:application/octet-stream;base64,";
-		function Ue(e) {
-			return String.prototype.startsWith ? e.startsWith(He) : e.indexOf(He) === 0;
+		let Be = "data:application/octet-stream;base64,";
+		function Ve(e) {
+			return String.prototype.startsWith ? e.startsWith(Be) : e.indexOf(Be) === 0;
 		}
 		let L = "woff2.wasm";
-		Ue(L) || (L = p(L));
-		function We() {
+		Ve(L) || (L = p(L));
+		function He() {
 			try {
-				if (y) return new Uint8Array(y);
+				if (ne) return new Uint8Array(ne);
 				if (h) return h(L);
 				throw "both async and sync fetching of the wasm failed";
 			} catch (e) {
 				F(e);
 			}
 		}
-		function Ge() {
-			return !y && (s || c) && typeof fetch == "function" ? fetch(L, { credentials: "same-origin" }).then((e) => {
+		function Ue() {
+			return !ne && (s || c) && typeof fetch == "function" ? fetch(L, { credentials: "same-origin" }).then((e) => {
 				if (!e.ok) throw `failed to load wasm binary file at '${L}'`;
 				return e.arrayBuffer();
-			}).catch(() => We()) : new Promise((e, t) => {
-				e(We());
+			}).catch(() => He()) : new Promise((e, t) => {
+				e(He());
 			});
 		}
-		function Ke() {
+		function We() {
 			let e = {
-				env: or,
-				wasi_unstable: or,
+				env: rr,
+				wasi_unstable: rr,
 				global: {
 					NaN: NaN,
 					Infinity: Infinity
@@ -396,20 +395,20 @@ var r = (() => {
 			};
 			function n(e, n) {
 				let r = e.exports;
-				t.asm = r, Ve("wasm-instantiate");
+				t.asm = r, ze("wasm-instantiate");
 			}
-			Be("wasm-instantiate");
+			Re("wasm-instantiate");
 			let r = t;
 			function i(e) {
-				x(t === r, "the Module object should not be replaced during async compilation - perhaps the order of HTML elements is wrong?"), r = null, n(e.instance);
+				b(t === r, "the Module object should not be replaced during async compilation - perhaps the order of HTML elements is wrong?"), r = null, n(e.instance);
 			}
 			function a(t) {
-				return Ge().then((t) => WebAssembly.instantiate(t, e)).then(t, (e) => {
+				return Ue().then((t) => WebAssembly.instantiate(t, e)).then(t, (e) => {
 					_(`failed to asynchronously prepare wasm: ${e}`), F(e);
 				});
 			}
 			function o() {
-				if (!y && typeof WebAssembly.instantiateStreaming == "function" && !Ue(L) && typeof fetch == "function" && typeof process == "object" && process.versions && process.versions.node && +process.versions.node.split(".")[0] < 17) fetch(L, { credentials: "same-origin" }).then((t) => WebAssembly.instantiateStreaming(t, e).then(i, (e) => {
+				if (!ne && typeof WebAssembly.instantiateStreaming == "function" && !Ve(L) && typeof fetch == "function" && typeof process == "object" && process.versions && process.versions.node && +process.versions.node.split(".")[0] < 17) fetch(L, { credentials: "same-origin" }).then((t) => WebAssembly.instantiateStreaming(t, e).then(i, (e) => {
 					_(`wasm streaming compile failed: ${e}`), _("falling back to ArrayBuffer instantiation"), a(i);
 				}));
 				else return a(i);
@@ -421,32 +420,32 @@ var r = (() => {
 			}
 			return o(), {};
 		}
-		t.asm = Ke, Oe.push({ func() {
-			dr();
-		} }), x(!0);
-		function qe(e) {
+		t.asm = We, Oe.push({ func() {
+			cr();
+		} }), b(!0);
+		function Ge(e) {
 			let n = t.___cxa_demangle || t.__cxa_demangle;
-			x(n);
+			b(n);
 			try {
 				let t = e;
 				t.startsWith("__Z") && (t = t.substr(1));
-				let o = fe(t) + 1;
-				var r = ur(o);
-				de(t, r, o);
-				var i = ur(4), a = n(r, 0, 0, i);
-				if (E[i >> 2] === 0 && a) return S(a);
+				let o = pe(t) + 1;
+				var r = sr(o);
+				fe(t, r, o);
+				var i = sr(4), a = n(r, 0, 0, i);
+				if (T[i >> 2] === 0 && a) return x(a);
 			} catch (e) {} finally {
-				r && Q(r), i && Q(i), a && Q(a);
+				r && $(r), i && $(i), a && $(a);
 			}
 			return e;
 		}
-		function Je(e) {
+		function Ke(e) {
 			return e.replace(/\b__Z[\w\d_]+/g, (e) => {
-				let t = qe(e);
+				let t = Ge(e);
 				return e === t ? e : `${t} [${e}]`;
 			});
 		}
-		function Ye() {
+		function qe() {
 			let e = /* @__PURE__ */ Error();
 			if (!e.stack) {
 				try {
@@ -458,24 +457,24 @@ var r = (() => {
 			}
 			return e.stack.toString();
 		}
-		function Xe() {
-			let e = Ye();
+		function Je() {
+			let e = qe();
 			return t.extraStackTrace && (e += `
-${t.extraStackTrace()}`), Je(e);
+${t.extraStackTrace()}`), Ke(e);
 		}
-		function Ze(e, t, n, r) {
-			F(`Assertion failed: ${S(e)}, at: ${[
-				t ? S(t) : "unknown filename",
+		function Ye(e, t, n, r) {
+			F(`Assertion failed: ${x(e)}, at: ${[
+				t ? x(t) : "unknown filename",
 				n,
-				r ? S(r) : "unknown function"
+				r ? x(r) : "unknown function"
 			]}`);
 		}
-		function Qe(e) {
-			return ur(e);
+		function Xe(e) {
+			return sr(e);
 		}
-		let $e = {};
-		function et(e, t, n) {
-			throw $e[e] = {
+		let Ze = {};
+		function Qe(e, t, n) {
+			throw Ze[e] = {
 				ptr: e,
 				adjusted: [e],
 				type: t,
@@ -483,11 +482,11 @@ ${t.extraStackTrace()}`), Je(e);
 				refcount: 0,
 				caught: !1,
 				rethrown: !1
-			}, "uncaught_exception" in cr ? cr.uncaught_exceptions++ : cr.uncaught_exceptions = 1, `${e} - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.`;
+			}, "uncaught_exception" in ar ? ar.uncaught_exceptions++ : ar.uncaught_exceptions = 1, `${e} - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.`;
 		}
-		function tt() {}
-		function nt() {}
-		var rt = {
+		function $e() {}
+		function et() {}
+		var R = {
 			splitPath(e) {
 				return /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/.exec(e).slice(1);
 			},
@@ -502,10 +501,10 @@ ${t.extraStackTrace()}`), Je(e);
 			},
 			normalize(e) {
 				let t = e.charAt(0) === "/", n = e.substr(-1) === "/";
-				return e = rt.normalizeArray(e.split("/").filter((e) => !!e), !t).join("/"), !e && !t && (e = "."), e && n && (e += "/"), (t ? "/" : "") + e;
+				return e = R.normalizeArray(e.split("/").filter((e) => !!e), !t).join("/"), !e && !t && (e = "."), e && n && (e += "/"), (t ? "/" : "") + e;
 			},
 			dirname(e) {
-				let t = rt.splitPath(e), n = t[0], r = t[1];
+				let t = R.splitPath(e), n = t[0], r = t[1];
 				return !n && !r ? "." : (r && (r = r.substr(0, r.length - 1)), n + r);
 			},
 			basename(e) {
@@ -514,53 +513,75 @@ ${t.extraStackTrace()}`), Je(e);
 				return t === -1 ? e : e.substr(t + 1);
 			},
 			extname(e) {
-				return rt.splitPath(e)[3];
+				return R.splitPath(e)[3];
 			},
 			join() {
 				let e = Array.prototype.slice.call(arguments, 0);
-				return rt.normalize(e.join("/"));
+				return R.normalize(e.join("/"));
 			},
 			join2(e, t) {
-				return rt.normalize(`${e}/${t}`);
+				return R.normalize(`${e}/${t}`);
 			}
-		}, R = {
+		}, z = {
 			buffers: [
 				null,
 				[],
 				[]
 			],
 			printChar(e, t) {
-				let n = R.buffers[e];
-				x(n), t === 0 || t === 10 ? ((e === 1 ? g : _)(le(n, 0)), n.length = 0) : n.push(t);
+				let n = z.buffers[e];
+				b(n), t === 0 || t === 10 ? ((e === 1 ? g : _)(ue(n, 0)), n.length = 0) : n.push(t);
 			},
 			varargs: 0,
 			get(e) {
-				return R.varargs += 4, E[R.varargs - 4 >> 2];
+				return z.varargs += 4, T[z.varargs - 4 >> 2];
 			},
 			getStr() {
-				return S(R.get());
+				return x(z.get());
 			},
 			get64() {
-				let e = R.get(), t = R.get();
-				return x(e >= 0 ? t === 0 : t === -1), e;
+				let e = z.get(), t = z.get();
+				return b(e >= 0 ? t === 0 : t === -1), e;
 			},
 			getZero() {
-				x(R.get() === 0);
+				b(z.get() === 0);
 			}
 		};
-		function it(e) {
+		function tt(e) {
 			try {
 				return F("it should not be possible to operate on streams when !SYSCALLS_REQUIRE_FILESYSTEM"), 0;
 			} catch (e) {
 				return (typeof I > "u" || !(e instanceof I.ErrnoError)) && F(e), e.errno;
 			}
 		}
-		function at() {
-			return it.apply(null, arguments);
+		function nt() {
+			return tt.apply(null, arguments);
 		}
-		function ot(e, t, n, r, i) {
+		function rt(e, t, n, r, i) {
 			try {
 				return F("it should not be possible to operate on streams when !SYSCALLS_REQUIRE_FILESYSTEM"), 0;
+			} catch (e) {
+				return (typeof I > "u" || !(e instanceof I.ErrnoError)) && F(e), e.errno;
+			}
+		}
+		function it() {
+			return rt.apply(null, arguments);
+		}
+		function at() {
+			let e = t._fflush;
+			e && e(0);
+			let n = z.buffers;
+			n[1].length && z.printChar(1, 10), n[2].length && z.printChar(2, 10);
+		}
+		function ot(e, t, n, r) {
+			try {
+				let i = 0;
+				for (let r = 0; r < n; r++) {
+					let n = T[t + r * 8 >> 2], a = T[t + (r * 8 + 4) >> 2];
+					for (let t = 0; t < a; t++) z.printChar(e, w[n + t]);
+					i += a;
+				}
+				return T[r >> 2] = i, 0;
 			} catch (e) {
 				return (typeof I > "u" || !(e instanceof I.ErrnoError)) && F(e), e.errno;
 			}
@@ -568,29 +589,7 @@ ${t.extraStackTrace()}`), Je(e);
 		function st() {
 			return ot.apply(null, arguments);
 		}
-		function ct() {
-			let e = t._fflush;
-			e && e(0);
-			let n = R.buffers;
-			n[1].length && R.printChar(1, 10), n[2].length && R.printChar(2, 10);
-		}
-		function lt(e, t, n, r) {
-			try {
-				let i = 0;
-				for (let r = 0; r < n; r++) {
-					let n = E[t + r * 8 >> 2], a = E[t + (r * 8 + 4) >> 2];
-					for (let t = 0; t < a; t++) R.printChar(e, T[n + t]);
-					i += a;
-				}
-				return E[r >> 2] = i, 0;
-			} catch (e) {
-				return (typeof I > "u" || !(e instanceof I.ErrnoError)) && F(e), e.errno;
-			}
-		}
-		function ut() {
-			return lt.apply(null, arguments);
-		}
-		function dt(e) {
+		function ct(e) {
 			switch (e) {
 				case 1: return 0;
 				case 2: return 1;
@@ -599,32 +598,32 @@ ${t.extraStackTrace()}`), Je(e);
 				default: throw TypeError(`Unknown type size: ${e}`);
 			}
 		}
-		function ft() {
+		function lt() {
 			let e = Array(256);
 			for (let t = 0; t < 256; ++t) e[t] = String.fromCharCode(t);
-			pt = e;
+			ut = e;
 		}
-		var pt = void 0;
-		function z(e) {
+		var ut = void 0;
+		function B(e) {
 			let t = "", n = e;
-			for (; T[n];) t += pt[T[n++]];
+			for (; w[n];) t += ut[w[n++]];
 			return t;
 		}
-		let B = {}, V = {}, mt = {};
-		function ht(e) {
+		let V = {}, H = {}, dt = {};
+		function ft(e) {
 			if (e === void 0) return "_unknown";
 			e = e.replace(/[^a-zA-Z0-9_]/g, "$");
 			let t = e.charCodeAt(0);
 			return t >= 48 && t <= 57 ? `_${e}` : e;
 		}
-		function gt(e, t) {
-			return e = ht(e), Function("body", `return function ${e}() {
+		function pt(e, t) {
+			return e = ft(e), Function("body", `return function ${e}() {
     "use strict";    return body.apply(this, arguments);
 };
 `)(t);
 		}
-		function _t(e, t) {
-			let n = gt(t, function(e) {
+		function mt(e, t) {
+			let n = pt(t, function(e) {
 				this.name = t, this.message = e;
 				let n = Error(e).stack;
 				n !== void 0 && (this.stack = `${this.toString()}
@@ -634,47 +633,47 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 				return this.message === void 0 ? this.name : `${this.name}: ${this.message}`;
 			}, n;
 		}
-		let H;
-		function U(e) {
-			throw new H(e);
+		let U;
+		function W(e) {
+			throw new U(e);
 		}
-		let vt;
-		function yt(e) {
-			throw new vt(e);
+		let ht;
+		function gt(e) {
+			throw new ht(e);
 		}
-		function W(e, t, n) {
+		function G(e, t, n) {
 			e.forEach((e) => {
-				mt[e] = t;
+				dt[e] = t;
 			});
 			function r(t) {
 				let r = n(t);
-				r.length !== e.length && yt("Mismatched type converter count");
-				for (let t = 0; t < e.length; ++t) G(e[t], r[t]);
+				r.length !== e.length && gt("Mismatched type converter count");
+				for (let t = 0; t < e.length; ++t) K(e[t], r[t]);
 			}
 			let i = Array(t.length), a = [], o = 0;
 			t.forEach((e, t) => {
-				V.hasOwnProperty(e) ? i[t] = V[e] : (a.push(e), B.hasOwnProperty(e) || (B[e] = []), B[e].push(() => {
-					i[t] = V[e], ++o, o === a.length && r(i);
+				H.hasOwnProperty(e) ? i[t] = H[e] : (a.push(e), V.hasOwnProperty(e) || (V[e] = []), V[e].push(() => {
+					i[t] = H[e], ++o, o === a.length && r(i);
 				}));
 			}), a.length === 0 && r(i);
 		}
-		function G(e, t, n) {
+		function K(e, t, n) {
 			if (n = n || {}, !("argPackAdvance" in t)) throw TypeError("registerType registeredInstance requires argPackAdvance");
 			let r = t.name;
-			if (e || U(`type "${r}" must have a positive integer typeid pointer`), V.hasOwnProperty(e)) {
+			if (e || W(`type "${r}" must have a positive integer typeid pointer`), H.hasOwnProperty(e)) {
 				if (n.ignoreDuplicateRegistrations) return;
-				U(`Cannot register type '${r}' twice`);
+				W(`Cannot register type '${r}' twice`);
 			}
-			if (V[e] = t, delete mt[e], B.hasOwnProperty(e)) {
-				let t = B[e];
-				delete B[e], t.forEach((e) => {
+			if (H[e] = t, delete dt[e], V.hasOwnProperty(e)) {
+				let t = V[e];
+				delete V[e], t.forEach((e) => {
 					e();
 				});
 			}
 		}
-		function bt(e, t, n, r, i) {
-			let a = dt(n);
-			t = z(t), G(e, {
+		function _t(e, t, n, r, i) {
+			let a = ct(n);
+			t = B(t), K(e, {
 				name: t,
 				fromWireType(e) {
 					return !!e;
@@ -685,23 +684,23 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 				argPackAdvance: 8,
 				readValueFromPointer(e) {
 					let r;
-					if (n === 1) r = w;
-					else if (n === 2) r = ge;
-					else if (n === 4) r = E;
+					if (n === 1) r = C;
+					else if (n === 2) r = _e;
+					else if (n === 4) r = T;
 					else throw TypeError(`Unknown boolean type size: ${t}`);
 					return this.fromWireType(r[e >> a]);
 				},
 				destructorFunction: null
 			});
 		}
-		function xt(e) {
-			if (!(this instanceof q) || !(e instanceof q)) return !1;
+		function vt(e) {
+			if (!(this instanceof J) || !(e instanceof J)) return !1;
 			let t = this.$$.ptrType.registeredClass, n = this.$$.ptr, r = e.$$.ptrType.registeredClass, i = e.$$.ptr;
 			for (; t.baseClass;) n = t.upcast(n), t = t.baseClass;
 			for (; r.baseClass;) i = r.upcast(i), r = r.baseClass;
 			return t === r && n === i;
 		}
-		function St(e) {
+		function yt(e) {
 			return {
 				count: e.count,
 				deleteScheduled: e.deleteScheduled,
@@ -712,92 +711,92 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 				smartPtrType: e.smartPtrType
 			};
 		}
-		function Ct(e) {
+		function bt(e) {
 			function t(e) {
 				return e.$$.ptrType.registeredClass.name;
 			}
-			U(`${t(e)} instance already deleted`);
+			W(`${t(e)} instance already deleted`);
 		}
-		let wt = !1;
-		function Tt(e) {}
-		function Et(e) {
+		let xt = !1;
+		function St(e) {}
+		function Ct(e) {
 			e.smartPtr ? e.smartPtrType.rawDestructor(e.smartPtr) : e.ptrType.registeredClass.rawDestructor(e.ptr);
 		}
-		function Dt(e) {
-			--e.count.value, e.count.value === 0 && Et(e);
+		function wt(e) {
+			--e.count.value, e.count.value === 0 && Ct(e);
 		}
-		function K(e) {
-			return typeof FinalizationGroup > "u" ? (K = function(e) {
+		function q(e) {
+			return typeof FinalizationGroup > "u" ? (q = function(e) {
 				return e;
-			}, e) : (wt = new FinalizationGroup((e) => {
+			}, e) : (xt = new FinalizationGroup((e) => {
 				for (let t = e.next(); !t.done; t = e.next()) {
 					let e = t.value;
-					e.ptr ? Dt(e) : console.warn(`object already deleted: ${e.ptr}`);
+					e.ptr ? wt(e) : console.warn(`object already deleted: ${e.ptr}`);
 				}
-			}), K = function(e) {
-				return wt.register(e, e.$$, e.$$), e;
-			}, Tt = function(e) {
-				wt.unregister(e.$$);
-			}, K(e));
+			}), q = function(e) {
+				return xt.register(e, e.$$, e.$$), e;
+			}, St = function(e) {
+				xt.unregister(e.$$);
+			}, q(e));
 		}
-		function Ot() {
-			if (this.$$.ptr || Ct(this), this.$$.preservePointerOnDelete) return this.$$.count.value += 1, this;
-			let e = K(Object.create(Object.getPrototypeOf(this), { $$: { value: St(this.$$) } }));
+		function Tt() {
+			if (this.$$.ptr || bt(this), this.$$.preservePointerOnDelete) return this.$$.count.value += 1, this;
+			let e = q(Object.create(Object.getPrototypeOf(this), { $$: { value: yt(this.$$) } }));
 			return e.$$.count.value += 1, e.$$.deleteScheduled = !1, e;
 		}
-		function kt() {
-			this.$$.ptr || Ct(this), this.$$.deleteScheduled && !this.$$.preservePointerOnDelete && U("Object already scheduled for deletion"), Tt(this), Dt(this.$$), this.$$.preservePointerOnDelete || (this.$$.smartPtr = void 0, this.$$.ptr = void 0);
+		function Et() {
+			this.$$.ptr || bt(this), this.$$.deleteScheduled && !this.$$.preservePointerOnDelete && W("Object already scheduled for deletion"), St(this), wt(this.$$), this.$$.preservePointerOnDelete || (this.$$.smartPtr = void 0, this.$$.ptr = void 0);
 		}
-		function At() {
+		function Dt() {
 			return !this.$$.ptr;
 		}
-		let jt, Mt = [];
-		function Nt() {
-			for (; Mt.length;) {
-				let e = Mt.pop();
+		let Ot, kt = [];
+		function At() {
+			for (; kt.length;) {
+				let e = kt.pop();
 				e.$$.deleteScheduled = !1, e.delete();
 			}
 		}
-		function Pt() {
-			return this.$$.ptr || Ct(this), this.$$.deleteScheduled && !this.$$.preservePointerOnDelete && U("Object already scheduled for deletion"), Mt.push(this), Mt.length === 1 && jt && jt(Nt), this.$$.deleteScheduled = !0, this;
+		function jt() {
+			return this.$$.ptr || bt(this), this.$$.deleteScheduled && !this.$$.preservePointerOnDelete && W("Object already scheduled for deletion"), kt.push(this), kt.length === 1 && Ot && Ot(At), this.$$.deleteScheduled = !0, this;
 		}
-		function Ft() {
-			q.prototype.isAliasOf = xt, q.prototype.clone = Ot, q.prototype.delete = kt, q.prototype.isDeleted = At, q.prototype.deleteLater = Pt;
+		function Mt() {
+			J.prototype.isAliasOf = vt, J.prototype.clone = Tt, J.prototype.delete = Et, J.prototype.isDeleted = Dt, J.prototype.deleteLater = jt;
 		}
-		function q() {}
-		let It = {};
-		function Lt(e, t, n) {
+		function J() {}
+		let Nt = {};
+		function Pt(e, t, n) {
 			if (e[t].overloadTable === void 0) {
 				let r = e[t];
 				e[t] = function() {
-					return e[t].overloadTable.hasOwnProperty(arguments.length) || U(`Function '${n}' called with an invalid number of arguments (${arguments.length}) - expects one of (${e[t].overloadTable})!`), e[t].overloadTable[arguments.length].apply(this, arguments);
+					return e[t].overloadTable.hasOwnProperty(arguments.length) || W(`Function '${n}' called with an invalid number of arguments (${arguments.length}) - expects one of (${e[t].overloadTable})!`), e[t].overloadTable[arguments.length].apply(this, arguments);
 				}, e[t].overloadTable = [], e[t].overloadTable[r.argCount] = r;
 			}
 		}
-		function Rt(e, n, r) {
-			t.hasOwnProperty(e) ? ((r === void 0 || t[e].overloadTable !== void 0 && t[e].overloadTable[r] !== void 0) && U(`Cannot register public name '${e}' twice`), Lt(t, e, e), t.hasOwnProperty(r) && U(`Cannot register multiple overloads of a function with the same number of arguments (${r})!`), t[e].overloadTable[r] = n) : (t[e] = n, r !== void 0 && (t[e].numArguments = r));
+		function Ft(e, n, r) {
+			t.hasOwnProperty(e) ? ((r === void 0 || t[e].overloadTable !== void 0 && t[e].overloadTable[r] !== void 0) && W(`Cannot register public name '${e}' twice`), Pt(t, e, e), t.hasOwnProperty(r) && W(`Cannot register multiple overloads of a function with the same number of arguments (${r})!`), t[e].overloadTable[r] = n) : (t[e] = n, r !== void 0 && (t[e].numArguments = r));
 		}
-		function zt(e, t, n, r, i, a, o, s) {
+		function It(e, t, n, r, i, a, o, s) {
 			this.name = e, this.constructor = t, this.instancePrototype = n, this.rawDestructor = r, this.baseClass = i, this.getActualType = a, this.upcast = o, this.downcast = s, this.pureVirtualFunctions = [];
 		}
-		function Bt(e, t, n) {
-			for (; t !== n;) t.upcast || U(`Expected null or instance of ${n.name}, got an instance of ${t.name}`), e = t.upcast(e), t = t.baseClass;
+		function Lt(e, t, n) {
+			for (; t !== n;) t.upcast || W(`Expected null or instance of ${n.name}, got an instance of ${t.name}`), e = t.upcast(e), t = t.baseClass;
 			return e;
 		}
-		function Vt(e, t) {
-			if (t === null) return this.isReference && U(`null is not a valid ${this.name}`), 0;
-			t.$$ || U(`Cannot pass "${Z(t)}" as a ${this.name}`), t.$$.ptr || U(`Cannot pass deleted object as a pointer of type ${this.name}`);
+		function Rt(e, t) {
+			if (t === null) return this.isReference && W(`null is not a valid ${this.name}`), 0;
+			t.$$ || W(`Cannot pass "${Q(t)}" as a ${this.name}`), t.$$.ptr || W(`Cannot pass deleted object as a pointer of type ${this.name}`);
 			let n = t.$$.ptrType.registeredClass;
-			return Bt(t.$$.ptr, n, this.registeredClass);
+			return Lt(t.$$.ptr, n, this.registeredClass);
 		}
-		function Ht(e, t) {
+		function zt(e, t) {
 			let n;
-			if (t === null) return this.isReference && U(`null is not a valid ${this.name}`), this.isSmartPointer ? (n = this.rawConstructor(), e !== null && e.push(this.rawDestructor, n), n) : 0;
-			t.$$ || U(`Cannot pass "${Z(t)}" as a ${this.name}`), t.$$.ptr || U(`Cannot pass deleted object as a pointer of type ${this.name}`), !this.isConst && t.$$.ptrType.isConst && U(`Cannot convert argument of type ${t.$$.smartPtrType ? t.$$.smartPtrType.name : t.$$.ptrType.name} to parameter type ${this.name}`);
+			if (t === null) return this.isReference && W(`null is not a valid ${this.name}`), this.isSmartPointer ? (n = this.rawConstructor(), e !== null && e.push(this.rawDestructor, n), n) : 0;
+			t.$$ || W(`Cannot pass "${Q(t)}" as a ${this.name}`), t.$$.ptr || W(`Cannot pass deleted object as a pointer of type ${this.name}`), !this.isConst && t.$$.ptrType.isConst && W(`Cannot convert argument of type ${t.$$.smartPtrType ? t.$$.smartPtrType.name : t.$$.ptrType.name} to parameter type ${this.name}`);
 			let r = t.$$.ptrType.registeredClass;
-			if (n = Bt(t.$$.ptr, r, this.registeredClass), this.isSmartPointer) switch (t.$$.smartPtr === void 0 && U("Passing raw pointer to smart pointer is illegal"), this.sharingPolicy) {
+			if (n = Lt(t.$$.ptr, r, this.registeredClass), this.isSmartPointer) switch (t.$$.smartPtr === void 0 && W("Passing raw pointer to smart pointer is illegal"), this.sharingPolicy) {
 				case 0:
-					t.$$.smartPtrType === this ? n = t.$$.smartPtr : U(`Cannot convert argument of type ${t.$$.smartPtrType ? t.$$.smartPtrType.name : t.$$.ptrType.name} to parameter type ${this.name}`);
+					t.$$.smartPtrType === this ? n = t.$$.smartPtr : W(`Cannot convert argument of type ${t.$$.smartPtrType ? t.$$.smartPtrType.name : t.$$.ptrType.name} to parameter type ${this.name}`);
 					break;
 				case 1:
 					n = t.$$.smartPtr;
@@ -806,110 +805,110 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 					if (t.$$.smartPtrType === this) n = t.$$.smartPtr;
 					else {
 						let r = t.clone();
-						n = this.rawShare(n, Sn(() => {
+						n = this.rawShare(n, yn(() => {
 							r.delete();
 						})), e !== null && e.push(this.rawDestructor, n);
 					}
 					break;
-				default: U("Unsupporting sharing policy");
+				default: W("Unsupporting sharing policy");
 			}
 			return n;
 		}
-		function Ut(e, t) {
-			if (t === null) return this.isReference && U(`null is not a valid ${this.name}`), 0;
-			t.$$ || U(`Cannot pass "${Z(t)}" as a ${this.name}`), t.$$.ptr || U(`Cannot pass deleted object as a pointer of type ${this.name}`), t.$$.ptrType.isConst && U(`Cannot convert argument of type ${t.$$.ptrType.name} to parameter type ${this.name}`);
+		function Bt(e, t) {
+			if (t === null) return this.isReference && W(`null is not a valid ${this.name}`), 0;
+			t.$$ || W(`Cannot pass "${Q(t)}" as a ${this.name}`), t.$$.ptr || W(`Cannot pass deleted object as a pointer of type ${this.name}`), t.$$.ptrType.isConst && W(`Cannot convert argument of type ${t.$$.ptrType.name} to parameter type ${this.name}`);
 			let n = t.$$.ptrType.registeredClass;
-			return Bt(t.$$.ptr, n, this.registeredClass);
+			return Lt(t.$$.ptr, n, this.registeredClass);
 		}
-		function Wt(e) {
-			return this.fromWireType(D[e >> 2]);
+		function Vt(e) {
+			return this.fromWireType(E[e >> 2]);
 		}
-		function Gt(e) {
+		function Ht(e) {
 			return this.rawGetPointee && (e = this.rawGetPointee(e)), e;
 		}
-		function Kt(e) {
+		function Ut(e) {
 			this.rawDestructor && this.rawDestructor(e);
 		}
-		function qt(e) {
+		function Wt(e) {
 			e !== null && e.delete();
 		}
-		function Jt(e, t, n) {
+		function Gt(e, t, n) {
 			if (t === n) return e;
 			if (n.baseClass === void 0) return null;
-			let r = Jt(e, t, n.baseClass);
+			let r = Gt(e, t, n.baseClass);
 			return r === null ? null : n.downcast(r);
 		}
-		function Yt() {
-			return Object.keys($t).length;
+		function Kt() {
+			return Object.keys(Xt).length;
 		}
-		function Xt() {
+		function qt() {
 			let e = [];
-			for (let t in $t) $t.hasOwnProperty(t) && e.push($t[t]);
+			for (let t in Xt) Xt.hasOwnProperty(t) && e.push(Xt[t]);
 			return e;
 		}
-		function Zt(e) {
-			jt = e, Mt.length && jt && jt(Nt);
+		function Jt(e) {
+			Ot = e, kt.length && Ot && Ot(At);
 		}
-		function Qt() {
-			t.getInheritedInstanceCount = Yt, t.getLiveInheritedInstances = Xt, t.flushPendingDeletes = Nt, t.setDelayFunction = Zt;
+		function Yt() {
+			t.getInheritedInstanceCount = Kt, t.getLiveInheritedInstances = qt, t.flushPendingDeletes = At, t.setDelayFunction = Jt;
 		}
-		var $t = {};
-		function en(e, t) {
-			for (t === void 0 && U("ptr should not be undefined"); e.baseClass;) t = e.upcast(t), e = e.baseClass;
+		var Xt = {};
+		function Zt(e, t) {
+			for (t === void 0 && W("ptr should not be undefined"); e.baseClass;) t = e.upcast(t), e = e.baseClass;
 			return t;
 		}
-		function tn(e, t) {
-			return t = en(e, t), $t[t];
+		function Qt(e, t) {
+			return t = Zt(e, t), Xt[t];
 		}
-		function nn(e, t) {
-			return (!t.ptrType || !t.ptr) && yt("makeClassHandle requires ptr and ptrType"), !!t.smartPtrType != !!t.smartPtr && yt("Both smartPtrType and smartPtr must be specified"), t.count = { value: 1 }, K(Object.create(e, { $$: { value: t } }));
+		function $t(e, t) {
+			return (!t.ptrType || !t.ptr) && gt("makeClassHandle requires ptr and ptrType"), !!t.smartPtrType != !!t.smartPtr && gt("Both smartPtrType and smartPtr must be specified"), t.count = { value: 1 }, q(Object.create(e, { $$: { value: t } }));
 		}
-		function rn(e) {
+		function en(e) {
 			let t = this.getPointee(e);
 			if (!t) return this.destructor(e), null;
-			let n = tn(this.registeredClass, t);
+			let n = Qt(this.registeredClass, t);
 			if (n !== void 0) {
 				if (n.$$.count.value === 0) return n.$$.ptr = t, n.$$.smartPtr = e, n.clone();
 				let r = n.clone();
 				return this.destructor(e), r;
 			}
 			function r() {
-				return this.isSmartPointer ? nn(this.registeredClass.instancePrototype, {
+				return this.isSmartPointer ? $t(this.registeredClass.instancePrototype, {
 					ptrType: this.pointeeType,
 					ptr: t,
 					smartPtrType: this,
 					smartPtr: e
-				}) : nn(this.registeredClass.instancePrototype, {
+				}) : $t(this.registeredClass.instancePrototype, {
 					ptrType: this,
 					ptr: e
 				});
 			}
-			let i = It[this.registeredClass.getActualType(t)];
+			let i = Nt[this.registeredClass.getActualType(t)];
 			if (!i) return r.call(this);
 			let a;
 			a = this.isConst ? i.constPointerType : i.pointerType;
-			let o = Jt(t, this.registeredClass, a.registeredClass);
-			return o === null ? r.call(this) : this.isSmartPointer ? nn(a.registeredClass.instancePrototype, {
+			let o = Gt(t, this.registeredClass, a.registeredClass);
+			return o === null ? r.call(this) : this.isSmartPointer ? $t(a.registeredClass.instancePrototype, {
 				ptrType: a,
 				ptr: o,
 				smartPtrType: this,
 				smartPtr: e
-			}) : nn(a.registeredClass.instancePrototype, {
+			}) : $t(a.registeredClass.instancePrototype, {
 				ptrType: a,
 				ptr: o
 			});
 		}
-		function an() {
-			J.prototype.getPointee = Gt, J.prototype.destructor = Kt, J.prototype.argPackAdvance = 8, J.prototype.readValueFromPointer = Wt, J.prototype.deleteObject = qt, J.prototype.fromWireType = rn;
+		function tn() {
+			Y.prototype.getPointee = Ht, Y.prototype.destructor = Ut, Y.prototype.argPackAdvance = 8, Y.prototype.readValueFromPointer = Vt, Y.prototype.deleteObject = Wt, Y.prototype.fromWireType = en;
 		}
-		function J(e, t, n, r, i, a, o, s, c, l, u) {
-			this.name = e, this.registeredClass = t, this.isReference = n, this.isConst = r, this.isSmartPointer = i, this.pointeeType = a, this.sharingPolicy = o, this.rawGetPointee = s, this.rawConstructor = c, this.rawShare = l, this.rawDestructor = u, !i && t.baseClass === void 0 ? r ? (this.toWireType = Vt, this.destructorFunction = null) : (this.toWireType = Ut, this.destructorFunction = null) : this.toWireType = Ht;
+		function Y(e, t, n, r, i, a, o, s, c, l, u) {
+			this.name = e, this.registeredClass = t, this.isReference = n, this.isConst = r, this.isSmartPointer = i, this.pointeeType = a, this.sharingPolicy = o, this.rawGetPointee = s, this.rawConstructor = c, this.rawShare = l, this.rawDestructor = u, !i && t.baseClass === void 0 ? r ? (this.toWireType = Rt, this.destructorFunction = null) : (this.toWireType = Bt, this.destructorFunction = null) : this.toWireType = zt;
 		}
-		function on(e, n, r) {
-			t.hasOwnProperty(e) || yt("Replacing nonexistant public symbol"), t[e].overloadTable !== void 0 && r !== void 0 ? t[e].overloadTable[r] = n : (t[e] = n, t[e].argCount = r);
+		function nn(e, n, r) {
+			t.hasOwnProperty(e) || gt("Replacing nonexistant public symbol"), t[e].overloadTable !== void 0 && r !== void 0 ? t[e].overloadTable[r] = n : (t[e] = n, t[e].argCount = r);
 		}
-		function Y(e, n) {
-			e = z(e);
+		function X(e, n) {
+			e = B(e);
 			function r(t) {
 				let r = [];
 				for (let t = 1; t < e.length; ++t) r.push(`a${t}`);
@@ -923,101 +922,101 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 			else if (typeof FUNCTION_TABLE < "u") i = FUNCTION_TABLE[n];
 			else {
 				let n = t[`dynCall_${e}`];
-				n === void 0 && (n = t[`dynCall_${e.replace(/f/g, "d")}`], n === void 0 && U(`No dynCall invoker for signature: ${e}`)), i = r(n);
+				n === void 0 && (n = t[`dynCall_${e.replace(/f/g, "d")}`], n === void 0 && W(`No dynCall invoker for signature: ${e}`)), i = r(n);
 			}
-			return typeof i != "function" && U(`unknown function pointer with signature ${e}: ${n}`), i;
+			return typeof i != "function" && W(`unknown function pointer with signature ${e}: ${n}`), i;
 		}
-		let sn;
-		function cn(e) {
-			let t = lr(e), n = z(t);
-			return Q(t), n;
+		let rn;
+		function an(e) {
+			let t = or(e), n = B(t);
+			return $(t), n;
 		}
-		function ln(e, t) {
+		function on(e, t) {
 			let n = [], r = {};
 			function i(e) {
-				if (!r[e] && !V[e]) {
-					if (mt[e]) {
-						mt[e].forEach(i);
+				if (!r[e] && !H[e]) {
+					if (dt[e]) {
+						dt[e].forEach(i);
 						return;
 					}
 					n.push(e), r[e] = !0;
 				}
 			}
-			throw t.forEach(i), new sn(`${e}: ${n.map(cn).join([", "])}`);
+			throw t.forEach(i), new rn(`${e}: ${n.map(an).join([", "])}`);
 		}
-		function un(e, t, n, r, i, a, o, s, c, l, u, d, f) {
-			u = z(u), a = Y(i, a), s && (s = Y(o, s)), l && (l = Y(c, l)), f = Y(d, f);
-			let p = ht(u);
-			Rt(p, () => {
-				ln(`Cannot construct ${u} due to unbound types`, [r]);
-			}), W([
+		function sn(e, t, n, r, i, a, o, s, c, l, u, d, f) {
+			u = B(u), a = X(i, a), s && (s = X(o, s)), l && (l = X(c, l)), f = X(d, f);
+			let p = ft(u);
+			Ft(p, () => {
+				on(`Cannot construct ${u} due to unbound types`, [r]);
+			}), G([
 				e,
 				t,
 				n
 			], r ? [r] : [], (t) => {
 				t = t[0];
 				let n, i;
-				r ? (n = t.registeredClass, i = n.instancePrototype) : i = q.prototype;
-				let o = gt(p, function() {
-					if (Object.getPrototypeOf(this) !== c) throw new H(`Use 'new' to construct ${u}`);
-					if (d.constructor_body === void 0) throw new H(`${u} has no accessible constructor`);
+				r ? (n = t.registeredClass, i = n.instancePrototype) : i = J.prototype;
+				let o = pt(p, function() {
+					if (Object.getPrototypeOf(this) !== c) throw new U(`Use 'new' to construct ${u}`);
+					if (d.constructor_body === void 0) throw new U(`${u} has no accessible constructor`);
 					let e = d.constructor_body[arguments.length];
-					if (e === void 0) throw new H(`Tried to invoke ctor of ${u} with invalid number of parameters (${arguments.length}) - expected (${Object.keys(d.constructor_body).toString()}) parameters instead!`);
+					if (e === void 0) throw new U(`Tried to invoke ctor of ${u} with invalid number of parameters (${arguments.length}) - expected (${Object.keys(d.constructor_body).toString()}) parameters instead!`);
 					return e.apply(this, arguments);
 				});
 				var c = Object.create(i, { constructor: { value: o } });
 				o.prototype = c;
-				var d = new zt(u, o, c, f, n, a, s, l);
-				let m = new J(u, d, !0, !1, !1), h = new J(`${u}*`, d, !1, !1, !1), g = new J(`${u} const*`, d, !1, !0, !1);
-				return It[e] = {
+				var d = new It(u, o, c, f, n, a, s, l);
+				let m = new Y(u, d, !0, !1, !1), h = new Y(`${u}*`, d, !1, !1, !1), g = new Y(`${u} const*`, d, !1, !0, !1);
+				return Nt[e] = {
 					pointerType: h,
 					constPointerType: g
-				}, on(p, o), [
+				}, nn(p, o), [
 					m,
 					h,
 					g
 				];
 			});
 		}
-		function dn(e, t) {
+		function cn(e, t) {
 			let n = [];
-			for (let r = 0; r < e; r++) n.push(E[(t >> 2) + r]);
+			for (let r = 0; r < e; r++) n.push(T[(t >> 2) + r]);
 			return n;
 		}
-		function fn(e) {
+		function ln(e) {
 			for (; e.length;) {
 				let t = e.pop();
 				e.pop()(t);
 			}
 		}
-		function pn(e, t, n, r, i, a) {
-			let o = dn(t, n);
-			i = Y(r, i), W([], [e], (e) => {
+		function un(e, t, n, r, i, a) {
+			let o = cn(t, n);
+			i = X(r, i), G([], [e], (e) => {
 				e = e[0];
 				let n = `constructor ${e.name}`;
-				if (e.registeredClass.constructor_body === void 0 && (e.registeredClass.constructor_body = []), e.registeredClass.constructor_body[t - 1] !== void 0) throw new H(`Cannot register multiple constructors with identical number of parameters (${t - 1}) for class '${e.name}'! Overload resolution is currently only performed using the parameter count, not actual type info!`);
+				if (e.registeredClass.constructor_body === void 0 && (e.registeredClass.constructor_body = []), e.registeredClass.constructor_body[t - 1] !== void 0) throw new U(`Cannot register multiple constructors with identical number of parameters (${t - 1}) for class '${e.name}'! Overload resolution is currently only performed using the parameter count, not actual type info!`);
 				return e.registeredClass.constructor_body[t - 1] = function() {
-					ln(`Cannot construct ${e.name} due to unbound types`, o);
-				}, W([], o, (r) => (e.registeredClass.constructor_body[t - 1] = function() {
-					arguments.length !== t - 1 && U(`${n} called with ${arguments.length} arguments, expected ${t - 1}`);
+					on(`Cannot construct ${e.name} due to unbound types`, o);
+				}, G([], o, (r) => (e.registeredClass.constructor_body[t - 1] = function() {
+					arguments.length !== t - 1 && W(`${n} called with ${arguments.length} arguments, expected ${t - 1}`);
 					let e = [], o = Array(t);
 					o[0] = a;
 					for (let n = 1; n < t; ++n) o[n] = r[n].toWireType(e, arguments[n - 1]);
 					let s = i.apply(null, o);
-					return fn(e), r[0].fromWireType(s);
+					return ln(e), r[0].fromWireType(s);
 				}, [])), [];
 			});
 		}
-		function mn(e, t) {
+		function dn(e, t) {
 			if (!(e instanceof Function)) throw TypeError(`new_ called with constructor type ${typeof e} which is not a function`);
-			let n = gt(e.name || "unknownFunctionName", () => {});
+			let n = pt(e.name || "unknownFunctionName", () => {});
 			n.prototype = e.prototype;
 			let r = new n(), i = e.apply(r, t);
 			return i instanceof Object ? i : r;
 		}
-		function hn(e, t, n, r, i) {
+		function fn(e, t, n, r, i) {
 			let a = t.length;
-			a < 2 && U("argTypes array size mismatch! Must at least get return value and 'this' types!");
+			a < 2 && W("argTypes array size mismatch! Must at least get return value and 'this' types!");
 			let o = t[1] !== null && n !== null, s = !1;
 			for (var c = 1; c < t.length; ++c) if (t[c] !== null && t[c].destructorFunction === void 0) {
 				s = !0;
@@ -1025,7 +1024,7 @@ ${n.replace(/^Error(:[^\n]*)?\n/, "")}`);
 			}
 			let l = t[0].name !== "void", u = "", d = "";
 			for (var c = 0; c < a - 2; ++c) u += `${c === 0 ? "" : ", "}arg${c}`, d += `${c === 0 ? "" : ", "}arg${c}Wired`;
-			let f = `return function ${ht(e)}(${u}) {
+			let f = `return function ${ft(e)}(${u}) {
 if (arguments.length !== ${a - 2}) {
 throwBindingError('function ${e} called with ' + arguments.length + ' arguments, expected ${a - 2} args!');
 }
@@ -1039,10 +1038,10 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 				"retType",
 				"classParam"
 			], h = [
-				U,
+				W,
 				r,
 				i,
-				fn,
+				ln,
 				t[0],
 				t[1]
 			];
@@ -1057,140 +1056,140 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 				t[c].destructorFunction !== null && (f += `${e}_dtor(${e}); // ${t[c].name}
 `, m.push(`${e}_dtor`), h.push(t[c].destructorFunction));
 			}
-			return l && (f += "var ret = retType.fromWireType(rv);\nreturn ret;\n"), f += "}\n", m.push(f), mn(Function, m).apply(null, h);
+			return l && (f += "var ret = retType.fromWireType(rv);\nreturn ret;\n"), f += "}\n", m.push(f), dn(Function, m).apply(null, h);
 		}
-		function gn(e, t, n, r, i, a, o, s) {
-			let c = dn(n, r);
-			t = z(t), a = Y(i, a), W([], [e], (e) => {
+		function pn(e, t, n, r, i, a, o, s) {
+			let c = cn(n, r);
+			t = B(t), a = X(i, a), G([], [e], (e) => {
 				e = e[0];
 				let r = `${e.name}.${t}`;
 				s && e.registeredClass.pureVirtualFunctions.push(t);
 				function i() {
-					ln(`Cannot call ${r} due to unbound types`, c);
+					on(`Cannot call ${r} due to unbound types`, c);
 				}
 				let l = e.registeredClass.instancePrototype, u = l[t];
-				return u === void 0 || u.overloadTable === void 0 && u.className !== e.name && u.argCount === n - 2 ? (i.argCount = n - 2, i.className = e.name, l[t] = i) : (Lt(l, t, r), l[t].overloadTable[n - 2] = i), W([], c, (i) => {
-					let s = hn(r, i, e, a, o);
+				return u === void 0 || u.overloadTable === void 0 && u.className !== e.name && u.argCount === n - 2 ? (i.argCount = n - 2, i.className = e.name, l[t] = i) : (Pt(l, t, r), l[t].overloadTable[n - 2] = i), G([], c, (i) => {
+					let s = fn(r, i, e, a, o);
 					return l[t].overloadTable === void 0 ? (s.argCount = n - 2, l[t] = s) : l[t].overloadTable[n - 2] = s, [];
 				}), [];
 			});
 		}
-		let _n = [], X = [
+		let mn = [], Z = [
 			{},
 			{ value: void 0 },
 			{ value: null },
 			{ value: !0 },
 			{ value: !1 }
 		];
-		function vn(e) {
-			e > 4 && --X[e].refcount === 0 && (X[e] = void 0, _n.push(e));
+		function hn(e) {
+			e > 4 && --Z[e].refcount === 0 && (Z[e] = void 0, mn.push(e));
 		}
-		function yn() {
+		function gn() {
 			let e = 0;
-			for (let t = 5; t < X.length; ++t) X[t] !== void 0 && ++e;
+			for (let t = 5; t < Z.length; ++t) Z[t] !== void 0 && ++e;
 			return e;
 		}
-		function bn() {
-			for (let e = 5; e < X.length; ++e) if (X[e] !== void 0) return X[e];
+		function _n() {
+			for (let e = 5; e < Z.length; ++e) if (Z[e] !== void 0) return Z[e];
 			return null;
 		}
-		function xn() {
-			t.count_emval_handles = yn, t.get_first_emval = bn;
+		function vn() {
+			t.count_emval_handles = gn, t.get_first_emval = _n;
 		}
-		function Sn(e) {
+		function yn(e) {
 			switch (e) {
 				case void 0: return 1;
 				case null: return 2;
 				case !0: return 3;
 				case !1: return 4;
 				default: {
-					let t = _n.length ? _n.pop() : X.length;
-					return X[t] = {
+					let t = mn.length ? mn.pop() : Z.length;
+					return Z[t] = {
 						refcount: 1,
 						value: e
 					}, t;
 				}
 			}
 		}
-		function Cn(e, t) {
-			t = z(t), G(e, {
+		function bn(e, t) {
+			t = B(t), K(e, {
 				name: t,
 				fromWireType(e) {
-					let t = X[e].value;
-					return vn(e), t;
+					let t = Z[e].value;
+					return hn(e), t;
 				},
 				toWireType(e, t) {
-					return Sn(t);
+					return yn(t);
 				},
 				argPackAdvance: 8,
-				readValueFromPointer: Wt,
+				readValueFromPointer: Vt,
 				destructorFunction: null
 			});
 		}
-		function Z(e) {
+		function Q(e) {
 			if (e === null) return "null";
 			let t = typeof e;
 			return t === "object" || t === "array" || t === "function" ? e.toString() : `${e}`;
 		}
-		function wn(e, t) {
+		function xn(e, t) {
 			switch (t) {
 				case 2: return function(e) {
-					return this.fromWireType(ve[e >> 2]);
+					return this.fromWireType(ye[e >> 2]);
 				};
 				case 3: return function(e) {
-					return this.fromWireType(ye[e >> 3]);
+					return this.fromWireType(be[e >> 3]);
 				};
 				default: throw TypeError(`Unknown float type: ${e}`);
 			}
 		}
-		function Tn(e, t, n) {
-			let r = dt(n);
-			t = z(t), G(e, {
+		function Sn(e, t, n) {
+			let r = ct(n);
+			t = B(t), K(e, {
 				name: t,
 				fromWireType(e) {
 					return e;
 				},
 				toWireType(e, t) {
-					if (typeof t != "number" && typeof t != "boolean") throw TypeError(`Cannot convert "${Z(t)}" to ${this.name}`);
+					if (typeof t != "number" && typeof t != "boolean") throw TypeError(`Cannot convert "${Q(t)}" to ${this.name}`);
 					return t;
 				},
 				argPackAdvance: 8,
-				readValueFromPointer: wn(t, r),
+				readValueFromPointer: xn(t, r),
 				destructorFunction: null
 			});
 		}
-		function En(e, t, n, r, i, a) {
-			let o = dn(t, n);
-			e = z(e), i = Y(r, i), Rt(e, () => {
-				ln(`Cannot call ${e} due to unbound types`, o);
-			}, t - 1), W([], o, (n) => {
+		function Cn(e, t, n, r, i, a) {
+			let o = cn(t, n);
+			e = B(e), i = X(r, i), Ft(e, () => {
+				on(`Cannot call ${e} due to unbound types`, o);
+			}, t - 1), G([], o, (n) => {
 				let r = [n[0], null].concat(n.slice(1));
-				return on(e, hn(e, r, null, i, a), t - 1), [];
+				return nn(e, fn(e, r, null, i, a), t - 1), [];
 			});
 		}
-		function Dn(e, t, n) {
+		function wn(e, t, n) {
 			switch (t) {
 				case 0: return n ? function(e) {
-					return w[e];
+					return C[e];
 				} : function(e) {
-					return T[e];
+					return w[e];
 				};
 				case 1: return n ? function(e) {
-					return ge[e >> 1];
-				} : function(e) {
 					return _e[e >> 1];
+				} : function(e) {
+					return ve[e >> 1];
 				};
 				case 2: return n ? function(e) {
-					return E[e >> 2];
+					return T[e >> 2];
 				} : function(e) {
-					return D[e >> 2];
+					return E[e >> 2];
 				};
 				default: throw TypeError(`Unknown integer type: ${e}`);
 			}
 		}
-		function On(e, t, n, r, i) {
-			t = z(t), i === -1 && (i = 4294967295);
-			let a = dt(n), o = function(e) {
+		function Tn(e, t, n, r, i) {
+			t = B(t), i === -1 && (i = 4294967295);
+			let a = ct(n), o = function(e) {
 				return e;
 			};
 			if (r === 0) {
@@ -1200,20 +1199,20 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 				};
 			}
 			let s = t.indexOf("unsigned") != -1;
-			G(e, {
+			K(e, {
 				name: t,
 				fromWireType: o,
 				toWireType(e, n) {
-					if (typeof n != "number" && typeof n != "boolean") throw TypeError(`Cannot convert "${Z(n)}" to ${this.name}`);
-					if (n < r || n > i) throw TypeError(`Passing a number "${Z(n)}" from JS side to C/C++ side to an argument of type "${t}", which is outside the valid range [${r}, ${i}]!`);
+					if (typeof n != "number" && typeof n != "boolean") throw TypeError(`Cannot convert "${Q(n)}" to ${this.name}`);
+					if (n < r || n > i) throw TypeError(`Passing a number "${Q(n)}" from JS side to C/C++ side to an argument of type "${t}", which is outside the valid range [${r}, ${i}]!`);
 					return s ? n >>> 0 : n | 0;
 				},
 				argPackAdvance: 8,
-				readValueFromPointer: Dn(t, a, r !== 0),
+				readValueFromPointer: wn(t, a, r !== 0),
 				destructorFunction: null
 			});
 		}
-		function kn(e, t, n) {
+		function En(e, t, n) {
 			let r = [
 				Int8Array,
 				Uint8Array,
@@ -1226,96 +1225,96 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 			][t];
 			function i(e) {
 				e >>= 2;
-				let t = D, n = t[e], i = t[e + 1];
+				let t = E, n = t[e], i = t[e + 1];
 				return new r(t.buffer, i, n);
 			}
-			n = z(n), G(e, {
+			n = B(n), K(e, {
 				name: n,
 				fromWireType: i,
 				argPackAdvance: 8,
 				readValueFromPointer: i
 			}, { ignoreDuplicateRegistrations: !0 });
 		}
-		function An(e, t) {
-			t = z(t);
+		function Dn(e, t) {
+			t = B(t);
 			let n = t === "std::string";
-			G(e, {
+			K(e, {
 				name: t,
 				fromWireType(e) {
-					let t = D[e >> 2], r;
+					let t = E[e >> 2], r;
 					if (n) {
-						let n = T[e + 4 + t], a = 0;
-						n != 0 && (a = n, T[e + 4 + t] = 0);
+						let n = w[e + 4 + t], a = 0;
+						n != 0 && (a = n, w[e + 4 + t] = 0);
 						let o = e + 4;
 						for (var i = 0; i <= t; ++i) {
 							let t = e + 4 + i;
-							if (T[t] == 0) {
-								let e = S(o);
+							if (w[t] == 0) {
+								let e = x(o);
 								r === void 0 ? r = e : (r += "\0", r += e), o = t + 1;
 							}
 						}
-						a != 0 && (T[e + 4 + t] = a);
+						a != 0 && (w[e + 4 + t] = a);
 					} else {
 						let n = Array(t);
-						for (var i = 0; i < t; ++i) n[i] = String.fromCharCode(T[e + 4 + i]);
+						for (var i = 0; i < t; ++i) n[i] = String.fromCharCode(w[e + 4 + i]);
 						r = n.join("");
 					}
-					return Q(e), r;
+					return $(e), r;
 				},
 				toWireType(e, t) {
 					Object.prototype.toString.call(t) === "[object ArrayBuffer]" && (t = new Uint8Array(t));
 					let r, i = typeof t == "string";
-					i || t instanceof Uint8Array || t instanceof Uint8ClampedArray || t instanceof Int8Array || U("Cannot pass non-string to std::string"), r = n && i ? function() {
-						return fe(t);
+					i || t instanceof Uint8Array || t instanceof Uint8ClampedArray || t instanceof Int8Array || W("Cannot pass non-string to std::string"), r = n && i ? function() {
+						return pe(t);
 					} : function() {
 						return t.length;
 					};
-					let a = r(), o = ur(4 + a + 1);
-					if (D[o >> 2] = a, n && i) de(t, o + 4, a + 1);
+					let a = r(), o = sr(4 + a + 1);
+					if (E[o >> 2] = a, n && i) fe(t, o + 4, a + 1);
 					else if (i) for (var s = 0; s < a; ++s) {
 						let e = t.charCodeAt(s);
-						e > 255 && (Q(o), U("String has UTF-16 code units that do not fit in 8 bits")), T[o + 4 + s] = e;
+						e > 255 && ($(o), W("String has UTF-16 code units that do not fit in 8 bits")), w[o + 4 + s] = e;
 					}
-					else for (var s = 0; s < a; ++s) T[o + 4 + s] = t[s];
-					return e !== null && e.push(Q, o), o;
+					else for (var s = 0; s < a; ++s) w[o + 4 + s] = t[s];
+					return e !== null && e.push($, o), o;
 				},
 				argPackAdvance: 8,
-				readValueFromPointer: Wt,
+				readValueFromPointer: Vt,
 				destructorFunction(e) {
-					Q(e);
+					$(e);
 				}
 			});
 		}
-		function jn(e, t, n) {
-			n = z(n);
+		function On(e, t, n) {
+			n = B(n);
 			let r, i;
 			t === 2 ? (r = function() {
-				return _e;
+				return ve;
 			}, i = 1) : t === 4 && (r = function() {
-				return D;
-			}, i = 2), G(e, {
+				return E;
+			}, i = 2), K(e, {
 				name: n,
 				fromWireType(e) {
-					let t = r(), n = D[e >> 2], a = Array(n), o = e + 4 >> i;
+					let t = r(), n = E[e >> 2], a = Array(n), o = e + 4 >> i;
 					for (let e = 0; e < n; ++e) a[e] = String.fromCharCode(t[o + e]);
-					return Q(e), a.join("");
+					return $(e), a.join("");
 				},
 				toWireType(e, n) {
-					let a = n.length, o = ur(4 + a * t), s = r();
-					D[o >> 2] = a;
+					let a = n.length, o = sr(4 + a * t), s = r();
+					E[o >> 2] = a;
 					let c = o + 4 >> i;
 					for (let e = 0; e < a; ++e) s[c + e] = n.charCodeAt(e);
-					return e !== null && e.push(Q, o), o;
+					return e !== null && e.push($, o), o;
 				},
 				argPackAdvance: 8,
-				readValueFromPointer: Wt,
+				readValueFromPointer: Vt,
 				destructorFunction(e) {
-					Q(e);
+					$(e);
 				}
 			});
 		}
-		function Mn(e, t) {
-			t = z(t), G(e, {
+		function kn(e, t) {
+			t = B(t), K(e, {
 				isVoid: !0,
 				name: t,
 				argPackAdvance: 0,
@@ -1323,215 +1322,215 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 				toWireType(e, t) {}
 			});
 		}
-		function Nn(e) {
-			e > 4 && (X[e].refcount += 1);
+		function An(e) {
+			e > 4 && (Z[e].refcount += 1);
 		}
-		function Pn(e, t) {
-			let n = V[e];
-			return n === void 0 && U(`${t} has unknown type ${cn(e)}`), n;
+		function jn(e, t) {
+			let n = H[e];
+			return n === void 0 && W(`${t} has unknown type ${an(e)}`), n;
 		}
-		function Fn(e, t) {
-			return e = Pn(e, "_emval_take_value"), Sn(e.readValueFromPointer(t));
+		function Mn(e, t) {
+			return e = jn(e, "_emval_take_value"), yn(e.readValueFromPointer(t));
 		}
-		function In() {
+		function Nn() {
 			F();
 		}
-		function Ln() {
-			return w.length;
+		function Pn() {
+			return C.length;
 		}
-		function Rn(e) {
+		function Fn(e) {
 			try {
-				return b.grow(e - C.byteLength + 65535 >> 16), be(b.buffer), 1;
+				return y.grow(e - S.byteLength + 65535 >> 16), xe(y.buffer), 1;
 			} catch (t) {
-				console.error(`emscripten_realloc_buffer: Attempted to grow heap from ${C.byteLength} bytes to ${e} bytes, but got error: ${t}`);
+				console.error(`emscripten_realloc_buffer: Attempted to grow heap from ${S.byteLength} bytes to ${e} bytes, but got error: ${t}`);
 			}
 		}
-		function zn(e) {
-			let t = Ln();
-			x(e > t);
+		function In(e) {
+			let t = Pn();
+			b(e > t);
 			let n = 65536, r = 2147483648 - n;
 			if (e > r) return _(`Cannot enlarge memory, asked to go up to ${e} bytes, but the limit is ${r} bytes!`), !1;
 			let i = Math.max(t, 16777216);
-			for (; i < e;) i = i <= 536870912 ? he(2 * i, n) : Math.min(he((3 * i + 2147483648) / 4, n), r), i === t && v(`Cannot ask for more memory since we reached the practical limit in browsers (which is just below 2GB), so the request would have failed. Requesting only ${w.length}`);
-			return Rn(i) ? !0 : (_(`Failed to grow the heap from ${t} bytes to ${i} bytes, not enough memory!`), !1);
+			for (; i < e;) i = i <= 536870912 ? ge(2 * i, n) : Math.min(ge((3 * i + 2147483648) / 4, n), r), i === t && v(`Cannot ask for more memory since we reached the practical limit in browsers (which is just below 2GB), so the request would have failed. Requesting only ${C.length}`);
+			return Fn(i) ? !0 : (_(`Failed to grow the heap from ${t} bytes to ${i} bytes, not enough memory!`), !1);
 		}
-		function Bn(e) {
-			vr(e);
+		function Ln(e) {
+			gr(e);
 		}
-		function Vn(e) {
+		function Rn(e) {
 			return Math.log(e) / Math.LN2;
 		}
-		function Hn(e) {
-			return Vn(e);
+		function zn(e) {
+			return Rn(e);
 		}
-		function Un() {
+		function Bn() {
 			F("trap!");
 		}
-		function Wn(e, t, n) {
-			T.set(T.subarray(t, t + n), e);
+		function Vn(e, t, n) {
+			w.set(w.subarray(t, t + n), e);
 		}
-		ft(), H = t.BindingError = _t(Error, "BindingError"), vt = t.InternalError = _t(Error, "InternalError"), Ft(), an(), Qt(), sn = t.UnboundTypeError = _t(Error, "UnboundTypeError"), xn();
+		lt(), U = t.BindingError = mt(Error, "BindingError"), ht = t.InternalError = mt(Error, "InternalError"), Mt(), tn(), Yt(), rn = t.UnboundTypeError = mt(Error, "UnboundTypeError"), vn();
+		function Hn(e) {
+			O(e, "i");
+		}
+		function Un(e) {
+			O(e, "ii");
+		}
+		function Wn(e) {
+			O(e, "iidiiii");
+		}
 		function Gn(e) {
-			A(e, "i");
+			O(e, "iii");
 		}
 		function Kn(e) {
-			A(e, "ii");
+			O(e, "iiii");
 		}
 		function qn(e) {
-			A(e, "iidiiii");
+			O(e, "iiiii");
 		}
 		function Jn(e) {
-			A(e, "iii");
+			O(e, "jiji");
 		}
 		function Yn(e) {
-			A(e, "iiii");
+			O(e, "v");
 		}
 		function Xn(e) {
-			A(e, "iiiii");
+			O(e, "vi");
 		}
 		function Zn(e) {
-			A(e, "jiji");
+			O(e, "vii");
 		}
 		function Qn(e) {
-			A(e, "v");
+			O(e, "viii");
 		}
 		function $n(e) {
-			A(e, "vi");
+			O(e, "viiii");
 		}
 		function er(e) {
-			A(e, "vii");
+			O(e, "viiiii");
 		}
 		function tr(e) {
-			A(e, "viii");
+			O(e, "viiiiii");
 		}
-		function nr(e) {
-			A(e, "viiii");
-		}
-		function rr(e) {
-			A(e, "viiiii");
-		}
-		function ir(e) {
-			A(e, "viiiiii");
-		}
-		let ar = {};
-		var or = {
-			___assert_fail: Ze,
-			___cxa_allocate_exception: Qe,
-			___cxa_throw: et,
-			___lock: tt,
-			___unlock: nt,
-			___wasi_fd_close: at,
-			___wasi_fd_seek: st,
-			___wasi_fd_write: ut,
-			__embind_register_bool: bt,
-			__embind_register_class: un,
-			__embind_register_class_constructor: pn,
-			__embind_register_class_function: gn,
-			__embind_register_emval: Cn,
-			__embind_register_float: Tn,
-			__embind_register_function: En,
-			__embind_register_integer: On,
-			__embind_register_memory_view: kn,
-			__embind_register_std_string: An,
-			__embind_register_std_wstring: jn,
-			__embind_register_void: Mn,
-			__emval_decref: vn,
-			__emval_incref: Nn,
-			__emval_take_value: Fn,
+		let nr = {};
+		var rr = {
+			___assert_fail: Ye,
+			___cxa_allocate_exception: Xe,
+			___cxa_throw: Qe,
+			___lock: $e,
+			___unlock: et,
+			___wasi_fd_close: nt,
+			___wasi_fd_seek: it,
+			___wasi_fd_write: st,
+			__embind_register_bool: _t,
+			__embind_register_class: sn,
+			__embind_register_class_constructor: un,
+			__embind_register_class_function: pn,
+			__embind_register_emval: bn,
+			__embind_register_float: Sn,
+			__embind_register_function: Cn,
+			__embind_register_integer: Tn,
+			__embind_register_memory_view: En,
+			__embind_register_std_string: Dn,
+			__embind_register_std_wstring: On,
+			__embind_register_void: kn,
+			__emval_decref: hn,
+			__emval_incref: An,
+			__emval_take_value: Mn,
 			__memory_base: 1024,
 			__table_base: 0,
-			_abort: In,
-			_emscripten_get_heap_size: Ln,
-			_emscripten_memcpy_big: Wn,
-			_emscripten_resize_heap: zn,
-			_exit: Bn,
-			_llvm_log2_f64: Hn,
-			_llvm_trap: Un,
+			_abort: Nn,
+			_emscripten_get_heap_size: Pn,
+			_emscripten_memcpy_big: Vn,
+			_emscripten_resize_heap: In,
+			_exit: Ln,
+			_llvm_log2_f64: zn,
+			_llvm_trap: Bn,
 			abortStackOverflow: Te,
-			memory: b,
-			nullFunc_i: Gn,
-			nullFunc_ii: Kn,
-			nullFunc_iidiiii: qn,
-			nullFunc_iii: Jn,
-			nullFunc_iiii: Yn,
-			nullFunc_iiiii: Xn,
-			nullFunc_jiji: Zn,
-			nullFunc_v: Qn,
-			nullFunc_vi: $n,
-			nullFunc_vii: er,
-			nullFunc_viii: tr,
-			nullFunc_viiii: nr,
-			nullFunc_viiiii: rr,
-			nullFunc_viiiiii: ir,
+			memory: y,
+			nullFunc_i: Hn,
+			nullFunc_ii: Un,
+			nullFunc_iidiiii: Wn,
+			nullFunc_iii: Gn,
+			nullFunc_iiii: Kn,
+			nullFunc_iiiii: qn,
+			nullFunc_jiji: Jn,
+			nullFunc_v: Yn,
+			nullFunc_vi: Xn,
+			nullFunc_vii: Zn,
+			nullFunc_viii: Qn,
+			nullFunc_viiii: $n,
+			nullFunc_viiiii: er,
+			nullFunc_viiiiii: tr,
 			setTempRet0: te,
-			table: re
+			table: ie
 		};
-		let sr = t.asm(ar, or, C);
-		t.asm = sr;
-		var cr = t.__ZSt18uncaught_exceptionv = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.__ZSt18uncaught_exceptionv.apply(null, arguments);
+		let ir = t.asm(nr, rr, S);
+		t.asm = ir;
+		var ar = t.__ZSt18uncaught_exceptionv = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.__ZSt18uncaught_exceptionv.apply(null, arguments);
 		};
 		t.___cxa_demangle = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___cxa_demangle.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___cxa_demangle.apply(null, arguments);
 		}, t.___embind_register_native_and_builtin_types = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___embind_register_native_and_builtin_types.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___embind_register_native_and_builtin_types.apply(null, arguments);
 		};
-		var lr = t.___getTypeName = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___getTypeName.apply(null, arguments);
+		var or = t.___getTypeName = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.___getTypeName.apply(null, arguments);
 		};
 		t._fflush = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._fflush.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._fflush.apply(null, arguments);
 		};
-		var Q = t._free = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._free.apply(null, arguments);
-		}, ur = t._malloc = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._malloc.apply(null, arguments);
+		var $ = t._free = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._free.apply(null, arguments);
+		}, sr = t._malloc = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm._malloc.apply(null, arguments);
 		};
 		t.establishStackSpace = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.establishStackSpace.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.establishStackSpace.apply(null, arguments);
 		};
-		var dr = t.globalCtors = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.globalCtors.apply(null, arguments);
-		}, fr = t.stackAlloc = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackAlloc.apply(null, arguments);
-		}, pr = t.stackRestore = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackRestore.apply(null, arguments);
-		}, mr = t.stackSave = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackSave.apply(null, arguments);
+		var cr = t.globalCtors = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.globalCtors.apply(null, arguments);
+		}, lr = t.stackAlloc = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackAlloc.apply(null, arguments);
+		}, ur = t.stackRestore = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackRestore.apply(null, arguments);
+		}, dr = t.stackSave = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.stackSave.apply(null, arguments);
 		};
 		t.dynCall_i = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_i.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_i.apply(null, arguments);
 		}, t.dynCall_ii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_ii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_ii.apply(null, arguments);
 		}, t.dynCall_iidiiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iidiiii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iidiiii.apply(null, arguments);
 		}, t.dynCall_iii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iii.apply(null, arguments);
 		}, t.dynCall_iiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iiii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iiii.apply(null, arguments);
 		}, t.dynCall_iiiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iiiii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_iiiii.apply(null, arguments);
 		}, t.dynCall_jiji = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_jiji.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_jiji.apply(null, arguments);
 		}, t.dynCall_v = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_v.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_v.apply(null, arguments);
 		}, t.dynCall_vi = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_vi.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_vi.apply(null, arguments);
 		}, t.dynCall_vii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_vii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_vii.apply(null, arguments);
 		}, t.dynCall_viii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viii.apply(null, arguments);
 		}, t.dynCall_viiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiii.apply(null, arguments);
 		}, t.dynCall_viiiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiiii.apply(null, arguments);
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiiii.apply(null, arguments);
 		}, t.dynCall_viiiiii = function() {
-			return x(j, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), x(!M, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiiiii.apply(null, arguments);
-		}, t.asm = sr, Object.getOwnPropertyDescriptor(t, "intArrayFromString") || (t.intArrayFromString = function() {
+			return b(k, "you need to wait for the runtime to be ready (e.g. wait for main() to be called)"), b(!A, "the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)"), t.asm.dynCall_viiiiii.apply(null, arguments);
+		}, t.asm = ir, Object.getOwnPropertyDescriptor(t, "intArrayFromString") || (t.intArrayFromString = function() {
 			F("'intArrayFromString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
 		}), Object.getOwnPropertyDescriptor(t, "intArrayToString") || (t.intArrayToString = function() {
 			F("'intArrayToString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
-		}), t.ccall = oe, t.cwrap = se, Object.getOwnPropertyDescriptor(t, "setValue") || (t.setValue = function() {
+		}), t.ccall = se, t.cwrap = ce, Object.getOwnPropertyDescriptor(t, "setValue") || (t.setValue = function() {
 			F("'setValue' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
 		}), Object.getOwnPropertyDescriptor(t, "getValue") || (t.getValue = function() {
 			F("'getValue' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
@@ -1549,7 +1548,7 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 			F("'UTF8ToString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
 		}), Object.getOwnPropertyDescriptor(t, "stringToUTF8Array") || (t.stringToUTF8Array = function() {
 			F("'stringToUTF8Array' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
-		}), t.stringToUTF8 = de, Object.getOwnPropertyDescriptor(t, "lengthBytesUTF8") || (t.lengthBytesUTF8 = function() {
+		}), t.stringToUTF8 = fe, Object.getOwnPropertyDescriptor(t, "lengthBytesUTF8") || (t.lengthBytesUTF8 = function() {
 			F("'lengthBytesUTF8' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
 		}), Object.getOwnPropertyDescriptor(t, "UTF16ToString") || (t.UTF16ToString = function() {
 			F("'UTF16ToString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
@@ -1661,7 +1660,7 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 			F("'Pointer_stringify' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
 		}), Object.getOwnPropertyDescriptor(t, "warnOnce") || (t.warnOnce = function() {
 			F("'warnOnce' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
-		}), t.writeStackCookie = we, t.checkStackCookie = k, t.abortStackOverflow = Te, Object.getOwnPropertyDescriptor(t, "ALLOC_NORMAL") || Object.defineProperty(t, "ALLOC_NORMAL", {
+		}), t.writeStackCookie = we, t.checkStackCookie = D, t.abortStackOverflow = Te, Object.getOwnPropertyDescriptor(t, "ALLOC_NORMAL") || Object.defineProperty(t, "ALLOC_NORMAL", {
 			configurable: !0,
 			get() {
 				F("'ALLOC_NORMAL' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)");
@@ -1687,9 +1686,9 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 				F("'calledRun' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ). Alternatively, forcing filesystem support (-s FORCE_FILESYSTEM=1) can export this for you");
 			}
 		});
-		let $;
+		let fr;
 		t.then = function(e) {
-			if ($) e(t);
+			if (fr) e(t);
 			else {
 				let n = t.onRuntimeInitialized;
 				t.onRuntimeInitialized = function() {
@@ -1698,40 +1697,40 @@ throwBindingError('function ${e} called with ' + arguments.length + ' arguments,
 			}
 			return t;
 		};
-		function hr(e) {
+		function pr(e) {
 			this.name = "ExitStatus", this.message = `Program terminated with exit(${e})`, this.status = e;
 		}
-		Re = function e() {
-			$ || gr(), $ || (Re = e);
+		N = function e() {
+			fr || mr(), fr || (N = e);
 		};
-		function gr(e) {
-			if (e = e || a, N > 0 || (we(), je(), N > 0)) return;
+		function mr(e) {
+			if (e = e || a, j > 0 || (we(), je(), j > 0)) return;
 			function n() {
-				$ || ($ = !0, !ie && (Me(), Ne(), t.onRuntimeInitialized && t.onRuntimeInitialized(), x(!t._main, "compiled without a main, but one is present. if you added it from JS, use Module[\"onRuntimeInitialized\"]"), Fe()));
+				fr || (fr = !0, !ae && (Me(), Ne(), t.onRuntimeInitialized && t.onRuntimeInitialized(), b(!t._main, "compiled without a main, but one is present. if you added it from JS, use Module[\"onRuntimeInitialized\"]"), Fe()));
 			}
 			t.setStatus ? (t.setStatus("Running..."), setTimeout(() => {
 				setTimeout(() => {
 					t.setStatus("");
 				}, 1), n();
-			}, 1)) : n(), k();
+			}, 1)) : n(), D();
 		}
-		t.run = gr;
-		function _r() {
+		t.run = mr;
+		function hr() {
 			let e = g, t = _, n = !1;
 			g = _ = function(e) {
 				n = !0;
 			};
 			try {
-				let e = ct;
+				let e = at;
 				e && e(0);
 			} catch (e) {}
 			g = e, _ = t, n && (v("stdio streams had content in them that was not flushed. you should set EXIT_RUNTIME to 1 (see the FAQ), or make sure to emit a newline when you printf etc."), v("(this may also be due to not including full filesystem support - try building with -s FORCE_FILESYSTEM=1)"));
 		}
-		function vr(e, n) {
-			_r(), !(n && ne && e === 0) && (ne ? n || _(`program exited (with status: ${e}), but EXIT_RUNTIME is not set, so halting execution but not exiting the runtime or preventing further async execution (build with EXIT_RUNTIME=1, if you want a true shutdown)`) : (ie = !0, Pe(), t.onExit && t.onExit(e)), o(e, new hr(e)));
+		function gr(e, n) {
+			hr(), !(n && re && e === 0) && (re ? n || _(`program exited (with status: ${e}), but EXIT_RUNTIME is not set, so halting execution but not exiting the runtime or preventing further async execution (build with EXIT_RUNTIME=1, if you want a true shutdown)`) : (ae = !0, Pe(), t.onExit && t.onExit(e)), o(e, new pr(e)));
 		}
 		if (t.preInit) for (typeof t.preInit == "function" && (t.preInit = [t.preInit]); t.preInit.length > 0;) t.preInit.pop()();
-		return ne = !0, gr(), t;
+		return re = !0, mr(), t;
 	};
 }(), a = null;
 function o(e) {

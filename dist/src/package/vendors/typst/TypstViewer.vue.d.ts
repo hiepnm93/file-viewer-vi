@@ -1,4 +1,4 @@
-import { FileRenderExportAdapter } from '../../common/type';
+import { FileRenderExportAdapter } from '../../../../package/common/type';
 declare global {
     interface Window {
         __FLYFISH_TYPST_COMPILER_WASM_URL__?: string;

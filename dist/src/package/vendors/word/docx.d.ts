@@ -1,4 +1,4 @@
-import { AppWrapper, FileRenderContext } from '../../common/type';
+import { AppWrapper, FileRenderContext } from '../../../../package/common/type';
 /**
  * 渲染docx文件
  */
