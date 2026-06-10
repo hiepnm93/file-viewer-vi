@@ -75,7 +75,7 @@ titleTemplate: false
 <article>
 <span>04</span>
 <h3>独立比对不污染主入口</h3>
-<p><code>/compare.html</code> 提供左右并排预览、示例选择、URL、本地上传、交换和同步滚动，适合合同、报告、PPT 和导出物的视觉核对。</p>
+<p><code>/compare.html</code> 提供左右并排预览、示例选择、URL、本地上传、交换、同步滚动、搜索高亮、行级定位和 PDF 工具栏隐藏，适合合同、报告、PPT 和导出物的视觉核对。</p>
 </article>
 </div>
 </div>

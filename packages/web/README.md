@@ -21,6 +21,8 @@ mountViewerFrame(document.getElementById('viewer')!, {
   options: {
     theme: 'light',
     toolbar: { position: 'bottom-right' },
+    search: { maxMatches: 1000 },
+    pdf: { toolbar: true },
     watermark: { text: '内部预览', opacity: 0.14 },
     archive: { workerUrl: '/file-viewer/vendor/libarchive/worker-bundle.js', cache: true }
   }
@@ -64,4 +66,4 @@ mountViewerFrame(el, {
 ></iframe>
 ```
 
-`options` 会透传给 Vue 基线预览器，可配置主题、下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。`theme` 支持 `light`、`dark`、`system`，默认跟随系统；固定浅色宿主 UI 建议传 `theme: 'light'`。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏。打印按钮会按当前格式和渲染链路动态显隐；Word / PDF 打印和导出会生成完整页面，不依赖当前 iframe 视口或已渲染 canvas。生命周期、操作能力变化和内置操作事件会通过 `onEvent` 回传给宿主，适合记录加载耗时、审计下载/打印尝试和同步外部状态。
+`options` 会透传给 Vue 基线预览器，可配置主题、下载/打印/导出 HTML 操作栏、文字或图片水印、搜索高亮、AI 友好文本切片，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。`theme` 支持 `light`、`dark`、`system`，默认跟随系统；固定浅色宿主 UI 建议传 `theme: 'light'`。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏；`pdf.toolbar` 可隐藏 PDF 自身工具栏，适合文档比对等紧凑场景。打印按钮会按当前格式和渲染链路动态显隐；Word / PDF 打印和导出会生成完整页面，不依赖当前 iframe 视口或已渲染 canvas。生命周期、操作能力变化、搜索状态和当前位置会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle`、`flyfish-viewer:operation`、`flyfish-viewer:search` 和 `flyfish-viewer:location`，适合记录加载耗时、审计下载/打印尝试、搜索命中、页码/行号和溯源状态。

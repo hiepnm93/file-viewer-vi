@@ -36,6 +36,34 @@ export interface ViewerArchiveOptions {
   maxEntryPreviewSize?: number
 }
 
+export interface ViewerPdfOptions {
+  toolbar?: boolean
+  navigation?: boolean
+  defaultNavigationVisible?: boolean
+  rotation?: number
+  streaming?: boolean | 'same-origin'
+  rangeChunkSize?: number
+  withCredentials?: boolean
+}
+
+export interface ViewerSearchOptions {
+  enabled?: boolean
+  caseSensitive?: boolean
+  wholeWord?: boolean
+  maxMatches?: number
+  debounce?: number
+  className?: string
+  activeClassName?: string
+}
+
+export interface ViewerAiOptions {
+  enabled?: boolean
+  collectText?: boolean
+  maxTextLength?: number
+  chunkSize?: number
+  chunkOverlap?: number
+}
+
 export type ViewerThemeMode = 'light' | 'dark' | 'system'
 
 export interface ViewerRuntimeOptions {
@@ -46,10 +74,17 @@ export interface ViewerRuntimeOptions {
   theme?: ViewerThemeMode
   watermark?: boolean | ViewerWatermarkOptions
   toolbar?: boolean | ViewerToolbarOptions
+  search?: boolean | ViewerSearchOptions
+  ai?: boolean | ViewerAiOptions
   archive?: ViewerArchiveOptions
+  pdf?: ViewerPdfOptions
 }
 
-export type ViewerFrameEventType = 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation'
+export type ViewerFrameEventType =
+  | 'flyfish-viewer:lifecycle'
+  | 'flyfish-viewer:operation'
+  | 'flyfish-viewer:search'
+  | 'flyfish-viewer:location'
 
 export interface ViewerFrameEventPayload {
   type: ViewerFrameEventType
@@ -190,7 +225,10 @@ const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload =>
     return false
   }
   const candidate = value as ViewerFrameEventPayload
-  return candidate.type === 'flyfish-viewer:lifecycle' || candidate.type === 'flyfish-viewer:operation'
+  return candidate.type === 'flyfish-viewer:lifecycle' ||
+    candidate.type === 'flyfish-viewer:operation' ||
+    candidate.type === 'flyfish-viewer:search' ||
+    candidate.type === 'flyfish-viewer:location'
 }
 
 export const getCurrentOrigin = () => {

@@ -6,6 +6,7 @@ import { shouldStreamPdfUrl } from '../../common/sourceLoading'
 import { readBuffer } from '../../common/util'
 import type {
   FileRef,
+  FileViewerDocumentAnchor,
   FileRenderExportAdapter,
   FileViewerBeforeOperation,
   FileViewerLifecycleContext,
@@ -14,14 +15,16 @@ import type {
   FileViewerOptions,
   FileViewerOperationContext,
   FileViewerOperationType,
+  FileViewerSearchState,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
-  FileViewerWatermarkOptions,
   Rendered
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
 import { getExtend, render } from './util'
-import { useViewerExport } from './useViewerExport'
+import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
+import { useViewerExport } from './hooks/useViewerExport'
+import { useViewerWatermark } from './hooks/useViewerWatermark'
 
 const props = defineProps<{
   /**
@@ -54,6 +57,8 @@ const emit = defineEmits<{
   (event: 'operation-before', context: FileViewerOperationContext): void;
   (event: 'operation-cancel', context: FileViewerOperationContext): void;
   (event: 'operation-availability-change', availability: FileViewerOperationAvailability): void;
+  (event: 'search-change', state: FileViewerSearchState): void;
+  (event: 'location-change', anchor: FileViewerDocumentAnchor | null): void;
 }>()
 
 const PREVIEW_MESSAGE = {
@@ -67,6 +72,25 @@ const output = ref<HTMLDivElement | null>(null)
 const currentFile = ref<File | null>(null)
 const currentBuffer = ref<ArrayBuffer | null>(null)
 const currentSourceUrl = ref<string | null>(null)
+const {
+  refreshDocumentIndex,
+  clearDocumentState,
+  getScrollContainer,
+  searchDocument,
+  clearDocumentSearch,
+  nextSearchResult,
+  previousSearchResult,
+  getSearchState,
+  collectDocumentAnchors,
+  scrollToAnchor,
+  scrollToLine,
+  getDocumentTextChunks
+} = useViewerDocumentFeatures({
+  output,
+  getOptions: () => props.options,
+  emitSearchChange: state => emit('search-change', state),
+  emitLocationChange: anchor => emit('location-change', anchor)
+})
 
 const displayFilename = computed(() => getSourceFilename())
 const currentExtend = computed(() => {
@@ -146,28 +170,10 @@ const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
 
 const toolbarDisabled = computed(() => loading.value || !!error.value)
 
-const normalizedWatermark = computed<FileViewerWatermarkOptions | null>(() => {
-  const watermark = props.options?.watermark
-  if (!watermark) {
-    return null
-  }
-  if (watermark === true) {
-    return {
-      enabled: true,
-      text: 'Flyfish Viewer'
-    }
-  }
-  if (watermark.enabled === false) {
-    return null
-  }
-  if (!watermark.text && !watermark.image) {
-    return null
-  }
-  return {
-    enabled: true,
-    ...watermark
-  }
-})
+const {
+  watermarkStyle,
+  watermarkInlineStyle
+} = useViewerWatermark(() => props.options?.watermark)
 
 const {
   loading,
@@ -385,64 +391,6 @@ const runBeforeOperation = async (operation: FileViewerOperationType) => {
   return true
 }
 
-const escapeXml = (value: string) => value
-  .replace(/&/g, '&amp;')
-  .replace(/"/g, '&quot;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-
-const encodeSvgDataUrl = (svg: string) => {
-  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`
-}
-
-const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
-  const next = typeof value === 'number' && Number.isFinite(value) ? value : fallback
-  return Math.min(max, Math.max(min, next))
-}
-
-const buildWatermarkSvg = (watermark: FileViewerWatermarkOptions) => {
-  const gapX = clampNumber(watermark.gapX, 260, 96, 800)
-  const gapY = clampNumber(watermark.gapY, 180, 80, 800)
-  const width = clampNumber(watermark.width, watermark.image ? 160 : 220, 32, gapX)
-  const height = clampNumber(watermark.height, watermark.image ? 72 : 72, 24, gapY)
-  const rotate = clampNumber(watermark.rotate, -24, -75, 75)
-  const opacity = clampNumber(watermark.opacity, 0.18, 0.02, 0.8)
-  const x = (gapX - width) / 2
-  const y = (gapY - height) / 2
-  const cx = gapX / 2
-  const cy = gapY / 2
-
-  if (watermark.image) {
-    const href = escapeXml(watermark.image)
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${gapX}" height="${gapY}" viewBox="0 0 ${gapX} ${gapY}"><g opacity="${opacity}" transform="rotate(${rotate} ${cx} ${cy})"><image href="${href}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/></g></svg>`
-  }
-
-  const text = escapeXml(watermark.text || 'Flyfish Viewer')
-  const fontSize = clampNumber(watermark.fontSize, 20, 10, 72)
-  const color = escapeXml(watermark.color || '#355070')
-  const fontFamily = escapeXml(watermark.fontFamily || "Aptos, 'Segoe UI', sans-serif")
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${gapX}" height="${gapY}" viewBox="0 0 ${gapX} ${gapY}"><g opacity="${opacity}" transform="rotate(${rotate} ${cx} ${cy})"><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="${fontFamily}" font-size="${fontSize}" font-weight="700">${text}</text></g></svg>`
-}
-
-const watermarkStyle = computed(() => {
-  const watermark = normalizedWatermark.value
-  if (!watermark) {
-    return undefined
-  }
-  return {
-    backgroundImage: encodeSvgDataUrl(buildWatermarkSvg(watermark))
-  }
-})
-
-const watermarkInlineStyle = computed(() => {
-  const watermark = normalizedWatermark.value
-  if (!watermark) {
-    return ''
-  }
-  return `position:absolute;inset:0;pointer-events:none;background-image:${encodeSvgDataUrl(buildWatermarkSvg(watermark))};background-repeat:repeat;z-index:20;`
-})
-
 // 每次开始新的预览任务时都生成一个版本号。
 // 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
 const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
@@ -540,6 +488,7 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
     activeDocumentContext = null
     activeExportAdapter.value = null
     renderedReady.value = false
+    clearDocumentState()
 
     const out = output.value
     if (out) {
@@ -600,6 +549,7 @@ const mountRenderedContent = async (
       }
       return undefined
     }
+    void refreshDocumentIndex()
     return rendered
   } catch (nextError) {
     if (child.parentNode === out) {
@@ -823,7 +773,17 @@ defineExpose({
   downloadOriginalFile,
   printRenderedHtml,
   exportRenderedHtml,
-  getOperationAvailability: () => ({ ...operationAvailability.value })
+  getOperationAvailability: () => ({ ...operationAvailability.value }),
+  getScrollContainer,
+  searchDocument,
+  clearDocumentSearch,
+  nextSearchResult,
+  previousSearchResult,
+  getSearchState,
+  collectDocumentAnchors,
+  scrollToAnchor,
+  scrollToLine,
+  getDocumentTextChunks
 })
 
 watch(operationAvailability, availability => {
@@ -880,7 +840,7 @@ onBeforeUnmount(() => {
         </button>
       </div>
       <div class='viewer-content-shell'>
-        <div ref='output' class='content' :class='{ hidden: loading || !!error }' />
+        <div ref='output' class='content' data-viewer-scroll-root='true' :class='{ hidden: loading || !!error }' />
         <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
 
         <div v-if='loading' class='state-panel loading-panel'>
@@ -1005,6 +965,19 @@ onBeforeUnmount(() => {
 
 .content.hidden {
   visibility: hidden;
+}
+
+:global(.flyfish-search-match) {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: rgba(255, 214, 102, 0.72);
+  color: inherit;
+  box-shadow: 0 0 0 1px rgba(185, 128, 0, 0.14);
+}
+
+:global(.flyfish-search-match--active) {
+  background: rgba(47, 191, 122, 0.82);
+  box-shadow: 0 0 0 2px rgba(30, 132, 83, 0.24);
 }
 
 .viewer-watermark {

@@ -1,7 +1,12 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { listenForFile } from '@/components/utils'
-import type { FileRef, FileViewerOperationAvailability, FileViewerOptions } from '@/package/common/type'
+import type {
+  FileRef,
+  FileViewerOperationAvailability,
+  FileViewerOptions,
+  FileViewerSearchState
+} from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
 
 const hidden = ref(false)
@@ -17,6 +22,14 @@ const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
 const runtimeOptions = ref<FileViewerOptions>({})
+const viewerSearchQuery = ref('')
+const viewerSearchState = ref<FileViewerSearchState>({
+  query: '',
+  total: 0,
+  currentIndex: -1,
+  current: null,
+  matches: []
+})
 
 type ViewerAction = 'download' | 'print' | 'exportHtml'
 
@@ -25,6 +38,10 @@ type FileViewerExpose = {
   printRenderedHtml: () => Promise<void>
   exportRenderedHtml: () => Promise<void>
   getOperationAvailability: () => FileViewerOperationAvailability
+  searchDocument: (query: string) => Promise<FileViewerSearchState>
+  clearDocumentSearch: () => FileViewerSearchState
+  nextSearchResult: () => FileViewerSearchState
+  previousSearchResult: () => FileViewerSearchState
 }
 
 const fileViewerRef = ref<FileViewerExpose | null>(null)
@@ -492,6 +509,14 @@ const showExternalToolbar = computed(() => {
 
 const viewerActionDisabled = computed(() => !file.value && !preview.value)
 
+const viewerSearchSummary = computed(() => {
+  if (!viewerSearchQuery.value.trim()) {
+    return '0/0'
+  }
+  const state = viewerSearchState.value
+  return state.total ? `${state.currentIndex + 1}/${state.total}` : '0/0'
+})
+
 const viewerOptions = computed<FileViewerOptions>(() => ({
   archive: {
     workerUrl: '/vendor/libarchive/worker-bundle.js',
@@ -527,8 +552,43 @@ function triggerViewerAction(action: ViewerAction) {
   void fileViewerRef.value?.exportRenderedHtml()
 }
 
+async function runViewerSearch() {
+  const query = viewerSearchQuery.value.trim()
+  if (!query) {
+    viewerSearchState.value = fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
+    return
+  }
+  viewerSearchState.value = await fileViewerRef.value?.searchDocument(query) || viewerSearchState.value
+}
+
+async function nextViewerSearch() {
+  if (!viewerSearchQuery.value.trim()) {
+    return
+  }
+  if (viewerSearchState.value.query !== viewerSearchQuery.value.trim()) {
+    await runViewerSearch()
+    return
+  }
+  viewerSearchState.value = fileViewerRef.value?.nextSearchResult() || viewerSearchState.value
+}
+
+async function previousViewerSearch() {
+  if (!viewerSearchQuery.value.trim()) {
+    return
+  }
+  if (viewerSearchState.value.query !== viewerSearchQuery.value.trim()) {
+    await runViewerSearch()
+    return
+  }
+  viewerSearchState.value = fileViewerRef.value?.previousSearchResult() || viewerSearchState.value
+}
+
 function handleViewerAvailabilityChange(availability: FileViewerOperationAvailability) {
   viewerAvailability.value = availability
+}
+
+function handleViewerSearchChange(state: FileViewerSearchState) {
+  viewerSearchState.value = state
 }
 
 listenForFile((body, target, options) => {
@@ -800,6 +860,17 @@ function updateSampleMenuGeometry() {
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
             <div class='viewer-tools'>
+              <div class='viewer-search' role='search' aria-label='文档搜索'>
+                <input
+                  v-model.trim='viewerSearchQuery'
+                  type='search'
+                  placeholder='搜索'
+                  @keyup.enter='runViewerSearch'
+                />
+                <span>{{ viewerSearchSummary }}</span>
+                <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
+                <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
+              </div>
               <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
                 <button
                   v-if='visibleExternalToolbar.download'
@@ -851,6 +922,7 @@ function updateSampleMenuGeometry() {
               :url='preview'
               :options='viewerOptions'
               @operation-availability-change='handleViewerAvailabilityChange'
+              @search-change='handleViewerSearchChange'
             />
           </div>
         </section>
@@ -864,6 +936,7 @@ function updateSampleMenuGeometry() {
             :url='preview'
             :options='viewerOptions'
             @operation-availability-change='handleViewerAvailabilityChange'
+            @search-change='handleViewerSearchChange'
           />
         </div>
       </section>
@@ -1636,6 +1709,60 @@ function updateSampleMenuGeometry() {
   gap: 8px;
 }
 
+.viewer-search {
+  display: inline-grid;
+  grid-template-columns: minmax(92px, 150px) auto auto auto;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(20, 35, 53, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.viewer-search input,
+.viewer-search button,
+.viewer-search span {
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #526174;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.viewer-search input {
+  min-width: 0;
+  padding: 0 11px;
+  outline: none;
+}
+
+.viewer-search input:focus {
+  background: rgba(33, 163, 102, 0.1);
+  color: #16804f;
+}
+
+.viewer-search span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  color: #718193;
+}
+
+.viewer-search button {
+  min-width: 32px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.viewer-search button:hover {
+  background: rgba(33, 163, 102, 0.1);
+  color: #16804f;
+}
+
 .viewer-action-group {
   display: inline-flex;
   align-items: center;
@@ -1961,6 +2088,23 @@ function updateSampleMenuGeometry() {
     background: rgba(9, 15, 20, 0.54);
   }
 
+  .viewer-search {
+    border-color: rgba(167, 185, 198, 0.13);
+    background: rgba(9, 15, 20, 0.54);
+  }
+
+  .viewer-search input,
+  .viewer-search button,
+  .viewer-search span {
+    color: #b8c7d5;
+  }
+
+  .viewer-search input:focus,
+  .viewer-search button:hover {
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
+  }
+
   .viewer-tool-button {
     border-color: rgba(167, 185, 198, 0.13);
     background: rgba(22, 32, 39, 0.78);
@@ -2027,6 +2171,11 @@ function updateSampleMenuGeometry() {
     width: 100%;
     justify-content: flex-end;
     flex-wrap: wrap;
+  }
+
+  .viewer-search {
+    grid-template-columns: minmax(120px, 1fr) auto auto auto;
+    width: 100%;
   }
 
   .control-panel {

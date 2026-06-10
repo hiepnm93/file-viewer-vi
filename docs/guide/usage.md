@@ -134,7 +134,7 @@ file.value = new File([buffer], 'report.xlsx')
 
 ## 预览器 options
 
-`options` 用于配置通用交互和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、纯 JS helper 和 iframe 查询参数都使用同一套语义。
+`options` 用于配置通用交互、搜索定位和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、纯 JS helper 和 iframe 查询参数都使用同一套语义。
 
 ```vue
 <script setup lang="ts">
@@ -161,7 +161,17 @@ const options = {
     maxArchiveSize: 320 * 1024 * 1024,
     maxEntryPreviewSize: 64 * 1024 * 1024
   },
+  search: {
+    maxMatches: 1000,
+    caseSensitive: false
+  },
+  ai: {
+    collectText: true,
+    chunkSize: 1200,
+    chunkOverlap: 160
+  },
   pdf: {
+    toolbar: true,
     streaming: 'same-origin',
     rangeChunkSize: 64 * 1024
   }
@@ -180,11 +190,14 @@ const options = {
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
 | `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
+| `search` | `true`、`false` 或对象；控制通用搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。搜索 API 会高亮命中，并支持上一个 / 下一个切换 |
+| `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码和锚点上下文，业务侧可用于向量化、溯源和高亮 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
 | `archive.maxEntryPreviewSize` | 压缩包内单文件允许预览的最大体积，默认 64MB |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
+| `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
 
@@ -258,6 +271,50 @@ mountViewerFrame(container, {
   }
 })
 ```
+
+## 搜索、定位与 AI 友好结构
+
+`FileViewer` 会在渲染完成后把文档 DOM 抽象成通用锚点，并在组件 ref 上暴露搜索和定位方法。搜索会在预览区内高亮命中结果，`nextSearchResult()` / `previousSearchResult()` 会滚动到当前命中；`scrollToLine()` 会按照当前格式可用的锚点定位。Word、Markdown、代码等文本类文档通常能定位到段落/行块，PDF 会优先使用文本层和页面锚点。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { FileViewer } from '@flyfish-group/file-viewer3'
+
+const viewerRef = ref<InstanceType<typeof FileViewer> | null>(null)
+
+async function searchKeyword() {
+  const state = await viewerRef.value?.searchDocument('合同')
+  console.log(state?.current?.line, state?.current?.page)
+}
+
+async function locateLine() {
+  await viewerRef.value?.scrollToLine(12)
+}
+
+function buildAiPayload() {
+  const chunks = viewerRef.value?.getDocumentTextChunks() || []
+  return chunks.map(chunk => ({
+    text: chunk.text,
+    source: {
+      line: chunk.startLine,
+      page: chunk.anchor.page,
+      label: chunk.anchor.label
+    }
+  }))
+}
+</script>
+
+<template>
+  <file-viewer
+    ref="viewerRef"
+    url="/example/word.docx"
+    :options="{ search: true, ai: { collectText: true } }"
+  />
+</template>
+```
+
+iframe / React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 helper 暴露的标准能力；基线 viewer 会通过 `postMessage` 发送 `flyfish-viewer:search` 和 `flyfish-viewer:location` 事件，便于宿主记录当前命中、页码、行号和溯源信息。
 
 ## 打印、导出和水印的交付行为
 

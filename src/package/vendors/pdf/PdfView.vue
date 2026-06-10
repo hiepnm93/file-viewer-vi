@@ -49,6 +49,7 @@ const currentRotation = ref<PdfRotation>(normalizeRotation(props.options?.rotati
 const outlineItems = ref<PdfOutlineItemView[]>([])
 
 const navigationEnabled = computed(() => props.options?.navigation !== false)
+const toolbarVisible = computed(() => props.options?.toolbar !== false)
 const pages = computed(() => Array.from({ length: pageCount.value }, (_, index) => index + 1))
 const outlineCount = computed(() => {
   const countItems = (items: PdfOutlineItemView[]): number => items.reduce((total, item) => total + 1 + countItems(item.items), 0)
@@ -587,8 +588,11 @@ onBeforeUnmount(() => {
 
 </script>
 <template>
-  <div class='pdf-shell' :class="{ 'pdf-shell--nav-hidden': !navigationEnabled || !navVisible }">
-    <div class='pdf-toolbar'>
+  <div
+    class='pdf-shell'
+    :class="{ 'pdf-shell--nav-hidden': !navigationEnabled || !navVisible, 'pdf-shell--toolbar-hidden': !toolbarVisible }"
+  >
+    <div v-if='toolbarVisible' class='pdf-toolbar'>
       <button
         v-if='navigationEnabled'
         class='pdf-icon-button'
@@ -741,7 +745,7 @@ onBeforeUnmount(() => {
       </aside>
 
       <div class='pdf-viewport'>
-        <div ref='container' class='pdf-wrapper'>
+        <div ref='container' class='pdf-wrapper' data-viewer-scroll-container='true'>
           <div class='pdfViewer' />
           <div v-if="loadStatus === 'loading'" class='pdf-state'>正在加载 PDF...</div>
           <div v-else-if="loadStatus === 'error'" class='pdf-state pdf-state--error'>{{ errorMessage }}</div>

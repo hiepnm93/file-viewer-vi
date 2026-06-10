@@ -6,7 +6,7 @@ import type {
   FileViewerOperationAvailability,
   FileViewerOperationType
 } from '@/package/common/type'
-import { buildExportHtmlDocument } from './exportDocumentTemplate'
+import { buildExportHtmlDocument } from '../exportDocumentTemplate'
 
 interface UseViewerExportOptions {
   activeExportAdapter: ShallowRef<FileRenderExportAdapter | null>;

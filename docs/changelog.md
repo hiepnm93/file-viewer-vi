@@ -4,6 +4,15 @@
 
 ## 当前主线
 
+### 当前主线 文档比对、搜索定位和 AI 友好结构增强
+
+- 文档比对页同步滚动改为绑定真实预览滚动容器，并按 scroll ratio 同步左右滚动位置，PDF 内部滚动层、Word 外层滚动层和文本预览都走同一套逻辑
+- 文档比对页新增关键词搜索、高亮命中、上一个 / 下一个和行级定位；命中结果会同时返回行号、页码和锚点上下文，便于业务侧做审计与溯源
+- 新增 `options.pdf.toolbar`，可在左右比对等紧凑场景隐藏 PDF 自身页码、缩放、旋转工具栏，避免 PDF 比其他格式多一条顶部导航导致正文错位
+- 新增 `options.search`、`searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`getSearchState()` 等通用搜索 API
+- 新增 `collectDocumentAnchors()`、`scrollToLine()`、`scrollToAnchor()` 和 `getDocumentTextChunks()`，预览器只提供锚点、文本切片和溯源上下文，不绑定具体 AI 服务，业务侧可基于它做向量化、召回、高亮和来源定位
+- 主 Demo 顶部新增搜索入口，公开文档同步补充文档比对页、搜索定位、PDF 工具栏隐藏和 AI 友好结构说明
+
 ### `v1.0.22` PPTX 兼容性修复与连续发布版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.22`、Vue2 包 `@flyfish-group/file-viewer@1.0.22`、React 包 `@flyfish-group/file-viewer-react@1.0.22` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.22` 继续保持连续版本

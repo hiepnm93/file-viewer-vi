@@ -104,6 +104,13 @@ export interface FileViewerArchiveOptions {
  */
 export interface FileViewerPdfOptions {
   /**
+   * 是否显示 PDF 渲染器自己的阅读工具栏。
+   *
+   * 独立预览建议保持默认显示；在文档比对这类左右排版场景中可以设为
+   * `false`，让 PDF 与 Word / Markdown 等格式从同一内容起点对齐。
+   */
+  toolbar?: boolean;
+  /**
    * 是否启用左侧页面/目录导航窗格。设为 `false` 时会同时隐藏侧栏和切换按钮。
    */
   navigation?: boolean;
@@ -142,6 +149,111 @@ export interface FileViewerTypstOptions {
    * Typst compiler WASM 地址。需要浏览器端编译时才会加载。
    */
   compilerWasmUrl?: string;
+}
+
+/**
+ * 文档定位锚点。
+ *
+ * 预览器会尽量把当前渲染结果中的页面、段落、表格行、代码块等内容
+ * 抽象成稳定锚点。不同格式的“行”粒度不完全相同：文本类文档通常可到
+ * 段落/行块，PDF 这类画布型文档会优先回退到页与可用文本层。
+ */
+export interface FileViewerDocumentAnchor {
+  id: string;
+  index: number;
+  line: number;
+  type: 'page' | 'line' | 'block';
+  label: string;
+  text: string;
+  page?: number;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * AI / 搜索可复用的文档文本切片。
+ *
+ * 这里不直接绑定任何云端能力，只提供溯源、向量化和高亮所需的稳定结构。
+ */
+export interface FileViewerDocumentChunk {
+  id: string;
+  text: string;
+  anchor: FileViewerDocumentAnchor;
+  startLine: number;
+  endLine: number;
+}
+
+/**
+ * 文档搜索配置。
+ */
+export interface FileViewerSearchOptions {
+  /**
+   * 是否启用搜索能力。设为 `false` 时公开方法仍存在，但不会执行高亮。
+   */
+  enabled?: boolean;
+  /**
+   * 是否区分大小写。
+   */
+  caseSensitive?: boolean;
+  /**
+   * 是否整词匹配。
+   */
+  wholeWord?: boolean;
+  /**
+   * 单次搜索最多保留的命中数量，避免极端大文档一次性插入过多高亮节点。
+   */
+  maxMatches?: number;
+  /**
+   * 搜索 MutationObserver 重新扫描的防抖时间。
+   */
+  debounce?: number;
+  /**
+   * 自定义高亮类名。
+   */
+  className?: string;
+  /**
+   * 当前命中高亮类名。
+   */
+  activeClassName?: string;
+}
+
+/**
+ * 单条搜索命中。
+ */
+export interface FileViewerSearchMatch {
+  id: string;
+  index: number;
+  text: string;
+  anchor: FileViewerDocumentAnchor | null;
+  line?: number;
+  page?: number;
+}
+
+/**
+ * 当前搜索状态。
+ */
+export interface FileViewerSearchState {
+  query: string;
+  total: number;
+  currentIndex: number;
+  current: FileViewerSearchMatch | null;
+  matches: FileViewerSearchMatch[];
+}
+
+/**
+ * AI 友好能力配置。
+ *
+ * 预览器本身不内置云端模型调用；这里提供可选文本切片结构，业务侧可以
+ * 基于 `getDocumentTextChunks()` 做向量化、溯源、AI 摘要和命中高亮。
+ */
+export interface FileViewerAiOptions {
+  enabled?: boolean;
+  collectText?: boolean;
+  maxTextLength?: number;
+  chunkSize?: number;
+  chunkOverlap?: number;
 }
 
 /**
@@ -214,6 +326,15 @@ export interface FileViewerOptions {
   theme?: FileViewerThemeMode;
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;
+  /**
+   * 文档搜索能力配置。设为 `false` 可关闭内置搜索/高亮扫描；
+   * 默认启用公开 API，业务 UI 可通过组件 ref 调用 `searchDocument()`。
+   */
+  search?: boolean | FileViewerSearchOptions;
+  /**
+   * AI 友好能力配置。预览器只提供文本切片、锚点和溯源上下文，不绑定模型服务。
+   */
+  ai?: boolean | FileViewerAiOptions;
   archive?: FileViewerArchiveOptions;
   pdf?: FileViewerPdfOptions;
   typst?: FileViewerTypstOptions;

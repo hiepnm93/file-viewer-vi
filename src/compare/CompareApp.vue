@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { FileViewer } from '@/package'
-import type { FileRef, FileViewerLifecycleContext, FileViewerOptions } from '@/package/common/type'
+import type {
+  FileRef,
+  FileViewerDocumentAnchor,
+  FileViewerDocumentChunk,
+  FileViewerLifecycleContext,
+  FileViewerOptions,
+  FileViewerSearchState
+} from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
+import { useSynchronizedScroll } from './useSynchronizedScroll'
 
 type CompareSide = 'left' | 'right'
 
@@ -20,6 +28,18 @@ interface ComparePanelState {
   file?: FileRef;
   filename: string;
   status: string;
+}
+
+type FileViewerPublicApi = ComponentPublicInstance & {
+  getScrollContainer: () => HTMLElement | null;
+  searchDocument: (query: string) => Promise<FileViewerSearchState>;
+  clearDocumentSearch: () => FileViewerSearchState;
+  nextSearchResult: () => FileViewerSearchState;
+  previousSearchResult: () => FileViewerSearchState;
+  getSearchState: () => FileViewerSearchState;
+  collectDocumentAnchors: () => Promise<FileViewerDocumentAnchor[]>;
+  scrollToLine: (line: number) => Promise<boolean>;
+  getDocumentTextChunks: () => FileViewerDocumentChunk[];
 }
 
 const params = new URLSearchParams(window.location.search)
@@ -45,18 +65,37 @@ const createPanel = (side: CompareSide, title: string, fallbackUrl: string): Com
 const leftPanel = reactive(createPanel('left', '左侧文档', samples[0].url))
 const rightPanel = reactive(createPanel('right', '右侧文档', samples[1].url))
 const syncScrollEnabled = ref(true)
-const leftViewerRef = ref<HTMLElement | null>(null)
-const rightViewerRef = ref<HTMLElement | null>(null)
+const comparePdfToolbarHidden = ref(true)
+const compareSearchQuery = ref('')
+const compareLineTarget = ref('')
+const leftViewerRef = ref<FileViewerPublicApi | null>(null)
+const rightViewerRef = ref<FileViewerPublicApi | null>(null)
 
-const viewerOptions: FileViewerOptions = {
+const createEmptySearchState = (): FileViewerSearchState => ({
+  query: '',
+  total: 0,
+  currentIndex: -1,
+  current: null,
+  matches: []
+})
+
+const leftSearchState = ref<FileViewerSearchState>(createEmptySearchState())
+const rightSearchState = ref<FileViewerSearchState>(createEmptySearchState())
+
+const viewerOptions = computed<FileViewerOptions>(() => ({
   toolbar: false,
   archive: {
     cache: true
   },
   pdf: {
+    toolbar: !comparePdfToolbarHidden.value,
     defaultNavigationVisible: false
+  },
+  ai: {
+    enabled: true,
+    collectText: true
   }
-}
+}))
 
 const uploadAccept = [
   '.doc', '.docx', '.docm', '.dot', '.dotx', '.dotm',
@@ -68,8 +107,6 @@ const uploadAccept = [
 const sampleByUrl = computed(() => {
   return new Map(samples.map(sample => [sample.url, sample]))
 })
-
-let cleanupScrollSync: (() => void) | null = null
 
 const getPanelSourceLabel = (panel: ComparePanelState) => {
   if (panel.file) {
@@ -137,57 +174,91 @@ const resetSamples = () => {
   selectSample(rightPanel, samples[1].url)
 }
 
-const getScroller = (root: HTMLElement | null) => {
-  return root?.querySelector<HTMLElement>('.content') || null
-}
-
 const setViewerRef = (side: CompareSide, element: Element | ComponentPublicInstance | null) => {
-  const htmlElement = element instanceof HTMLElement ? element : null
   if (side === 'left') {
-    leftViewerRef.value = htmlElement
+    leftViewerRef.value = element as FileViewerPublicApi | null
   } else {
-    rightViewerRef.value = htmlElement
+    rightViewerRef.value = element as FileViewerPublicApi | null
   }
 }
 
-const bindScrollSync = async () => {
-  cleanupScrollSync?.()
-  cleanupScrollSync = null
+const getViewerScroller = (side: CompareSide) => {
+  const viewer = side === 'left' ? leftViewerRef.value : rightViewerRef.value
+  return viewer?.getScrollContainer?.() || null
+}
 
-  if (!syncScrollEnabled.value) {
+const { bind: bindScrollSync } = useSynchronizedScroll(
+  syncScrollEnabled,
+  () => getViewerScroller('left'),
+  () => getViewerScroller('right')
+)
+
+const compareSearchSummary = computed(() => {
+  const left = leftSearchState.value
+  const right = rightSearchState.value
+  if (!compareSearchQuery.value.trim()) {
+    return '输入关键词后搜索'
+  }
+  const format = (state: FileViewerSearchState) => {
+    return state.total ? `${state.currentIndex + 1}/${state.total}` : '0/0'
+  }
+  return `左 ${format(left)} · 右 ${format(right)}`
+})
+
+const runCompareSearch = async () => {
+  const query = compareSearchQuery.value.trim()
+  if (!query) {
+    leftSearchState.value = leftViewerRef.value?.clearDocumentSearch() || createEmptySearchState()
+    rightSearchState.value = rightViewerRef.value?.clearDocumentSearch() || createEmptySearchState()
     return
   }
 
-  await nextTick()
-  const leftScroller = getScroller(leftViewerRef.value)
-  const rightScroller = getScroller(rightViewerRef.value)
-  if (!leftScroller || !rightScroller) {
+  const [leftState, rightState] = await Promise.all([
+    leftViewerRef.value?.searchDocument(query) ?? Promise.resolve(createEmptySearchState()),
+    rightViewerRef.value?.searchDocument(query) ?? Promise.resolve(createEmptySearchState())
+  ])
+  leftSearchState.value = leftState
+  rightSearchState.value = rightState
+}
+
+const nextCompareSearch = async () => {
+  if (!compareSearchQuery.value.trim()) {
     return
   }
-
-  let syncing = false
-  const mirrorScroll = (from: HTMLElement, to: HTMLElement) => {
-    if (syncing) {
-      return
-    }
-    syncing = true
-    const topRatio = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
-    const leftRatio = from.scrollLeft / Math.max(1, from.scrollWidth - from.clientWidth)
-    to.scrollTop = topRatio * Math.max(0, to.scrollHeight - to.clientHeight)
-    to.scrollLeft = leftRatio * Math.max(0, to.scrollWidth - to.clientWidth)
-    window.requestAnimationFrame(() => {
-      syncing = false
-    })
+  if (leftSearchState.value.query !== compareSearchQuery.value.trim()) {
+    await runCompareSearch()
+    return
   }
+  leftSearchState.value = leftViewerRef.value?.nextSearchResult() || leftSearchState.value
+  rightSearchState.value = rightViewerRef.value?.nextSearchResult() || rightSearchState.value
+}
 
-  const onLeftScroll = () => mirrorScroll(leftScroller, rightScroller)
-  const onRightScroll = () => mirrorScroll(rightScroller, leftScroller)
-  leftScroller.addEventListener('scroll', onLeftScroll, { passive: true })
-  rightScroller.addEventListener('scroll', onRightScroll, { passive: true })
-  cleanupScrollSync = () => {
-    leftScroller.removeEventListener('scroll', onLeftScroll)
-    rightScroller.removeEventListener('scroll', onRightScroll)
+const previousCompareSearch = async () => {
+  if (!compareSearchQuery.value.trim()) {
+    return
   }
+  if (leftSearchState.value.query !== compareSearchQuery.value.trim()) {
+    await runCompareSearch()
+    return
+  }
+  leftSearchState.value = leftViewerRef.value?.previousSearchResult() || leftSearchState.value
+  rightSearchState.value = rightViewerRef.value?.previousSearchResult() || rightSearchState.value
+}
+
+const goToCompareLine = async () => {
+  const line = Number.parseInt(compareLineTarget.value, 10)
+  if (!Number.isFinite(line) || line <= 0) {
+    return
+  }
+  await Promise.all([
+    leftViewerRef.value?.scrollToLine(line),
+    rightViewerRef.value?.scrollToLine(line)
+  ])
+}
+
+const getAiChunkCount = (side: CompareSide) => {
+  const viewer = side === 'left' ? leftViewerRef.value : rightViewerRef.value
+  return viewer?.getDocumentTextChunks?.().length || 0
 }
 
 const handleLoadStart = (panel: ComparePanelState) => {
@@ -195,21 +266,19 @@ const handleLoadStart = (panel: ComparePanelState) => {
 }
 
 const handleLoadComplete = (panel: ComparePanelState, context: FileViewerLifecycleContext) => {
-  panel.status = context.duration ? `已完成 ${context.duration}ms` : '已完成'
+  const chunkCount = getAiChunkCount(panel.side)
+  const aiSuffix = chunkCount ? ` · ${chunkCount} 个切片` : ''
+  panel.status = `${context.duration ? `已完成 ${context.duration}ms` : '已完成'}${aiSuffix}`
   void bindScrollSync()
+  if (compareSearchQuery.value.trim()) {
+    void runCompareSearch()
+  }
 }
 
 const handleUnload = (panel: ComparePanelState) => {
   panel.status = '已卸载'
 }
 
-watch(syncScrollEnabled, () => {
-  void bindScrollSync()
-})
-
-onBeforeUnmount(() => {
-  cleanupScrollSync?.()
-})
 </script>
 
 <template>
@@ -224,12 +293,37 @@ onBeforeUnmount(() => {
       </a>
       <div class="compare-title">
         <h1>文档比对</h1>
-        <p>左右并排预览，支持示例、URL、本地上传和同步滚动。</p>
+        <p>左右并排预览，支持示例、URL、本地上传、同步滚动、搜索高亮和行级定位。</p>
+        <div class="compare-search" role="search" aria-label="文档比对搜索">
+          <input
+            v-model.trim="compareSearchQuery"
+            type="search"
+            placeholder="搜索两侧文档"
+            @keyup.enter="runCompareSearch"
+          >
+          <button type="button" @click="runCompareSearch">搜索</button>
+          <button type="button" @click="previousCompareSearch">上一个</button>
+          <button type="button" @click="nextCompareSearch">下一个</button>
+          <span>{{ compareSearchSummary }}</span>
+          <input
+            v-model.trim="compareLineTarget"
+            class="line-input"
+            type="number"
+            min="1"
+            placeholder="行"
+            @keyup.enter="goToCompareLine"
+          >
+          <button type="button" @click="goToCompareLine">定位</button>
+        </div>
       </div>
       <div class="header-actions">
         <label class="sync-toggle">
           <input v-model="syncScrollEnabled" type="checkbox">
           <span>同步滚动</span>
+        </label>
+        <label class="sync-toggle">
+          <input v-model="comparePdfToolbarHidden" type="checkbox">
+          <span>隐藏 PDF 工具栏</span>
         </label>
         <button type="button" @click="swapPanels">交换</button>
         <button type="button" @click="resetSamples">重置</button>
@@ -294,11 +388,10 @@ onBeforeUnmount(() => {
           <span>{{ getPanelDescription(panel) }}</span>
         </div>
 
-        <div
-          :ref="el => setViewerRef(panel.side, el)"
-          class="compare-viewer"
-        >
+        <div class="compare-viewer">
           <FileViewer
+            :key="`${panel.side}-${panel.file ? panel.filename : panel.url}-${comparePdfToolbarHidden ? 'compact' : 'full'}`"
+            :ref="el => setViewerRef(panel.side, el)"
             :url="panel.file ? undefined : panel.url"
             :file="panel.file"
             :options="viewerOptions"
@@ -396,6 +489,8 @@ onBeforeUnmount(() => {
 
 .compare-title {
   min-width: 0;
+  display: grid;
+  gap: 8px;
   text-align: center;
 }
 
@@ -411,10 +506,67 @@ onBeforeUnmount(() => {
   font-size: 13px;
 }
 
+.compare-search {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto auto auto minmax(94px, auto) 64px auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.compare-search input,
+.compare-search button,
+.compare-search span {
+  height: 34px;
+  min-width: 0;
+  border: 1px solid rgba(20, 42, 59, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #294259;
+  font: inherit;
+  font-size: 12px;
+}
+
+.compare-search input {
+  padding: 0 10px;
+  outline: none;
+}
+
+.compare-search input:focus {
+  border-color: rgba(31, 153, 102, 0.5);
+  box-shadow: 0 0 0 3px rgba(31, 153, 102, 0.12);
+}
+
+.compare-search button {
+  padding: 0 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compare-search button:hover {
+  border-color: rgba(31, 152, 99, 0.28);
+  color: #14794e;
+}
+
+.compare-search span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  color: #607588;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.compare-search .line-input {
+  text-align: center;
+}
+
 .header-actions {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -605,11 +757,25 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1180px) {
   .compare-header {
-    grid-template-columns: minmax(180px, 1fr) auto;
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .compare-title {
-    display: none;
+    text-align: left;
+  }
+
+  .compare-search {
+    grid-template-columns: minmax(140px, 1fr) repeat(3, auto);
+  }
+
+  .compare-search span {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .compare-search .line-input {
+    grid-column: 1 / span 1;
   }
 
   .tool-grid {
@@ -671,6 +837,9 @@ onBeforeUnmount(() => {
 
   .header-actions button,
   .sync-toggle,
+  .compare-search input,
+  .compare-search button,
+  .compare-search span,
   .tool-grid select,
   .tool-grid input[type='text'] {
     border-color: rgba(149, 174, 190, 0.14);
