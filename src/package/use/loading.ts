@@ -29,7 +29,7 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     soft: 'rgba(43, 120, 246, 0.12)',
     badge: 'W',
     label: 'Word 文档',
-    hint: '正在准备分页、文本样式和文档结构；超大文档会自动切换为轻量可读预览。'
+    hint: '正在通过 Worker 准备文档结构、文本样式和分页结果。'
   },
   xls: {
     accent: '#21a366',

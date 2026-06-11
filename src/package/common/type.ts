@@ -368,22 +368,17 @@ export interface FileViewerOptions {
 /**
  * DOCX 渲染配置。
  *
- * `docx-preview` 需要在主线程构建完整 DOM。遇到解压后 XML 特别大的
- * Word 文档时，强行完整渲染会让浏览器长时间无响应，因此默认会在
- * 超过阈值时切换为轻量可读预览。
+ * 默认使用 Web Worker 承载 `docx-preview` 的 ZIP/XML 解析和 HTML 构建，
+ * 主线程只负责把最终 HTML 挂载到预览区并执行缩放、打印等交互适配。
+ * 这样可以保持 docxjs 的真实渲染结果，同时减少复杂 DOCX 首屏卡顿。
  */
 export interface FileViewerDocxOptions {
   /**
-   * `word/document.xml` 超过该大小时进入轻量预览。
-   *
-   * 默认 2MB。传 `Infinity` 或关闭 `lightweightFallback` 可强制完整渲染，
-   * 但不建议对客户上传文件这样做。
+   * 是否启用 DOCX Worker 渲染链路。默认开启。
+   * 极少数 CSP 或低版本浏览器不允许内联 Worker 时，可设为 `false`
+   * 回退到 docx-preview 原生主线程渲染。
    */
-  maxFullRenderXmlBytes?: number;
-  /**
-   * 是否允许超大 DOCX 进入轻量可读预览。默认开启。
-   */
-  lightweightFallback?: boolean;
+  worker?: boolean;
 }
 
 /**

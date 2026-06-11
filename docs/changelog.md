@@ -6,9 +6,9 @@
 
 ### 当前主线 Demo 富样式公开样例升级
 
-- DOCX 渲染链路增加 `word/document.xml` 复杂度预检，超大文档默认切换为轻量可读预览，避免 `docx-preview` 一次性构建完整 DOM 导致首屏卡死
+- DOCX 渲染链路移除临时轻量预览分支，默认通过 Web Worker 运行 `docx-preview` 解析和 HTML 构建，主线程只负责挂载、缩放和打印适配；CSP 或低版本浏览器不兼容时可通过 `options.docx.worker: false` 回退原生主线程渲染
 - 入口组件在挂载重型渲染器前先释放浏览器绘制帧，确保 Loading 先显示，减少用户误以为页面无响应
-- `word.docx` 替换为 Basel Convention 公开中文正式文档，覆盖长正文、标题层级、表格、图示、白色纸张和完整打印回归，同时避免默认 Demo 首屏触发超大 DOCX 保护
+- `word.docx` 保持 Basel Convention 公开中文正式文档，覆盖长正文、标题层级、表格、图示、白色纸张和完整打印回归，避免默认 Demo 使用临时生成或过度病态的样例文件
 - `ppt.pptx` 替换为 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、主题背景、图片资源、组合元素和富文本排版
 - `archive.zip` 与 `archive.tar.gz` 内部 DOCX 同步更新为当前公开中文 Word 样例，压缩包内继续预览时也能验证真实文档效果
 - 示例来源表、Demo 文档和公开样例 README 同步刷新，避免继续把 Word / PPT 误写成临时生成的 Demo 文件
