@@ -190,8 +190,8 @@ const options = {
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
 | `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
-| `search` | `true`、`false` 或对象；控制通用搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。搜索 API 会高亮命中，并支持上一个 / 下一个切换 |
-| `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码和锚点上下文，业务侧可用于向量化、溯源和高亮 |
+| `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层、canvas 或 iframe |
+| `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
@@ -274,7 +274,7 @@ mountViewerFrame(container, {
 
 ## 搜索、定位与 AI 友好结构
 
-`FileViewer` 会在渲染完成后把文档 DOM 抽象成通用锚点，并在组件 ref 上暴露搜索和定位方法。搜索会在预览区内高亮命中结果，`nextSearchResult()` / `previousSearchResult()` 会滚动到当前命中；`scrollToLine()` 会按照当前格式可用的锚点定位。Word、Markdown、代码等文本类文档通常能定位到段落/行块，PDF 会优先使用文本层和页面锚点。
+`FileViewer` 会在渲染完成后把文档 DOM 抽象成通用锚点，并在组件 ref 上暴露搜索和定位方法。搜索会在预览区内高亮命中结果，`nextSearchResult()` / `previousSearchResult()` 会滚动到当前命中；`scrollToLine()` 和 `scrollToAnchor()` 会按照当前格式可用的锚点定位。Word、Markdown、代码等文本类文档通常能定位到段落/行块，PDF 会优先使用 PDF.js 原生查找控制器和页面锚点，避免直接改写 PDF 文本层导致文字定位异常。
 
 ```vue
 <script setup lang="ts">
@@ -314,7 +314,7 @@ function buildAiPayload() {
 </template>
 ```
 
-iframe / React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 helper 暴露的标准能力；基线 viewer 会通过 `postMessage` 发送 `flyfish-viewer:search` 和 `flyfish-viewer:location` 事件，便于宿主记录当前命中、页码、行号和溯源信息。
+iframe / React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 helper 暴露的标准能力；基线 viewer 会通过 `postMessage` 发送 `flyfish-viewer:search` 和 `flyfish-viewer:location` 事件，便于宿主记录当前命中、页码、行号和溯源信息。需要 AI 摘要、问答、相似段落召回或证据链展示时，业务侧可把 `getDocumentTextChunks()` 返回的文本切片写入自己的向量库或审计系统，再通过 `scrollToAnchor()` / `searchDocument()` 回到原文位置。
 
 ## 打印、导出和水印的交付行为
 

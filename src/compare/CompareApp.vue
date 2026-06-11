@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
+import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { FileViewer } from '@/package'
 import type {
   FileRef,
@@ -66,8 +67,11 @@ const leftPanel = reactive(createPanel('left', '左侧文档', samples[0].url))
 const rightPanel = reactive(createPanel('right', '右侧文档', samples[1].url))
 const syncScrollEnabled = ref(true)
 const comparePdfToolbarHidden = ref(true)
+const compareSearchOpen = ref(false)
 const compareSearchQuery = ref('')
+const compareSearchInputRef = ref<HTMLInputElement | null>(null)
 const compareLineTarget = ref('')
+const activeCompareSide = ref<CompareSide>('left')
 const leftViewerRef = ref<FileViewerPublicApi | null>(null)
 const rightViewerRef = ref<FileViewerPublicApi | null>(null)
 
@@ -81,6 +85,12 @@ const createEmptySearchState = (): FileViewerSearchState => ({
 
 const leftSearchState = ref<FileViewerSearchState>(createEmptySearchState())
 const rightSearchState = ref<FileViewerSearchState>(createEmptySearchState())
+
+const activeSideLabel = computed(() => activeCompareSide.value === 'left' ? '左侧文档' : '右侧文档')
+
+const activeSearchState = computed(() => {
+  return activeCompareSide.value === 'left' ? leftSearchState.value : rightSearchState.value
+})
 
 const viewerOptions = computed<FileViewerOptions>(() => ({
   toolbar: false,
@@ -194,67 +204,83 @@ const { bind: bindScrollSync } = useSynchronizedScroll(
 )
 
 const compareSearchSummary = computed(() => {
-  const left = leftSearchState.value
-  const right = rightSearchState.value
   if (!compareSearchQuery.value.trim()) {
-    return '输入关键词后搜索'
+    return `${activeSideLabel.value} · 0/0`
   }
   const format = (state: FileViewerSearchState) => {
     return state.total ? `${state.currentIndex + 1}/${state.total}` : '0/0'
   }
-  return `左 ${format(left)} · 右 ${format(right)}`
+  return `${activeSideLabel.value} · ${format(activeSearchState.value)}`
 })
+
+const setActivePanel = (side: CompareSide) => {
+  activeCompareSide.value = side
+}
+
+const getActiveViewer = () => {
+  return activeCompareSide.value === 'left' ? leftViewerRef.value : rightViewerRef.value
+}
+
+const setActiveSearchState = (state: FileViewerSearchState) => {
+  if (activeCompareSide.value === 'left') {
+    leftSearchState.value = state
+  } else {
+    rightSearchState.value = state
+  }
+}
+
+const openCompareSearch = async (side = activeCompareSide.value) => {
+  activeCompareSide.value = side
+  compareSearchOpen.value = true
+  await nextTick()
+  compareSearchInputRef.value?.focus()
+  compareSearchInputRef.value?.select()
+}
+
+const clearActiveCompareSearch = async () => {
+  const state = await getActiveViewer()?.clearDocumentSearch() ?? createEmptySearchState()
+  setActiveSearchState(state)
+  return state
+}
+
+const closeCompareSearch = async () => {
+  compareSearchOpen.value = false
+  await clearActiveCompareSearch()
+}
 
 const runCompareSearch = async () => {
   const query = compareSearchQuery.value.trim()
   if (!query) {
-    const [leftState, rightState] = await Promise.all([
-      leftViewerRef.value?.clearDocumentSearch() ?? Promise.resolve(createEmptySearchState()),
-      rightViewerRef.value?.clearDocumentSearch() ?? Promise.resolve(createEmptySearchState())
-    ])
-    leftSearchState.value = leftState
-    rightSearchState.value = rightState
+    await clearActiveCompareSearch()
     return
   }
 
-  const [leftState, rightState] = await Promise.all([
-    leftViewerRef.value?.searchDocument(query) ?? Promise.resolve(createEmptySearchState()),
-    rightViewerRef.value?.searchDocument(query) ?? Promise.resolve(createEmptySearchState())
-  ])
-  leftSearchState.value = leftState
-  rightSearchState.value = rightState
+  const state = await getActiveViewer()?.searchDocument(query) ?? createEmptySearchState()
+  setActiveSearchState(state)
 }
 
 const nextCompareSearch = async () => {
   if (!compareSearchQuery.value.trim()) {
     return
   }
-  if (leftSearchState.value.query !== compareSearchQuery.value.trim()) {
+  if (activeSearchState.value.query !== compareSearchQuery.value.trim()) {
     await runCompareSearch()
     return
   }
-  const [leftState, rightState] = await Promise.all([
-    leftViewerRef.value?.nextSearchResult() ?? Promise.resolve(leftSearchState.value),
-    rightViewerRef.value?.nextSearchResult() ?? Promise.resolve(rightSearchState.value)
-  ])
-  leftSearchState.value = leftState
-  rightSearchState.value = rightState
+  const state = await getActiveViewer()?.nextSearchResult() ?? activeSearchState.value
+  setActiveSearchState(state)
 }
 
 const previousCompareSearch = async () => {
   if (!compareSearchQuery.value.trim()) {
     return
   }
-  if (leftSearchState.value.query !== compareSearchQuery.value.trim()) {
+  if (activeSearchState.value.query !== compareSearchQuery.value.trim()) {
     await runCompareSearch()
     return
   }
-  const [leftState, rightState] = await Promise.all([
-    leftViewerRef.value?.previousSearchResult() ?? Promise.resolve(leftSearchState.value),
-    rightViewerRef.value?.previousSearchResult() ?? Promise.resolve(rightSearchState.value)
-  ])
-  leftSearchState.value = leftState
-  rightSearchState.value = rightState
+  const state = await getActiveViewer()?.previousSearchResult() ?? activeSearchState.value
+  setActiveSearchState(state)
 }
 
 const goToCompareLine = async () => {
@@ -291,6 +317,32 @@ const handleUnload = (panel: ComparePanelState) => {
   panel.status = '已卸载'
 }
 
+const handleDocumentKeydown = (event: KeyboardEvent) => {
+  const key = event.key.toLowerCase()
+  if ((event.metaKey || event.ctrlKey) && !event.altKey && key === 'f') {
+    event.preventDefault()
+    event.stopPropagation()
+    if (compareSearchOpen.value) {
+      void closeCompareSearch()
+      return
+    }
+    void openCompareSearch()
+    return
+  }
+
+  if (event.key === 'Escape' && compareSearchOpen.value) {
+    void closeCompareSearch()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleDocumentKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleDocumentKeydown)
+})
+
 </script>
 
 <template>
@@ -305,34 +357,19 @@ const handleUnload = (panel: ComparePanelState) => {
       </a>
       <div class="compare-title">
         <h1>文档比对</h1>
-        <p>左右并排预览，支持示例、URL、本地上传、同步滚动、搜索高亮和行级定位。</p>
-        <div class="compare-search" role="search" aria-label="文档比对搜索">
-          <input
-            v-model.trim="compareSearchQuery"
-            type="search"
-            placeholder="搜索两侧文档"
-            @keyup.enter="runCompareSearch"
-          >
-          <button type="button" @click="runCompareSearch">搜索</button>
-          <button type="button" title="上一个搜索结果" aria-label="上一个搜索结果" @click="previousCompareSearch">
-            <span class="compare-search-arrow compare-search-arrow--up" aria-hidden="true" />
-          </button>
-          <button type="button" title="下一个搜索结果" aria-label="下一个搜索结果" @click="nextCompareSearch">
-            <span class="compare-search-arrow compare-search-arrow--down" aria-hidden="true" />
-          </button>
-          <span class="compare-search-summary">{{ compareSearchSummary }}</span>
+        <p>左右并排预览，支持示例、URL、本地上传、同步滚动、聚焦搜索和行级定位。</p>
+      </div>
+      <div class="header-actions">
+        <div class="line-locator" aria-label="行级定位">
           <input
             v-model.trim="compareLineTarget"
-            class="line-input"
             type="number"
             min="1"
-            placeholder="行"
+            placeholder="行号"
             @keyup.enter="goToCompareLine"
           >
           <button type="button" @click="goToCompareLine">定位</button>
         </div>
-      </div>
-      <div class="header-actions">
         <label class="sync-toggle">
           <input v-model="syncScrollEnabled" type="checkbox">
           <span>同步滚动</span>
@@ -346,11 +383,39 @@ const handleUnload = (panel: ComparePanelState) => {
       </div>
     </header>
 
+    <div v-if="compareSearchOpen" class="compare-search-popover" role="search" aria-label="文档比对搜索">
+      <span class="compare-search-side">{{ activeSideLabel }}</span>
+      <label class="compare-search-field">
+        <Search class="compare-search-field-icon" aria-hidden="true" />
+        <input
+          ref="compareSearchInputRef"
+          v-model.trim="compareSearchQuery"
+          type="search"
+          placeholder="搜索当前文档"
+          @keyup.enter="runCompareSearch"
+        >
+      </label>
+      <span class="compare-search-summary">{{ compareSearchSummary }}</span>
+      <button type="button" title="上一个搜索结果" aria-label="上一个搜索结果" @click="previousCompareSearch">
+        <ChevronUp class="compare-search-icon" aria-hidden="true" />
+      </button>
+      <button type="button" title="下一个搜索结果" aria-label="下一个搜索结果" @click="nextCompareSearch">
+        <ChevronDown class="compare-search-icon" aria-hidden="true" />
+      </button>
+      <button type="button" title="关闭搜索" aria-label="关闭搜索" @click="closeCompareSearch">
+        <X class="compare-search-icon" aria-hidden="true" />
+      </button>
+    </div>
+
     <section class="compare-board" aria-label="文档左右比对">
       <article
         v-for="panel in [leftPanel, rightPanel]"
         :key="panel.side"
         class="compare-panel"
+        :class="{ 'compare-panel--active': activeCompareSide === panel.side }"
+        tabindex="0"
+        @pointerdown="setActivePanel(panel.side)"
+        @focusin="setActivePanel(panel.side)"
       >
         <div class="panel-tools">
           <div class="panel-heading">
@@ -522,78 +587,6 @@ const handleUnload = (panel: ComparePanelState) => {
   font-size: 13px;
 }
 
-.compare-search {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(140px, 1fr) auto auto auto minmax(94px, auto) 64px auto;
-  gap: 6px;
-  align-items: center;
-}
-
-.compare-search input,
-.compare-search button,
-.compare-search-summary {
-  height: 34px;
-  min-width: 0;
-  border: 1px solid rgba(20, 42, 59, 0.1);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #294259;
-  font: inherit;
-  font-size: 12px;
-}
-
-.compare-search input {
-  padding: 0 10px;
-  outline: none;
-}
-
-.compare-search input:focus {
-  border-color: rgba(31, 153, 102, 0.5);
-  box-shadow: 0 0 0 3px rgba(31, 153, 102, 0.12);
-}
-
-.compare-search button {
-  padding: 0 10px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.compare-search button:hover {
-  border-color: rgba(31, 152, 99, 0.28);
-  color: #14794e;
-}
-
-.compare-search-arrow {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-top: 2px solid currentColor;
-  border-left: 2px solid currentColor;
-}
-
-.compare-search-arrow--up {
-  transform: translateY(2px) rotate(45deg);
-}
-
-.compare-search-arrow--down {
-  transform: translateY(-2px) rotate(225deg);
-}
-
-.compare-search-summary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  color: #607588;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.compare-search .line-input {
-  text-align: center;
-}
-
 .header-actions {
   display: inline-flex;
   align-items: center;
@@ -603,7 +596,8 @@ const handleUnload = (panel: ComparePanelState) => {
 }
 
 .header-actions button,
-.sync-toggle {
+.sync-toggle,
+.line-locator {
   height: 40px;
   display: inline-flex;
   align-items: center;
@@ -620,6 +614,34 @@ const handleUnload = (panel: ComparePanelState) => {
   box-shadow: 0 8px 20px rgba(16, 38, 54, 0.06);
 }
 
+.line-locator {
+  gap: 6px;
+  padding: 0 6px 0 10px;
+}
+
+.line-locator input {
+  width: 62px;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #294259;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.line-locator input::placeholder {
+  color: #7b91a2;
+}
+
+.line-locator button {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
 .header-actions button {
   cursor: pointer;
 }
@@ -634,6 +656,96 @@ const handleUnload = (panel: ComparePanelState) => {
   height: 16px;
   margin: 0;
   accent-color: #1f9966;
+}
+
+.compare-search-popover {
+  position: absolute;
+  z-index: 30;
+  top: 96px;
+  right: 24px;
+  display: inline-grid;
+  grid-template-columns: auto minmax(180px, 280px) auto auto auto auto;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 48px);
+  padding: 6px;
+  border: 1px solid rgba(20, 35, 53, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 42px rgba(18, 35, 50, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.compare-search-side,
+.compare-search-summary,
+.compare-search-popover button,
+.compare-search-field {
+  height: 34px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #526174;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.compare-search-side,
+.compare-search-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 0 10px;
+  color: #718193;
+  white-space: nowrap;
+}
+
+.compare-search-field {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: rgba(20, 35, 53, 0.04);
+}
+
+.compare-search-field:focus-within {
+  background: rgba(33, 163, 102, 0.1);
+  color: #16804f;
+}
+
+.compare-search-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.compare-search-field-icon,
+.compare-search-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
+}
+
+.compare-search-popover button {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.compare-search-popover button:hover {
+  background: rgba(33, 163, 102, 0.1);
+  color: #16804f;
 }
 
 .compare-board {
@@ -656,6 +768,17 @@ const handleUnload = (panel: ComparePanelState) => {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 18px 52px rgba(16, 35, 50, 0.1);
+}
+
+.compare-panel:focus {
+  outline: none;
+}
+
+.compare-panel--active {
+  border-color: rgba(31, 153, 102, 0.34);
+  box-shadow:
+    0 0 0 3px rgba(31, 153, 102, 0.1),
+    0 18px 52px rgba(16, 35, 50, 0.1);
 }
 
 .panel-tools {
@@ -797,19 +920,6 @@ const handleUnload = (panel: ComparePanelState) => {
     text-align: left;
   }
 
-  .compare-search {
-    grid-template-columns: minmax(140px, 1fr) repeat(3, auto);
-  }
-
-  .compare-search-summary {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
-
-  .compare-search .line-input {
-    grid-column: 1 / span 1;
-  }
-
   .tool-grid {
     grid-template-columns: 1fr;
   }
@@ -830,8 +940,21 @@ const handleUnload = (panel: ComparePanelState) => {
   }
 
   .header-actions button,
-  .sync-toggle {
+  .sync-toggle,
+  .line-locator {
     flex: 1;
+  }
+
+  .compare-search-popover {
+    left: 18px;
+    right: 18px;
+    top: 100px;
+    grid-template-columns: auto minmax(120px, 1fr) repeat(3, auto);
+  }
+
+  .compare-search-summary {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 
   .compare-board {
@@ -859,6 +982,13 @@ const handleUnload = (panel: ComparePanelState) => {
     background: rgba(18, 28, 36, 0.9);
   }
 
+  .compare-panel--active {
+    border-color: rgba(47, 214, 151, 0.34);
+    box-shadow:
+      0 0 0 3px rgba(47, 214, 151, 0.1),
+      0 18px 52px rgba(0, 0, 0, 0.22);
+  }
+
   .brand small,
   .compare-title p,
   .panel-heading p,
@@ -869,14 +999,39 @@ const handleUnload = (panel: ComparePanelState) => {
 
   .header-actions button,
   .sync-toggle,
-  .compare-search input,
-  .compare-search button,
-  .compare-search-summary,
+  .line-locator,
   .tool-grid select,
   .tool-grid input[type='text'] {
     border-color: rgba(149, 174, 190, 0.14);
     background: rgba(16, 25, 32, 0.96);
     color: #ecf5f8;
+  }
+
+  .line-locator input {
+    color: #ecf5f8;
+  }
+
+  .compare-search-popover {
+    border-color: rgba(149, 174, 190, 0.14);
+    background: rgba(12, 20, 27, 0.94);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  }
+
+  .compare-search-side,
+  .compare-search-summary,
+  .compare-search-popover button,
+  .compare-search-field {
+    color: #b8c7d5;
+  }
+
+  .compare-search-field {
+    background: rgba(167, 185, 198, 0.09);
+  }
+
+  .compare-search-field:focus-within,
+  .compare-search-popover button:hover {
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
   }
 
   .panel-tools,

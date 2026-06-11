@@ -183,8 +183,8 @@ await copyViewerAssets({
 - `theme`: 支持 `light`、`dark`、`system`。默认 `system` 跟随系统；浅色业务系统建议传 `light`。
 - `toolbar`: 声明是否允许下载原文件、完整打印和导出 HTML；`position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角；打印按钮仍会按当前格式和渲染链路动态显隐。
 - `watermark`: 配置文字或图片水印。
-- `search`: 配置通用搜索高亮、整词/大小写和最大命中数；iframe 会回传 `flyfish-viewer:search` 事件。
-- `ai`: 配置文本切片结构，便于业务侧做向量化、溯源和高亮，不绑定云端模型。
+- `search`: 配置搜索高亮、整词/大小写和最大命中数；PDF 等特殊格式会优先使用渲染器原生搜索，iframe 会回传 `flyfish-viewer:search` 事件。
+- `ai`: 配置文本切片结构，返回行号、页码和锚点上下文，便于业务侧做向量化、溯源、来源定位和高亮，不绑定云端模型。
 - `pdf.toolbar`: 控制是否显示 PDF 自身页码、缩放和旋转工具栏；文档比对等紧凑场景可以设为 `false`。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
 

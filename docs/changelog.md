@@ -7,11 +7,12 @@
 ### 当前主线 文档比对、搜索定位和 AI 友好结构增强
 
 - 文档比对页同步滚动改为绑定真实预览滚动容器，并按 scroll ratio 同步左右滚动位置，PDF 内部滚动层、Word 外层滚动层和文本预览都走同一套逻辑
-- 文档比对页新增关键词搜索、高亮命中、上一个 / 下一个和行级定位；命中结果会同时返回行号、页码和锚点上下文，便于业务侧做审计与溯源
+- 文档比对页搜索改为当前聚焦文档的浮层交互，配合成熟图标按钮提供关键词搜索、高亮命中、上一个 / 下一个；避免顶部工具区拥挤，也避免左右两侧同时滚动导致视线丢失
+- 文档比对页继续提供行级定位；搜索、定位和文本切片结果会返回行号、页码和锚点上下文，便于业务侧做审计与溯源
 - 新增 `options.pdf.toolbar`，可在左右比对等紧凑场景隐藏 PDF 自身页码、缩放、旋转工具栏，避免 PDF 比其他格式多一条顶部导航导致正文错位
-- 新增 `options.search`、`searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`getSearchState()` 等通用搜索 API
+- 新增 `options.search`、`searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`getSearchState()` 等通用搜索 API；PDF 等特殊渲染器可注册原生搜索提供器，避免通用 DOM 高亮污染文本层或 canvas
 - 新增 `collectDocumentAnchors()`、`scrollToLine()`、`scrollToAnchor()` 和 `getDocumentTextChunks()`，预览器只提供锚点、文本切片和溯源上下文，不绑定具体 AI 服务，业务侧可基于它做向量化、召回、高亮和来源定位
-- 主 Demo 顶部新增搜索入口，公开文档同步补充文档比对页、搜索定位、PDF 工具栏隐藏和 AI 友好结构说明
+- 主 Demo 和文档比对 Demo 的搜索浮层统一改用成熟图标按钮，公开文档同步补充文档比对页、搜索定位、PDF 工具栏隐藏、AI 友好结构和溯源定位说明
 
 ### `v1.0.22` PPTX 兼容性修复与连续发布版本
 

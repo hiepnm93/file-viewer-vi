@@ -74,7 +74,7 @@
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开。
 - 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示。
-- 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置和同步滚动，适合上线前核对两份附件的视觉差异。
+- 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位，适合上线前核对两份附件的视觉差异。
 
 ## 常用入口
 

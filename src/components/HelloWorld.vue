@@ -1,5 +1,6 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ChevronDown, ChevronUp, X } from '@lucide/vue'
 import { listenForFile } from '@/components/utils'
 import type {
   FileRef,
@@ -948,15 +949,15 @@ function updateSampleMenuGeometry() {
               placeholder='搜索当前文档'
               @keyup.enter='runViewerSearch'
             />
-            <span>{{ viewerSearchSummary }}</span>
+            <span class='viewer-search-summary'>{{ viewerSearchSummary }}</span>
             <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
-              <span class='viewer-search-arrow viewer-search-arrow--up' aria-hidden='true' />
+              <ChevronUp class='viewer-search-icon' aria-hidden='true' />
             </button>
             <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
-              <span class='viewer-search-arrow viewer-search-arrow--down' aria-hidden='true' />
+              <ChevronDown class='viewer-search-icon' aria-hidden='true' />
             </button>
             <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
-              ×
+              <X class='viewer-search-icon' aria-hidden='true' />
             </button>
           </div>
 
@@ -982,15 +983,15 @@ function updateSampleMenuGeometry() {
             placeholder='搜索当前文档'
             @keyup.enter='runViewerSearch'
           />
-          <span>{{ viewerSearchSummary }}</span>
+          <span class='viewer-search-summary'>{{ viewerSearchSummary }}</span>
           <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
-            <span class='viewer-search-arrow viewer-search-arrow--up' aria-hidden='true' />
+            <ChevronUp class='viewer-search-icon' aria-hidden='true' />
           </button>
           <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
-            <span class='viewer-search-arrow viewer-search-arrow--down' aria-hidden='true' />
+            <ChevronDown class='viewer-search-icon' aria-hidden='true' />
           </button>
           <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
-            ×
+            <X class='viewer-search-icon' aria-hidden='true' />
           </button>
         </div>
         <div class='viewport'>
@@ -1797,7 +1798,7 @@ function updateSampleMenuGeometry() {
 
 .viewer-search-popover input,
 .viewer-search-popover button,
-.viewer-search-popover span {
+.viewer-search-summary {
   height: 34px;
   border: 0;
   border-radius: 12px;
@@ -1820,7 +1821,7 @@ function updateSampleMenuGeometry() {
   color: #16804f;
 }
 
-.viewer-search-popover span {
+.viewer-search-summary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1829,8 +1830,12 @@ function updateSampleMenuGeometry() {
 }
 
 .viewer-search-popover button {
+  width: 34px;
   min-width: 34px;
-  padding: 0 8px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -1839,24 +1844,10 @@ function updateSampleMenuGeometry() {
   color: #16804f;
 }
 
-.viewer-search-arrow {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-top: 2px solid currentColor;
-  border-left: 2px solid currentColor;
-}
-
-.viewer-search-arrow--up {
-  transform: translateY(2px) rotate(45deg);
-}
-
-.viewer-search-arrow--down {
-  transform: translateY(-2px) rotate(225deg);
-}
-
-.viewer-search-close {
-  font-size: 18px;
+.viewer-search-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
 }
 
 .viewer-action-group {
@@ -2192,7 +2183,7 @@ function updateSampleMenuGeometry() {
 
   .viewer-search-popover input,
   .viewer-search-popover button,
-  .viewer-search-popover span {
+  .viewer-search-summary {
     color: #b8c7d5;
   }
 
