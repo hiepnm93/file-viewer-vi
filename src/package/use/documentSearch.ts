@@ -46,6 +46,25 @@ type SearchProviderHost = HTMLElement & {
   __flyfishViewerSearchProvider?: FileViewerSearchProvider;
 }
 
+const searchProviderRegistry = new WeakMap<HTMLElement, FileViewerSearchProvider>()
+
+export const registerFileViewerSearchProvider = (
+  host: HTMLElement,
+  provider: FileViewerSearchProvider
+) => {
+  searchProviderRegistry.set(host, provider)
+  // Keep the legacy expando for integrations that already read it directly.
+  ;(host as SearchProviderHost).__flyfishViewerSearchProvider = provider
+}
+
+export const unregisterFileViewerSearchProvider = (host: HTMLElement | null | undefined) => {
+  if (!host) {
+    return
+  }
+  searchProviderRegistry.delete(host)
+  delete (host as SearchProviderHost).__flyfishViewerSearchProvider
+}
+
 const normalizeOptions = (options?: boolean | FileViewerSearchOptions): FileViewerSearchOptions => {
   if (options === false) {
     return { enabled: false }
@@ -156,7 +175,9 @@ export const useDocumentSearch = (
 
   const getSearchProvider = () => {
     const providerHost = root.value?.querySelector<SearchProviderHost>('[data-viewer-search-provider]')
-    return providerHost?.__flyfishViewerSearchProvider || null
+    return providerHost
+      ? searchProviderRegistry.get(providerHost) || providerHost.__flyfishViewerSearchProvider || null
+      : null
   }
 
   const runProviderAction = async (

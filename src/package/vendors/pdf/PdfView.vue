@@ -4,12 +4,15 @@ import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'p
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import { DEFAULT_PDF_RANGE_CHUNK_SIZE } from '@/package/common/sourceLoading'
 import { buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
+import {
+  registerFileViewerSearchProvider,
+  unregisterFileViewerSearchProvider
+} from '@/package/use/documentSearch'
 import type {
   FileRenderExportOptions,
   FileRenderExportAdapter,
   FileViewerPdfOptions,
   FileViewerSearchOptions,
-  FileViewerSearchProvider,
   FileViewerSearchState
 } from '@/package/common/type'
 import './pdf.css'
@@ -116,9 +119,7 @@ let pdfSearchWaiters: Array<{
 }> = []
 type PdfNavigationResult = void | PromiseLike<void>
 type PdfFindMatchesCount = { current: number; total: number }
-type PdfSearchProviderHost = HTMLDivElement & {
-  __flyfishViewerSearchProvider?: FileViewerSearchProvider;
-}
+type PdfSearchProviderHost = HTMLDivElement
 
 function createPdfWorker() {
   if (typeof window === 'undefined' || !('Worker' in window)) {
@@ -283,7 +284,7 @@ function attachPdfSearchProvider() {
   if (!host) {
     return
   }
-  host.__flyfishViewerSearchProvider = {
+  registerFileViewerSearchProvider(host, {
     search: (query, options) => runPdfFind(query, options, '', false),
     next: () => context.search
       ? runPdfFind(context.search, undefined, 'again', false)
@@ -293,14 +294,17 @@ function attachPdfSearchProvider() {
       : pdfSearchState,
     clear: clearPdfFind,
     getState: () => pdfSearchState
-  }
+  })
+}
+
+async function attachPdfSearchProviderAfterRender() {
+  await nextTick()
+  attachPdfSearchProvider()
 }
 
 function detachPdfSearchProvider() {
   const host = shell.value as PdfSearchProviderHost | null
-  if (host?.__flyfishViewerSearchProvider) {
-    delete host.__flyfishViewerSearchProvider
-  }
+  unregisterFileViewerSearchProvider(host)
 }
 
 async function destroyPdfResource(resource: PdfResource | null) {
@@ -479,6 +483,7 @@ async function loadFile() {
     context.eventBus = eventBus
     context.findController = pdfFindController
     pdfLinkService.setViewer(pdfViewer)
+    attachPdfSearchProvider()
 
     eventBus.on('updatefindmatchescount', handlePdfFindMatchesCount)
     eventBus.on('updatefindcontrolstate', handlePdfFindControlState)
@@ -755,7 +760,7 @@ function goToOutlineItem(item: PdfOutlineItemView) {
 }
 
 onMounted(() => {
-  attachPdfSearchProvider()
+  void attachPdfSearchProviderAfterRender()
   void loadFile()
 
   if (container.value) {
