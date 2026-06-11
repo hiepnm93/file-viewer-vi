@@ -316,6 +316,25 @@ function buildAiPayload() {
 
 iframe / React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 helper 暴露的标准能力；基线 viewer 会通过 `postMessage` 发送 `flyfish-viewer:search` 和 `flyfish-viewer:location` 事件，便于宿主记录当前命中、页码、行号和溯源信息。需要 AI 摘要、问答、相似段落召回或证据链展示时，业务侧可把 `getDocumentTextChunks()` 返回的文本切片写入自己的向量库或审计系统，再通过 `scrollToAnchor()` / `searchDocument()` 回到原文位置。
 
+## DOCX 大文件保护
+
+`.docx` 使用 `docx-preview` 做高保真页面渲染。这个库会在浏览器主线程构建完整 DOM，所以当 `word/document.xml` 解压后特别大时，强行完整渲染会让页面长时间无响应。预览器默认会先做 DOCX 复杂度预检，超过 2MB 正文 XML 时自动切换为轻量可读预览，保留正文、段落和表格，并继续支持下载与 HTML 导出。
+
+```vue
+<FileViewer
+  url="/files/report.docx"
+  :options="{
+    docx: {
+      // 默认 2 * 1024 * 1024。业务确认机器性能和文件结构后可适当调高。
+      maxFullRenderXmlBytes: 3 * 1024 * 1024,
+      lightweightFallback: true
+    }
+  }"
+/>
+```
+
+不建议关闭 `lightweightFallback` 去硬渲染客户上传的超大 DOCX。更稳的交付方式是保留轻量预览作为安全阀，同时提供原文件下载，或在服务端把超大 Word 转换成 PDF/OFD 后再走版式预览。
+
 ## 打印、导出和水印的交付行为
 
 - 下载原文件会保留用户传入的原始二进制内容，不会把渲染后的页面反向写回文件。

@@ -352,6 +352,7 @@ export interface FileViewerOptions {
   ai?: boolean | FileViewerAiOptions;
   archive?: FileViewerArchiveOptions;
   pdf?: FileViewerPdfOptions;
+  docx?: FileViewerDocxOptions;
   typst?: FileViewerTypstOptions;
   /**
    * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
@@ -362,6 +363,27 @@ export interface FileViewerOptions {
    * 内置操作按钮执行前的全局前置钩子。返回 `false` 时会取消本次操作。
    */
   beforeOperation?: FileViewerBeforeOperation;
+}
+
+/**
+ * DOCX 渲染配置。
+ *
+ * `docx-preview` 需要在主线程构建完整 DOM。遇到解压后 XML 特别大的
+ * Word 文档时，强行完整渲染会让浏览器长时间无响应，因此默认会在
+ * 超过阈值时切换为轻量可读预览。
+ */
+export interface FileViewerDocxOptions {
+  /**
+   * `word/document.xml` 超过该大小时进入轻量预览。
+   *
+   * 默认 2MB。传 `Infinity` 或关闭 `lightweightFallback` 可强制完整渲染，
+   * 但不建议对客户上传文件这样做。
+   */
+  maxFullRenderXmlBytes?: number;
+  /**
+   * 是否允许超大 DOCX 进入轻量可读预览。默认开启。
+   */
+  lightweightFallback?: boolean;
 }
 
 /**

@@ -4,9 +4,23 @@ import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels, getElementPri
 import type { PrintPageSize } from '@/package/common/printLayout'
 import type { AppWrapper, FileRenderContext } from '@/package/common/type'
 
+const DOCX_FULL_RENDER_XML_LIMIT = 2 * 1024 * 1024
+
 const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   width: 794,
   height: 1123
+}
+
+type DocxZipFile = {
+  async: (type: 'string') => Promise<string>;
+  _data?: {
+    uncompressedSize?: number;
+  };
+}
+
+type DocxPreflight = {
+  documentXmlBytes: number;
+  documentFile: DocxZipFile | null;
 }
 
 const loadLibrary = (() => {
@@ -58,6 +72,201 @@ const DOCX_RESPONSIVE_CSS = `
   transform-origin: top center;
 }
 `
+
+const DOCX_LIGHTWEIGHT_CSS = `
+.docx-light-viewer {
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 24px 14px 40px;
+  background: #e7e9ec;
+  color: #162033;
+  font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+}
+.docx-light-page {
+  box-sizing: border-box;
+  width: min(100%, 820px);
+  margin: 0 auto;
+  padding: 42px 48px 56px;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 2px 14px rgba(25, 35, 48, 0.18);
+}
+.docx-light-notice {
+  margin: 0 0 28px;
+  padding: 16px 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  line-height: 1.7;
+}
+.docx-light-notice strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #1e3a8a;
+  font-size: 16px;
+}
+.docx-light-title {
+  margin: 0 0 24px;
+  color: #111827;
+  font-size: 26px;
+  line-height: 1.35;
+}
+.docx-light-paragraph {
+  margin: 0 0 12px;
+  color: #243244;
+  font-size: 15px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+.docx-light-table-wrap {
+  margin: 20px 0;
+  overflow-x: auto;
+}
+.docx-light-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #243244;
+  font-size: 14px;
+}
+.docx-light-table td {
+  min-width: 96px;
+  padding: 8px 10px;
+  border: 1px solid #d7dee8;
+  vertical-align: top;
+  line-height: 1.6;
+}
+@media (max-width: 720px) {
+  .docx-light-viewer {
+    padding: 14px 8px 28px;
+  }
+  .docx-light-page {
+    padding: 28px 22px 38px;
+  }
+}
+`
+
+const escapeHtml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;')
+
+const formatBytes = (bytes: number) => {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return '未知大小'
+  }
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  }
+  return `${Math.ceil(bytes / 1024)} KB`
+}
+
+const collectElementsByLocalName = (root: ParentNode, localName: string) => {
+  return Array.from(root.querySelectorAll('*')).filter(element => element.localName === localName)
+}
+
+const getDirectElementChildren = (node: Element) => {
+  return Array.from(node.childNodes).filter((child): child is Element => child.nodeType === Node.ELEMENT_NODE)
+}
+
+const getElementText = (node: Node): string => {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent || ''
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return ''
+  }
+
+  const element = node as Element
+  if (element.localName === 'tab') {
+    return '  '
+  }
+  if (element.localName === 'br' || element.localName === 'cr') {
+    return '\n'
+  }
+
+  return Array.from(element.childNodes).map(getElementText).join('')
+}
+
+const normalizeExtractedText = (text: string) => {
+  return text
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+const renderLightweightTable = (table: Element) => {
+  const rows = collectElementsByLocalName(table, 'tr')
+    .map(row => {
+      const cells = collectElementsByLocalName(row, 'tc')
+        .map(cell => `<td>${escapeHtml(normalizeExtractedText(getElementText(cell)))}</td>`)
+        .join('')
+      return cells ? `<tr>${cells}</tr>` : ''
+    })
+    .filter(Boolean)
+
+  if (!rows.length) {
+    return ''
+  }
+
+  return `<div class="docx-light-table-wrap"><table class="docx-light-table"><tbody>${rows.join('')}</tbody></table></div>`
+}
+
+const buildLightweightDocxHtml = (xml: string, xmlBytes: number, filename?: string) => {
+  const parser = new DOMParser()
+  const documentXml = parser.parseFromString(xml, 'application/xml')
+  const body = collectElementsByLocalName(documentXml, 'body')[0]
+  const blocks: string[] = []
+
+  if (body) {
+    getDirectElementChildren(body).forEach(child => {
+      if (child.localName === 'p') {
+        const text = normalizeExtractedText(getElementText(child))
+        if (text) {
+          blocks.push(`<p class="docx-light-paragraph">${escapeHtml(text)}</p>`)
+        }
+      } else if (child.localName === 'tbl') {
+        const table = renderLightweightTable(child)
+        if (table) {
+          blocks.push(table)
+        }
+      }
+    })
+  }
+
+  const title = filename ? escapeHtml(filename) : 'Word 文档'
+  const notice = `原始 DOCX 的正文 XML 达到 ${formatBytes(xmlBytes)}，完整高保真渲染可能导致浏览器长时间无响应。已自动切换为轻量可读预览，保留正文、段落和表格内容；需要原始版式时请下载文件或提高 options.docx.maxFullRenderXmlBytes。`
+  const content = blocks.length
+    ? blocks.join('')
+    : '<p class="docx-light-paragraph">未能从该 DOCX 中提取可读正文。</p>'
+
+  return `<style>${DOCX_LIGHTWEIGHT_CSS}</style><div class="docx-light-viewer"><article class="docx-light-page"><div class="docx-light-notice"><strong>已启用轻量 DOCX 预览</strong>${escapeHtml(notice)}</div><h1 class="docx-light-title">${title}</h1>${content}</article></div>`
+}
+
+async function inspectDocx(buffer: ArrayBuffer): Promise<DocxPreflight> {
+  const { default: JSZip } = await import('jszip')
+  const zip = await JSZip.loadAsync(buffer)
+  const documentFile = zip.file('word/document.xml') as DocxZipFile | null
+  const documentXmlBytes = documentFile?._data?.uncompressedSize || 0
+  return {
+    documentXmlBytes,
+    documentFile
+  }
+}
+
+const shouldUseLightweightPreview = (preflight: DocxPreflight, context?: FileRenderContext) => {
+  const options = context?.options?.docx
+  if (options?.lightweightFallback === false) {
+    return false
+  }
+
+  const limit = options?.maxFullRenderXmlBytes ?? DOCX_FULL_RENDER_XML_LIMIT
+  return Number.isFinite(limit) && preflight.documentXmlBytes > limit
+}
 
 function installResponsiveStyle(target: HTMLDivElement) {
   const style = document.createElement('style')
@@ -246,6 +455,28 @@ function buildDocxPrintStyle(target: HTMLDivElement) {
   })
 }
 
+function buildLightweightDocxPrintStyle() {
+  return `
+@page {
+  size: A4;
+  margin: 14mm;
+}
+.viewer-export-content .docx-light-viewer {
+  padding: 0 !important;
+  background: #ffffff !important;
+}
+.viewer-export-content .docx-light-page {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.viewer-export-content .docx-light-notice {
+  display: none !important;
+}
+`
+}
+
 function prepareDocxCloneForExport(target: HTMLDivElement) {
   const liveFrames = Array.from(target.querySelectorAll<HTMLElement>('.docx-page-frame'))
   const clone = target.cloneNode(true) as HTMLElement
@@ -264,10 +495,41 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
   return printDocument.childElementCount ? `${scopedStyles}${printDocument.outerHTML}` : clone.innerHTML
 }
 
+async function renderLightweightDocx(
+  preflight: DocxPreflight,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<AppWrapper> {
+  if (!preflight.documentFile) {
+    throw new Error('DOCX 缺少 word/document.xml，无法提取正文')
+  }
+
+  const xml = await preflight.documentFile.async('string')
+  target.innerHTML = buildLightweightDocxHtml(xml, preflight.documentXmlBytes, context?.filename)
+  context?.registerExportAdapter?.({
+    includeDocumentStyles: false,
+    printStyle: () => buildLightweightDocxPrintStyle(),
+    toHtml: () => target.innerHTML
+  })
+
+  return {
+    $el: target,
+    unmount() {
+      context?.registerExportAdapter?.(null)
+      target.innerHTML = ''
+    }
+  }
+}
+
 /**
  * 渲染docx文件
  */
 export default async function(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext): Promise<AppWrapper> {
+  const preflight = await inspectDocx(buffer)
+  if (shouldUseLightweightPreview(preflight, context)) {
+    return renderLightweightDocx(preflight, target, context)
+  }
+
   const { defaultOptions, renderAsync } = await loadLibrary()
   const docxOptions: Options = {
     ...defaultOptions,

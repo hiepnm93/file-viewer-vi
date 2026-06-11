@@ -5,7 +5,7 @@
 | Local file | Source | License | Purpose |
 | --- | --- | --- | --- |
 | `drawing.dxf` | `https://github.com/mozman/ezdxf/blob/master/examples_dxf/wipeout_door.dxf` | MIT | Real DXF CAD drawing for pan, zoom and layer smoke tests |
-| `word.docx` | `https://www.cbd.int/doc/c/6b91/eca9/ca1f283acd2ebc5edb98596d/sbi-03-21-zh.docx` | Public CBD document, source attribution required | Rich Chinese DOCX preview with headings, long-form text, tables, links, drawings, responsive white paper and print/export smoke tests |
+| `word.docx` | `https://www.basel.int/Portals/4/download.aspx?d=UNEP-CHW.15-6-Add.5-Rev.1.Chinese.docx` | Public Basel Convention document, source attribution required | Rich Chinese DOCX preview with headings, long-form text, tables, drawings, responsive white paper and print/export smoke tests |
 | `template.dot` | Copied from project `test.doc` fixture and saved with the Word 97-2003 template extension | Apache-2.0 | DOT extension routing smoke test for legacy Word template preview |
 | `ppt.pptx` | `https://github.com/hcp4715/R4Psy/blob/main/slides/chapter_1.pptx` | CC-BY-4.0 | Rich Chinese presentation smoke test for slide layout, images, theme styling and media-heavy PPTX rendering |
 | `pdf.pdf` | Project-owner provided `PDF沉浸式翻译技术说明.pdf` | Demo distribution authorized by project owner | 13-page PDF toolbar, scale, page/tree sidebar, print, export and dark-shell isolation smoke tests |
@@ -26,7 +26,7 @@
 运行时说明:
 
 - `sample.dwg` 是真实 DWG 文件；运行时会尽量识别误命名 DXF 或提取内嵌预览图，完整几何仍建议业务侧转换为 DXF。
-- `word.docx` 来自 Convention on Biological Diversity 公开中文正式文档，覆盖标题层级、长正文、表格、链接、图示、白色纸张和完整打印回归。
+- `word.docx` 来自 Basel Convention 公开中文正式文档，覆盖标题层级、长正文、表格、图示、白色纸张和完整打印回归；该样本保留真实文档复杂度，但避免默认 Demo 首屏触发超大 DOCX 保护。
 - `template.dot` 复用 `test.doc` 的二进制内容，仅用于验证 Word 97-2003 模板扩展名能正确进入老 Word 渲染链路。
 - `ppt.pptx` 来自 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、图片资源、主题样式、组合元素和富文本排版。
 - `pdf.pdf` 是项目方提供的 13 页真实技术说明 PDF，覆盖缩放、页侧边栏、树形导航、打印、导出和暗色外壳隔离回归。

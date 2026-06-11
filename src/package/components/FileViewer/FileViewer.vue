@@ -415,6 +415,19 @@ const finishLoading = (version: number) => {
   }
 }
 
+const waitForBrowserPaint = () => {
+  return new Promise<void>(resolve => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      setTimeout(resolve, 0)
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve())
+    })
+  })
+}
+
 const isAbortError = (nextError: unknown) => {
   if (axios.isCancel(nextError)) {
     return true
@@ -533,6 +546,15 @@ const mountRenderedContent = async (
   const child = document.createElement('div')
   child.className = 'file-render'
   out.appendChild(child)
+  await nextTick()
+  await waitForBrowserPaint()
+
+  if (!isCurrentRequest(version)) {
+    if (child.parentNode === out) {
+      out.removeChild(child)
+    }
+    return undefined
+  }
 
   try {
     const rendered = await render(buffer, getExtend(file.name), child, {
