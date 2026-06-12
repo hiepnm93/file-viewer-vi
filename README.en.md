@@ -15,6 +15,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Official documentation: [doc.flyfish.dev](https://doc.flyfish.dev)
 - Online demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - Document comparison demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - GitHub artifact repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - Gitee artifact mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - Source access and commercial customization: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
@@ -23,18 +24,18 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.23` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
-| Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.23` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
-| React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.23` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
-| Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.23` | adapter package | iframe helpers and static viewer asset copier |
+| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.24` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
+| Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.24` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
+| React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.24` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
+| Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.24` | adapter package | iframe helpers and static viewer asset copier |
 
 For intranet or offline environments, this artifact repository also ships npm tarballs under `artifacts/`:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-1.0.23.tgz
-npm install ./artifacts/flyfish-group-file-viewer-1.0.23.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-1.0.23.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-1.0.23.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-1.0.24.tgz
+npm install ./artifacts/flyfish-group-file-viewer-1.0.24.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-1.0.24.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-1.0.24.tgz
 ```
 
 When installing the React tarball offline, install the same-version web tarball first because the React package depends on `@flyfish-group/file-viewer-web`.
@@ -50,6 +51,19 @@ Then allow `@flyfish-group/file-viewer-web`, or manually copy the bundled viewer
 ```bash
 pnpm exec file-viewer-copy-assets ./public/file-viewer
 ```
+
+GitHub Releases provide all distribution downloads:
+
+| File | Purpose |
+| --- | --- |
+| `file-viewer-v3-*-demo.tar.gz` | Main demo / iframe private deployment static site; extract it and use `/index.html?url=...` |
+| `file-viewer-v3-*-adapter-demo.tar.gz` | React / vanilla JavaScript adapter demo site |
+| `file-viewer-v3-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
+| `file-viewer-v3-*-docs.tar.gz` | Documentation site static output |
+| `flyfish-group-file-viewer3-*.tgz` | Vue 3 local npm package |
+| `flyfish-group-file-viewer-*.tgz` | Vue 2.7 local npm package |
+| `flyfish-group-file-viewer-web-*.tgz` | Vanilla JavaScript iframe helper with viewer asset copy tooling |
+| `flyfish-group-file-viewer-react-*.tgz` | React iframe component; install the same-version web package together with it |
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
 
@@ -343,7 +357,7 @@ The artifact repository also contains:
 The project provides a static nginx runtime image and build scripts for `linux/amd64` and `linux/arm64`. A typical deployment can serve the demo and comparison page directly:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.23
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.24
 ```
 
 Then open:

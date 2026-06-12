@@ -220,7 +220,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 ## 完整覆盖与绘图说明
 
-上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.1，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer 静态目录下 `wasm/cad/` 中的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
+上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.2，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer 静态目录下 `wasm/cad/` 中的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 `dwf-viewer` 0.6.4 native renderer 与 `dwfv-render.wasm`。
 
 3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，建议用客户真实模型补充回归。
 

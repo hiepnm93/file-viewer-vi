@@ -497,6 +497,18 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
 }
 
+.cad-native-stage :deep(.dwfv-root),
+.cad-native-stage :deep(.dwfv-workspace),
+.cad-native-stage :deep(.dwfv-stage) {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cad-native-stage :deep(.dwfv-root) {
+  height: 100%;
+}
+
 .cad-state {
   position: absolute;
   inset: 50% auto auto 50%;
