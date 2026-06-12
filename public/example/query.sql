@@ -3,14 +3,18 @@ with preview_files as (
   union all
   select 2, 'invoice.ofd', 4278691, 'document'
   union all
-  select 3, 'drawing.dxf', 56044, 'drawing'
+  select 3, 'house.dwfx', 17340177, 'drawing'
   union all
   select 4, 'code.ts', 4096, 'source'
 ),
 renderer_map as (
   select 'pdf' as extension, 'pdfjs-dist' as renderer
   union all select 'ofd', 'DLTech21/ofd.js'
-  union all select 'dxf', '@cadview/core'
+  union all select 'dxf', '@flyfish-dev/cad-viewer'
+  union all select 'dwg', '@flyfish-dev/cad-viewer'
+  union all select 'dwf', '@flyfish-dev/cad-viewer'
+  union all select 'dwfx', '@flyfish-dev/cad-viewer'
+  union all select 'xps', '@flyfish-dev/cad-viewer'
   union all select 'ts', 'highlight.js'
 )
 select

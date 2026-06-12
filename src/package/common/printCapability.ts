@@ -22,7 +22,7 @@ export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = [
  * 可以稳定进入浏览器打印流程。
  */
 export const DOM_PRINTABLE_EXTENSIONS = [
-  'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'ofd', 'dxf', 'dwg', 'excalidraw', 'drawio', 'dio',
+  'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'ofd', 'dxf', 'dwg', 'dwf', 'dwfx', 'xps', 'excalidraw', 'drawio', 'dio',
   'umd', 'md', 'markdown', 'olb', 'dra',
   ...TEXT_EXTENSIONS,
   ...IMAGE_EXTENSIONS

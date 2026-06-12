@@ -4,7 +4,11 @@ set -euo pipefail
 declare -A RENDERERS=(
   [pdf]="pdfjs-dist"
   [ofd]="DLTech21/ofd.js"
-  [dxf]="@cadview/core"
+  [dxf]="@flyfish-dev/cad-viewer"
+  [dwg]="@flyfish-dev/cad-viewer"
+  [dwf]="@flyfish-dev/cad-viewer"
+  [dwfx]="@flyfish-dev/cad-viewer"
+  [xps]="@flyfish-dev/cad-viewer"
   [ts]="highlight.js"
   [json]="highlight.js"
 )
@@ -23,7 +27,7 @@ preview_plan() {
 }
 
 main() {
-  local files=(contract.pdf invoice.ofd drawing.dxf code.ts archive.bin)
+  local files=(contract.pdf invoice.ofd house.dwfx code.ts archive.bin)
   for file in "${files[@]}"; do
     preview_plan "$file"
   done

@@ -11,8 +11,11 @@
       <format extension="typst" renderer="typst.ts" async="true" paged="true" />
     </group>
     <group id="drawing" label="CAD">
-      <format extension="dxf" renderer="@cadview/core" pan="true" zoom="true" />
-      <format extension="dwg" renderer="embedded-preview-or-guidance" />
+      <format extension="dxf" renderer="@flyfish-dev/cad-viewer" pan="true" zoom="true" />
+      <format extension="dwg" renderer="@flyfish-dev/cad-viewer" worker="true" wasm="true" />
+      <format extension="dwf" renderer="@flyfish-dev/cad-viewer" native="true" />
+      <format extension="dwfx" renderer="@flyfish-dev/cad-viewer" native="true" />
+      <format extension="xps" renderer="@flyfish-dev/cad-viewer" native="true" />
       <format extension="excalidraw" renderer="@excalidraw/excalidraw" async="true" />
       <format extension="drawio" renderer="diagrams.net GraphViewer" async="true" />
       <format extension="dio" renderer="diagrams.net GraphViewer" async="true" />

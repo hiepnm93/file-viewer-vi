@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.22`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.22`，React 使用 `@flyfish-group/file-viewer-react@1.0.22`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.22`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.23`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.23`，React 使用 `@flyfish-group/file-viewer-react@1.0.23`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.23`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -200,6 +200,13 @@ const options = {
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
+| `cad.wasmPath` | LibreDWG WASM 资源目录，默认相对 viewer 入口加载 `wasm/cad/`。私有化部署、CDN 或子路径部署时可以显式传绝对 URL |
+| `cad.workerUrl` | DWG Worker 地址，默认相对 viewer 入口加载 `wasm/cad/dwg-worker.js`。如果网关或构建系统改写静态资源路径，应显式覆盖 |
+| `cad.dwfWasmUrl` | DWF/DWFx/XPS native renderer 的 raster fallback WASM，默认相对 viewer 入口加载 `wasm/cad/dwfv-render.wasm` |
+| `cad.renderer` | CAD 渲染后端，支持 `auto`、`webgl`、`canvas2d`，默认 `auto`，优先 retained WebGL 并自动回退 Canvas2D |
+| `cad.workerTimeoutMs` | DWG Worker 解析超时，默认 120000ms。传 `0` 表示不限制 |
+| `cad.dwfPreferWebgl` / `cad.dwfPreferWasm` | DWF/DWFx/XPS native renderer 的 WebGL 和 WASM backend 偏好，默认都启用 |
+| `cad.dwfLineWeightMode` | DWF/XPS 线宽策略，支持 `adaptive`、`physical`、`hairline` |
 
 图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
 
@@ -389,7 +396,7 @@ async function useLocal(blob: Blob) {
 
 ### OFD、Typst、压缩包、邮件、EDA、CAD、3D 模型、绘图和电子书怎么接
 
-`.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。`.dxf` 会使用 CAD 预览器显示图纸。DWG 会先识别误命名 DXF，再尝试提取真实 DWG 的内嵌预览图；完整几何解析仍建议在业务侧转换为 DXF，避免把 GPL 或闭源 DWG 解析运行时打入组件包。
+`.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。CAD 文件会使用 `@flyfish-dev/cad-viewer`：`dwg` 通过 Worker + LibreDWG WASM 解析，`dxf` 使用 JavaScript parser，`dwf` / `dwfx` / `xps` 通过 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形。私有化部署时请确认 viewer 静态目录下的 `wasm/cad/libredwg-web.js`、`wasm/cad/libredwg-web.wasm`、`wasm/cad/dwfv-render.wasm` 和 `wasm/cad/dwg-worker.js` 可访问；路径不同可通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 覆盖。
 
 `.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 

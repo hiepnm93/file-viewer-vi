@@ -41,8 +41,7 @@
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `libarchive.js` + WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
 | EDA | `olb`、`dra` | `cfb` 容器解析 + EDA 结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器，展示结构树、元件/封装/Padstack 候选、属性、诊断和可读字符串；非 CFB 文件安全退化 | 元件库、封装图纸、EDA 文件初筛 |
-| CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
-| CAD 兼容入口 | `dwg` | DWG 兼容解析 | 先识别误命名 DXF；真实 DWG 会尽量提取内嵌 PNG/JPEG/BMP 预览图，无法完整解析几何时说明原因 | 需要兼容上传入口但不希望引入 GPL 或闭源 DWG 运行时代码的业务 |
+| CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
@@ -108,10 +107,9 @@
 
 ### CAD 图纸
 
-- `dxf` 走 `@cadview/core`，提供 Canvas 图纸预览、缩放、平移和图层显隐能力。
-- `dwg` 当前会尽量处理: 如果文件内容其实是 DXF 文本，会直接按 DXF 打开；如果是真 DWG 二进制，会扫描并提取内嵌 PNG/JPEG/BMP 预览图。
-- 真实 DWG 的矢量图元、图层、块参照和实体几何仍不能在纯 Apache-2.0 前端包里完整解析。原因是 DWG 为专有二进制格式，常见开源转换器授权与当前包不匹配，闭源 SDK 又不适合直接打进 npm 包。
-- 如果你要在生产系统里稳定预览 CAD 文件，建议把 DXF 作为前端预览标准格式；若必须接收 DWG，建议在上传或归档环节接入私有服务端转换链路。
+- `dwg` / `dxf` / `dwf` / `dwfx` / `xps` 走 `@flyfish-dev/cad-viewer`，DWG/DXF 归一化为 CAD document 后使用 retained WebGL 渲染，浏览器不支持 WebGL 时回退 Canvas2D。
+- DWG 通过独立 Worker 加载 LibreDWG WASM，避免初始化和二进制解析阻塞主线程。项目构建会把 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm` 和 `dwg-worker.js` 复制到 viewer 静态目录下的 `wasm/cad/`，也可以通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 指向私有 CDN。
+- DWF / DWFx / XPS 使用 `dwf-viewer` native renderer，支持 DWF 6+ ZIP 容器、WHIP/W2D 2D sheet、W3D/HSF eModel、DWFx/OPC/XPS 页面、嵌入字体、CAD 线宽适配和 WASM raster fallback。
 
 ### 3D 模型
 
@@ -154,7 +152,7 @@
 - 你要兼容历史附件：`.doc` 与 `xls/xlsm/xlsb/csv/ods` 这一组已经有正式链路，但要接受它们与现代格式在样式上的差异。
 - 你要看日志、配置或代码：直接用代码/文本链路即可，重点是快速打开、检索内容和保持安全。
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
-- 你要预览 CAD：优先沉淀 `dxf`；`dwg` 可以展示内嵌预览图，但完整几何预览建议转换为 DXF。
+- 你要预览 CAD：优先提供 `dwg`、`dxf`、`dwf` 或 `dwfx`；DWG 和 DWF native renderer 会按需加载 Worker/WASM，私有化部署时请确认 viewer 静态目录下的 `wasm/cad/` 静态资源可访问。
 - 你要预览 3D 模型：优先沉淀 `glb` / `gltf`，历史模型再用 OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ 等格式接入；STEP、IGES、IFC、3DM 建议先转换。
 - 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者走官方 diagrams.net viewer。
 - 你要预览电子书或音频：EPUB / UMD 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG。

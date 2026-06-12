@@ -21,7 +21,11 @@ std::optional<std::string> rendererFor(const std::string& extension) {
   static const std::map<std::string, std::string> renderers = {
     {"pdf", "pdfjs-dist"},
     {"ofd", "DLTech21/ofd.js"},
-    {"dxf", "@cadview/core"},
+    {"dxf", "@flyfish-dev/cad-viewer"},
+    {"dwg", "@flyfish-dev/cad-viewer"},
+    {"dwf", "@flyfish-dev/cad-viewer"},
+    {"dwfx", "@flyfish-dev/cad-viewer"},
+    {"xps", "@flyfish-dev/cad-viewer"},
     {"cpp", "highlight.js"}
   };
 
@@ -39,7 +43,7 @@ std::vector<PreviewFile> createPreviewQueue(const std::vector<std::string>& file
 }
 
 int main() {
-  for (const auto& file : createPreviewQueue({"contract.pdf", "drawing.dxf", "main.cpp"})) {
+  for (const auto& file : createPreviewQueue({"contract.pdf", "house.dwfx", "main.cpp"})) {
     std::cout << file.name << " -> " << file.renderer << std::endl;
   }
   return 0;

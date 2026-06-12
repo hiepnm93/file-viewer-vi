@@ -69,7 +69,7 @@
 - 压缩包使用 `libarchive.js` Worker 读取目录，点击内部文件后按需解压、缓存并继续复用统一预览器。
 - EML / MSG 邮件支持头信息、HTML/文本正文、附件下载和附件继续预览。
 - OLB / DRA 使用 CFB 容器解析、结构树、对象候选、属性和可读字符串索引，适合 EDA 附件初筛。
-- CAD 支持 DXF 在线预览；DWG 会先尝试按 DXF 兼容解析，再提取内嵌预览图，无法完整解析几何时给出原因。
+- CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
 - 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开。

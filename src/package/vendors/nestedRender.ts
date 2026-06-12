@@ -10,6 +10,7 @@ const SPREADSHEET_EXTENSIONS = [
 ]
 const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp']
 const DRAWING_EXTENSIONS = ['excalidraw', 'drawio', 'dio']
+const CAD_EXTENSIONS = ['dxf', 'dwg', 'dwf', 'dwfx', 'xps']
 const AUDIO_EXTENSIONS = ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba']
 const TEXT_EXTENSIONS = [
   'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx', 'ts', 'tsx', 'xml', 'log',
@@ -94,7 +95,7 @@ export const renderNestedBuffer = async (
     return renderEda(buffer, target, normalizedType, context)
   }
 
-  if (normalizedType === 'dxf' || normalizedType === 'dwg') {
+  if (CAD_EXTENSIONS.includes(normalizedType)) {
     const { default: renderCad } = await import('./cad')
     return renderCad(buffer, target, normalizedType)
   }

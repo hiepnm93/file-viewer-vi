@@ -148,7 +148,35 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     soft: 'rgba(15, 118, 110, 0.12)',
     badge: 'CAD',
     label: 'CAD 图纸',
-    hint: '正在准备图层、几何对象和画布视图。'
+    hint: '正在准备 CAD 图层、几何对象和画布视图。'
+  },
+  dwg: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'CAD',
+    label: 'CAD 图纸',
+    hint: '正在通过 Worker 加载 DWG 几何和 LibreDWG WASM。'
+  },
+  dwf: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'DWF',
+    label: 'CAD 图纸',
+    hint: '正在加载 DWF native renderer 与 W2D/W3D 图形。'
+  },
+  dwfx: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'DWFx',
+    label: 'CAD 图纸',
+    hint: '正在加载 DWFx/XPS native renderer 与页面图形。'
+  },
+  xps: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'XPS',
+    label: 'CAD 图纸',
+    hint: '正在加载 XPS native renderer 与嵌入字体。'
   },
   drawio: {
     accent: '#0f766e',

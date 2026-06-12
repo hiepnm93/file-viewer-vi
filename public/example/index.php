@@ -5,7 +5,11 @@ declare(strict_types=1);
 $renderers = [
     'pdf' => 'pdfjs-dist',
     'ofd' => 'DLTech21/ofd.js',
-    'dxf' => '@cadview/core',
+    'dxf' => '@flyfish-dev/cad-viewer',
+    'dwg' => '@flyfish-dev/cad-viewer',
+    'dwf' => '@flyfish-dev/cad-viewer',
+    'dwfx' => '@flyfish-dev/cad-viewer',
+    'xps' => '@flyfish-dev/cad-viewer',
     'json' => 'highlight.js',
     'php' => 'highlight.js',
 ];
@@ -32,7 +36,7 @@ function buildPreviewPlan(array $files, array $renderers): array
 
 $plans = buildPreviewPlan([
     'invoice.ofd',
-    'drawing.dxf',
+    'house.dwfx',
     'controller.php',
 ], $renderers);
 

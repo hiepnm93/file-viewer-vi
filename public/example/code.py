@@ -23,7 +23,11 @@ RENDERERS = {
     "ofd": "DLTech21/ofd.js",
     "typ": "typst.ts",
     "typst": "typst.ts",
-    "dxf": "@cadview/core",
+    "dxf": "@flyfish-dev/cad-viewer",
+    "dwg": "@flyfish-dev/cad-viewer",
+    "dwf": "@flyfish-dev/cad-viewer",
+    "dwfx": "@flyfish-dev/cad-viewer",
+    "xps": "@flyfish-dev/cad-viewer",
     "json": "highlight.js",
     "py": "highlight.js",
 }
@@ -44,7 +48,7 @@ def build_preview_queue(files: Iterable[PreviewFile]) -> list[dict[str, str]]:
 samples = [
     PreviewFile("invoice.ofd", 428000),
     PreviewFile("report.typ", 18000),
-    PreviewFile("drawing.dxf", 93000),
+    PreviewFile("house.dwfx", 17_000_000),
     PreviewFile("trace.log", 12000),
 ]
 

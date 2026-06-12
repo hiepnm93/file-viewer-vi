@@ -11,7 +11,11 @@ public static class Program
             ["pdf"] = "pdfjs-dist",
             ["ofd"] = "DLTech21/ofd.js",
             ["typ"] = "typst.ts",
-            ["dxf"] = "@cadview/core",
+            ["dxf"] = "@flyfish-dev/cad-viewer",
+            ["dwg"] = "@flyfish-dev/cad-viewer",
+            ["dwf"] = "@flyfish-dev/cad-viewer",
+            ["dwfx"] = "@flyfish-dev/cad-viewer",
+            ["xps"] = "@flyfish-dev/cad-viewer",
             ["cs"] = "highlight.js",
             ["json"] = "highlight.js"
         };

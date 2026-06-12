@@ -1,7 +1,7 @@
 const RENDERER_GROUPS = {
   document: ['doc', 'docx', 'pdf', 'ofd', 'typ', 'typst'],
   sheet: ['xlsx', 'xls', 'csv', 'ods'],
-  drawing: ['dxf', 'dwg'],
+  drawing: ['dxf', 'dwg', 'dwf', 'dwfx', 'xps'],
   source: ['js', 'ts', 'tsx', 'vue', 'json', 'yaml']
 }
 

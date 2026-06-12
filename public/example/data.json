@@ -19,7 +19,7 @@
     },
     {
       "group": "drawing",
-      "extensions": ["dxf", "dwg", "excalidraw", "drawio", "dio"],
+      "extensions": ["dxf", "dwg", "dwf", "dwfx", "xps", "excalidraw", "drawio", "dio"],
       "notes": ["DXF renders in browser", "DWG extracts embedded previews when possible", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
     },
     {

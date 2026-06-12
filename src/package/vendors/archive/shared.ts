@@ -7,7 +7,7 @@ export const ARCHIVE_EXTENSIONS = [
 export const ARCHIVE_PREVIEWABLE_EXTENSIONS = [
   'doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'xls', 'xlsx', 'xlsm', 'xlsb',
   'xlt', 'xltx', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'pptx', 'pptm',
-  'potx', 'potm', 'ppsx', 'ppsm', 'pdf', 'ofd', 'typ', 'typst', 'dxf', 'dwg',
+  'potx', 'potm', 'ppsx', 'ppsm', 'pdf', 'ofd', 'typ', 'typst', 'dxf', 'dwg', 'dwf', 'dwfx', 'xps',
   'gltf', 'glb', 'obj', 'stl', 'ply', 'fbx', 'dae', '3ds',
   '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk',
   'vtp', 'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'excalidraw', 'drawio', 'dio',

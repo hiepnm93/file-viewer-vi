@@ -2,9 +2,9 @@
 
 ## Vue、React 和纯 JS 应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.22`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.22`，使用 `Vue.use(FileViewer)` 注册。
+Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.23`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.23`，使用 `Vue.use(FileViewer)` 注册。
 
-React 项目安装 `@flyfish-group/file-viewer-react@1.0.22`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.22`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
+React 项目安装 `@flyfish-group/file-viewer-react@1.0.23`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.23`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
 
 React / 纯 JS 包推荐用 `npm install`，安装后会自动复制 viewer 静态产物。pnpm 10 如果提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds`，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
@@ -88,9 +88,9 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 ## DWG 能直接预览吗
 
-DXF 当前走 `@cadview/core` 在浏览器端直接预览。DWG 会先做兼容处理: 如果文件内容其实是 DXF 文本，会直接按 DXF 打开；如果是真 DWG 二进制，会尝试提取文件内嵌 PNG/JPEG/BMP 预览图并展示。
+可以。CAD 预览当前使用 `@flyfish-dev/cad-viewer`，DWG 会通过独立 Worker 加载 LibreDWG WASM，在浏览器本地解析图层、块参照和常见几何实体；DXF 使用 JavaScript parser；DWF / DWFx / XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形。
 
-真实 DWG 的完整矢量图元和几何解析仍建议在业务侧转换为 DXF。原因是 DWG 是专有二进制格式，常见前端解析器存在 GPL 授权约束或需要闭源 SDK / 转换运行时，当前 Apache-2.0 npm 包不会默认打入这些依赖。
+私有化部署时请确认 viewer 静态目录下的 `wasm/cad/libredwg-web.js`、`wasm/cad/libredwg-web.wasm`、`wasm/cad/dwfv-render.wasm` 和 `wasm/cad/dwg-worker.js` 能被静态服务直接访问，且 `.wasm` 不要被网关回退成 HTML。路径不同可以通过 `options.cad.wasmPath`、`options.cad.workerUrl` 和 `options.cad.dwfWasmUrl` 覆盖。
 
 ## 3D 模型支持哪些格式
 

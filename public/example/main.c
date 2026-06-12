@@ -17,7 +17,11 @@ preview_file_t preview_plan_create(const char* filename, size_t size) {
 
   if (strcmp(extension, "pdf") == 0) renderer = "pdfjs-dist";
   if (strcmp(extension, "ofd") == 0) renderer = "DLTech21/ofd.js";
-  if (strcmp(extension, "dxf") == 0) renderer = "@cadview/core";
+  if (strcmp(extension, "dxf") == 0) renderer = "@flyfish-dev/cad-viewer";
+  if (strcmp(extension, "dwg") == 0) renderer = "@flyfish-dev/cad-viewer";
+  if (strcmp(extension, "dwf") == 0) renderer = "@flyfish-dev/cad-viewer";
+  if (strcmp(extension, "dwfx") == 0) renderer = "@flyfish-dev/cad-viewer";
+  if (strcmp(extension, "xps") == 0) renderer = "@flyfish-dev/cad-viewer";
   if (strcmp(extension, "c") == 0) renderer = "highlight.js";
 
   preview_file_t file = { filename, renderer, size, PREVIEW_IDLE };
@@ -29,7 +33,7 @@ int preview_requires_async(preview_file_t file) {
 }
 
 int main(void) {
-  preview_file_t file = preview_plan_create("drawing.dxf", 32768);
+  preview_file_t file = preview_plan_create("house.dwfx", 32768);
   printf("%s uses %s async=%d\n", file.name, file.renderer, preview_requires_async(file));
   return 0;
 }

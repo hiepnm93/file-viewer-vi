@@ -8,6 +8,7 @@ const distDir = process.env.FILE_VIEWER_DIST_DIR
 const largeBundleLimit = Number(process.env.FILE_VIEWER_OBFUSCATE_LARGE_LIMIT || 1_000_000)
 const requestedTargets = process.argv.slice(2)
 const targets = requestedTargets.map(target => isAbsolute(target) ? target : join(distDir, target))
+const skippedGeneratedAssetRE = /[/\\]wasm[/\\]cad[/\\].+\.(mjs|js)$/
 
 async function collectFiles(dir) {
   const entries = await readdir(dir)
@@ -27,6 +28,10 @@ if (!requestedTargets.length) {
 }
 
 for (const filePath of targets) {
+  if (!requestedTargets.length && skippedGeneratedAssetRE.test(filePath)) {
+    console.log(`kept generated wasm asset ${filePath.replace(`${process.cwd()}/`, '')}`)
+    continue
+  }
   let source
   try {
     source = await readFile(filePath, 'utf8')

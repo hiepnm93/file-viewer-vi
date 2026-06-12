@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 const formatGroups = [
   { title: 'Documents', items: ['docx', 'pdf', 'ofd'] },
-  { title: 'Drawings', items: ['dxf', 'dwg'] },
+  { title: 'Drawings', items: ['dxf', 'dwg', 'dwf', 'dwfx', 'xps'] },
   { title: 'Code', items: ['js', 'ts', 'vue', 'json'] }
 ]
 

@@ -151,6 +151,43 @@ export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
 }
 
+export type FileViewerCadRenderer = 'auto' | 'webgl' | 'canvas2d';
+export type FileViewerCadDwfLineWeightMode = 'adaptive' | 'physical' | 'hairline';
+
+/**
+ * CAD 预览配置。
+ *
+ * 默认使用 @flyfish-dev/cad-viewer，并从 viewer 静态目录下的
+ * `wasm/cad/` 按需加载 LibreDWG WASM、DWF raster WASM 与 DWG Worker。
+ * 私有化部署或 CDN 路径不同的场景，可以显式覆盖对应 URL。
+ */
+export interface FileViewerCadOptions {
+  wasmPath?: string;
+  workerUrl?: string | URL;
+  dwfWasmUrl?: string;
+  useWorker?: boolean;
+  workerTimeoutMs?: number;
+  renderer?: FileViewerCadRenderer;
+  preferDwgWasm?: boolean;
+  includePaperSpace?: boolean;
+  maxInsertDepth?: number;
+  keepRaw?: boolean;
+  preloadDwg?: boolean;
+  dwfPreferWebgl?: boolean;
+  dwfPreferWasm?: boolean;
+  dwfBackground?: string;
+  dwfMaxDevicePixelRatio?: number;
+  dwfMaxCanvasPixels?: number;
+  dwfMaxGpuCacheBytes?: number;
+  dwfMaxCachedScenes?: number;
+  dwfLineWeightMode?: FileViewerCadDwfLineWeightMode;
+  dwfMinStrokeCssPx?: number;
+  dwfMaxOverviewStrokeCssPx?: number;
+  dwfMinTextCssPx?: number;
+  dwfMinFilledAreaCssPx?: number;
+  canvasOptions?: Record<string, unknown>;
+}
+
 /**
  * 文档定位锚点。
  *
@@ -354,6 +391,7 @@ export interface FileViewerOptions {
   pdf?: FileViewerPdfOptions;
   docx?: FileViewerDocxOptions;
   typst?: FileViewerTypstOptions;
+  cad?: FileViewerCadOptions;
   /**
    * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
    * iframe 集成时同名事件会通过 `postMessage` 向宿主发送。

@@ -162,7 +162,7 @@ export interface ViewerFrameController {
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = '/file-viewer'
 export const DEFAULT_VIEWER_URL = `${DEFAULT_VIEWER_PUBLIC_DIR}/index.html`
-export const VIEWER_FRAME_CACHE_KEY = '1.0.22'
+export const VIEWER_FRAME_CACHE_KEY = '1.0.23'
 const DEFAULT_FRAME_TITLE = 'Flyfish Viewer 文件预览'
 const FILE_POST_RETRY_LIMIT = 8
 const FILE_POST_RETRY_INTERVAL = 120

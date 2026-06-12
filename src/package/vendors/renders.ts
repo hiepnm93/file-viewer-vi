@@ -102,12 +102,12 @@ const handlers: Array<FileHandlerComposite> = [
       return renderEda(buffer, target, type, context)
     }
   },
-  // CAD 内置 DXF 几何预览；DWG 会识别误命名 DXF，并尽量提取二进制内嵌预览图。
+  // CAD 使用 @flyfish-dev/cad-viewer。DWG 走 Worker + LibreDWG WASM，DWF/DWFx/XPS 走 native renderer。
   {
-    accepts: ['dxf', 'dwg'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+    accepts: ['dxf', 'dwg', 'dwf', 'dwfx', 'xps'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderCad } = await import('./cad')
-      return renderCad(buffer, target, type)
+      return renderCad(buffer, target, type, context)
     }
   },
   // 3D 模型使用 Three.js 按需解析，覆盖浏览器可交互渲染的主流交换格式。

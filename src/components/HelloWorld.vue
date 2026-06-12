@@ -103,6 +103,8 @@ const sampleGroups: SampleGroup[] = [
       { name: 'PPTX 中文课件', url: '/example/ppt.pptx' },
       { name: 'DXF', url: '/example/drawing.dxf' },
       { name: 'DWG', url: '/example/sample.dwg' },
+      { name: 'DWFx House', url: '/example/samples/autodesk/house.dwfx' },
+      { name: 'DWFx RobotArm', url: '/example/samples/autodesk/robot-arm.dwfx' },
       { name: 'Excalidraw', url: '/example/flow.excalidraw' },
       { name: 'draw.io', url: '/example/process.drawio' }
     ]
@@ -277,6 +279,9 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   typst: { icon: 'TYP', family: 'layout' },
   dxf: { icon: 'CAD', family: 'cad' },
   dwg: { icon: 'CAD', family: 'cad' },
+  dwf: { icon: 'DWF', family: 'cad' },
+  dwfx: { icon: 'DWFx', family: 'cad' },
+  xps: { icon: 'XPS', family: 'cad' },
   glb: { icon: '3D', family: 'model' },
   gltf: { icon: '3D', family: 'model' },
   obj: { icon: 'OBJ', family: 'model' },

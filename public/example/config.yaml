@@ -17,8 +17,8 @@ viewer:
       defaultScale: fit-width
     drawings:
       label: Drawings
-      formats: [dxf, dwg, excalidraw, drawio, dio]
-      fallback: dwg-embedded-preview-or-convert-to-dxf
+      formats: [dxf, dwg, dwf, dwfx, xps, excalidraw, drawio, dio]
+      fallback: cad-worker-wasm-or-clear-unsupported-message
     models:
       label: 3D Models
       formats: [glb, gltf, obj, stl, ply, fbx, dae, 3ds, 3mf, amf, usd, usdz, kmz, pcd, wrl, vrml, xyz, vtk, vtp, step, stp, iges, igs, ifc, 3dm]
