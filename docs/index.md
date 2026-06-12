@@ -24,7 +24,7 @@ titleTemplate: false
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
 <div>
-<strong>149</strong>
+      <strong>152</strong>
 <span>个扩展名映射</span>
 </div>
 <div>

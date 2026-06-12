@@ -3,13 +3,13 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>149 个扩展名映射</strong>，覆盖 <strong>20 条预览链路</strong>。
+  当前版本内置 <strong>152 个扩展名映射</strong>，覆盖 <strong>20 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>149 个扩展名映射</h3>
+    <h3>152 个扩展名映射</h3>
     <p>覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">

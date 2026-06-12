@@ -1,14 +1,14 @@
 {
   "name": "file-viewer",
-  "version": "1.0.20",
+  "version": "1.0.23",
   "runtime": {
     "framework": "vue3",
     "viewerSite": "https://viewer.flyfish.dev",
     "docs": "https://doc.flyfish.dev"
   },
   "packages": {
-    "vue3": "@flyfish-group/file-viewer3@1.0.20",
-    "vue2": "@flyfish-group/file-viewer@1.0.20"
+    "vue3": "@flyfish-group/file-viewer3@1.0.23",
+    "vue2": "@flyfish-group/file-viewer@1.0.23"
   },
   "features": [
     {
@@ -20,7 +20,7 @@
     {
       "group": "drawing",
       "extensions": ["dxf", "dwg", "dwf", "dwfx", "xps", "excalidraw", "drawio", "dio"],
-      "notes": ["DXF renders in browser", "DWG extracts embedded previews when possible", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
+      "notes": ["CAD uses @flyfish-dev/cad-viewer", "DWG uses Worker + LibreDWG WASM", "DWF/DWFx/XPS use native dwf-viewer", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
     },
     {
       "group": "model",
@@ -46,5 +46,5 @@
     "build": true,
     "browserSmoke": ["sample-picker", "code-preview", "pdf-toolbar"]
   },
-  "updatedAt": "2026-06-06T17:40:00+08:00"
+  "updatedAt": "2026-06-12T12:30:00+08:00"
 }
