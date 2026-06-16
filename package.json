@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer3",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -62,6 +62,7 @@
     "obfuscate": "node scripts/obfuscate-dist.mjs",
     "prebuild-lib-only": "node scripts/patch-msdoc-viewer.mjs && node scripts/copy-cad-wasm.mjs",
     "release:pack": "pnpm type-check && pnpm build-lib-only && pnpm obfuscate && npm pack",
+    "prepublishOnly": "pnpm type-check && pnpm build-lib-only && node scripts/verify-package-output.mjs",
     "release:public": "node scripts/sync-public-artifacts.mjs",
     "pretest": "node scripts/patch-msdoc-viewer.mjs",
     "test": "vitest",

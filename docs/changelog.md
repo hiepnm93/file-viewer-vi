@@ -10,6 +10,12 @@
 - 组件 ref 新增 `zoomIn()`、`zoomOut()`、`resetZoom()` 和 `getZoomState()`，外部自定义工具栏可以通过标准 API 控制缩放；`operation-availability-change` 同步返回 `zoom`、`zoomIn`、`zoomOut` 和 `zoomReset`，`zoom-change` 回传最终比例文本
 - PDF、DOCX、PPTX、Excel 虚拟表格、图片、CAD、OFD、Typst、Markdown、代码和 Excalidraw / draw.io 绘图链路接入渲染器内部缩放逻辑；缩放操作同样进入 `options.beforeOperation` / `toolbar.beforeOperation` 前置校验
 
+### `v1.0.26` Vue3 npm 入口类型声明修复版本
+
+- 修复 `@flyfish-group/file-viewer3@1.0.25` 在发布前被 Demo 构建覆盖 `dist` 后，npm 包缺少 `dist/src/package/index.d.ts`，导致 TypeScript 项目出现 `TS2307: Cannot find module '@flyfish-group/file-viewer3' or its corresponding type declarations` 的问题
+- 根包新增 `prepublishOnly` 发布前保护，会重新执行库模式构建并校验 `dist/index.mjs`、`dist/src/package/index.d.ts`、`dist/style.css` 和 CAD WASM Worker 产物，阻止 Demo HTML 产物误进入组件库 npm 包
+- 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；公开成品仓库只保留一份 scoped v3 tarball，避免重复占用存储
+
 ### `v1.0.25` 移动端压缩包与表格体验修复版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.25`、Vue2 包 `@flyfish-group/file-viewer@1.0.25`、React 包 `@flyfish-group/file-viewer-react@1.0.25` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.25` 继续保持连续版本
