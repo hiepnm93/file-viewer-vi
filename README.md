@@ -25,7 +25,7 @@
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.25` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
+| Vue3 | `@flyfish-group/file-viewer3` / `file-viewer3` | `1.0.26` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线；`file-viewer3` 是兼容 alias |
 | Vue2.7 | `@flyfish-group/file-viewer` | `1.0.25` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
 | React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.25` | 当前仓库子工程 | iframe 组件，默认加载 `/file-viewer/index.html` |
 | 纯 JS | `@flyfish-group/file-viewer-web` | `1.0.25` | 当前仓库子工程 | iframe helper 和 viewer 产物复制工具 |
@@ -33,13 +33,14 @@
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball。离线安装 React 包时请先安装同版本 web 包:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-1.0.25.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.25.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.25.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.25.tgz
 ```
 
 Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。离线安装 React 包时请先安装同版本 web 包；React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 10 默认会拦截依赖包的 `postinstall`，如果看到 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或安装后运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+非 scoped 包 `file-viewer3` 与 `@flyfish-group/file-viewer3` 内容完全一致；公开成品仓库只保留 `flyfish-group-file-viewer3-*.tgz` 这一份 Vue3 tarball，避免重复占用存储。
 
 GitHub Release 会同步提供完整下载项:
 

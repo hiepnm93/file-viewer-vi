@@ -24,7 +24,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.25` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
+| Vue 3 | `@flyfish-group/file-viewer3` / `file-viewer3` | `1.0.26` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations; `file-viewer3` is a compatibility alias |
 | Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.25` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
 | React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.25` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
 | Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.25` | adapter package | iframe helpers and static viewer asset copier |
@@ -32,13 +32,14 @@ The viewer does not require a backend conversion service. It is designed for OA 
 For intranet or offline environments, this artifact repository also ships npm tarballs under `artifacts/`:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-1.0.25.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.25.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.25.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.25.tgz
 ```
 
 When installing the React tarball offline, install the same-version web tarball first because the React package depends on `@flyfish-group/file-viewer-web`.
+The unscoped `file-viewer3` package is the same Vue 3 build as `@flyfish-group/file-viewer3`. This artifact repository keeps only the scoped `flyfish-group-file-viewer3-*.tgz` tarball to avoid duplicate storage.
 
 If you use pnpm 10 and see `Ignored build scripts: @flyfish-group/file-viewer-web`, run:
 
