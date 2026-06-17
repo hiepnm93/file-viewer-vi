@@ -3,6 +3,7 @@ import { parseHTML } from 'linkedom';
 import {
   DEFAULT_RENDERER_DEFINITIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
+  createFileViewerRendererDispatcher,
   createFileViewerZoomState,
   createRendererRegistry,
   createViewer,
@@ -89,6 +90,42 @@ describe('@file-viewer/core registry', () => {
         extensions: ['pdf'],
       });
     }).toThrow(/already registered/);
+  });
+
+  it('builds framework-neutral renderer dispatchers from renderer ids', () => {
+    const registry = createRendererRegistry([
+      {
+        id: 'alpha',
+        label: 'Alpha',
+        category: 'document',
+        extensions: ['Foo', '.bar'],
+      },
+      {
+        id: 'missing',
+        label: 'Missing',
+        category: 'document',
+        extensions: ['miss'],
+      },
+    ]);
+    const alphaHandler = () => 'alpha';
+    const fallbackHandler = () => 'fallback';
+    const dispatcher = createFileViewerRendererDispatcher({
+      registry,
+      handlers: [
+        {
+          rendererId: 'alpha',
+          handler: alphaHandler,
+        },
+      ],
+      fallbackHandler,
+    });
+
+    expect(dispatcher.missingRendererIds).toEqual(['missing']);
+    expect(dispatcher.get('foo')).toBe(alphaHandler);
+    expect(dispatcher.get('.BAR')).toBe(alphaHandler);
+    expect(dispatcher.resolve('miss')).toBe(fallbackHandler);
+    expect(dispatcher.has('error')).toBe(true);
+    expect(dispatcher.listExtensions()).toEqual(['bar', 'error', 'foo']);
   });
 
   it('runs a minimal framework-neutral load and unload lifecycle', async () => {

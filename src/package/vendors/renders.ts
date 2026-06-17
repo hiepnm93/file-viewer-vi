@@ -1,5 +1,6 @@
 import {
   DEFAULT_RENDERER_DEFINITIONS,
+  createFileViewerRendererDispatcher,
   createFileViewerUnsupportedState,
   createRendererRegistry
 } from '@file-viewer/core'
@@ -229,26 +230,15 @@ const renderUnsupported: FileHandler = async (_buffer: ArrayBuffer, target: HTML
 }
 
 const coreRendererRegistry = createRendererRegistry(DEFAULT_RENDERER_DEFINITIONS)
-const handlersByRendererId = handlers.reduce((result, { rendererId, handler }) => {
-  result.set(rendererId, handler)
-  return result
-}, new Map<string, FileHandler>())
+export const vueRendererDispatcher = createFileViewerRendererDispatcher({
+  registry: coreRendererRegistry,
+  handlers,
+  fallbackHandler: renderUnsupported
+})
 
-export const missingCoreRendererHandlers = coreRendererRegistry
-  .list()
-  .filter(definition => !handlersByRendererId.has(definition.id))
-  .map(definition => definition.id)
+export const missingCoreRendererHandlers = vueRendererDispatcher.missingRendererIds
 
-// 现有 Vue3 预览器仍负责渲染，扩展名与格式矩阵统一由 core registry 派发。
-const renders = coreRendererRegistry.list().reduce((result, definition) => {
-  const handler = handlersByRendererId.get(definition.id)
-  if (!handler) {
-    return result
-  }
-  definition.extensions.forEach(type => result.set(type, handler))
-  return result
-}, new Map<string, FileHandler>())
-
-renders.set('error', renderUnsupported)
+// 现有 Vue3 预览器仍负责渲染，扩展名与格式矩阵统一由 core dispatcher 派发。
+const renders = vueRendererDispatcher.handlersByExtension
 
 export default renders

@@ -119,6 +119,7 @@
     - [x] 搜索/缩放 provider 注册表和查找协议迁入 `@file-viewer/core`，Vue 旧路径保持兼容。
     - [x] DOM 搜索高亮、命中滚动和 MutationObserver 调度迁入 pure TS controller，Vue hook 仅负责响应式状态同步。
 - [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
+  - [x] rendererId 到扩展名 handler 的派发器迁入 `@file-viewer/core`，Vue3 仅提供实际异步渲染 handler。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT
   - [ ] Excel/表格

@@ -125,6 +125,9 @@ export {
   setFileViewerOptionsSearchParam,
 } from './options';
 export {
+  createFileViewerRendererDispatcher,
+} from './rendererDispatcher';
+export {
   decodeFilename,
   getExtension,
   normalizeFileExtension,
@@ -188,6 +191,11 @@ export type {
   FileViewerSerializableOptions,
   FileViewerSerializableToolbarOptions,
 } from './options';
+export type {
+  CreateFileViewerRendererDispatcherOptions,
+  FileViewerRendererDispatcher,
+  FileViewerRendererHandlerEntry,
+} from './rendererDispatcher';
 export type {
   FileViewerSearchProviderHost,
   FileViewerZoomProviderHost,
