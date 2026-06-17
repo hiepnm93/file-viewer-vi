@@ -78,6 +78,7 @@
   - [x] `RendererPlugin`
   - [x] `RendererSession`
   - [x] `RenderSurface`
+  - [x] 新增 `pnpm verify:core-api`，校验 `@file-viewer/core` 入口继续导出公开 API、framework-neutral 类型和 `FileViewerInstance` 方法。
 - [x] 定义 renderer registry，所有格式只通过 core 注册与派发。
 - [x] 定义统一 options 序列化协议，保证 iframe / pure JS / wrapper 行为一致。
   - [x] `@file-viewer/core` 提供 JSON-safe options 清洗、序列化、URLSearchParams 写入和解析。
@@ -303,6 +304,7 @@
   - [x] renderer registry
   - [x] capability state
   - [x] search/location/zoom provider
+  - [x] core API / 纯 TS 边界: `pnpm verify:core-api` 会阻止 core 入口、实例方法、ESM/声明产物元数据和源码依赖边界漂移。
 - [x] wrapper smoke 覆盖:
   - [x] Vue 3
   - [x] Vue 2.7
