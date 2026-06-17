@@ -6,6 +6,7 @@ logs
 packages/demo/public/file-viewer/
 packages/demo/public/vendor/
 packages/demo/public/example/word.docx
+packages/web-standard/viewer/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -12,6 +12,7 @@ const targets = [
   resolve(root, 'packages/web-standard/viewer')
 ]
 const coreAssetsEntry = resolve(root, 'packages/core/dist/assets.js')
+const viewerAssetManifestFilename = 'flyfish-viewer-assets.json'
 
 if (!existsSync(resolve(source, 'index.html'))) {
   throw new Error('缺少 dist/index.html，请先运行 pnpm build-only')
@@ -89,6 +90,37 @@ const validateViewerAssets = async dir => {
   }
 }
 
+const readExistingJson = async path => {
+  try {
+    return JSON.parse(await readFile(path, 'utf8'))
+  } catch {
+    return undefined
+  }
+}
+
+const stripVolatileAssetManifestFields = manifest => {
+  const stableManifest = JSON.parse(JSON.stringify(manifest))
+  delete stableManifest.generatedAt
+  if (stableManifest.validation) {
+    delete stableManifest.validation.checkedAt
+  }
+  return stableManifest
+}
+
+const keepExistingAssetManifestTimestampWhenStable = (existingManifest, nextManifest) => {
+  if (!existingManifest) {
+    return nextManifest
+  }
+
+  const existingStable = stripVolatileAssetManifestFields(existingManifest)
+  const nextStable = stripVolatileAssetManifestFields(nextManifest)
+  if (JSON.stringify(existingStable) === JSON.stringify(nextStable)) {
+    return existingManifest
+  }
+
+  return nextManifest
+}
+
 const toManifestValidationItem = item => {
   const { absolutePath: _absolutePath, ...manifestItem } = item
   return manifestItem
@@ -103,6 +135,10 @@ const toManifestValidation = validation => ({
 })
 
 for (const target of targets) {
+  const previousAssetManifest = await readExistingJson(
+    resolve(target, viewerAssetManifestFilename)
+  )
+
   await rm(target, { force: true, recursive: true })
   await mkdir(target, { recursive: true })
   await cp(source, target, { recursive: true })
@@ -119,14 +155,19 @@ for (const target of targets) {
   )
 
   const validation = await validateViewerAssets(target)
-  await writeFile(
-    resolve(target, 'flyfish-viewer-assets.json'),
-    `${JSON.stringify({
+  const assetManifest = keepExistingAssetManifestTimestampWhenStable(
+    previousAssetManifest,
+    {
       schemaVersion: 1,
       generatedAt: new Date().toISOString(),
       rendererAssetManifests: listFileViewerRendererAssetManifests(),
       validation: toManifestValidation(validation)
-    }, null, 2)}\n`
+    }
+  )
+
+  await writeFile(
+    resolve(target, viewerAssetManifestFilename),
+    `${JSON.stringify(assetManifest, null, 2)}\n`
   )
 
   if (!validation.valid) {

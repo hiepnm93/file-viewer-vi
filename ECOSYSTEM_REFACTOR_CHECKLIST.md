@@ -280,6 +280,7 @@
 ## Phase 7: 构建产物与公开分发
 
 - [ ] 生成 core dist、各 wrapper dist、各 adapter demo、主 demo、文档站、示例文件、worker/wasm assets。
+  - [x] `scripts/sync-viewer-assets.mjs` 在 worker/WASM 资源内容未变化时保留已有 `flyfish-viewer-assets.json` 时间戳，避免发布构建后产生无意义源码仓脏变动。
 - [ ] 公开产物仓库包含最新所有渠道分发构建产物。
 - [ ] 公开产物仓库不包含私有 core 源码。
   - [x] 新增 `pnpm verify:public-artifacts`，校验公开产物仓库 release manifest、tarball、README、wrapper 仓库索引、允许根目录和源码边界，并接入 `pnpm release:public` 同步完成后的自动验收。
