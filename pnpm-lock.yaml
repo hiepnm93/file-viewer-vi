@@ -312,7 +312,7 @@ importers:
         specifier: workspace:^1.0.26
         version: link:../core
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.25
+        specifier: workspace:^1.0.26
         version: link:../web
     devDependencies:
       '@types/react':
@@ -347,7 +347,7 @@ importers:
         specifier: workspace:^1.0.26
         version: link:../web-standard
       '@flyfish-group/file-viewer-react':
-        specifier: workspace:^1.0.25
+        specifier: workspace:^1.0.26
         version: link:../react
       react:
         specifier: '>=17 <20'
@@ -405,6 +405,15 @@ importers:
         specifier: '>=3.3 <4'
         version: 3.5.35(typescript@6.0.3)
 
+  packages/vue3-unscoped:
+    dependencies:
+      '@flyfish-group/file-viewer3':
+        specifier: workspace:^1.0.26
+        version: link:../..
+      vue:
+        specifier: '>=3.3 <4'
+        version: 3.5.35(typescript@6.0.3)
+
   packages/web:
     dependencies:
       '@file-viewer/core':
@@ -421,7 +430,7 @@ importers:
   packages/web-standard:
     dependencies:
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.25
+        specifier: workspace:^1.0.26
         version: link:../web
     devDependencies:
       typescript:

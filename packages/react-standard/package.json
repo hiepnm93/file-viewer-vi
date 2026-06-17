@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@file-viewer/web": "workspace:^1.0.26",
-    "@flyfish-group/file-viewer-react": "workspace:^1.0.25"
+    "@flyfish-group/file-viewer-react": "workspace:^1.0.26"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

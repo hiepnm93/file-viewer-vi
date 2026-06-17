@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-react",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "private": false,
   "type": "module",
   "description": "Private-deploy React component for Flyfish Viewer",
@@ -41,7 +41,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
@@ -52,7 +53,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^1.0.26",
-    "@flyfish-group/file-viewer-web": "workspace:^1.0.25"
+    "@flyfish-group/file-viewer-web": "workspace:^1.0.26"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

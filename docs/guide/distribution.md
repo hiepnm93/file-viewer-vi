@@ -17,6 +17,8 @@
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
 | 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置、同步滚动、聚焦搜索和行级定位 |
 | Docker 镜像发布目标 | `flyfishdev/file-viewer:1.0.26` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
+| npm 包(Core) | `@file-viewer/core` | framework-neutral 基础协议、格式矩阵、iframe 协议和共享类型 |
+| npm 包(Vue3 标准) | `@file-viewer/vue3` | Vue3 标准包名，推荐新项目使用 |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.26`，样式会随安装器自动带入 |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.26`，安装器会自动带上样式 |
 | npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.26` |
@@ -105,12 +107,22 @@ mountViewerFrame(document.getElementById('viewer')!, {
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer-core-1.0.26.tgz
+npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
+npm install ./artifacts/file-viewer-vue2.7-1.0.26.tgz
+npm install ./artifacts/file-viewer-vue2.6-1.0.26.tgz
+npm install ./artifacts/file-viewer-react-1.0.26.tgz
+npm install ./artifacts/file-viewer-react-legacy-1.0.26.tgz
+npm install ./artifacts/file-viewer-web-1.0.26.tgz
+npm install ./artifacts/file-viewer-jquery-1.0.26.tgz
+npm install ./artifacts/file-viewer-svelte-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
 ```
 
-Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。React tarball 会依赖同版本的 `@flyfish-group/file-viewer-web`，所以离线安装时请先安装 web 包，再安装 React 包。
+Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。React tarball 会依赖同版本的 web 包，所以离线安装时请先安装 web 包，再安装 React 包。
 
 ## 成品仓库内容
 
@@ -168,13 +180,13 @@ React 和纯 JS 适配包在当前仓库内发布:
 ```bash
 pnpm type-check:adapters
 pnpm build:adapter-demo
-pnpm release:adapters:pack
-pnpm -C packages/web publish --access public --dry-run
-pnpm -C packages/react publish --access public --dry-run
-pnpm release:adapters:publish
+pnpm release:ecosystem:list
+pnpm release:ecosystem:pack
+pnpm release:ecosystem:publish:dry-run
+pnpm release:ecosystem:publish
 ```
 
-`release:adapters:pack` 会先构建 Vue3 基线 viewer 并同步到 `packages/web/viewer`，再分别打包 `@flyfish-group/file-viewer-web` 和 `@flyfish-group/file-viewer-react`。发布前请确认 tarball 中包含 `viewer/index.html`、`viewer/assets/*`、`dist/*` 和 README，且没有 `.DS_Store`。
+`release:ecosystem:pack` 会先构建 core、Vue3 基线 viewer、历史兼容包和标准 wrapper，再统一打包 13 个 npm 目标。发布前请确认 tarball 中包含必要的 `viewer/index.html`、`viewer/assets/*`、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
 ## Docker 镜像发布
 

@@ -23,7 +23,7 @@ pnpm install
 | `pnpm obfuscate` | 对 `dist/` 中的库 JS 产物做压缩混淆 |
 | `pnpm release:pack` | 类型检查、库构建、混淆并生成 npm tarball |
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
-| `pnpm build:adapters` | 构建 Vue3 基线 viewer、纯 JS / React / Vue3 标准 wrapper 包 |
+| `pnpm build:adapters` | 构建 Vue3 基线 viewer、历史兼容包和所有标准 wrapper 包 |
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
@@ -31,8 +31,12 @@ pnpm install
 | `pnpm docker:publish` | 使用 buildx 推送 `linux/amd64` / `linux/arm64` Docker Hub 镜像 |
 | `pnpm dev:adapters` | 启动 React + 纯 JS 私有化适配层 Demo |
 | `pnpm build:adapter-demo` | 构建适配层 Demo，验证上线静态产物 |
-| `pnpm release:adapters:pack` | 构建并打包 React / 纯 JS / Vue3 标准 wrapper npm tarball |
-| `pnpm release:adapters:publish` | 构建并发布 React / 纯 JS / Vue3 标准 wrapper npm 包 |
+| `pnpm release:adapters:pack` | 构建并打包 core、历史兼容包和标准 wrapper npm tarball |
+| `pnpm release:adapters:publish` | 构建并发布 core、历史兼容包和标准 wrapper npm 包 |
+| `pnpm release:ecosystem:list` | 列出本仓库当前会统一发布的 npm 生态包 |
+| `pnpm release:ecosystem:pack` | 构建完整生态并生成可离线安装的 npm tarball |
+| `pnpm release:ecosystem:publish:dry-run` | 对完整生态包执行 npm publish dry-run |
+| `pnpm release:ecosystem:publish` | 正式发布完整生态包；MFA 账号请使用交互式终端确认 |
 | `pnpm docs:dev` | 启动 VitePress 文档站 |
 | `pnpm docs:build` | 构建 VitePress 文档站 |
 | `pnpm type-check` | 执行 Vue3 基线 TypeScript 类型检查 |
@@ -48,8 +52,9 @@ pnpm build
 pnpm build-lib
 pnpm obfuscate
 pnpm build:adapter-demo
+pnpm release:ecosystem:list
 pnpm docker:build
-pnpm release:adapters:pack
+pnpm release:ecosystem:pack
 pnpm docs:build
 pnpm test
 ```
@@ -68,23 +73,29 @@ pnpm release:pack
 
 ## Vue2 / Vue3 / React / 纯 JS 发版
 
-当前四条 npm 包线都使用 `1.0.26`:
+当前生态包线都使用 `1.0.26`:
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
-| Vue3 | `v3` | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
+| Core | `v3` | `@file-viewer/core` | framework-neutral 基础协议、能力矩阵和 iframe 协议 |
+| Vue3 | `v3` | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` / `file-viewer3` | `createApp(App).use(FileViewer)` |
 | Vue2.7 | `main` | `@flyfish-group/file-viewer` | `Vue.use(FileViewer)` |
-| React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.26` | `<FileViewer url="/files/demo.pdf" />` |
-| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.26` | `mountViewerFrame(container, options)` |
+| Vue2.7 标准 wrapper | 当前仓库子工程 | `@file-viewer/vue2.7@1.0.26` | 兼容 Vue2.7 插件式注册 |
+| Vue2.6 标准 wrapper | 当前仓库子工程 | `@file-viewer/vue2.6@1.0.26` | 兼容 Vue2.6 插件式注册 |
+| React 18 / 19 | 当前仓库子工程 | `@file-viewer/react@1.0.26` / `@flyfish-group/file-viewer-react@1.0.26` | `<FileViewer url="/files/demo.pdf" />` |
+| React 16.8 / 17 | 当前仓库子工程 | `@file-viewer/react-legacy@1.0.26` | legacy React iframe 组件 |
+| 纯 JS | 当前仓库子工程 | `@file-viewer/web@1.0.26` / `@flyfish-group/file-viewer-web@1.0.26` | `mountViewerFrame(container, options)` |
+| jQuery | 当前仓库子工程 | `@file-viewer/jquery@1.0.26` | `$(el).fileViewer(options)` |
+| Svelte | 当前仓库子工程 | `@file-viewer/svelte@1.0.26` | Svelte component wrapper |
 
-Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构建、混淆和 `npm publish --access public`。React 和纯 JS 包在当前仓库内作为子工程发布，发版前必须先执行 `pnpm build:viewer-assets`，确保随包携带的是最新 Vue3 基线 viewer 静态产物。
+Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查、库构建、混淆和 `npm publish --access public`。标准 wrapper、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保随包携带的是最新 Vue3 基线 viewer 静态产物。
 
 ## 主要产物位置
 
 - 应用构建产物: `dist/`
 - Docker 镜像运行产物: `dist/` 会被复制到 nginx 的 `/usr/share/nginx/html/`
 - 文档站构建产物: `docs/.vitepress/dist/`
-- npm 包 tarball: 仓库根目录下的 `*.tgz`，适配包 tarball 位于 `.release/adapters/`
+- npm 包 tarball: 仓库根目录下的 `*.tgz`，完整生态 tarball 默认位于 `.release/ecosystem/`，兼容旧命令的 adapter tarball 位于 `.release/adapters/`
 - React / 纯 JS 随包 viewer 产物: `packages/web/viewer/`
 - 适配层 Demo 构建产物: `packages/demo/dist/`
 - 公开 GitHub / Gitee 成品仓库: 只放混淆压缩后的库产物、Demo 静态站点、文档静态站点、示例文件和 tarball，不包含源码目录
@@ -99,7 +110,7 @@ Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
-- React / 纯 JS tarball 是否包含 `viewer/`、`dist/`、README，且不包含 `.DS_Store`
+- 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`
 - 混淆后的 `dist/index.mjs`、`dist/index.umd.js` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 成品仓库、源码自助开通和 Apache-2.0 许可证说明
 

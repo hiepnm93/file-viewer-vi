@@ -34,13 +34,15 @@ For intranet or offline environments, this artifact repository also ships npm ta
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer-core-1.0.26.tgz
 npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
 ```
 
-When installing the React tarball offline, install the same-version web tarball first because the React package depends on `@flyfish-group/file-viewer-web`.
+The public artifact repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. When installing the React tarball offline, install the same-version web tarball first because the React package depends on the web runtime package.
 
 If you use pnpm 10 and see `Ignored build scripts: @flyfish-group/file-viewer-web`, run:
 
@@ -62,8 +64,17 @@ GitHub Releases provide all distribution downloads:
 | `file-viewer-v3-*-adapter-demo.tar.gz` | React / vanilla JavaScript adapter demo site |
 | `file-viewer-v3-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
 | `file-viewer-v3-*-docs.tar.gz` | Documentation site static output |
+| `file-viewer-core-*.tgz` | `@file-viewer/core` pure TypeScript foundation tarball |
 | `file-viewer-vue3-*.tgz` | Vue 3 standard package tarball |
+| `file-viewer-vue2.7-*.tgz` | Vue 2.7 standard wrapper tarball |
+| `file-viewer-vue2.6-*.tgz` | Vue 2.6 standard wrapper tarball |
+| `file-viewer-react-*.tgz` | React 18/19 standard wrapper tarball |
+| `file-viewer-react-legacy-*.tgz` | React 16.8/17 standard wrapper tarball |
+| `file-viewer-web-*.tgz` | Pure Web standard wrapper with viewer asset tooling |
+| `file-viewer-jquery-*.tgz` | jQuery standard wrapper tarball |
+| `file-viewer-svelte-*.tgz` | Svelte standard wrapper tarball |
 | `flyfish-group-file-viewer3-*.tgz` | Vue 3 local npm package |
+| `file-viewer3-*.tgz` | Vue 3 unscoped historical compatibility package |
 | `flyfish-group-file-viewer-*.tgz` | Vue 2.7 local npm package |
 | `flyfish-group-file-viewer-web-*.tgz` | Vanilla JavaScript iframe helper with viewer asset copy tooling |
 | `flyfish-group-file-viewer-react-*.tgz` | React iframe component; install the same-version web package together with it |

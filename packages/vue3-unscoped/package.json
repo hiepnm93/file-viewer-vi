@@ -1,15 +1,15 @@
 {
-  "name": "@file-viewer/web",
+  "name": "file-viewer3",
   "version": "1.0.26",
   "private": false,
   "type": "module",
-  "description": "Standard pure web wrapper for Flyfish File Viewer",
+  "description": "Compatibility alias package for Flyfish File Viewer Vue 3",
   "keywords": [
     "file-viewer",
     "document-preview",
-    "iframe",
-    "vanilla-js",
-    "web"
+    "vue3",
+    "office-preview",
+    "pdf-viewer"
   ],
   "publishConfig": {
     "access": "public",
@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-web.git",
-    "directory": "packages/web-standard"
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
+    "directory": "packages/vue3-unscoped"
   },
   "homepage": "https://doc.flyfish.dev/",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-web/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -37,31 +37,23 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js",
-      "default": "./dist/node.js"
-    },
+    "./dist/file-viewer3.css": "./dist/file-viewer3.css",
     "./package.json": "./package.json"
-  },
-  "bin": {
-    "file-viewer-copy-assets": "./scripts/copy-assets.mjs"
   },
   "files": [
     "dist",
-    "scripts",
     "README.md",
     "README.en.md"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json",
-    "type-check": "tsc -b tsconfig.json"
+    "build": "node scripts/build.mjs",
+    "type-check": "node scripts/build.mjs"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3 <4"
   },
   "dependencies": {
-    "@flyfish-group/file-viewer-web": "workspace:^1.0.26"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.3"
+    "@flyfish-group/file-viewer3": "workspace:^1.0.26"
   },
   "license": "Apache-2.0"
 }

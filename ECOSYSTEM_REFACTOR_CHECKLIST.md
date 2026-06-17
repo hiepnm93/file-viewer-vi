@@ -10,9 +10,9 @@
 - 当前源码远端: `origin -> https://git.flyfish.dev/flyfish-group/file-viewer.git`
 - 当前根包: `@flyfish-group/file-viewer3@1.0.26`
 - 当前适配层:
-  - `packages/web`: `@flyfish-group/file-viewer-web@1.0.25`
-  - `packages/react`: `@flyfish-group/file-viewer-react@1.0.25`
-  - `packages/demo`: `@flyfish-group/file-viewer-demo@1.0.25`
+  - `packages/web`: `@flyfish-group/file-viewer-web@1.0.26`
+  - `packages/react`: `@flyfish-group/file-viewer-react@1.0.26`
+  - `packages/demo`: `@flyfish-group/file-viewer-demo@1.0.26`
 - 当前关键事实:
   - 根包仍是 Vue3 组件库，不是纯 TypeScript core。
   - 大量渲染器由 TS/TSX + Vue SFC 混合实现，`FileViewer.vue` 仍是核心入口。
@@ -248,6 +248,7 @@
   - [ ] `@flyfish-group/file-viewer-react`
 - [ ] 兼容包 README 明确推荐迁移到 `@file-viewer/*` 标准包名。
 - [ ] 所有 npm 包版本号连续、依赖 core 版本一致、dist 类型声明完整。
+  - [x] 新增 `scripts/release-ecosystem-packages.mjs`，统一列出、打包、dry-run 发布和正式发布 core、标准 wrapper 与历史兼容包。
 
 ## Phase 7: 构建产物与公开分发
 
@@ -310,7 +311,7 @@
   - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。
 - [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
 - [ ] 新增 wrapper README 模板，统一中英文结构和格式矩阵。
-- [ ] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。
+- [x] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。
 
 ## 完成审计标准
 

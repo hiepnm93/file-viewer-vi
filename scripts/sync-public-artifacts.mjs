@@ -27,12 +27,30 @@ const keepExpandedAssets = !slimArtifacts
 const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
 const version = packageJson.version
 const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
+const additionalArtifactPackageSpecs = [
+  {
+    packageDir: 'packages/core',
+    kind: 'core'
+  },
+  {
+    packageDir: 'packages/vue3-unscoped',
+    kind: 'compatibility'
+  }
+]
 const historicalAdapterPackageDirs = ['packages/web', 'packages/react']
+const additionalArtifactPackages = await Promise.all(
+  additionalArtifactPackageSpecs.map(spec =>
+    loadAdapterArtifactPackage({
+      packageDir: spec.packageDir,
+      kind: spec.kind
+    })
+  )
+)
 const historicalAdapterPackages = await Promise.all(
   historicalAdapterPackageDirs.map(packageDir =>
     loadAdapterArtifactPackage({
       packageDir,
-      kind: 'historical'
+      kind: 'compatibility'
     })
   )
 )
@@ -45,7 +63,11 @@ const standardWrapperPackages = await Promise.all(
     })
   )
 )
-const adapterArtifactPackages = [...historicalAdapterPackages, ...standardWrapperPackages]
+const adapterArtifactPackages = [
+  ...additionalArtifactPackages,
+  ...historicalAdapterPackages,
+  ...standardWrapperPackages
+]
 const vue2Tarball = resolve(
   readArg(
     '--vue2-tarball',
@@ -152,6 +174,7 @@ async function removeOldArtifacts(artifactsDir) {
     }
     if (
       currentAdapterTarballs.has(entry) ||
+      /^(file-viewer3|file-viewer-core)-.*\.tgz$/.test(entry) ||
       /^file-viewer-(vue3|vue2\.7|vue2\.6|react|react-legacy|web|jquery|svelte)-.*\.tgz$/.test(entry)
     ) {
       await removePath(join(artifactsDir, entry))

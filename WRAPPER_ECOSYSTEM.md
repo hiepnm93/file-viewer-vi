@@ -51,11 +51,34 @@ pnpm wrappers:verify
 
 The verifier checks package names, README language pairs, generated ecosystem/format blocks, official documentation and demo links, Apache-2.0 attribution guidance, standalone manifests, GitHub/Gitee metadata and the absence of `workspace:` dependencies in exported repositories.
 
+## npm Ecosystem Release
+
+Use the ecosystem release helper to keep core, standard wrappers and compatibility packages on the same version:
+
+```bash
+pnpm release:ecosystem:list
+pnpm release:ecosystem:pack
+pnpm release:ecosystem:publish:dry-run
+pnpm release:ecosystem:publish
+```
+
+The helper currently covers 13 public npm targets:
+
+- `@file-viewer/core`
+- `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`
+- `@file-viewer/react`, `@file-viewer/react-legacy`
+- `@file-viewer/web`, `@file-viewer/jquery`, `@file-viewer/svelte`
+- `@flyfish-group/file-viewer3`, `file-viewer3`
+- `@flyfish-group/file-viewer-web`, `@flyfish-group/file-viewer-react`
+
+It verifies public publish settings, type declarations, README language pairs and version alignment before packing or publishing. The compatibility packages remain synchronized for existing customers; new integrations should prefer the standard `@file-viewer/*` names.
+
 ## Public Artifact Sync
 
 `scripts/sync-public-artifacts.mjs` also reads `ecosystem/wrappers.json`. During a full public artifact release it packs:
 
-- historical compatibility adapters such as `@flyfish-group/file-viewer-web` and `@flyfish-group/file-viewer-react`
+- the compiled core foundation tarball `@file-viewer/core`
+- historical compatibility packages such as `@flyfish-group/file-viewer-web`, `@flyfish-group/file-viewer-react` and `file-viewer3`
 - every standard wrapper package listed in the manifest
 
 The generated `artifacts/release-manifest.json` records the wrapper package, tarball, GitHub repository and Gitee mirror for each public integration.

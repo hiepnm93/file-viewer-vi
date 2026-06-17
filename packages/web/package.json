@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-web",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "private": false,
   "type": "module",
   "description": "Private-deploy pure web component for Flyfish Viewer",
@@ -52,7 +52,8 @@
     "dist",
     "scripts",
     "viewer",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
