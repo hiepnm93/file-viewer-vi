@@ -544,16 +544,20 @@ async function verifyVue3ScopedCompatibility() {
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
+    'disposeFileViewerRendererSession',
     'waitForFileViewerNextPaint'
   ], vueRenderSurfaceHookLabel)
   for (const forbiddenToken of [
     'const waitForBrowserPaint',
     'requestAnimationFrame !==',
-    'setTimeout(resolve'
+    'setTimeout(resolve',
+    'session.destroy?.()',
+    "'then' in result",
+    'Promise<void>).catch'
   ]) {
     assert(
       !vueRenderSurfaceHookSource.includes(forbiddenToken),
-      `${vueRenderSurfaceHookLabel} must delegate paint scheduling fallback to @file-viewer/core instead of ${forbiddenToken}`
+      `${vueRenderSurfaceHookLabel} must delegate paint scheduling and renderer session disposal to @file-viewer/core instead of ${forbiddenToken}`
     )
   }
 

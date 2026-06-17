@@ -183,6 +183,7 @@ export {
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
   disposeFileViewerRendered,
+  disposeFileViewerRendererSession,
   renderFileViewerHandler,
 } from './rendererHandler';
 export {
@@ -299,6 +300,7 @@ export type {
 export type {
   CreateFileRenderHandlerRegistryOptions,
   CreateFileRenderHandlerLoaderOptions,
+  DisposeFileViewerRendererSessionOptions,
   FileRenderHandlerRegistryResult,
   FileRenderHandlerRendererSession,
   RenderFileViewerHandlerInput,

@@ -39,6 +39,16 @@ export interface FileRenderHandlerRendererSession<Rendered = unknown> extends Re
   rendered: Rendered;
 }
 
+export interface DisposeFileViewerRendererSessionOptions {
+  onError?: (error: unknown) => void;
+}
+
+const isPromiseLike = (value: unknown): value is PromiseLike<unknown> => {
+  return !!value &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    typeof (value as { then?: unknown }).then === 'function';
+};
+
 export const createFileRenderHandlerRendererSession = <Rendered = unknown>(
   rendered: Rendered,
   destroy?: () => void | Promise<void>
@@ -91,6 +101,28 @@ export const disposeFileViewerRendered = (rendered?: unknown) => {
   }
   if (typeof disposable.destroy === 'function') {
     return disposable.destroy();
+  }
+};
+
+export const disposeFileViewerRendererSession = (
+  session?: RendererSession | null,
+  options: DisposeFileViewerRendererSessionOptions = {}
+) => {
+  if (!session?.destroy) {
+    return;
+  }
+
+  const handleError = (error: unknown) => {
+    options.onError?.(error);
+  };
+
+  try {
+    const result = session.destroy();
+    if (isPromiseLike(result)) {
+      void Promise.resolve(result).catch(handleError);
+    }
+  } catch (error) {
+    handleError(error);
   }
 };
 

@@ -1,5 +1,6 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
+  disposeFileViewerRendererSession,
   getExtension,
   waitForFileViewerNextPaint
 } from '@file-viewer/core'
@@ -56,20 +57,11 @@ export const useViewerRenderSurface = ({
   let activeRenderSession: FileViewerVueRenderSession | null = null
 
   const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
-    if (!session) {
-      return
-    }
-
-    try {
-      const result = session.destroy?.()
-      if (result && typeof result === 'object' && 'then' in result) {
-        void (result as Promise<void>).catch(nextError => {
-          console.warn('预览内容卸载失败', nextError)
-        })
+    disposeFileViewerRendererSession(session, {
+      onError: nextError => {
+        console.warn('预览内容卸载失败', nextError)
       }
-    } catch (nextError) {
-      console.warn('预览内容卸载失败', nextError)
-    }
+    })
   }
 
   const setActiveRenderSession = (session: FileViewerVueRenderSession | null) => {

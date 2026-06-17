@@ -6,6 +6,7 @@ import {
   createFileRenderHandlerLoader,
   createFileViewerRendererDispatcher,
   disposeFileViewerRendered,
+  disposeFileViewerRendererSession,
   normalizeSource,
   renderFileViewerHandler,
   refWorker,
@@ -156,6 +157,26 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(session.rendered).toBe(rendered);
     await session.destroy?.();
     expect(unmount).toHaveBeenCalledTimes(1);
+  });
+
+  it('safely disposes renderer sessions and reports teardown errors', async () => {
+    const onError = vi.fn();
+    const syncError = new Error('sync teardown failed');
+    const asyncError = new Error('async teardown failed');
+    const syncDestroy = vi.fn(() => {
+      throw syncError;
+    });
+    const asyncDestroy = vi.fn(() => Promise.reject(asyncError));
+
+    disposeFileViewerRendererSession({ destroy: syncDestroy }, { onError });
+    disposeFileViewerRendererSession({ destroy: asyncDestroy }, { onError });
+    disposeFileViewerRendererSession(null, { onError });
+    await Promise.resolve();
+
+    expect(syncDestroy).toHaveBeenCalledTimes(1);
+    expect(asyncDestroy).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(syncError);
+    expect(onError).toHaveBeenCalledWith(asyncError);
   });
 
   it('builds renderer registries from legacy render handlers', async () => {
