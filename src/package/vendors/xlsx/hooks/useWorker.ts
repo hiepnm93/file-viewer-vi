@@ -8,16 +8,18 @@ import {
 } from '@file-viewer/core'
 
 /**
- * 使用worker
- * 添加内部监听器自省
- * 缺省消息格式
+ * XLSX worker 的 Vue 生命周期门面。
+ *
+ * 事件分发和 worker 销毁控制由 `@file-viewer/core` 负责，
+ * 这里仅保留 XLSX 表格需要的 loading ref 与组件卸载生命周期。
+ * 默认消息格式:
  * {
  *   type: '消息类型',
  *   payload: {消息体},
  * }
  */
 export const useWorker = (factory: FileViewerWorkerFactory) => {
-  // 加载器，每一步都会触发loading，默认是加载状态
+  // 加载器，每一步都会触发 loading，默认是加载状态
   const loading = ref(true)
   const controller = createFileViewerWorkerController(factory)
 

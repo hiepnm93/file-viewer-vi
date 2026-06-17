@@ -408,22 +408,18 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
   assert(
-    !existsSync(join(entry.absoluteDir, 'src/package/use/documentLocation.ts')),
-    `${entry.packageName} must keep document location helpers in @file-viewer/core instead of reintroducing src/package/use/documentLocation.ts`
+    !existsSync(join(entry.absoluteDir, 'src/package/use')),
+    `${entry.packageName} must keep Vue lifecycle wrappers beside their owning component/renderer instead of reintroducing src/package/use`
   )
-  assert(
-    !existsSync(join(entry.absoluteDir, 'src/package/use/index.ts')),
-    `${entry.packageName} must import Vue runtime hooks explicitly instead of reintroducing src/package/use/index.ts`
-  )
-  for (const removedHookPath of [
-    'src/package/use/documentSearch.ts',
-    'src/package/use/viewerZoom.ts'
-  ]) {
-    assert(
-      !existsSync(join(entry.absoluteDir, removedHookPath)),
-      `${entry.packageName} must keep search/zoom component hooks beside FileViewer instead of reintroducing ${removedHookPath}`
-    )
-  }
+
+  const vueLoadingHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useLoading.ts')
+  const vueLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useLoading.ts`
+  assertImportsFrom(vueLoadingHookSource, '@file-viewer/core', vueLoadingHookLabel)
+  assertTokens(vueLoadingHookSource, [
+    'createFileViewerLoadingController',
+    'cloneFileViewerLoadingRuntimeState',
+    'resolveFileViewerLoadingTheme'
+  ], vueLoadingHookLabel)
 
   const vueDocumentSearchHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')
   const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
@@ -442,8 +438,8 @@ async function verifyVue3ScopedCompatibility() {
     'controller.destroy()'
   ], vueZoomHookLabel)
 
-  const vueWorkerHookSource = await readSource(entry, 'src/package/use/worker.ts')
-  const vueWorkerHookLabel = `${entry.packageName} src/package/use/worker.ts`
+  const vueWorkerHookSource = await readSource(entry, 'src/package/vendors/xlsx/hooks/useWorker.ts')
+  const vueWorkerHookLabel = `${entry.packageName} src/package/vendors/xlsx/hooks/useWorker.ts`
   assertImportsFrom(vueWorkerHookSource, '@file-viewer/core', vueWorkerHookLabel)
   assertTokens(vueWorkerHookSource, [
     'createFileViewerWorkerController',
