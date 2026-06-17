@@ -461,6 +461,24 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vueLifecycleHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerLifecycle.ts')
+  const vueLifecycleHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerLifecycle.ts`
+  assertImportsFrom(vueLifecycleHookSource, '@file-viewer/core', vueLifecycleHookLabel)
+  assertTokens(vueLifecycleHookSource, [
+    'createFileViewerLifecycleStateController',
+    'lifecycleState.getLoadStartedAt',
+    'lifecycleState.buildActiveUnloadContext'
+  ], vueLifecycleHookLabel)
+  for (const forbiddenToken of [
+    'new Map<number, number>()',
+    'let activeDocumentContext'
+  ]) {
+    assert(
+      !vueLifecycleHookSource.includes(forbiddenToken),
+      `${vueLifecycleHookLabel} must keep lifecycle state in @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   for (const removedRuntimeFacadePath of removedVue3ScopedRuntimeFacadePaths) {
     assert(
       !existsSync(join(entry.absoluteDir, removedRuntimeFacadePath)),

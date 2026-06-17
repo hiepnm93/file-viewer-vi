@@ -113,6 +113,21 @@ export interface RunFileViewerBeforeOperationInput<
   onError?: (error: unknown, context: Context) => void;
 }
 
+export interface FileViewerLifecycleStateController {
+  markLoadStarted(version: number, timestamp?: number): void;
+  clearLoadStarted(version: number): void;
+  getLoadStartedAt(version: number): number | undefined;
+  getActiveDocumentContext(): FileViewerLifecycleContext | null;
+  setActiveDocumentContext(context: FileViewerLifecycleContext): void;
+  clearActiveDocumentContext(): void;
+  buildActiveUnloadContext(
+    phase: Extract<FileViewerLifecyclePhase, 'unload-start' | 'unload-complete'>,
+    context: FileViewerLifecycleContext | null,
+    reason?: FileViewerLifecycleContext['reason'],
+    timestamp?: number
+  ): FileViewerLifecycleContext | null;
+}
+
 export const buildFileViewerLifecycleContext = <
   Source extends string = FileViewerSourceKind,
 >({
@@ -144,6 +159,44 @@ export const buildFileViewerLifecycleContext = <
     timestamp: now,
     duration: duration ?? (phase === 'load-complete' && startedAt ? now - startedAt : undefined),
     reason,
+  };
+};
+
+export const createFileViewerLifecycleStateController = (): FileViewerLifecycleStateController => {
+  let activeDocumentContext: FileViewerLifecycleContext | null = null;
+  const loadStartedAt = new Map<number, number>();
+
+  return {
+    markLoadStarted(version, timestamp = Date.now()) {
+      loadStartedAt.set(version, timestamp);
+    },
+    clearLoadStarted(version) {
+      loadStartedAt.delete(version);
+    },
+    getLoadStartedAt(version) {
+      return loadStartedAt.get(version);
+    },
+    getActiveDocumentContext() {
+      return activeDocumentContext;
+    },
+    setActiveDocumentContext(context) {
+      activeDocumentContext = context;
+    },
+    clearActiveDocumentContext() {
+      activeDocumentContext = null;
+    },
+    buildActiveUnloadContext(phase, context, reason = 'replace', timestamp = Date.now()) {
+      if (!context) {
+        return null;
+      }
+
+      return {
+        ...context,
+        phase,
+        timestamp,
+        reason,
+      };
+    },
   };
 };
 

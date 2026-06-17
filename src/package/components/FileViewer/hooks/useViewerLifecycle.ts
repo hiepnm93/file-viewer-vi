@@ -1,6 +1,7 @@
 import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
+  createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   postFileViewerMessageToParent,
   runFileViewerBeforeOperation,
@@ -58,16 +59,10 @@ export const useViewerLifecycle = ({
   handleLifecycleError,
   handleOperationError
 }: UseViewerLifecycleOptions) => {
-  let activeDocumentContext: FileViewerLifecycleContext | null = null
-  const loadStartedAt = new Map<number, number>()
+  const lifecycleState = createFileViewerLifecycleStateController()
 
-  const markLoadStarted = (version: number, timestamp = Date.now()) => {
-    loadStartedAt.set(version, timestamp)
-  }
-
-  const clearLoadStarted = (version: number) => {
-    loadStartedAt.delete(version)
-  }
+  const markLoadStarted = lifecycleState.markLoadStarted
+  const clearLoadStarted = lifecycleState.clearLoadStarted
 
   const buildLifecycleContext = ({
     phase,
@@ -85,7 +80,7 @@ export const useViewerLifecycle = ({
       filename: getFilename(),
       url: sourceUrl,
       bufferSize: getBufferSize(),
-      startedAt: loadStartedAt.get(version),
+      startedAt: lifecycleState.getLoadStartedAt(version),
       reason
     })
   }
@@ -99,17 +94,13 @@ export const useViewerLifecycle = ({
   }
 
   const notifyActiveUnloadStart = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    const context = activeDocumentContext
-    if (!context) {
+    const context = lifecycleState.getActiveDocumentContext()
+    const unloadContext = lifecycleState.buildActiveUnloadContext('unload-start', context, reason)
+    if (!unloadContext) {
       return null
     }
 
-    notifyLifecycle({
-      ...context,
-      phase: 'unload-start',
-      timestamp: Date.now(),
-      reason
-    })
+    notifyLifecycle(unloadContext)
     return context
   }
 
@@ -121,24 +112,14 @@ export const useViewerLifecycle = ({
       return
     }
 
-    notifyLifecycle({
-      ...context,
-      phase: 'unload-complete',
-      timestamp: Date.now(),
-      reason
-    })
-  }
-
-  const setActiveDocumentContext = (context: FileViewerLifecycleContext) => {
-    activeDocumentContext = context
-  }
-
-  const clearActiveDocumentContext = () => {
-    activeDocumentContext = null
+    const unloadContext = lifecycleState.buildActiveUnloadContext('unload-complete', context, reason)
+    if (unloadContext) {
+      notifyLifecycle(unloadContext)
+    }
   }
 
   const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
-    const base = activeDocumentContext || buildLifecycleContext({
+    const base = lifecycleState.getActiveDocumentContext() || buildLifecycleContext({
       phase: 'load-complete',
       version: getCurrentVersion(),
       source: getFallbackSource(),
@@ -176,8 +157,8 @@ export const useViewerLifecycle = ({
     notifyLifecycle,
     notifyActiveUnloadStart,
     notifyActiveUnloadComplete,
-    setActiveDocumentContext,
-    clearActiveDocumentContext,
+    setActiveDocumentContext: lifecycleState.setActiveDocumentContext,
+    clearActiveDocumentContext: lifecycleState.clearActiveDocumentContext,
     buildOperationContext,
     runBeforeOperation
   }

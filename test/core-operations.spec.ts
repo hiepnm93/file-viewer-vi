@@ -3,6 +3,7 @@ import { parseHTML } from 'linkedom';
 import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
+  createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
   executeFileViewerDownloadOperation,
@@ -49,6 +50,44 @@ describe('@file-viewer/core operation helpers', () => {
       filename: '报告.pdf',
       timestamp: 1300,
     });
+  });
+
+  it('tracks lifecycle state in the framework-neutral core controller', () => {
+    const controller = createFileViewerLifecycleStateController();
+    const context = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'file',
+      filename: 'demo.pdf',
+      version: 3,
+      timestamp: 120,
+    });
+
+    controller.markLoadStarted(3, 100);
+
+    expect(controller.getLoadStartedAt(3)).toBe(100);
+    expect(controller.getActiveDocumentContext()).toBeNull();
+
+    controller.setActiveDocumentContext(context);
+    expect(controller.getActiveDocumentContext()).toBe(context);
+    expect(controller.buildActiveUnloadContext('unload-start', context, 'replace', 130)).toMatchObject({
+      phase: 'unload-start',
+      filename: 'demo.pdf',
+      reason: 'replace',
+      timestamp: 130,
+    });
+    expect(controller.buildActiveUnloadContext('unload-complete', context, 'replace', 140)).toMatchObject({
+      phase: 'unload-complete',
+      filename: 'demo.pdf',
+      reason: 'replace',
+      timestamp: 140,
+    });
+
+    controller.clearLoadStarted(3);
+    controller.clearActiveDocumentContext();
+
+    expect(controller.getLoadStartedAt(3)).toBeUndefined();
+    expect(controller.getActiveDocumentContext()).toBeNull();
+    expect(controller.buildActiveUnloadContext('unload-start', null)).toBeNull();
   });
 
   it('serializes postMessage contexts without leaking File objects', () => {
