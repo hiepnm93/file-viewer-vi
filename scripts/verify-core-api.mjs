@@ -36,6 +36,7 @@ const requiredValueExports = [
   'DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME',
   'DEFAULT_FILE_VIEWER_EXPORT_FILENAME',
   'DEFAULT_FILE_VIEWER_PREVIEW_TITLE',
+  'createFileViewerOriginalSourceState',
   'resolveFileViewerOperationFilename',
   'resolveFileViewerOperationAvailability',
   'cloneFileViewerOperationAvailability',

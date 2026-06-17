@@ -552,6 +552,7 @@ async function verifyVue3ScopedCompatibility() {
   const vueExportHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerExport.ts`
   assertImportsFrom(vueExportHookSource, '@file-viewer/core', vueExportHookLabel)
   assertTokens(vueExportHookSource, [
+    'createFileViewerOriginalSourceState',
     'executeFileViewerDownloadOperation',
     'executeFileViewerExportHtmlOperation',
     'executeFileViewerPrintOperation'

@@ -8,6 +8,7 @@ import {
   buildFileViewerOperationContext,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
+  createFileViewerOriginalSourceState,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
   executeFileViewerDownloadOperation,
@@ -23,6 +24,7 @@ import {
   postFileViewerSearchChange,
   postFileViewerZoomChange,
   resolveFileViewerOperationFilename,
+  resolveFileViewerOriginalFilename,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
@@ -643,5 +645,28 @@ describe('@file-viewer/core operation helpers', () => {
       Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument });
       Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
     }
+  });
+
+  it('normalizes original source state in core', () => {
+    const file = new File(['demo'], 'demo.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    const source = createFileViewerOriginalSourceState({
+      file,
+      filename: 'display.docx',
+    });
+
+    expect(source).toEqual({
+      buffer: null,
+      file,
+      url: null,
+      filename: 'display.docx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    expect(resolveFileViewerOriginalFilename(source)).toBe('display.docx');
+    expect(createFileViewerOriginalSourceState({
+      buffer: new ArrayBuffer(2),
+      mimeType: 'application/octet-stream',
+    }).mimeType).toBe('application/octet-stream');
   });
 });

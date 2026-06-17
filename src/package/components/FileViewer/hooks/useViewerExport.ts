@@ -5,6 +5,7 @@ import type {
   FileViewerOperationType
 } from '@file-viewer/core'
 import {
+  createFileViewerOriginalSourceState,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation
@@ -39,13 +40,13 @@ export const useViewerExport = ({
 }: UseViewerExportOptions) => {
   const downloadOriginalFile = async () => {
     try {
-      const source = {
+      const source = createFileViewerOriginalSourceState({
         buffer: currentBuffer.value,
         file: currentFile.value,
         url: currentSourceUrl.value,
         filename: displayFilename.value,
         mimeType: currentFile.value?.type
-      }
+      })
       await executeFileViewerDownloadOperation({
         source,
         beforeOperation: runBeforeOperation,

@@ -12,6 +12,7 @@ import {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+  createFileViewerOriginalSourceState,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
@@ -220,12 +221,12 @@ export const createViewer = (
       return activeExportAdapter;
     },
     async download(downloadOptions: FileViewerDownloadOptions = {}) {
-      const source = {
+      const source = createFileViewerOriginalSourceState({
         buffer: currentSource?.buffer,
         file: currentSource?.file,
         url: currentSource?.url,
         filename: getDisplayFilename(),
-      };
+      });
       await executeFileViewerDownloadOperation({
         source,
         filename: downloadOptions.filename || resolveFileViewerOperationFilename({

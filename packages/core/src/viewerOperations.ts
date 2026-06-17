@@ -21,6 +21,8 @@ export interface FileViewerOriginalSourceState {
   mimeType?: string | null;
 }
 
+export type CreateFileViewerOriginalSourceStateInput = FileViewerOriginalSourceState;
+
 export const DEFAULT_FILE_VIEWER_PREVIEW_TITLE = 'file-viewer-preview';
 export const DEFAULT_FILE_VIEWER_EXPORT_FILENAME = 'preview';
 export const DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME = DEFAULT_FILE_VIEWER_SOURCE_FILENAME;
@@ -67,6 +69,26 @@ interface BuildRenderedHtmlDocumentFromOperationInput {
 
 const getBlobFilename = (file: File | Blob | null | undefined) => {
   return file && 'name' in file && typeof file.name === 'string' ? file.name : '';
+};
+
+const getBlobMimeType = (file: File | Blob | null | undefined) => {
+  return file && typeof file.type === 'string' ? file.type : '';
+};
+
+export const createFileViewerOriginalSourceState = ({
+  buffer = null,
+  file = null,
+  url = null,
+  filename = null,
+  mimeType = null,
+}: CreateFileViewerOriginalSourceStateInput = {}): FileViewerOriginalSourceState => {
+  return {
+    buffer,
+    file,
+    url,
+    filename,
+    mimeType: mimeType || getBlobMimeType(file) || null,
+  };
 };
 
 export const resolveFileViewerOriginalFilename = (
