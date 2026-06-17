@@ -47,7 +47,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json && node ../../scripts/fix-core-esm-extensions.mjs",
     "type-check": "tsc -b tsconfig.json"
   },
   "devDependencies": {

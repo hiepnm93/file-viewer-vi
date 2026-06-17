@@ -298,6 +298,9 @@
 - [x] wrapper repository export smoke 覆盖: `pnpm wrappers:export` 会刷新 README、导出 8 个独立 wrapper 仓库目录并运行 `pnpm wrappers:verify`。
 - [x] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
 - [ ] 生产构建验证每个 wrapper 的 ESM/CJS/UMD/script tag 入口。
+  - [x] 新增 `pnpm verify:production-entrypoints`，校验完整生态构建后的 package 声明入口、可导入 ESM 入口、纯 Web viewer 静态入口和 Vue3 基线静态资源入口。
+  - [x] `pnpm release:ecosystem:build` 已在构建 core、viewer、标准 wrapper、历史兼容包、混淆产物和 wrapper 仓库导出后自动执行生产入口校验。
+  - [ ] 独立 CJS / UMD / script tag 浏览器烟测仍需继续补齐到完整自动化。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
 - [x] 发布前检查 npm tarball 内容，不泄露私有源码。
   - [x] 新增 `pnpm verify:ecosystem-tarballs`，使用 npm dry-run 检查所有 core、标准 wrapper 和历史兼容包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本。

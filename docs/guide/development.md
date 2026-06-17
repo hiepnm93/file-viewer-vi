@@ -27,6 +27,7 @@ pnpm install
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
+| `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、smoke 矩阵、wrapper 源包和生态 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
@@ -61,6 +62,7 @@ pnpm release:ecosystem:list
 pnpm wrappers:publish:dry-run
 pnpm docker:build
 pnpm release:ecosystem:pack
+pnpm verify:production-entrypoints
 pnpm docs:build
 pnpm test
 ```
@@ -116,6 +118,7 @@ Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
+- 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入
 - 本地构建和文档构建是否全部通过
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
