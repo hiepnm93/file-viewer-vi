@@ -9,6 +9,7 @@ import React, {
 } from 'react'
 import {
   mountViewerFrame,
+  toViewerFrameOptions,
   type CreateViewerFrameOptions,
   type ViewerFrameComponentProps,
   type ViewerFrameIframeComponentProps,
@@ -24,6 +25,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
   ViewerFrameHostComponentProps,
@@ -90,7 +92,7 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
   const containerRef = useRef<HTMLDivElement | null>(null)
   const controllerRef = useRef<ViewerFrameController | null>(null)
 
-  const frameOptions = useMemo<CreateViewerFrameOptions>(() => ({
+  const frameOptions = useMemo<CreateViewerFrameOptions>(() => toViewerFrameOptions({
     viewerUrl,
     url,
     file,
@@ -100,10 +102,10 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
     params,
     cacheKey,
     options,
-    onEvent: onViewerEvent,
-    className: iframeClassName,
-    style: iframeStyle,
-    title: iframeTitle
+    onViewerEvent,
+    iframeClassName,
+    iframeStyle,
+    iframeTitle
   }), [
     viewerUrl,
     url,

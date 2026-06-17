@@ -67,6 +67,7 @@ export {
   postFileToFileViewerFrame,
   serializeFileViewerFrameUrl,
   syncFileViewerFrame,
+  toFileViewerFrameOptions,
   toFileViewerFrameMessageBlob,
 } from './frame';
 export {
@@ -246,6 +247,7 @@ export type {
   FileViewerDirectFrameHandle,
   FileViewerFrameControllerHandle,
   FileViewerFrameController,
+  FileViewerFrameComponentBridgeOptions,
   FileViewerFrameFilePostController,
   FileViewerFrameFilePostControllerOptions,
   FileViewerFrameContainerComponentProps,

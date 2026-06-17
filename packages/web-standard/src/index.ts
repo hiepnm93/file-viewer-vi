@@ -11,6 +11,7 @@ import {
   mountFileViewerFrame as mountCoreFileViewerFrame,
   postFileToFileViewerFrame,
   syncFileViewerFrame as syncCoreFileViewerFrame,
+  toFileViewerFrameOptions,
   toFileViewerFrameMessageBlob
 } from '@file-viewer/core'
 import type {
@@ -23,6 +24,7 @@ import type {
   FileViewerFrameController as CoreFileViewerFrameController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
+  FileViewerFrameComponentBridgeOptions as CoreFileViewerFrameComponentBridgeOptions,
   FileViewerFrameComponentProps as CoreFileViewerFrameComponentProps,
   FileViewerFrameContainerComponentProps as CoreFileViewerFrameContainerComponentProps,
   FileViewerFrameHostComponentProps as CoreFileViewerFrameHostComponentProps,
@@ -66,6 +68,8 @@ export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string,
 export interface ViewerFrameOptions extends FileViewerFrameOptions {}
 
 export interface ViewerFrameComponentProps extends CoreFileViewerFrameComponentProps {}
+
+export interface ViewerFrameComponentBridgeOptions extends CoreFileViewerFrameComponentBridgeOptions {}
 
 export interface ViewerFrameIframeComponentProps extends CoreFileViewerFrameIframeComponentProps {}
 
@@ -127,6 +131,13 @@ const withViewerFrameDefaults = <Options extends ViewerFrameOptions>(options: Op
 })
 
 export const toMessageBlob = toFileViewerFrameMessageBlob
+
+export const toViewerFrameOptions = (
+  props: ViewerFrameHostComponentProps,
+  bridgeOptions: ViewerFrameComponentBridgeOptions = {}
+): CreateViewerFrameOptions => {
+  return toFileViewerFrameOptions(props, bridgeOptions)
+}
 
 export const postFileToViewer = (
   frame: HTMLIFrameElement | null | undefined,

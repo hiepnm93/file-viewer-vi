@@ -15,6 +15,7 @@ const requiredViewerTypeExports = [
   'ViewerArchiveOptions',
   'ViewerCadOptions',
   'ViewerDocxOptions',
+  'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
   'ViewerFrameController',

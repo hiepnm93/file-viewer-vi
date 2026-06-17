@@ -18,6 +18,7 @@ import {
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
+  FileViewerFrameComponentBridgeOptions,
   FileViewerFrameContainerComponentProps,
   FileViewerDirectFrameHandle,
   FileViewerFrameComponentProps,
@@ -36,6 +37,7 @@ import type {
 
 export type FileRef = FileViewerFileRef
 export type ViewerDirectFrameHandle = FileViewerDirectFrameHandle
+export type ViewerFrameComponentBridgeOptions = FileViewerFrameComponentBridgeOptions
 export type ViewerFrameComponentProps = FileViewerFrameComponentProps
 export type ViewerFrameContainerComponentProps<
   ContainerClass = unknown,

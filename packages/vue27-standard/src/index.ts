@@ -2,6 +2,7 @@ import Vue from 'vue'
 import type { CreateElement, PluginObject, VueConstructor, VNode } from 'vue'
 import {
   mountViewerFrame,
+  toViewerFrameOptions,
   type CreateViewerFrameOptions,
   type ViewerFrameHostComponentProps,
   type ViewerMountedFrameHandle,
@@ -17,6 +18,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
   ViewerFrameHostComponentProps,
@@ -118,25 +120,11 @@ export const FileViewer = Vue.extend({
   methods: {
     getFrameOptions(): CreateViewerFrameOptions {
       const vm = toVm(this)
-      return {
-        viewerUrl: vm.viewerUrl,
-        url: vm.url,
-        file: vm.file,
-        name: vm.name,
-        from: vm.from,
-        targetOrigin: vm.targetOrigin,
-        params: vm.params,
-        cacheKey: vm.cacheKey,
-        options: vm.options,
-        className: vm.iframeClassName,
-        style: vm.iframeStyle,
-        title: vm.iframeTitle,
+      return toViewerFrameOptions(vm, {
         onEvent: (payload, event) => vm.handleViewerEvent(payload, event)
-      }
+      })
     },
     handleViewerEvent(payload: ViewerFrameEventPayload, event: MessageEvent) {
-      const vm = toVm(this)
-      vm.onViewerEvent?.(payload, event)
       this.$emit('viewer-event', { payload, event })
       this.$emit('viewerEvent', payload, event)
     },

@@ -1,6 +1,7 @@
 import { defineComponent, h, onBeforeUnmount, onMounted, ref, watch, type App, type CSSProperties, type PropType } from 'vue'
 import {
   mountViewerFrame,
+  toViewerFrameOptions,
   type CreateViewerFrameOptions,
   type FileRef,
   type ViewerFrameHostComponentProps,
@@ -19,6 +20,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
   ViewerFrameHostComponentProps,
@@ -77,21 +79,8 @@ export const FileViewer = defineComponent({
     const containerRef = ref<HTMLElement | null>(null)
     const controllerRef = ref<ViewerFrameController | null>(null)
 
-    const getFrameOptions = (): CreateViewerFrameOptions => ({
-      viewerUrl: props.viewerUrl,
-      url: props.url,
-      file: props.file,
-      name: props.name,
-      from: props.from,
-      targetOrigin: props.targetOrigin,
-      params: props.params,
-      cacheKey: props.cacheKey,
-      options: props.options,
-      className: props.iframeClassName,
-      style: props.iframeStyle,
-      title: props.iframeTitle,
+    const getFrameOptions = (): CreateViewerFrameOptions => toViewerFrameOptions(props, {
       onEvent: (payload, event) => {
-        props.onViewerEvent?.(payload, event)
         emit('viewer-event', { payload, event })
         emit('viewerEvent', payload, event)
       }

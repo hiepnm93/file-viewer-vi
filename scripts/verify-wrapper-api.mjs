@@ -31,6 +31,7 @@ const sharedControllerMethods = [
 ]
 
 const sharedFrameComponentTypes = [
+  'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
   'ViewerFrameHostComponentProps',
@@ -45,6 +46,7 @@ const webHelperExports = [
   'syncViewerFrame',
   'postFileToViewer',
   'toMessageBlob',
+  'toViewerFrameOptions',
   'isViewerFrameEvent',
   'getViewerUrl',
   'getViewerOrigin',

@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { mountViewerFrame } from '@file-viewer/web'
+  import { mountViewerFrame, toViewerFrameOptions } from '@file-viewer/web'
 
   export let viewerUrl = undefined
   export let url = undefined
@@ -22,7 +22,7 @@
   let container
   let controller = null
 
-  $: frameOptions = {
+  $: frameOptions = toViewerFrameOptions({
     viewerUrl,
     url,
     file,
@@ -32,16 +32,15 @@
     params,
     cacheKey,
     options,
-    className: iframeClassName,
-    style: iframeStyle,
-    title: iframeTitle,
+    onViewerEvent,
+    iframeClassName,
+    iframeStyle,
+    iframeTitle
+  }, {
     onEvent(payload, event) {
-      if (onViewerEvent) {
-        onViewerEvent(payload, event)
-      }
       dispatch('viewerEvent', { payload, event })
     }
-  }
+  })
 
   const dispose = () => {
     controller?.destroy()

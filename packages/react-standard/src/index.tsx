@@ -32,6 +32,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentBridgeOptions,
   ViewerDirectFrameHandle,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,

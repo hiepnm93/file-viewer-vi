@@ -104,6 +104,15 @@ export interface FileViewerFrameHostComponentProps<
     FileViewerFrameIframeComponentProps,
     FileViewerFrameContainerComponentProps<ContainerClass, ContainerStyle> {}
 
+export interface FileViewerFrameComponentBridgeOptions {
+  /**
+   * Additional event bridge used by framework wrappers to emit native events.
+   *
+   * `onViewerEvent` from component props is always called first when present.
+   */
+  onEvent?: FileViewerFrameOptions['onEvent'];
+}
+
 export interface BuildFileViewerFrameSrcOptions extends FileViewerFrameOptions {
   /**
    * wrapper 包可以用自己的默认入口覆盖 core 默认地址。
@@ -377,6 +386,37 @@ export const toFileViewerFrameMessageBlob = (file?: FileViewerFileRef) => {
     return new Blob([file]);
   }
   return undefined;
+};
+
+export const toFileViewerFrameOptions = (
+  props: FileViewerFrameHostComponentProps,
+  bridgeOptions: FileViewerFrameComponentBridgeOptions = {}
+): CreateFileViewerFrameOptions => {
+  const onViewerEvent = props.onViewerEvent;
+  const bridgeOnEvent = bridgeOptions.onEvent;
+  const onEvent: FileViewerFrameOptions['onEvent'] | undefined =
+    onViewerEvent || bridgeOnEvent
+      ? (payload, event) => {
+          onViewerEvent?.(payload, event);
+          bridgeOnEvent?.(payload, event);
+        }
+      : undefined;
+
+  return {
+    viewerUrl: props.viewerUrl,
+    url: props.url,
+    file: props.file,
+    name: props.name,
+    from: props.from,
+    targetOrigin: props.targetOrigin,
+    params: props.params,
+    cacheKey: props.cacheKey,
+    options: props.options,
+    className: props.iframeClassName,
+    style: props.iframeStyle,
+    title: props.iframeTitle,
+    onEvent,
+  };
 };
 
 export const postFileToFileViewerFrame = (
