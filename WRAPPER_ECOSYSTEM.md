@@ -34,3 +34,12 @@ By default the script writes to `.release/wrapper-repos/<repository>`. Each fold
 - `wrapper-repo-manifest.json` with source commit and repository metadata
 
 Workspace dependency specifiers such as `workspace:^1.0.26` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
+
+## Public Artifact Sync
+
+`scripts/sync-public-artifacts.mjs` also reads `ecosystem/wrappers.json`. During a full public artifact release it packs:
+
+- historical compatibility adapters such as `@flyfish-group/file-viewer-web` and `@flyfish-group/file-viewer-react`
+- every standard wrapper package listed in the manifest
+
+The generated `artifacts/release-manifest.json` records the wrapper package, tarball, GitHub repository and Gitee mirror for each public integration.

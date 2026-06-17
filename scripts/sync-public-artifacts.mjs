@@ -26,8 +26,26 @@ const slimArtifacts =
 const keepExpandedAssets = !slimArtifacts
 const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
 const version = packageJson.version
-const webPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'web', 'package.json'), 'utf8'))
-const reactPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'react', 'package.json'), 'utf8'))
+const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
+const historicalAdapterPackageDirs = ['packages/web', 'packages/react']
+const historicalAdapterPackages = await Promise.all(
+  historicalAdapterPackageDirs.map(packageDir =>
+    loadAdapterArtifactPackage({
+      packageDir,
+      kind: 'historical'
+    })
+  )
+)
+const standardWrapperPackages = await Promise.all(
+  wrapperManifest.wrappers.map(wrapper =>
+    loadAdapterArtifactPackage({
+      packageDir: wrapper.packageDir,
+      kind: 'standard',
+      wrapper
+    })
+  )
+)
+const adapterArtifactPackages = [...historicalAdapterPackages, ...standardWrapperPackages]
 const vue2Tarball = resolve(
   readArg(
     '--vue2-tarball',
@@ -40,6 +58,21 @@ const demoStagingDir = join(releaseDir, 'demo')
 const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
 const npmPackDir = join(releaseDir, 'npm')
 const adapterPackDir = join(releaseDir, 'adapters')
+
+function npmPackFilename(packageName, packageVersion) {
+  return `${packageName.replace(/^@/, '').replace(/\//g, '-')}-${packageVersion}.tgz`
+}
+
+async function loadAdapterArtifactPackage({ packageDir, kind, wrapper = null }) {
+  const packageJson = JSON.parse(await readFile(join(sourceRoot, packageDir, 'package.json'), 'utf8'))
+  return {
+    kind,
+    wrapper,
+    packageDir,
+    packageJson,
+    tarballName: npmPackFilename(packageJson.name, packageJson.version)
+  }
+}
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -109,11 +142,18 @@ async function removeOldArtifacts(artifactsDir) {
     return
   }
   const entries = await readdir(artifactsDir)
+  const currentAdapterTarballs = new Set(adapterArtifactPackages.map(adapterPackage => adapterPackage.tarballName))
   for (const entry of entries) {
     if (/^file-viewer-v3-.*-(demo|adapter-demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
     }
     if (/^flyfish-group-file-viewer(3|-web|-react)?-.*\.tgz$/.test(entry)) {
+      await removePath(join(artifactsDir, entry))
+    }
+    if (
+      currentAdapterTarballs.has(entry) ||
+      /^file-viewer-(vue3|vue2\.7|vue2\.6|react|react-legacy|web|jquery|svelte)-.*\.tgz$/.test(entry)
+    ) {
       await removePath(join(artifactsDir, entry))
     }
   }
@@ -135,10 +175,7 @@ async function findPackedNpmTarball() {
 
 async function findAdapterTarballs() {
   const entries = await readdir(adapterPackDir)
-  const expected = [
-    `flyfish-group-file-viewer-web-${webPackageJson.version}.tgz`,
-    `flyfish-group-file-viewer-react-${reactPackageJson.version}.tgz`
-  ]
+  const expected = adapterArtifactPackages.map(adapterPackage => adapterPackage.tarballName)
   for (const name of expected) {
     if (!entries.includes(name)) {
       throw new Error(`Expected adapter tarball was not found in ${adapterPackDir}: ${name}`)
@@ -183,10 +220,32 @@ async function writeReleaseManifest(repoDir) {
     generatedAt: new Date().toISOString(),
     sourceBranch: currentBranch(),
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
-    adapterPackages: {
-      [webPackageJson.name]: webPackageJson.version,
-      [reactPackageJson.name]: reactPackageJson.version
-    },
+    corePackage: wrapperManifest.corePackage,
+    adapterPackages: Object.fromEntries(
+      adapterArtifactPackages.map(adapterPackage => [
+        adapterPackage.packageJson.name,
+        adapterPackage.packageJson.version
+      ])
+    ),
+    adapterArtifacts: adapterArtifactPackages.map(adapterPackage => ({
+      name: adapterPackage.packageJson.name,
+      version: adapterPackage.packageJson.version,
+      kind: adapterPackage.kind,
+      framework: adapterPackage.wrapper?.framework ?? null,
+      packageDir: adapterPackage.packageDir,
+      tarball: adapterPackage.tarballName,
+      github: adapterPackage.wrapper?.github ?? null,
+      gitee: adapterPackage.wrapper?.gitee ?? null,
+      historicalPackages: adapterPackage.wrapper?.historicalPackages ?? []
+    })),
+    wrapperRepositories: wrapperManifest.wrappers.map(wrapper => ({
+      framework: wrapper.framework,
+      packageName: wrapper.packageName,
+      repository: wrapper.repository,
+      github: wrapper.github,
+      gitee: wrapper.gitee,
+      historicalPackages: wrapper.historicalPackages
+    })),
     vue2Package: skipVue2Tarball
       ? null
       : {
@@ -227,8 +286,10 @@ if (!skipBuild) {
 
   run('pnpm', ['run', 'build:adapter-demo'])
   await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), adapterDemoStagingDir)
-  run('pnpm', ['-C', 'packages/web', 'pack', '--pack-destination', adapterPackDir])
-  run('pnpm', ['-C', 'packages/react', 'pack', '--pack-destination', adapterPackDir])
+  for (const adapterPackage of adapterArtifactPackages) {
+    run('pnpm', ['--filter', adapterPackage.packageJson.name, 'build'])
+    run('pnpm', ['-C', adapterPackage.packageDir, 'pack', '--pack-destination', adapterPackDir])
+  }
 
   run('pnpm', ['run', 'build-lib-only'])
   run('pnpm', ['run', 'obfuscate'])
