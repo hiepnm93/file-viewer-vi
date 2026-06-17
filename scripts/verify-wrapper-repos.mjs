@@ -41,6 +41,14 @@ const historicalPackageNames = new Set(
 )
 const currentSourceBranch = runGit(['branch', '--show-current'])
 const currentSourceCommit = runGit(['rev-parse', '--short', 'HEAD'])
+const allowedEntryFormats = new Set([
+  'esm',
+  'types',
+  'iife',
+  'viewer-assets',
+  'copy-assets-cli',
+  'svelte-component'
+])
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
@@ -149,6 +157,77 @@ function verifyNoHistoricalPackageDependency(packageJson, label) {
       if (historicalPackageNames.has(dependencyName)) {
         throw new Error(`${label} must not depend on historical compatibility package ${dependencyName}`)
       }
+    }
+  }
+}
+
+function entryFormatLabels(locale) {
+  return locale === 'zh'
+    ? {
+        esm: 'ESM',
+        types: '类型声明',
+        iife: 'script 标签 IIFE',
+        'viewer-assets': '内置 viewer 静态产物',
+        'copy-assets-cli': '复制静态资源 CLI',
+        'svelte-component': 'Svelte 组件'
+      }
+    : {
+        esm: 'ESM',
+        types: 'type declarations',
+        iife: 'script tag IIFE',
+        'viewer-assets': 'bundled viewer assets',
+        'copy-assets-cli': 'asset copy CLI',
+        'svelte-component': 'Svelte component'
+      }
+}
+
+function verifyWrapperEntryFormats(wrapper, packageJson, label) {
+  if (!Array.isArray(wrapper.entryFormats) || !wrapper.entryFormats.length) {
+    throw new Error(`${label} wrapper manifest must declare entryFormats`)
+  }
+
+  for (const format of wrapper.entryFormats) {
+    if (!allowedEntryFormats.has(format)) {
+      throw new Error(`${label} wrapper manifest has unsupported entry format: ${format}`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('esm')) {
+    if (!packageJson.module || !packageJson.exports?.['.']?.import) {
+      throw new Error(`${label} declares ESM but package.json is missing module or exports["."].import`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('types')) {
+    if (!packageJson.types || !packageJson.exports?.['.']?.types) {
+      throw new Error(`${label} declares type declarations but package.json is missing types or exports["."].types`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('iife')) {
+    if (!packageJson.unpkg || !packageJson.jsdelivr) {
+      throw new Error(`${label} declares IIFE but package.json is missing unpkg/jsdelivr browser bundle metadata`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('viewer-assets')) {
+    if (!packageJson.exports?.['./viewer/*']) {
+      throw new Error(`${label} declares bundled viewer assets but package.json is missing exports["./viewer/*"]`)
+    }
+    if (!packageJson.files?.includes('viewer')) {
+      throw new Error(`${label} declares bundled viewer assets but package.json files does not include viewer`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('copy-assets-cli')) {
+    if (!packageJson.bin?.['file-viewer-copy-assets']) {
+      throw new Error(`${label} declares asset copy CLI but package.json is missing bin.file-viewer-copy-assets`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('svelte-component')) {
+    if (!packageJson.exports?.['.']?.svelte || !String(packageJson.exports['.'].svelte).endsWith('.svelte')) {
+      throw new Error(`${label} declares Svelte component but exports["."].svelte is missing`)
     }
   }
 }
@@ -361,6 +440,10 @@ async function verifyReadmePair(dir, wrapper, label) {
       assertIncludes(readme, ecosystemWrapper.packageName, readmeLabel)
       assertIncludes(readme, ecosystemWrapper.github, readmeLabel)
       assertIncludes(readme, ecosystemWrapper.gitee, readmeLabel)
+      const labels = entryFormatLabels(locale)
+      for (const format of ecosystemWrapper.entryFormats || []) {
+        assertIncludes(readme, labels[format] || format, readmeLabel)
+      }
     }
     for (const historicalPackage of wrapper.historicalPackages) {
       assertIncludes(readme, historicalPackage, readmeLabel)
@@ -386,6 +469,7 @@ async function verifyPackageDir(wrapper) {
     throw new Error(`${wrapper.packageDir} must be publishable, but package.json has private=true`)
   }
   verifyNoHistoricalPackageDependency(packageJson, `${wrapper.packageDir}/package.json`)
+  verifyWrapperEntryFormats(wrapper, packageJson, `${wrapper.packageDir}/package.json`)
   await verifyNoHistoricalPackageReferences(packageDir, wrapper.packageDir)
   verifyStandalonePortableText(JSON.stringify(packageJson), `${wrapper.packageDir}/package.json`)
   await verifyPackageEntrypointMetadata(packageDir, packageJson, wrapper.packageDir)
@@ -435,6 +519,7 @@ async function verifyExportedRepo(wrapper) {
   }
   await verifyPackageEntrypointMetadata(repoDir, packageJson, wrapper.repository)
   verifyNoHistoricalPackageDependency(packageJson, `${wrapper.repository}/package.json`)
+  verifyWrapperEntryFormats(wrapper, packageJson, `${wrapper.repository}/package.json`)
   await verifyNoHistoricalPackageReferences(repoDir, wrapper.repository)
   for (const block of dependencyBlocks(packageJson)) {
     for (const [dependencyName, range] of Object.entries(block)) {
@@ -454,11 +539,13 @@ async function verifyExportedRepo(wrapper) {
     repository: wrapper.repository,
     github: wrapper.github,
     gitee: wrapper.gitee,
+    entryFormats: JSON.stringify(wrapper.entryFormats),
     sourcePackageDir: wrapper.packageDir,
     corePackage: wrapperManifest.corePackage.packageName,
     coreSourceVisibility: wrapperManifest.corePackage.visibility
   })) {
-    if (standaloneManifest[key] !== expected) {
+    const actual = key === 'entryFormats' ? JSON.stringify(standaloneManifest.entryFormats) : standaloneManifest[key]
+    if (actual !== expected) {
       throw new Error(`${wrapper.repository} manifest ${key} mismatch: ${standaloneManifest[key]} !== ${expected}`)
     }
   }

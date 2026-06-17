@@ -17,6 +17,7 @@
       "repository": "file-viewer-vue3",
       "github": "https://github.com/flyfish-dev/file-viewer-vue3",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue3",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": ["@flyfish-group/file-viewer3", "file-viewer3"]
     },
     {
@@ -27,6 +28,7 @@
       "repository": "file-viewer-vue2.7",
       "github": "https://github.com/flyfish-dev/file-viewer-vue2.7",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.7",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": ["@flyfish-group/file-viewer"]
     },
     {
@@ -37,6 +39,7 @@
       "repository": "file-viewer-vue2.6",
       "github": "https://github.com/flyfish-dev/file-viewer-vue2.6",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.6",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": []
     },
     {
@@ -47,6 +50,7 @@
       "repository": "file-viewer-react",
       "github": "https://github.com/flyfish-dev/file-viewer-react",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-react",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": ["@flyfish-group/file-viewer-react"]
     },
     {
@@ -57,6 +61,7 @@
       "repository": "file-viewer-react-legacy",
       "github": "https://github.com/flyfish-dev/file-viewer-react-legacy",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-legacy",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": []
     },
     {
@@ -67,6 +72,7 @@
       "repository": "file-viewer-web",
       "github": "https://github.com/flyfish-dev/file-viewer-web",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-web",
+      "entryFormats": ["esm", "types", "iife", "viewer-assets", "copy-assets-cli"],
       "historicalPackages": ["@flyfish-group/file-viewer-web"]
     },
     {
@@ -77,6 +83,7 @@
       "repository": "file-viewer-jquery",
       "github": "https://github.com/flyfish-dev/file-viewer-jquery",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-jquery",
+      "entryFormats": ["esm", "types"],
       "historicalPackages": []
     },
     {
@@ -87,6 +94,7 @@
       "repository": "file-viewer-svelte",
       "github": "https://github.com/flyfish-dev/file-viewer-svelte",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-svelte",
+      "entryFormats": ["svelte-component", "esm", "types"],
       "historicalPackages": []
     }
   ]

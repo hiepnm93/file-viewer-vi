@@ -191,6 +191,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
         artifactNote: packageRecord.publicArtifact?.reason ?? null,
         github: packageRecord.github ?? null,
         gitee: packageRecord.gitee ?? null,
+        entryFormats: wrapper?.entryFormats ?? [],
         historicalPackages: wrapper?.historicalPackages ?? []
       }
     }),
@@ -200,6 +201,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
       repository: wrapper.repository,
       github: wrapper.github,
       gitee: wrapper.gitee,
+      entryFormats: wrapper.entryFormats,
       historicalPackages: wrapper.historicalPackages
     })),
     vue2Package: skipVue2Tarball

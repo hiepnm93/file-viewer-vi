@@ -218,6 +218,7 @@ const writeStandaloneManifest = async (targetDir, wrapper, packageJson) => {
     repository: wrapper.repository,
     github: wrapper.github,
     gitee: wrapper.gitee,
+    entryFormats: wrapper.entryFormats,
     historicalPackages: wrapper.historicalPackages,
     sourcePackageDir: wrapper.packageDir,
     corePackage: wrapperManifest.corePackage.packageName,

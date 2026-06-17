@@ -24,14 +24,14 @@
       "wrapperEcosystemHeading": "生态包矩阵",
       "wrapperFormatHeading": "格式支持矩阵",
       "publicEcosystemHeading": "标准生态包与公开仓库",
-      "wrapperMatrixHeaders": ["框架", "标准 npm 包", "GitHub", "Gitee", "兼容历史包"],
+      "wrapperMatrixHeaders": ["框架", "标准 npm 包", "入口格式", "GitHub", "Gitee", "兼容历史包"],
       "formatMatrixHeaders": ["预览链路", "分类", "扩展名", "能力", "加载"]
     },
     "en": {
       "wrapperEcosystemHeading": "Ecosystem Matrix",
       "wrapperFormatHeading": "Format Support Matrix",
       "publicEcosystemHeading": "Standard Ecosystem Packages and Public Repositories",
-      "wrapperMatrixHeaders": ["Framework", "Standard npm package", "GitHub", "Gitee", "Historical aliases"],
+      "wrapperMatrixHeaders": ["Framework", "Standard npm package", "Entrypoints", "GitHub", "Gitee", "Historical aliases"],
       "formatMatrixHeaders": ["Preview pipeline", "Category", "Extensions", "Capabilities", "Loading"]
     }
   }

@@ -65,6 +65,12 @@ async function assertReleaseManifest(repoDir) {
     assert(adapterPackages[entry.packageName] === entry.version, `${entry.packageName} adapter package version missing from manifest`)
     const record = artifactRecords.get(entry.packageName)
     assertPackageRecord(record, entry)
+    if (entry.wrapper) {
+      assert(
+        JSON.stringify(record.entryFormats || []) === JSON.stringify(entry.wrapper.entryFormats || []),
+        `${entry.packageName} adapter artifact entry format mapping drifted`
+      )
+    }
     if (entry.publicArtifact?.includeTarball === false) {
       assert(record.artifactIncluded === false, `${entry.packageName} duplicate artifact should not be included`)
       assert(record.artifactDuplicateOf === entry.publicArtifact.duplicateOf, `${entry.packageName} duplicate artifact target drifted`)
@@ -87,6 +93,10 @@ async function assertReleaseManifest(repoDir) {
     })) {
       assert(record[key] === expected, `${wrapper.packageName} wrapper repository ${key} drifted`)
     }
+    assert(
+      JSON.stringify(record.entryFormats || []) === JSON.stringify(wrapper.entryFormats || []),
+      `${wrapper.packageName} wrapper repository entry format mapping drifted`
+    )
     assert(
       JSON.stringify(record.historicalPackages || []) === JSON.stringify(wrapper.historicalPackages || []),
       `${wrapper.packageName} historical package mapping drifted`
