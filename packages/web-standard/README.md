@@ -1,6 +1,6 @@
 # @file-viewer/web
 
-标准纯 Web wrapper 包。当前作为 `@flyfish-group/file-viewer-web` 的标准命名入口，复用同一套 `@file-viewer/core` iframe 协议、viewer 静态产物复制工具和完整预览体验。
+标准纯 Web wrapper 包。它直接复用 `@file-viewer/core` iframe 协议，并随包提供 viewer 静态产物、资源复制 CLI、ESM API 和 IIFE 全局脚本，适合任意前端、传统后台页面和 iframe 私有化部署。
 
 ```bash
 npm install @file-viewer/web
@@ -37,7 +37,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 </script>
 ```
 
-历史包名 `@flyfish-group/file-viewer-web` 会继续同步维护；新项目建议优先使用 `@file-viewer/web`。English README: [README.en.md](./README.en.md)。
+历史包名 `@flyfish-group/file-viewer-web` 会继续同步维护；新项目建议优先使用自包含的标准包 `@file-viewer/web`。English README: [README.en.md](./README.en.md)。
 
 ## 能力范围
 

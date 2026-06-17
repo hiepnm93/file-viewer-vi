@@ -7,7 +7,10 @@ import rootPackage from '../package.json' with { type: 'json' }
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const source = resolve(root, 'dist')
-const target = resolve(root, 'packages/web/viewer')
+const targets = [
+  resolve(root, 'packages/web/viewer'),
+  resolve(root, 'packages/web-standard/viewer')
+]
 const coreAssetsEntry = resolve(root, 'packages/core/dist/assets.js')
 
 if (!existsSync(resolve(source, 'index.html'))) {
@@ -99,38 +102,40 @@ const toManifestValidation = validation => ({
   missingOptional: validation.missingOptional.map(toManifestValidationItem)
 })
 
-await rm(target, { force: true, recursive: true })
-await mkdir(target, { recursive: true })
-await cp(source, target, { recursive: true })
-await rm(resolve(target, 'example'), { force: true, recursive: true })
-await removeMacMetadata(target)
+for (const target of targets) {
+  await rm(target, { force: true, recursive: true })
+  await mkdir(target, { recursive: true })
+  await cp(source, target, { recursive: true })
+  await rm(resolve(target, 'example'), { force: true, recursive: true })
+  await removeMacMetadata(target)
 
-await writeFile(
-  resolve(target, 'flyfish-viewer-manifest.json'),
-  `${JSON.stringify({
-    name: rootPackage.name,
-    version: rootPackage.version,
-    entry: 'index.html'
-  }, null, 2)}\n`
-)
-
-const validation = await validateViewerAssets(target)
-await writeFile(
-  resolve(target, 'flyfish-viewer-assets.json'),
-  `${JSON.stringify({
-    schemaVersion: 1,
-    generatedAt: new Date().toISOString(),
-    rendererAssetManifests: listFileViewerRendererAssetManifests(),
-    validation: toManifestValidation(validation)
-  }, null, 2)}\n`
-)
-
-if (!validation.valid) {
-  throw new Error(
-    `Vue 基线 viewer 缺少必要 worker/WASM 资源: ${
-      validation.missingRequired.map(asset => `${asset.rendererId}:${asset.relativePath}`).join(', ')
-    }`
+  await writeFile(
+    resolve(target, 'flyfish-viewer-manifest.json'),
+    `${JSON.stringify({
+      name: rootPackage.name,
+      version: rootPackage.version,
+      entry: 'index.html'
+    }, null, 2)}\n`
   )
-}
 
-console.log(`已同步 Vue 基线构建产物到 ${target}`)
+  const validation = await validateViewerAssets(target)
+  await writeFile(
+    resolve(target, 'flyfish-viewer-assets.json'),
+    `${JSON.stringify({
+      schemaVersion: 1,
+      generatedAt: new Date().toISOString(),
+      rendererAssetManifests: listFileViewerRendererAssetManifests(),
+      validation: toManifestValidation(validation)
+    }, null, 2)}\n`
+  )
+
+  if (!validation.valid) {
+    throw new Error(
+      `Vue 基线 viewer 缺少必要 worker/WASM 资源: ${
+        validation.missingRequired.map(asset => `${asset.rendererId}:${asset.relativePath}`).join(', ')
+      }`
+    )
+  }
+
+  console.log(`已同步 Vue 基线构建产物到 ${target}`)
+}

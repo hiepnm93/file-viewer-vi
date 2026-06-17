@@ -101,6 +101,10 @@ function verifyStandalonePortableText(text, label, patterns = monorepoOnlyForbid
   }
 }
 
+function shouldVerifyExportedPortableText(relativePath) {
+  return !relativePath.startsWith('viewer/')
+}
+
 function dependencyBlocks(packageJson) {
   return [
     packageJson.dependencies,
@@ -203,6 +207,21 @@ async function verifyExportedTsConfig(repoDir, label) {
   }
 }
 
+async function verifyExportedWebViewerAssets(repoDir, label) {
+  const viewerDir = join(repoDir, 'viewer')
+  await assertDirectory(viewerDir, `${label}/viewer`)
+  for (const file of [
+    'index.html',
+    'compare.html',
+    'flyfish-viewer-assets.json',
+    'flyfish-viewer-manifest.json'
+  ]) {
+    await assertFile(join(viewerDir, file), `${label}/viewer/${file}`)
+  }
+  await assertDirectory(join(viewerDir, 'assets'), `${label}/viewer/assets`)
+  await assertDirectory(join(viewerDir, 'wasm'), `${label}/viewer/wasm`)
+}
+
 async function verifyReadmePair(dir, wrapper, label) {
   const zhPath = join(dir, 'README.md')
   const enPath = join(dir, 'README.en.md')
@@ -292,6 +311,9 @@ async function verifyExportedRepo(wrapper) {
     throw new Error(`${wrapper.repository} bugs URL mismatch`)
   }
   await verifyExportedTsConfig(repoDir, wrapper.repository)
+  if (wrapper.id === 'web') {
+    await verifyExportedWebViewerAssets(repoDir, wrapper.repository)
+  }
   await verifyPackageEntrypointMetadata(repoDir, packageJson, wrapper.repository)
   for (const block of dependencyBlocks(packageJson)) {
     for (const [dependencyName, range] of Object.entries(block)) {
@@ -328,8 +350,10 @@ async function verifyExportedRepo(wrapper) {
     ) {
       throw new Error(`${wrapper.repository} exported build/dependency output leaked: ${relativePath}`)
     }
-    const content = await readFile(file, 'utf8').catch(() => '')
-    verifyStandalonePortableText(content, `${wrapper.repository}/${relativePath}`, exportedRepoForbiddenPatterns)
+    if (shouldVerifyExportedPortableText(relativePath)) {
+      const content = await readFile(file, 'utf8').catch(() => '')
+      verifyStandalonePortableText(content, `${wrapper.repository}/${relativePath}`, exportedRepoForbiddenPatterns)
+    }
   }
 }
 

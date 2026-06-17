@@ -169,6 +169,25 @@ const normalizeStandaloneTsConfig = async targetDir => {
   await writeJson(tsconfigPath, tsconfig)
 }
 
+const ensureWebViewerAssets = async (targetDir, wrapper) => {
+  if (wrapper.id !== 'web') {
+    return
+  }
+
+  const targetViewerDir = join(targetDir, 'viewer')
+  if (existsSync(join(targetViewerDir, 'index.html'))) {
+    return
+  }
+
+  const sourceViewerDir = join(sourceRoot, 'packages/web-standard/viewer')
+  const fallbackViewerDir = join(sourceRoot, 'packages/web/viewer')
+  const viewerSource = existsSync(join(sourceViewerDir, 'index.html'))
+    ? sourceViewerDir
+    : fallbackViewerDir
+  await assertDirectory(viewerSource)
+  await cp(viewerSource, targetViewerDir, { recursive: true, force: true })
+}
+
 const writeGitignore = async targetDir => {
   await writeFile(
     join(targetDir, '.gitignore'),
@@ -247,6 +266,7 @@ for (const wrapper of wrappers) {
   await assertDirectory(sourcePackageDir)
   const targetDir = join(outputRoot, wrapper.repository)
   await copyPackage(sourcePackageDir, targetDir)
+  await ensureWebViewerAssets(targetDir, wrapper)
   await cp(join(sourceRoot, 'LICENSE'), join(targetDir, 'LICENSE'), { force: true })
   await writeGitignore(targetDir)
   await normalizePackageJson(targetDir, wrapper)

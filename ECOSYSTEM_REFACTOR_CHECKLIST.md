@@ -41,7 +41,7 @@
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 自包含标准 wrapper 已建，独立公开仓库待拆 |
 | React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
-| Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
+| Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 自包含标准 wrapper 已建，独立公开仓库待拆 |
 | jQuery wrapper | `@file-viewer/jquery` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-jquery` | `gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Svelte wrapper | `@file-viewer/svelte` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-svelte` | `gitee.com/flyfish-dev/file-viewer-svelte` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开产物仓库 | `github.com/flyfish-dev/file-viewer` | `gitee.com/flyfish-dev/file-viewer` | [ ] 待更新 |
@@ -197,14 +197,14 @@
 - [ ] React legacy wrapper:
   - [x] 面向 React 16.8/17。
   - [x] 避免新 JSX transform / concurrent-only 依赖，使用 `React.createElement` + `@file-viewer/web` controller 作为薄封装。
-- [ ] Pure JS wrapper:
+- [x] Pure JS wrapper:
   - [x] 支持 `mountViewer(container, options)`，作为 `mountViewerFrame` 的标准化别名，不破坏历史 API。
   - [x] 支持 script tag / ESM / UMD 或 IIFE 分发。
     - [x] `@flyfish-group/file-viewer-web` 和 `@file-viewer/web` 构建 `dist/flyfish-file-viewer-web.iife.js`，暴露 `window.FlyfishFileViewerWeb`。
     - [x] 生产入口校验会执行 IIFE bundle，并断言 `mountViewerFrame`、`mountViewer`、`buildViewerSrc` 全局 API 存在。
     - [x] Adapter demo 输出 `/manual-iife.html`，使用普通 `<script>` 加载 IIFE 全局包，并由 `pnpm verify:adapter-demo-output` 校验页面和 helper 产物完整。
     - [x] 新增 `pnpm verify:adapter-browser-smoke`，可在 Playwright 环境下启动 adapter demo dist 并真实打开 demo 首页、`/vue3.html`、`/jquery.html`、`/svelte-action.html` 和 `/manual-iife.html`，验证 React/Pure Web/Vue3/jQuery/Svelte action wrapper iframe 挂载以及 IIFE 全局 API。
-  - [x] `@file-viewer/web` 标准包名作为兼容别名接入当前纯 Web wrapper，并保留 viewer 静态产物复制 bin。
+  - [x] `@file-viewer/web` 标准包名已改为自包含纯 Web wrapper，直接复用 `@file-viewer/core` iframe 协议，并随包携带 viewer 静态产物、复制 CLI、ESM API 和 IIFE 全局脚本。
 - [ ] jQuery wrapper:
   - [x] 支持 `$(el).fileViewer(options)`。
   - [x] 支持 `destroy` / `reload` / `postFile` / `update` 方法调用，并可通过 `getFileViewerController()` 取得底层 controller。

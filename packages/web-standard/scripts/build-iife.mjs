@@ -20,7 +20,7 @@ await build({
   publicDir: false,
   logLevel: 'warn',
   resolve: {
-    dedupe: ['@file-viewer/core', '@flyfish-group/file-viewer-web']
+    dedupe: ['@file-viewer/core']
   },
   build: {
     emptyOutDir: false,

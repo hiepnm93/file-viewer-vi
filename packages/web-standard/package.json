@@ -44,6 +44,7 @@
       "import": "./dist/node.js",
       "default": "./dist/node.js"
     },
+    "./viewer/*": "./viewer/*",
     "./package.json": "./package.json"
   },
   "bin": {
@@ -52,17 +53,20 @@
   "files": [
     "dist",
     "scripts",
+    "viewer",
     "README.md",
     "README.en.md"
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json && node scripts/build-iife.mjs",
+    "postinstall": "node ./scripts/copy-assets.mjs --postinstall",
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@flyfish-group/file-viewer-web": "workspace:^1.0.26"
+    "@file-viewer/core": "workspace:^1.0.26"
   },
   "devDependencies": {
+    "@types/node": "^25.8.0",
     "esbuild": "^0.27.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"

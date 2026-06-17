@@ -134,7 +134,7 @@ for (const entry of entries) {
   await importProductionEntrypoints(entry)
   importedEntrypointCount += importEntrypoints.length
 
-  if (entry.packageName === '@flyfish-group/file-viewer-web') {
+  if (webGlobalPackages.has(entry.packageName)) {
     await assertViewerStaticEntrypoints(entry)
   }
   if (await assertWebGlobalEntrypoint(entry)) {

@@ -1,6 +1,6 @@
 # @file-viewer/web
 
-The standard pure web wrapper for Flyfish File Viewer. It is the new package name for the existing `@flyfish-group/file-viewer-web` integration and reuses the same `@file-viewer/core` iframe protocol, private viewer assets, and runtime behavior.
+The standard pure web wrapper for Flyfish File Viewer. It directly reuses the `@file-viewer/core` iframe protocol and ships the viewer static assets, asset-copy CLI, ESM API, and IIFE global bundle for any frontend, legacy admin page, or private iframe deployment.
 
 ```bash
 npm install @file-viewer/web
@@ -37,7 +37,7 @@ No-build or legacy admin pages can copy `dist/flyfish-file-viewer-web.iife.js` a
 </script>
 ```
 
-The historical package `@flyfish-group/file-viewer-web` remains supported for compatibility. New integrations should prefer `@file-viewer/web`.
+The historical package `@flyfish-group/file-viewer-web` remains supported for compatibility. New integrations should prefer the self-contained standard package `@file-viewer/web`.
 
 ## Capabilities
 
