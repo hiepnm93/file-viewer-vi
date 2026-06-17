@@ -7,6 +7,8 @@ import type {
 
 export type FileViewerReadResult = string | ArrayBuffer | undefined | null;
 
+export const DEFAULT_FILE_VIEWER_SOURCE_FILENAME = 'preview.bin';
+
 export const normalizeFileExtension = (extension: string) => {
   return extension.trim().replace(/^\./, '').toLowerCase();
 };
@@ -25,7 +27,7 @@ export const getExtension = (name: string) => {
   return dot === -1 ? '' : normalizeFileExtension(clean.slice(dot + 1));
 };
 
-export const normalizeFilename = (value: string | undefined, fallback = 'preview.bin') => {
+export const normalizeFilename = (value: string | undefined, fallback = DEFAULT_FILE_VIEWER_SOURCE_FILENAME) => {
   const next = (value || '').split(/[?#]/)[0].trim();
   if (!next) {
     return fallback;
@@ -82,7 +84,7 @@ export const normalizeSource = (source: FileViewerSource): NormalizedFileViewerS
   const kind = getSourceKind(source);
   const filename = normalizeFilename(
     source.filename || getBlobName(source.file) || source.url,
-    source.type ? `preview.${normalizeFileExtension(source.type)}` : 'preview.bin'
+    source.type ? `preview.${normalizeFileExtension(source.type)}` : DEFAULT_FILE_VIEWER_SOURCE_FILENAME
   );
   const extension = normalizeFileExtension(source.type || getExtension(filename));
   const sourceSize =
@@ -107,13 +109,13 @@ export const normalizeSource = (source: FileViewerSource): NormalizedFileViewerS
 
 export const wrapFileViewerFileRef = (
   data: FileViewerFileRef,
-  filename = 'preview.bin'
+  filename = DEFAULT_FILE_VIEWER_SOURCE_FILENAME
 ): File => {
   if (typeof File !== 'undefined' && data instanceof File) {
     return data;
   }
 
-  const safeFilename = normalizeFilename(filename || 'preview.bin');
+  const safeFilename = normalizeFilename(filename || DEFAULT_FILE_VIEWER_SOURCE_FILENAME);
 
   if (typeof Blob !== 'undefined' && data instanceof Blob) {
     return new File([data], safeFilename, { type: data.type });

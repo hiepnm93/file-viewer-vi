@@ -1,7 +1,13 @@
 import type { FileViewerPdfOptions } from './types';
-import { getExtension, normalizeFilename } from './source';
+import {
+  DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
+  getExtension,
+  normalizeFilename,
+  wrapFileViewerFileRef,
+} from './source';
 
 export const DEFAULT_PDF_RANGE_CHUNK_SIZE = 64 * 1024;
+export const DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME = 'preview.pdf';
 
 export interface FileViewerRequestController {
   readonly version: number;
@@ -121,7 +127,7 @@ export interface FileViewerRemoteSourcePlan {
 
 export const resolveFileViewerRemoteSourcePlan = ({
   filename,
-  fallbackFilename = 'preview.bin',
+  fallbackFilename = DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   pageHref,
   streaming,
   url,
@@ -148,4 +154,15 @@ export const resolveFileViewerRemoteSourcePlan = ({
       })
       : false,
   };
+};
+
+export const createFileViewerStreamingPdfPlaceholderFile = (filename?: string) => {
+  if (typeof Blob === 'undefined') {
+    throw new Error('Blob is not available in the current runtime.');
+  }
+
+  return wrapFileViewerFileRef(
+    new Blob([], { type: 'application/pdf' }),
+    normalizeFilename(filename, DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME)
+  );
 };

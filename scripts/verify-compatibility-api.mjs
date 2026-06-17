@@ -447,6 +447,8 @@ async function verifyVue3ScopedCompatibility() {
   const vueSourceLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerSourceLoading.ts`
   assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)
   assertTokens(vueSourceLoadingHookSource, [
+    'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
+    'createFileViewerStreamingPdfPlaceholderFile',
     'resolveFileViewerRemoteSourcePlan',
     'resolveFileViewerSourceFilename'
   ], vueSourceLoadingHookLabel)
@@ -454,7 +456,10 @@ async function verifyVue3ScopedCompatibility() {
     'const canStreamRemotePdf',
     'shouldStreamPdfUrl',
     'getExtension(nextFilename)',
-    'normalizeFilename(url)'
+    'normalizeFilename(url)',
+    'new File([],',
+    'preview.pdf',
+    'preview.bin'
   ]) {
     assert(
       !vueSourceLoadingHookSource.includes(forbiddenToken),

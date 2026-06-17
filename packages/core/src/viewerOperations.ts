@@ -4,6 +4,7 @@ import {
   triggerFileViewerUrlDownload,
   waitForFileViewerPrintWindowReady,
 } from './export';
+import { DEFAULT_FILE_VIEWER_SOURCE_FILENAME } from './source';
 import type {
   FileRenderExportAdapter,
   FileViewerDownloadOptions,
@@ -22,7 +23,7 @@ export interface FileViewerOriginalSourceState {
 
 export const DEFAULT_FILE_VIEWER_PREVIEW_TITLE = 'file-viewer-preview';
 export const DEFAULT_FILE_VIEWER_EXPORT_FILENAME = 'preview';
-export const DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME = 'preview.bin';
+export const DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME = DEFAULT_FILE_VIEWER_SOURCE_FILENAME;
 
 export interface ResolveFileViewerOperationFilenameInput {
   filename?: string | null;

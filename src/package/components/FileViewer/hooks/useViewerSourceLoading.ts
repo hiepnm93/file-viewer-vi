@@ -1,7 +1,9 @@
 import axios from 'axios'
 import type { Ref } from 'vue'
 import {
+  DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
+  createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
   readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
@@ -150,7 +152,7 @@ export const useViewerSourceLoading = ({
     startLoading(FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)
 
     try {
-      const placeholderFile = new File([], nextFilename || 'preview.pdf', { type: 'application/pdf' })
+      const placeholderFile = createFileViewerStreamingPdfPlaceholderFile(nextFilename)
       currentSourceUrl.value = url
       const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
       if (!isCurrentRequest(version)) {
@@ -181,8 +183,8 @@ export const useViewerSourceLoading = ({
   }
 
   const previewLocalFile = async (source: FileRef, version: number) => {
-    const file = wrapFileViewerFileRef(source, filename.value || 'preview.bin')
-    filename.value = resolveFileViewerSourceFilename({ file, fallback: 'preview.bin' })
+    const file = wrapFileViewerFileRef(source, filename.value || DEFAULT_FILE_VIEWER_SOURCE_FILENAME)
+    filename.value = resolveFileViewerSourceFilename({ file, fallback: DEFAULT_FILE_VIEWER_SOURCE_FILENAME })
     markLoadStarted(version)
     notifyLifecycle(buildLifecycleContext({
       phase: 'load-start',

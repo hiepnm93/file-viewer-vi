@@ -191,6 +191,7 @@ export {
   renderFileViewerHandler,
 } from './rendererHandler';
 export {
+  DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   decodeFilename,
   getExtension,
   normalizeFileExtension,
@@ -222,7 +223,9 @@ export {
   normalizeFileViewerWatermark,
 } from './watermark';
 export {
+  DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
+  createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
   isFileViewerAbortError,
   isSameOriginUrl,

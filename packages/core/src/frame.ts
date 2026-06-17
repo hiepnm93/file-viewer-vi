@@ -7,6 +7,7 @@ import {
   type FileViewerFrameEventHandler,
   type FileViewerFrameEventPayload,
 } from './operations';
+import { DEFAULT_FILE_VIEWER_SOURCE_FILENAME } from './source';
 import type { FileViewerFileRef } from './types';
 
 export type FileViewerFrameParamValue = string | number | boolean | null | undefined;
@@ -344,7 +345,7 @@ export const getFileViewerFrameSourceFilename = (
     const clean = options.url.split('?')[0]?.split('#')[0] || options.url;
     return clean.substring(clean.lastIndexOf('/') + 1) || clean;
   }
-  return 'preview.bin';
+  return DEFAULT_FILE_VIEWER_SOURCE_FILENAME;
 };
 
 export const buildFileViewerFrameSrc = (options: BuildFileViewerFrameSrcOptions = {}) => {

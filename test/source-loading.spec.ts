@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
+  DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
   isFileViewerAbortError,
   normalizePdfStreamingMode,
@@ -84,6 +87,21 @@ describe('remote source loading helpers', () => {
       extension: 'docx',
       streamPdf: false
     })
+  })
+
+  it('keeps source fallback filenames and streaming PDF placeholders in core', () => {
+    expect(resolveFileViewerRemoteSourcePlan({
+      pageHref,
+      url: ''
+    }).filename).toBe(DEFAULT_FILE_VIEWER_SOURCE_FILENAME)
+
+    const fallbackPdf = createFileViewerStreamingPdfPlaceholderFile()
+    expect(fallbackPdf.name).toBe(DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME)
+    expect(fallbackPdf.type).toBe('application/pdf')
+
+    const namedPdf = createFileViewerStreamingPdfPlaceholderFile('/tmp/%E5%90%88%E5%90%8C.pdf?download=1')
+    expect(namedPdf.name).toBe('合同.pdf')
+    expect(namedPdf.type).toBe('application/pdf')
   })
 
   it('keeps cross-origin PDF URLs on the compatible blob-download path by default', () => {
