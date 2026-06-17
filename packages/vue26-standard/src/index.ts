@@ -4,6 +4,7 @@ import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
   type FileRef,
+  type ViewerMountedFrameHandle,
   type ViewerFrameController,
   type ViewerFrameEventHandler,
   type ViewerFrameEventPayload,
@@ -18,6 +19,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
@@ -37,14 +39,7 @@ export interface FileViewerVue26PluginOptions {
   componentName?: string
 }
 
-export interface FileViewerVue26PublicInstance extends Vue {
-  getController(): ViewerFrameController | null
-  getIframe(): HTMLIFrameElement | null
-  update(options: ViewerFrameOptions): string
-  postFile(): boolean
-  reload(): void
-  destroy(): void
-}
+export interface FileViewerVue26PublicInstance extends Vue, ViewerMountedFrameHandle {}
 
 interface FileViewerVue26Props {
   viewerUrl?: string

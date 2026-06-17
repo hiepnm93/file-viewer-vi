@@ -11,6 +11,7 @@ import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
   type FileRef,
+  type ViewerFrameControllerHandle,
   type ViewerFrameController,
   type ViewerFrameEventHandler,
   type ViewerFrameOptions,
@@ -24,6 +25,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameControllerHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
@@ -39,14 +41,7 @@ export type {
   ViewerWatermarkOptions
 } from '@file-viewer/web'
 
-export interface FileViewerLegacyHandle {
-  readonly controller: ViewerFrameController | null
-  readonly iframe: HTMLIFrameElement | null
-  update(options: ViewerFrameOptions): string
-  postFile(): boolean
-  reload(): void
-  destroy(): void
-}
+export interface FileViewerLegacyHandle extends ViewerFrameControllerHandle {}
 
 export interface FileViewerLegacyProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   /**

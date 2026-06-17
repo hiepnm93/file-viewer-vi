@@ -5,6 +5,7 @@ import type {
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
+  ViewerMountedFrameHandle,
   ViewerRuntimeOptions
 } from '@file-viewer/web'
 
@@ -33,11 +34,13 @@ export interface FileViewerSvelteEvents {
   }>
 }
 
+export interface FileViewerSvelteHandle extends ViewerMountedFrameHandle {}
+
 export default class FileViewer extends SvelteComponentTyped<
   FileViewerSvelteProps,
   FileViewerSvelteEvents,
   Record<string, never>
-> {
+> implements FileViewerSvelteHandle {
   getController(): ViewerFrameController | null
   getIframe(): HTMLIFrameElement | null
   update(options: CreateViewerFrameOptions): string

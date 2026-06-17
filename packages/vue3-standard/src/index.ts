@@ -3,6 +3,7 @@ import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
   type FileRef,
+  type ViewerMountedFrameHandle,
   type ViewerFrameController,
   type ViewerFrameEventHandler,
   type ViewerFrameEventPayload,
@@ -17,6 +18,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
@@ -36,14 +38,7 @@ export interface FileViewerVue3PluginOptions {
   componentName?: string
 }
 
-export interface FileViewerVue3Handle {
-  getController(): ViewerFrameController | null
-  getIframe(): HTMLIFrameElement | null
-  update(options: ViewerFrameOptions): string
-  postFile(): boolean
-  reload(): void
-  destroy(): void
-}
+export interface FileViewerVue3Handle extends ViewerMountedFrameHandle {}
 
 const defaultContainerStyle: CSSProperties = {
   width: '100%',

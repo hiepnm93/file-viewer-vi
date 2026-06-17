@@ -18,11 +18,14 @@ import type {
   FileViewerAiOptions,
   FileViewerArchiveOptions,
   FileViewerDocxOptions,
+  FileViewerDirectFrameHandle as CoreFileViewerDirectFrameHandle,
+  FileViewerFrameControllerHandle as CoreFileViewerFrameControllerHandle,
   FileViewerFrameController as CoreFileViewerFrameController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
+  FileViewerMountedFrameHandle as CoreFileViewerMountedFrameHandle,
   FileViewerPdfOptions,
   FileViewerPostMessageType,
   FileViewerSearchOptions,
@@ -66,6 +69,12 @@ export interface CreateViewerFrameOptions extends ViewerFrameOptions {
 }
 
 export interface ViewerFrameController extends CoreFileViewerFrameController {}
+
+export interface ViewerDirectFrameHandle extends CoreFileViewerDirectFrameHandle {}
+
+export interface ViewerMountedFrameHandle extends CoreFileViewerMountedFrameHandle {}
+
+export interface ViewerFrameControllerHandle extends CoreFileViewerFrameControllerHandle {}
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = DEFAULT_FILE_VIEWER_PUBLIC_DIR
 export const DEFAULT_VIEWER_URL = DEFAULT_FILE_VIEWER_URL

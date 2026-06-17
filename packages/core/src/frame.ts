@@ -165,6 +165,30 @@ export interface FileViewerFrameController {
   update(options: FileViewerFrameOptions): string;
 }
 
+export interface FileViewerDirectFrameHandle {
+  readonly iframe: HTMLIFrameElement | null;
+  postFile(): boolean;
+  reload(): void;
+}
+
+export interface FileViewerMountedFrameHandle {
+  getController(): FileViewerFrameController | null;
+  getIframe(): HTMLIFrameElement | null;
+  update(options: FileViewerFrameOptions): string;
+  postFile(): boolean;
+  reload(): void;
+  destroy(): void;
+}
+
+export interface FileViewerFrameControllerHandle {
+  readonly controller: FileViewerFrameController | null;
+  readonly iframe: HTMLIFrameElement | null;
+  update(options: FileViewerFrameOptions): string;
+  postFile(): boolean;
+  reload(): void;
+  destroy(): void;
+}
+
 export const DEFAULT_FILE_VIEWER_PUBLIC_DIR = '/file-viewer';
 export const DEFAULT_FILE_VIEWER_URL = `${DEFAULT_FILE_VIEWER_PUBLIC_DIR}/index.html`;
 export const DEFAULT_FILE_VIEWER_FRAME_TITLE = 'Flyfish Viewer 文件预览';

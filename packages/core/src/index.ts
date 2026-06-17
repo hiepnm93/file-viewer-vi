@@ -243,12 +243,15 @@ export type {
 export type {
   BuildFileViewerFrameSrcOptions,
   CreateFileViewerFrameOptions,
+  FileViewerDirectFrameHandle,
+  FileViewerFrameControllerHandle,
   FileViewerFrameController,
   FileViewerFrameFilePostController,
   FileViewerFrameFilePostControllerOptions,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
   FileViewerFrameTimer,
+  FileViewerMountedFrameHandle,
 } from './frame';
 export type {
   FileViewerSerializableCadOptions,

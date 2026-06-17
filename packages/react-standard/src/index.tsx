@@ -20,6 +20,7 @@ import {
   buildViewerSrc,
   isViewerFrameEvent,
   type FileRef,
+  type ViewerDirectFrameHandle,
   type ViewerFrameEventHandler,
   type ViewerFrameEventPayload,
   type ViewerFrameOptions
@@ -32,6 +33,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerDirectFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
@@ -47,11 +49,7 @@ export type {
   ViewerWatermarkOptions
 } from '@file-viewer/web'
 
-export interface FileViewerHandle {
-  iframe: HTMLIFrameElement | null
-  postFile(): boolean
-  reload(): void
-}
+export interface FileViewerHandle extends ViewerDirectFrameHandle {}
 
 export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'> {
   /**

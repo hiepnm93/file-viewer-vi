@@ -225,6 +225,7 @@
   - [x] React、Vue 3、Vue 2.7、Vue 2.6、React legacy、jQuery、Svelte 标准 wrapper 统一 re-export `@file-viewer/web` 的完整类型面。
   - [x] 新增 `pnpm verify:wrapper-options`，阻止标准 wrapper 直接从 core 引入运行时 option 类型或重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等参数字段。
   - [x] 新增 `pnpm verify:wrapper-api`，校验 Vue、React、Pure JS、jQuery、Svelte wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法。
+  - [x] 标准 wrapper 的 iframe handle / mounted controller handle / legacy controller handle 类型迁入 core，并经由 `@file-viewer/web` 统一透传。
 
 ## Phase 5: 公开仓库与 README
 
