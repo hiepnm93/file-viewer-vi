@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
   buildFileViewerDocumentTextChunks,
@@ -10,10 +10,13 @@ import {
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
   getCurrentFileViewerDocumentAnchor,
+  getFileViewerScrollableRange,
+  isFileViewerScrollableElement,
   normalizeFileViewerAiOptions,
   normalizeFileViewerSearchOptions,
   registerFileViewerSearchProvider,
   registerFileViewerZoomProvider,
+  resolveFileViewerScrollContainer,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
   type FileViewerDocumentAnchor,
@@ -51,7 +54,19 @@ const setRect = (element: Element, rect: Partial<DOMRect>) => {
   });
 };
 
+const setScrollMetrics = (element: HTMLElement, metrics: {
+  clientHeight: number;
+  scrollHeight: number;
+}) => {
+  Object.defineProperty(element, 'clientHeight', { configurable: true, value: metrics.clientHeight });
+  Object.defineProperty(element, 'scrollHeight', { configurable: true, value: metrics.scrollHeight });
+};
+
 describe('@file-viewer/core document helpers', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('normalizes zoom state for wrapper toolbars', () => {
     expect(createFileViewerZoomState()).toEqual({
       scale: 1,
@@ -162,6 +177,38 @@ describe('@file-viewer/core document helpers', () => {
     ]);
     expect(ignored.dataset.viewerAnchorId).toBeUndefined();
     expect(getCurrentFileViewerDocumentAnchor(root, anchors)?.line).toBe(1);
+  });
+
+  it('resolves the best document scroll container with framework-neutral DOM rules', () => {
+    const { document } = parseHTML(`
+      <main id="root" style="overflow-y:visible">
+        <section class="pdf-wrapper" style="overflow-y:hidden"></section>
+        <article id="small" style="overflow-y:auto"></article>
+        <article id="large" style="overflow-y:auto"></article>
+      </main>
+    `);
+    const root = document.getElementById('root') as HTMLElement;
+    const preferred = root.querySelector('.pdf-wrapper') as HTMLElement;
+    const small = document.getElementById('small') as HTMLElement;
+    const large = document.getElementById('large') as HTMLElement;
+
+    vi.stubGlobal('window', {
+      getComputedStyle: (element: HTMLElement) => ({
+        overflow: element.style.overflow,
+        overflowY: element.style.overflowY,
+      }),
+    });
+    setScrollMetrics(root, { clientHeight: 100, scrollHeight: 800 });
+    setScrollMetrics(preferred, { clientHeight: 100, scrollHeight: 160 });
+    setScrollMetrics(small, { clientHeight: 100, scrollHeight: 180 });
+    setScrollMetrics(large, { clientHeight: 100, scrollHeight: 420 });
+
+    expect(getFileViewerScrollableRange(large)).toBe(320);
+    expect(isFileViewerScrollableElement(root)).toBe(false);
+    expect(resolveFileViewerScrollContainer(root)).toBe(large);
+
+    preferred.style.overflowY = 'auto';
+    expect(resolveFileViewerScrollContainer(root)).toBe(preferred);
   });
 
   it('registers framework-neutral search and zoom providers on DOM hosts', async () => {

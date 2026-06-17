@@ -470,6 +470,25 @@ async function verifyVue3ScopedCompatibility() {
     'controller.destroy()'
   ], vueDocumentSearchHookLabel)
 
+  const vueDocumentFeaturesHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerDocumentFeatures.ts')
+  const vueDocumentFeaturesHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerDocumentFeatures.ts`
+  assertImportsFrom(vueDocumentFeaturesHookSource, '@file-viewer/core', vueDocumentFeaturesHookLabel)
+  assertTokens(vueDocumentFeaturesHookSource, [
+    'resolveFileViewerScrollContainer',
+    'buildFileViewerDocumentTextChunks'
+  ], vueDocumentFeaturesHookLabel)
+  for (const forbiddenToken of [
+    'const getScrollableRange',
+    'const isScrollableElement',
+    'getComputedStyle(element)',
+    "querySelectorAll<HTMLElement>('div, section, article, pre')"
+  ]) {
+    assert(
+      !vueDocumentFeaturesHookSource.includes(forbiddenToken),
+      `${vueDocumentFeaturesHookLabel} must delegate scroll container resolution to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueZoomHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerZoom.ts')
   const vueZoomHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerZoom.ts`
   assertImportsFrom(vueZoomHookSource, '@file-viewer/core', vueZoomHookLabel)

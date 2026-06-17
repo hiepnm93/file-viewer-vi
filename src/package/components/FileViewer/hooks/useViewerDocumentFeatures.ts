@@ -10,6 +10,7 @@ import {
   createFileViewerRawPostMessagePayload,
   getCurrentFileViewerDocumentAnchor,
   postFileViewerMessageToParent,
+  resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor
 } from '@file-viewer/core'
 import { useDocumentSearch } from './useDocumentSearch'
@@ -27,19 +28,6 @@ const postViewerPayload = (
   payload: FileViewerSearchState | FileViewerDocumentAnchor | null
 ) => {
   postFileViewerMessageToParent(createFileViewerRawPostMessagePayload(type, event, payload))
-}
-
-const getScrollableRange = (element: HTMLElement) => {
-  return Math.max(0, element.scrollHeight - element.clientHeight)
-}
-
-const isScrollableElement = (element: HTMLElement) => {
-  if (typeof window === 'undefined') {
-    return false
-  }
-  const style = window.getComputedStyle(element)
-  const overflowY = style.overflowY || style.overflow
-  return getScrollableRange(element) > 2 && ['auto', 'scroll', 'overlay'].includes(overflowY)
 }
 
 const cloneSearchState = (state: FileViewerSearchState): FileViewerSearchState => ({
@@ -63,23 +51,7 @@ export const useViewerDocumentFeatures = ({
   emitLocationChange
 }: UseViewerDocumentFeaturesOptions) => {
   const getScrollContainer = () => {
-    const out = output.value
-    if (!out) {
-      return null
-    }
-
-    const preferred = out.querySelector<HTMLElement>('[data-viewer-scroll-container], .pdf-wrapper')
-    if (preferred && isScrollableElement(preferred)) {
-      return preferred
-    }
-    if (isScrollableElement(out)) {
-      return out
-    }
-
-    const scrollableChildren = Array.from(out.querySelectorAll<HTMLElement>('div, section, article, pre'))
-      .filter(isScrollableElement)
-      .sort((a, b) => getScrollableRange(b) - getScrollableRange(a))
-    return scrollableChildren[0] || preferred || out
+    return resolveFileViewerScrollContainer(output.value)
   }
 
   const documentSearch = useDocumentSearch(

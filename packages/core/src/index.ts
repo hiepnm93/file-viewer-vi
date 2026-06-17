@@ -76,13 +76,19 @@ export {
 export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
+  DEFAULT_FILE_VIEWER_SCROLL_CONTAINER_CANDIDATE_SELECTOR,
+  DEFAULT_FILE_VIEWER_SCROLL_CONTAINER_SELECTOR,
+  DEFAULT_FILE_VIEWER_SCROLLABLE_OVERFLOW_VALUES,
   collectFileViewerDocumentAnchors,
   findFileViewerAnchorForElement,
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
   getCurrentFileViewerDocumentAnchor,
+  getFileViewerScrollableRange,
+  isFileViewerScrollableElement,
   registerFileViewerSearchProvider,
   registerFileViewerZoomProvider,
+  resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
@@ -296,6 +302,7 @@ export type {
 } from './rendererHandler';
 export type {
   FileViewerSearchProviderHost,
+  ResolveFileViewerScrollContainerOptions,
   FileViewerZoomProviderHost,
 } from './documentDom';
 export type {
