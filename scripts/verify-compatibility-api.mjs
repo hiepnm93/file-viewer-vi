@@ -72,6 +72,47 @@ const vue3ScopedTypeAliases = new Map([
   ['FileHandlerComposite', 'FileRenderHandlerComposite<Rendered, HTMLDivElement>']
 ])
 
+const vue3ScopedPublicTypeExports = new Set([
+  'FileRef',
+  'FileRenderContext',
+  'FileRenderExportAdapter',
+  'FileRenderExportMode',
+  'FileRenderExportOptions',
+  'FileViewerAiOptions',
+  'FileViewerArchiveOptions',
+  'FileViewerBeforeOperation',
+  'FileViewerCadDwfLineWeightMode',
+  'FileViewerCadOptions',
+  'FileViewerCadRenderer',
+  'FileViewerDocxOptions',
+  'FileViewerDocumentAnchor',
+  'FileViewerDocumentChunk',
+  'FileViewerEmits',
+  'FileViewerEventMap',
+  'FileViewerExpose',
+  'FileViewerLifecycleContext',
+  'FileViewerLifecycleHooks',
+  'FileViewerLifecyclePhase',
+  'FileViewerOperationAvailability',
+  'FileViewerOperationContext',
+  'FileViewerOperationType',
+  'FileViewerOptions',
+  'FileViewerPdfOptions',
+  'FileViewerProps',
+  'FileViewerSearchMatch',
+  'FileViewerSearchOptions',
+  'FileViewerSearchProvider',
+  'FileViewerSearchState',
+  'FileViewerSourceType',
+  'FileViewerThemeMode',
+  'FileViewerToolbarOptions',
+  'FileViewerToolbarPosition',
+  'FileViewerTypstOptions',
+  'FileViewerWatermarkOptions',
+  'FileViewerZoomProvider',
+  'FileViewerZoomState'
+])
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
@@ -117,6 +158,31 @@ function collectExportedTypeAliases(source) {
     aliases.set(match[1], normalizeTypeExpression(match[2]))
   }
   return aliases
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function collectTypeReExports(source, specifier) {
+  const exports = new Set()
+  const reExportPattern = new RegExp(
+    `export\\s+type\\s*{([\\s\\S]*?)}\\s+from\\s+['"]${escapeRegExp(specifier)}['"]`,
+    'g'
+  )
+  let match
+  while ((match = reExportPattern.exec(source))) {
+    const block = match[1]
+    for (const rawEntry of block.split(',')) {
+      const entry = rawEntry.trim()
+      if (!entry) {
+        continue
+      }
+      const aliasMatch = /\s+as\s+([A-Za-z_$][\w$]*)$/.exec(entry)
+      exports.add(aliasMatch ? aliasMatch[1] : entry)
+    }
+  }
+  return exports
 }
 
 async function readSource(entry, relativePath) {
@@ -222,6 +288,35 @@ async function verifyVue3ScopedCompatibility() {
     assert(
       vue3ScopedTypeAliases.has(aliasName),
       `${entry.packageName} type facade must not export unexpected alias ${aliasName}`
+    )
+  }
+
+  const packageEntrySource = await readSource(entry, 'src/package/index.ts')
+  assertNotImportsFrom(packageEntrySource, '@file-viewer/core', `${entry.packageName} package entry`)
+  assertNotImportsFrom(packageEntrySource, './common/type.ts', `${entry.packageName} package entry`)
+  assert(
+    !/from\s+['"]@file-viewer\/core['"]/.test(packageEntrySource),
+    `${entry.packageName} package entry must not re-export core types directly`
+  )
+  const publicTypeExports = collectTypeReExports(packageEntrySource, './common/type')
+  assert(
+    publicTypeExports.size === vue3ScopedPublicTypeExports.size,
+    `${entry.packageName} package entry exported ${publicTypeExports.size} public types; expected ${vue3ScopedPublicTypeExports.size}`
+  )
+  for (const typeName of vue3ScopedPublicTypeExports) {
+    assert(
+      publicTypeExports.has(typeName),
+      `${entry.packageName} package entry must re-export ${typeName} from ./common/type`
+    )
+    assert(
+      vue3ScopedTypeAliases.has(typeName),
+      `${entry.packageName} package entry public type ${typeName} must be registered in the type facade alias map`
+    )
+  }
+  for (const typeName of publicTypeExports) {
+    assert(
+      vue3ScopedPublicTypeExports.has(typeName),
+      `${entry.packageName} package entry must not re-export unexpected public type ${typeName}`
     )
   }
 }

@@ -31,7 +31,7 @@ pnpm install
 | `pnpm verify:core-api` | 校验 `@file-viewer/core` 入口、实例方法、framework-neutral 类型、ESM/声明产物元数据和纯 TS 源码边界 |
 | `pnpm verify:format-support` | 校验 core 格式矩阵保持 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致 |
 | `pnpm verify:ecosystem-readmes` | 校验根 README / README.en.md 的公开生态索引、官方文档/Demo、GitHub/Gitee wrapper 仓库、历史兼容包、core 私有边界和格式数量口径 |
-| `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包经由 web 兼容门面接入 iframe 协议，scoped Vue3 根包只保留 core 类型门面和登记过的 alias，纯 Web 兼容包统一承接 core，`file-viewer3` 保持薄 alias |
+| `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包经由 web 兼容门面接入 iframe 协议，scoped Vue3 根包只保留 core 类型门面、登记过的 alias 和受控公共类型出口，纯 Web 兼容包统一承接 core，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |

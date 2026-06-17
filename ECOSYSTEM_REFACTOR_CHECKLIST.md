@@ -234,6 +234,7 @@
   - [x] React 历史兼容包改为经由 `@flyfish-group/file-viewer-web` 门面获取 iframe 协议能力，不再直接 import `@file-viewer/core`。
   - [x] 新增 `pnpm verify:compatibility-api`，校验历史兼容包运行门面边界，防止 React 兼容包绕过 web 门面、scoped Vue3 兼容包重新声明 core 类型契约、`file-viewer3` 非 scoped alias 携带重复源码或纯 Web 兼容包丢失 core 门面导出。
   - [x] `pnpm verify:compatibility-api` 已对 scoped Vue3 根包的 `src/package/common/type.ts` 建立全量 alias 白名单，禁止兼容层重新出现 `export interface`、运行时 import、Vue import 或未登记类型别名。
+  - [x] `pnpm verify:compatibility-api` 已锁定 scoped Vue3 根入口的公共类型出口，确保 `docx`、CAD、搜索 provider、导出上下文等完整参数类型只从 `./common/type` 兼容门面透出。
 
 ## Phase 5: 公开仓库与 README
 
@@ -351,7 +352,7 @@
 ## 第一批可立即执行的代码任务
 
 - [x] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
-- [ ] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
+- [x] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
   - [x] `FileViewerOptions`、source、生命周期、操作、导出适配、渲染器 registry 等 framework-neutral 类型已进入 core。
   - [x] Vue3 公共 source 类型补齐 `buffer`，避免 wrapper hook 类型与 core 漂移。
   - [x] Vue3 公共搜索/缩放 provider 类型改为复用 core 类型。
@@ -362,7 +363,7 @@
   - [x] Vue3 `Rendered` / `AppWrapper` 兼容名改为 core `FileViewerRenderedInstance`，入口类型不再绑定 Vue `App`。
   - [x] Vue3 `file/url/options` props、事件 payload map 和 ref expose 方法面迁入 core，Vue 层仅保留 overload / alias。
   - [x] Vue3 `FileViewerEmits` 事件 overload 迁入 core `FileViewerComponentEmits`，旧 `src/package/common/type.ts` 仅保留同名兼容 alias。
-  - [ ] Vue3 入口仍存在旧类型 re-export，需要继续拆薄为兼容层。
+  - [x] Vue3 根入口公共类型 re-export 已变成受控兼容层，`pnpm verify:compatibility-api` 会校验完整类型出口只能来自 `./common/type`。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
   - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。
