@@ -1,6 +1,6 @@
 # @file-viewer/react
 
-标准 React wrapper 包。当前作为 `@flyfish-group/file-viewer-react` 的标准命名入口，复用同一套 `@file-viewer/core` iframe 协议、React 组件 API 和私有化 viewer 静态产物。
+标准 React wrapper 包。组件直接复用 `@file-viewer/core` iframe 协议和 `@file-viewer/web` 私有化 viewer 静态入口，提供 ref API、受控参数、生命周期事件和完整运行时 options。
 
 ```bash
 npm install @file-viewer/react
@@ -24,7 +24,7 @@ export function Preview() {
 }
 ```
 
-历史包名 `@flyfish-group/file-viewer-react` 会继续同步维护；新项目建议优先使用 `@file-viewer/react`。English README: [README.en.md](./README.en.md)。
+历史包名 `@flyfish-group/file-viewer-react` 会继续同步维护；新项目建议优先使用自包含的标准包 `@file-viewer/react`。English README: [README.en.md](./README.en.md)。
 
 ## 能力范围
 

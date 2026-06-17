@@ -39,7 +39,7 @@
 | Vue 3 wrapper | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue3` | `gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 标准 wrapper 包已建，独立公开仓库待拆 |
 | Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
-| React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
+| React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 自包含标准 wrapper 已建，独立公开仓库待拆 |
 | React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | jQuery wrapper | `@file-viewer/jquery` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-jquery` | `gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
@@ -190,10 +190,10 @@
 - [ ] Vue 2.6 wrapper:
   - [x] 不依赖 Vue 2.7 composition API。
   - [x] 提供 Options API 组件和 `Vue.use(FileViewerPlugin)` 插件安装，复用 `@file-viewer/web` controller。
-- [ ] React modern wrapper:
-  - [ ] 面向 React 18/19。
-  - [ ] 支持 `ref` API、受控 props、事件回调。
-  - [x] `@file-viewer/react` 标准包名作为兼容别名接入当前 React wrapper，demo 已切换到标准包导入。
+- [x] React modern wrapper:
+  - [x] 面向 React 18/19。
+  - [x] 支持 `ref` API、受控 props、事件回调。
+  - [x] `@file-viewer/react` 标准包名已改为自包含 wrapper，直接复用 `@file-viewer/core` iframe 协议和 `@file-viewer/web` viewer 入口，不再 re-export 历史 React 包。
 - [ ] React legacy wrapper:
   - [x] 面向 React 16.8/17。
   - [x] 避免新 JSX transform / concurrent-only 依赖，使用 `React.createElement` + `@file-viewer/web` controller 作为薄封装。

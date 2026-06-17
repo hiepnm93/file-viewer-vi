@@ -13,11 +13,13 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@flyfish-group/file-viewer-react": ["../react/src/index.tsx"]
+      "@file-viewer/core": ["../core/src/index.ts"],
+      "@file-viewer/web": ["../web-standard/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [
-    { "path": "../react" }
+    { "path": "../core" },
+    { "path": "../web-standard" }
   ]
 }

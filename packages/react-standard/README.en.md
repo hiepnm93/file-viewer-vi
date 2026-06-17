@@ -1,6 +1,6 @@
 # @file-viewer/react
 
-The standard React wrapper for Flyfish File Viewer. It is the new package name for the existing `@flyfish-group/file-viewer-react` integration and reuses the same `@file-viewer/core` iframe protocol, React component API, and private viewer assets.
+The standard React wrapper for Flyfish File Viewer. The component directly reuses the `@file-viewer/core` iframe protocol and the `@file-viewer/web` private viewer entry, including ref APIs, controlled props, lifecycle events, and the full runtime options surface.
 
 ```bash
 npm install @file-viewer/react
@@ -24,7 +24,7 @@ export function Preview() {
 }
 ```
 
-The historical package `@flyfish-group/file-viewer-react` remains supported for compatibility. New integrations should prefer `@file-viewer/react`.
+The historical package `@flyfish-group/file-viewer-react` remains supported for compatibility. New integrations should prefer the self-contained standard package `@file-viewer/react`.
 
 ## Capabilities
 
