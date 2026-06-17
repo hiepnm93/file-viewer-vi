@@ -450,7 +450,8 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)
   assertTokens(vueSourceLoadingHookSource, [
     'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
-    'createFileViewerEmptyPreviewState',
+    'applyFileViewerEmptyPreviewState',
+    'applyFileViewerPreviewRequestResetState',
     'createFileViewerStreamingPdfPlaceholderFile',
     'normalizeFileViewerSourceUrl',
     'resolveFileViewerPreviewRequestReason',
@@ -468,7 +469,13 @@ async function verifyVue3ScopedCompatibility() {
     'const hasSource = !!file || !!url',
     "hasSource ? 'replace' : 'reset'",
     'sourceUrl || null',
-    "filename.value = ''"
+    "filename.value = ''",
+    'currentFile.value = null',
+    'currentBuffer.value = null',
+    'currentSourceUrl.value = null',
+    'renderedReady.value = false',
+    'progressiveReady.value = false',
+    'createFileViewerEmptyPreviewState'
   ]) {
     assert(
       !vueSourceLoadingHookSource.includes(forbiddenToken),

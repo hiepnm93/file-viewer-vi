@@ -3,7 +3,8 @@ import type { Ref } from 'vue'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
-  createFileViewerEmptyPreviewState,
+  applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewRequestResetState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
   normalizeFileViewerSourceUrl,
@@ -96,13 +97,49 @@ export const useViewerSourceLoading = ({
   resetLoading,
   formatErrorMessage
 }: UseViewerSourceLoadingOptions) => {
+  const previewStateTarget = {
+    get filename(): string {
+      return filename.value
+    },
+    set filename(value: string) {
+      filename.value = value
+    },
+    get file(): File | null {
+      return currentFile.value
+    },
+    set file(value: File | null) {
+      currentFile.value = value
+    },
+    get buffer(): ArrayBuffer | null {
+      return currentBuffer.value
+    },
+    set buffer(value: ArrayBuffer | null) {
+      currentBuffer.value = value
+    },
+    get sourceUrl(): string | null {
+      return currentSourceUrl.value
+    },
+    set sourceUrl(value: string | null) {
+      currentSourceUrl.value = value
+    },
+    get renderedReady(): boolean {
+      return renderedReady.value
+    },
+    set renderedReady(value: boolean) {
+      renderedReady.value = value
+    },
+    get progressiveReady(): boolean {
+      return progressiveReady.value
+    },
+    set progressiveReady(value: boolean) {
+      progressiveReady.value = value
+    }
+  }
+
   const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     const version = requestController.createVersion()
     clearRenderedContent(reason)
-    currentFile.value = null
-    currentBuffer.value = null
-    currentSourceUrl.value = null
-    progressiveReady.value = false
+    applyFileViewerPreviewRequestResetState(previewStateTarget)
     clearError()
     return version
   }
@@ -268,13 +305,7 @@ export const useViewerSourceLoading = ({
   }
 
   const resetViewer = () => {
-    const emptyState = createFileViewerEmptyPreviewState()
-    filename.value = emptyState.filename
-    currentFile.value = emptyState.file
-    currentBuffer.value = emptyState.buffer
-    currentSourceUrl.value = emptyState.sourceUrl
-    renderedReady.value = emptyState.renderedReady
-    progressiveReady.value = emptyState.progressiveReady
+    applyFileViewerEmptyPreviewState(previewStateTarget)
     clearRenderedContent()
     resetLoading()
   }

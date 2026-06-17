@@ -36,6 +36,23 @@ export interface FileViewerEmptyPreviewState {
   progressiveReady: false;
 }
 
+export type FileViewerPreviewRequestResetState = Pick<
+  FileViewerEmptyPreviewState,
+  'file' | 'buffer' | 'sourceUrl' | 'progressiveReady'
+>;
+
+export interface MutableFileViewerPreviewRequestState {
+  file: File | null;
+  buffer: ArrayBuffer | null;
+  sourceUrl: string | null;
+  progressiveReady: boolean;
+}
+
+export interface MutableFileViewerPreviewState extends MutableFileViewerPreviewRequestState {
+  filename: string;
+  renderedReady: boolean;
+}
+
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
   let activeAbortController: AbortController | null = null;
@@ -117,6 +134,36 @@ export const createFileViewerEmptyPreviewState = (): FileViewerEmptyPreviewState
     renderedReady: false,
     progressiveReady: false,
   };
+};
+
+export const createFileViewerPreviewRequestResetState = (): FileViewerPreviewRequestResetState => {
+  return {
+    file: null,
+    buffer: null,
+    sourceUrl: null,
+    progressiveReady: false,
+  };
+};
+
+export const applyFileViewerPreviewRequestResetState = <Target extends MutableFileViewerPreviewRequestState>(
+  target: Target,
+  state: FileViewerPreviewRequestResetState = createFileViewerPreviewRequestResetState()
+) => {
+  target.file = state.file;
+  target.buffer = state.buffer;
+  target.sourceUrl = state.sourceUrl;
+  target.progressiveReady = state.progressiveReady;
+  return target;
+};
+
+export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewerPreviewState>(
+  target: Target,
+  state: FileViewerEmptyPreviewState = createFileViewerEmptyPreviewState()
+) => {
+  target.filename = state.filename;
+  target.renderedReady = state.renderedReady;
+  applyFileViewerPreviewRequestResetState(target, state);
+  return target;
 };
 
 export const normalizePdfStreamingMode = (

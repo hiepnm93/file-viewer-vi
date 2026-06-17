@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewRequestResetState,
   createFileViewerEmptyPreviewState,
+  createFileViewerPreviewRequestResetState,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
   hasFileViewerPreviewSource,
@@ -74,6 +77,48 @@ describe('remote source loading helpers', () => {
     expect(normalizeFileViewerSourceUrl('/example/demo.pdf')).toBe('/example/demo.pdf')
     expect(normalizeFileViewerSourceUrl()).toBeNull()
     expect(createFileViewerEmptyPreviewState()).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
+    expect(createFileViewerPreviewRequestResetState()).toEqual({
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      progressiveReady: false
+    })
+  })
+
+  it('applies preview reset state through framework-neutral mutable targets', () => {
+    const requestTarget = {
+      file: new File(['demo'], 'demo.txt'),
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/demo.txt',
+      progressiveReady: true
+    }
+
+    expect(applyFileViewerPreviewRequestResetState(requestTarget)).toBe(requestTarget)
+    expect(requestTarget).toEqual({
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      progressiveReady: false
+    })
+
+    const previewTarget = {
+      filename: 'demo.txt',
+      file: new File(['demo'], 'demo.txt'),
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/demo.txt',
+      renderedReady: true,
+      progressiveReady: true
+    }
+
+    expect(applyFileViewerEmptyPreviewState(previewTarget)).toBe(previewTarget)
+    expect(previewTarget).toEqual({
       filename: '',
       file: null,
       buffer: null,
