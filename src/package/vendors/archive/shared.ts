@@ -7,15 +7,16 @@ export const ARCHIVE_EXTENSIONS = [
 export const ARCHIVE_PREVIEWABLE_EXTENSIONS = [
   'doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'xls', 'xlsx', 'xlsm', 'xlsb',
   'xlt', 'xltx', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'pptx', 'pptm',
-  'potx', 'potm', 'ppsx', 'ppsm', 'pdf', 'ofd', 'typ', 'typst', 'dxf', 'dwg', 'dwf', 'dwfx', 'xps',
+  'potx', 'potm', 'ppsx', 'ppsm', 'rtf', 'odt', 'odp', 'pdf', 'ofd', 'typ', 'typst', 'dxf', 'dwg', 'dwf', 'dwfx', 'xps',
   'gltf', 'glb', 'obj', 'stl', 'ply', 'fbx', 'dae', '3ds',
-  '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk',
+  '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz', 'geojson', 'kml', 'gpx', 'shp', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk',
   'vtp', 'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'excalidraw', 'drawio', 'dio',
-  'epub', 'umd', 'gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp', 'md',
-  'markdown', 'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx',
+  'epub', 'umd', 'gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp', 'avif', 'ico', 'heic', 'heif', 'jxl', 'md',
+  'markdown', 'txt', 'json', 'jsonc', 'json5', 'ipynb', 'toml', 'proto', 'hcl', 'tex', 'gv', 'http', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx',
   'ts', 'tsx', 'xml', 'log', 'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs',
-  'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff', 'mp4', 'mp3', 'mpeg', 'wav', 'ogg',
-  'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'eml', 'msg', 'olb', 'dra',
+  'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff', 'react', 'rb', 'swift', 'kt', 'mp4', 'webm', 'm3u8', 'mp3', 'mpeg', 'wav', 'ogg',
+  'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'midi', 'mid', 'eml', 'msg', 'mbox', 'olb', 'dra',
+  'ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'sqlite', 'wasm', 'parquet', 'avro', 'webarchive',
   ...ARCHIVE_EXTENSIONS
 ]
 

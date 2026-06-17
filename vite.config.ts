@@ -26,7 +26,11 @@ export default defineConfig(ctx => {
     base: './',
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        events: 'events',
+        path: 'path-browserify',
+        stream: 'stream-browserify',
+        zlib: 'browserify-zlib'
       }
     }
   }

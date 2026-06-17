@@ -91,6 +91,8 @@ const sampleGroups: SampleGroup[] = [
       { name: 'DOC', url: '/example/test.doc' },
       { name: 'DOCX 中文长文档', url: '/example/word.docx' },
       { name: 'DOT 模板', url: '/example/template.dot' },
+      { name: 'RTF', url: '/example/sample.rtf' },
+      { name: 'ODT', url: '/example/document.odt' },
       { name: 'PDF 技术说明', url: '/example/pdf.pdf' },
       { name: 'OFD', url: '/example/ofd.ofd' },
       { name: 'Typst', url: '/example/report.typ' }
@@ -117,6 +119,7 @@ const sampleGroups: SampleGroup[] = [
     family: 'cad',
     items: [
       { name: 'PPTX 中文课件', url: '/example/ppt.pptx' },
+      { name: 'ODP', url: '/example/slides.odp' },
       { name: 'DXF', url: '/example/drawing.dxf' },
       { name: 'DWG', url: '/example/sample.dwg' },
       { name: 'DWF Blocks/Tables', url: '/example/samples/apache/blocks_and_tables.dwf' },
@@ -128,14 +131,17 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '3D 模型',
-    description: 'GLTF / OBJ / STL / PLY',
+    description: 'GLTF / OBJ / STL / PLY / Geo',
     family: 'model',
     items: [
       { name: 'GLTF', url: '/example/model.gltf' },
       { name: 'OBJ', url: '/example/model.obj' },
       { name: 'STL', url: '/example/model.stl' },
       { name: 'PLY', url: '/example/model.ply' },
-      { name: 'STEP', url: '/example/model.step' }
+      { name: 'STEP', url: '/example/model.step' },
+      { name: 'GeoJSON', url: '/example/map.geojson' },
+      { name: 'KML', url: '/example/route.kml' },
+      { name: 'GPX', url: '/example/track.gpx' }
     ]
   },
   {
@@ -163,6 +169,7 @@ const sampleGroups: SampleGroup[] = [
     items: [
       { name: 'EML', url: '/example/sample.eml' },
       { name: 'MSG', url: '/example/sample.msg' },
+      { name: 'MBOX', url: '/example/sample.mbox' },
       { name: 'OLB', url: '/example/sample.olb' },
       { name: 'DRA', url: '/example/sample.dra' }
     ]
@@ -184,6 +191,9 @@ const sampleGroups: SampleGroup[] = [
     family: 'code',
     items: [
       { name: 'JSON', url: '/example/data.json' },
+      { name: 'JSONC', url: '/example/data.jsonc' },
+      { name: 'JSON5', url: '/example/data.json5' },
+      { name: 'IPYNB', url: '/example/notebook.ipynb' },
       { name: 'JS', url: '/example/code.js' },
       { name: 'MJS', url: '/example/code.mjs' },
       { name: 'CJS', url: '/example/code.cjs' },
@@ -195,9 +205,16 @@ const sampleGroups: SampleGroup[] = [
       { name: 'HTM', url: '/example/page.htm' },
       { name: 'XML', url: '/example/data.xml' },
       { name: 'VUE', url: '/example/component.vue' },
+      { name: 'React', url: '/example/component.react' },
       { name: 'YAML', url: '/example/config.yaml' },
       { name: 'YML', url: '/example/config.yml' },
+      { name: 'TOML', url: '/example/config.toml' },
       { name: 'INI', url: '/example/settings.ini' },
+      { name: 'PROTO', url: '/example/service.proto' },
+      { name: 'HCL', url: '/example/infrastructure.hcl' },
+      { name: 'TeX', url: '/example/formula.tex' },
+      { name: 'Graphviz', url: '/example/graph.gv' },
+      { name: 'HTTP', url: '/example/request.http' },
       { name: 'DIFF', url: '/example/change.diff' }
     ]
   },
@@ -219,7 +236,20 @@ const sampleGroups: SampleGroup[] = [
       { name: 'HPP', url: '/example/main.hpp' },
       { name: 'CS', url: '/example/program.cs' },
       { name: 'Java', url: '/example/code.java' },
-      { name: 'Python', url: '/example/code.py' }
+      { name: 'Python', url: '/example/code.py' },
+      { name: 'Ruby', url: '/example/code.rb' },
+      { name: 'Swift', url: '/example/code.swift' },
+      { name: 'Kotlin', url: '/example/Main.kt' }
+    ]
+  },
+  {
+    title: '资产与数据',
+    description: 'SQLite / WASM / ICO',
+    family: 'data',
+    items: [
+      { name: 'SQLite', url: '/example/sample.sqlite' },
+      { name: 'WASM', url: '/example/module.wasm' },
+      { name: 'ICO', url: '/example/icon.ico' }
     ]
   },
   {
@@ -238,6 +268,7 @@ const sampleGroups: SampleGroup[] = [
       { name: 'WEBP', url: '/example/pic.webp' },
       { name: 'MP3', url: '/example/audio.mp3' },
       { name: 'OGG', url: '/example/audio.ogg' },
+      { name: 'MIDI', url: '/example/melody.mid' },
       { name: 'MP4', url: '/example/video.mp4' }
     ]
   }
@@ -245,15 +276,16 @@ const sampleGroups: SampleGroup[] = [
 
 const presetFiles = sampleGroups.flatMap(group => group.items)
 const extraUploadExtensions = [
-  'docm', 'dot', 'dotx', 'dotm',
+  'docm', 'dot', 'dotx', 'dotm', 'rtf', 'odt',
   'xlt', 'xltx', 'xltm',
-  'pptm', 'potx', 'potm', 'ppsx', 'ppsm',
-  'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba',
+  'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'odp',
+  'avif', 'jxl', 'heic', 'heif', 'webm', 'm3u8', 'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'midi',
   'glb', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz',
-  'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp',
+  'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp', 'shp',
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
-  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'olb', 'dra', 'typst'
+  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'mbox', 'olb', 'dra', 'typst',
+  'ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'parquet', 'avro', 'webarchive'
 ]
 
 const uploadAccept = Array.from(new Set([
@@ -273,6 +305,8 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   dot: { icon: 'DOT', family: 'word' },
   dotx: { icon: 'DOT', family: 'word' },
   dotm: { icon: 'DOT', family: 'word' },
+  rtf: { icon: 'RTF', family: 'word' },
+  odt: { icon: 'ODT', family: 'word' },
   xlsx: { icon: 'XL', family: 'sheet' },
   xltx: { icon: 'XLT', family: 'sheet' },
   xlsm: { icon: 'XL', family: 'sheet' },
@@ -290,6 +324,7 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   potm: { icon: 'POT', family: 'slide' },
   ppsx: { icon: 'PPS', family: 'slide' },
   ppsm: { icon: 'PPS', family: 'slide' },
+  odp: { icon: 'ODP', family: 'slide' },
   pdf: { icon: 'PDF', family: 'pdf' },
   ofd: { icon: 'OFD', family: 'layout' },
   typ: { icon: 'TYP', family: 'layout' },
@@ -314,6 +349,10 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   usdc: { icon: 'USD', family: 'model' },
   usdz: { icon: 'USD', family: 'model' },
   kmz: { icon: 'KMZ', family: 'model' },
+  geojson: { icon: 'GEO', family: 'model' },
+  kml: { icon: 'KML', family: 'model' },
+  gpx: { icon: 'GPX', family: 'model' },
+  shp: { icon: 'SHP', family: 'model' },
   step: { icon: 'STEP', family: 'model' },
   stp: { icon: 'STEP', family: 'model' },
   iges: { icon: 'IGES', family: 'model' },
@@ -363,12 +402,16 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   cbr: { icon: 'CBR', family: 'archive' },
   eml: { icon: 'EML', family: 'email' },
   msg: { icon: 'MSG', family: 'email' },
+  mbox: { icon: 'MBOX', family: 'email' },
   olb: { icon: 'OLB', family: 'eda' },
   dra: { icon: 'DRA', family: 'eda' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },
   json: { icon: '{}', family: 'code' },
+  jsonc: { icon: '{}', family: 'code' },
+  json5: { icon: 'J5', family: 'code' },
+  ipynb: { icon: 'NB', family: 'code' },
   js: { icon: 'JS', family: 'code' },
   mjs: { icon: 'JS', family: 'code' },
   cjs: { icon: 'JS', family: 'code' },
@@ -380,9 +423,16 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   htm: { icon: 'HTML', family: 'code' },
   xml: { icon: 'XML', family: 'code' },
   vue: { icon: 'VUE', family: 'code' },
+  react: { icon: 'RE', family: 'code' },
   yaml: { icon: 'YML', family: 'code' },
   yml: { icon: 'YML', family: 'code' },
+  toml: { icon: 'TOML', family: 'code' },
   ini: { icon: 'INI', family: 'code' },
+  proto: { icon: 'PB', family: 'code' },
+  hcl: { icon: 'HCL', family: 'code' },
+  tex: { icon: 'TEX', family: 'code' },
+  gv: { icon: 'GV', family: 'code' },
+  http: { icon: 'HTTP', family: 'code' },
   sh: { icon: 'SH', family: 'code' },
   bash: { icon: 'SH', family: 'code' },
   sql: { icon: 'SQL', family: 'code' },
@@ -398,6 +448,9 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   diff: { icon: 'DIFF', family: 'code' },
   java: { icon: 'JV', family: 'code' },
   py: { icon: 'PY', family: 'code' },
+  rb: { icon: 'RB', family: 'code' },
+  swift: { icon: 'SW', family: 'code' },
+  kt: { icon: 'KT', family: 'code' },
   log: { icon: 'LOG', family: 'text' },
   png: { icon: 'IMG', family: 'image' },
   jpg: { icon: 'IMG', family: 'image' },
@@ -408,6 +461,11 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   tif: { icon: 'IMG', family: 'image' },
   svg: { icon: 'SVG', family: 'image' },
   webp: { icon: 'WEBP', family: 'image' },
+  avif: { icon: 'AVIF', family: 'image' },
+  ico: { icon: 'ICO', family: 'image' },
+  heic: { icon: 'HEIC', family: 'image' },
+  heif: { icon: 'HEIF', family: 'image' },
+  jxl: { icon: 'JXL', family: 'image' },
   mp3: { icon: 'MP3', family: 'audio' },
   mpeg: { icon: 'MP3', family: 'audio' },
   wav: { icon: 'WAV', family: 'audio' },
@@ -418,7 +476,23 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   aac: { icon: 'AAC', family: 'audio' },
   flac: { icon: 'FLAC', family: 'audio' },
   weba: { icon: 'WEBA', family: 'audio' },
-  mp4: { icon: 'MP4', family: 'video' }
+  midi: { icon: 'MIDI', family: 'audio' },
+  mid: { icon: 'MIDI', family: 'audio' },
+  mp4: { icon: 'MP4', family: 'video' },
+  webm: { icon: 'WEBM', family: 'video' },
+  m3u8: { icon: 'HLS', family: 'video' },
+  ttf: { icon: 'FONT', family: 'data' },
+  otf: { icon: 'FONT', family: 'data' },
+  woff: { icon: 'FONT', family: 'data' },
+  woff2: { icon: 'FONT', family: 'data' },
+  psd: { icon: 'PSD', family: 'data' },
+  ai: { icon: 'AI', family: 'data' },
+  eps: { icon: 'EPS', family: 'data' },
+  sqlite: { icon: 'SQL', family: 'data' },
+  wasm: { icon: 'WASM', family: 'data' },
+  parquet: { icon: 'PARQ', family: 'data' },
+  avro: { icon: 'AVRO', family: 'data' },
+  webarchive: { icon: 'WEB', family: 'data' }
 }
 
 const extensionOf = (target: string) => {
@@ -1725,6 +1799,11 @@ function updateSampleMenuGeometry() {
 .sample-file-icon[data-family='video'] {
   background: linear-gradient(145deg, #e0e7ff, #ffffff);
   color: #4338ca;
+}
+
+.sample-file-icon[data-family='data'] {
+  background: linear-gradient(145deg, #ede9fe, #ffffff);
+  color: #5b21b6;
 }
 
 .primary-button {

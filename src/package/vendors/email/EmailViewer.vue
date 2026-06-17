@@ -18,7 +18,7 @@ type EmailAttachmentView = {
 }
 
 type ParsedEmailView = {
-  kind: 'eml' | 'msg';
+  kind: 'eml' | 'msg' | 'mbox';
   subject: string;
   from: EmailAddress[];
   to: EmailAddress[];
@@ -32,7 +32,7 @@ type ParsedEmailView = {
 
 const props = defineProps<{
   data: ArrayBuffer;
-  type: 'eml' | 'msg';
+  type: 'eml' | 'msg' | 'mbox';
   filename: string;
   options?: FileViewerOptions;
 }>()
@@ -166,6 +166,47 @@ const parseEml = async (): Promise<ParsedEmailView> => {
   }
 }
 
+const parseMbox = async (): Promise<ParsedEmailView> => {
+  const source = new TextDecoder('utf-8', { fatal: false }).decode(props.data)
+  const starts = [...source.matchAll(/^From .*$\n/gm)].map(match => match.index || 0)
+  const firstStart = starts[0] ?? 0
+  const secondStart = starts[1] ?? source.length
+  const firstMessage = source.slice(firstStart, secondStart).replace(/^From .*$\n/, '')
+  const encoded = new TextEncoder().encode(firstMessage).buffer
+  const PostalMime = (await import('postal-mime')).default
+  const email = await PostalMime.parse(encoded, {
+    attachmentEncoding: 'arraybuffer',
+    maxNestingDepth: 24,
+    maxHeadersSize: 2 * 1024 * 1024
+  })
+  const attachments: EmailAttachmentView[] = email.attachments.map((attachment, index) => {
+    const size = typeof attachment.content === 'string'
+      ? attachment.content.length
+      : attachment.content.byteLength
+    const name = attachment.filename || `attachment-${index + 1}`
+    return {
+      id: `${index}-${name}`,
+      name,
+      mimeType: attachment.mimeType,
+      size,
+      contentId: attachment.contentId,
+      load: () => toArrayBuffer(attachment.content)
+    }
+  })
+  return {
+    kind: 'mbox',
+    subject: email.subject || `${props.filename} · 第 1 封`,
+    from: normalizeAddress(email.from),
+    to: normalizeAddress(email.to),
+    cc: normalizeAddress(email.cc),
+    date: email.date,
+    text: `MBOX 共识别 ${Math.max(1, starts.length)} 封邮件，当前展示第 1 封。\n\n${email.text || ''}`,
+    html: email.html,
+    headers: email.headerLines?.map(item => item.line).join('\n') || email.headers?.map(item => `${item.originalKey}: ${item.value}`).join('\n'),
+    attachments
+  }
+}
+
 const parseMsg = async (): Promise<ParsedEmailView> => {
   const msgReaderModule = await import('@kenjiuno/msgreader')
   const MsgReader = (msgReaderModule.default as any)?.default || msgReaderModule.default
@@ -204,7 +245,7 @@ const parseEmail = async () => {
   loading.value = true
   error.value = ''
   try {
-    parsed.value = props.type === 'msg' ? await parseMsg() : await parseEml()
+    parsed.value = props.type === 'msg' ? await parseMsg() : props.type === 'mbox' ? await parseMbox() : await parseEml()
     activeBody.value = parsed.value.html ? 'html' : parsed.value.text ? 'text' : 'headers'
   } catch (nextError) {
     console.error(nextError)

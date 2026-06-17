@@ -9,7 +9,7 @@ export default async function renderEmail(
   type = 'eml',
   context?: FileRenderContext
 ) {
-  const normalizedType = type === 'msg' ? 'msg' : 'eml'
+  const normalizedType = type === 'msg' ? 'msg' : type === 'mbox' ? 'mbox' : 'eml'
   const app = createApp({
     render: () => (
       <EmailViewer

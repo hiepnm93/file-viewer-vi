@@ -27,11 +27,11 @@
   </div>
   <div class="doc-card">
     <h3>覆盖真实附件场景</h3>
-    <p>内置 152 个扩展名映射，覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和视频。</p>
+    <p>内置 194 个扩展名映射，覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体、设计资产和结构化数据。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
-    <p>OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
+    <p>OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
   </div>
   <div class="doc-card">
     <h3>阅读体验更完整</h3>
@@ -48,7 +48,7 @@
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
-    <p>支持格式页列出当前注册的 152 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
+    <p>支持格式页列出当前注册的 194 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
@@ -67,13 +67,15 @@
 - PDF 视图支持宽度自适应、缩放工具栏、页码状态和可显隐导航窗格；Word / PDF 打印使用专属完整页适配器，其他格式按能力动态显隐打印按钮。
 - OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
 - 压缩包使用 `libarchive.js` Worker 读取目录，点击内部文件后按需解压、缓存并继续复用统一预览器。
-- EML / MSG 邮件支持头信息、HTML/文本正文、附件下载和附件继续预览。
+- EML / MSG / MBOX 邮件支持头信息、HTML/文本正文、附件下载和附件继续预览。
 - OLB / DRA 使用 CFB 容器解析、结构树、对象候选、属性和可读字符串索引，适合 EDA 附件初筛。
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
+- 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
 - 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
-- EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开。
-- 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示。
+- EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
+- 代码和文本使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。
+- 字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro 和 WebArchive 走资产/数据预览链路，优先展示结构摘要、字体样张、图层或数据预览，不执行不可信内容。
 - 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位，适合上线前核对两份附件的视觉差异。
 
 ## 常用入口

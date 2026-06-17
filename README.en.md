@@ -2,7 +2,7 @@
 
 [Simplified Chinese](README.md) | [English](README.en.md)
 
-Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio, ebooks, drawings, CAD, 3D models, Markdown, images, and source code preview into the browser with a clean, deployable viewer.
+Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
 `@flyfish-group/file-viewer3` is a pure frontend file preview component built with Vue 3, TypeScript, and Vite. Vue 2.7 projects should use the matching `@flyfish-group/file-viewer` package. The Vue 3 build is also the baseline runtime for the React, vanilla JavaScript, and iframe integration packages.
 
@@ -24,18 +24,18 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.25` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
-| Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.25` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
-| React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.25` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
-| Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.25` | adapter package | iframe helpers and static viewer asset copier |
+| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.26` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
+| Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.26` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
+| React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.26` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
+| Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.26` | adapter package | iframe helpers and static viewer asset copier |
 
 For intranet or offline environments, this artifact repository also ships npm tarballs under `artifacts/`:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-1.0.25.tgz
-npm install ./artifacts/flyfish-group-file-viewer-1.0.25.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-1.0.25.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-1.0.25.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
+npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
 ```
 
 When installing the React tarball offline, install the same-version web tarball first because the React package depends on `@flyfish-group/file-viewer-web`.
@@ -70,8 +70,8 @@ GitHub Releases provide all distribution downloads:
 ## Why Use It
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
-- **Broad format coverage.** The current release maps 152 extensions across 20 preview pipelines, including Office, PDF, OFD, Typst, archives, email, EDA files, CAD, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio, video, and source code.
-- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, archive, email, CAD, 3D, ebook, Markdown, and code highlighting dependencies are loaded only when the file type needs them.
+- **Broad format coverage.** The current release maps 194 extensions across 23 preview pipelines, including Office, PDF, OFD, Typst, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
+- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, iframe events, and before-operation guards for permission checks.
 - **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
 - **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
@@ -89,26 +89,29 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | --- | --- | --- | --- |
 | Word | `docx`, `docm`, `dotx`, `dotm` | `docx-preview`, read-only page preview, print and HTML export | Modern Word documents and templates |
 | Legacy Word | `doc`, `dot` | `msdoc-viewer` with Word-like paper surface and CFB tolerance fixes | Old Word 97-2003 files |
+| Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
 | Excel | `xlsx`, `xltx` | `styled-exceljs` plus virtual table rendering, merged cells, styles, auto text color, workbook images | Business spreadsheets and templates |
 | Excel-compatible | `xlsm`, `xlsb`, `xls`, `xlt`, `xltm`, `csv`, `ods`, `fods`, `numbers` | Progressive spreadsheet parsing and virtual rendering | Legacy spreadsheets and lightweight data preview |
-| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm` | Slide preview with images, shapes, theme backgrounds, clipping, and EMF fallback | Presentations, training decks, proposals |
+| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Slide preview with images, shapes, theme backgrounds, clipping, EMF fallback, and OpenDocument slide extraction | Presentations, training decks, proposals |
 | PDF | `pdf` | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export | Contracts, invoices, official layout documents |
 | OFD | `ofd` | Browser-side OFD preview based on `DLTech21/ofd.js` source | Chinese e-invoices, government documents, archives |
 | Typst | `typ`, `typst` | Direct Typst source rendering with browser WASM compiler and SVG pages | Technical reports, papers, engineering documents |
 | Archives | `zip`, `zipx`, `7z`, `rar`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`, `cab`, `iso`, `jar`, `apk`, `cbz`, `cbr`, and more | `libarchive.js` Worker, directory listing, lazy extraction, IndexedDB cache | Attachment packages and internal document bundles |
-| Email | `eml`, `msg` | `postal-mime` for EML, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview | Email archives and support tickets |
+| Email | `eml`, `msg`, `mbox` | `postal-mime` for EML/MBOX, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview | Email archives and support tickets |
 | EDA | `olb`, `dra` | CFB-based OrCAD / Allegro structure inspection, trees, symbols, footprints, padstack candidates, properties, strings, diagnostics | Component libraries and EDA attachments |
 | CAD | `dwg`, `dxf`, `dwf`, `dwfx`, `xps` | `@flyfish-dev/cad-viewer` preview. DWG uses Worker + LibreDWG WASM, DXF uses a JS parser, and DWF/DWFx/XPS use the native `dwf-viewer` path for W2D/W3D/XPS graphics | Engineering drawings and AutoCAD archives |
+| Geospatial data | `geojson`, `kml`, `gpx`, `shp` | GeoJSON normalization with `@tmcw/togeojson` and `shpjs`, rendered as an offline SVG map preview | GIS exports, route tracks, map attachment review |
 | 3D models | `glb`, `gltf`, `obj`, `stl`, `ply`, `fbx`, `dae`, `3ds`, `3mf`, `amf`, `usd`, `usda`, `usdc`, `usdz`, `kmz`, `pcd`, `wrl`, `vrml`, `xyz`, `vtk`, `vtp`, `step`, `stp`, `iges`, `igs`, `ifc`, `3dm` | Three.js interactive preview, with conversion guidance for heavy CAD/BIM kernels | 3D assets, point clouds, design models |
 | Excalidraw | `excalidraw` | Official `@excalidraw/excalidraw` restore and `exportToSvg` read-only rendering | Whiteboard sketches and product diagrams |
 | draw.io | `drawio`, `dio` | Official diagrams.net `GraphViewer` | Flowcharts and architecture diagrams |
 | EPUB | `epub` | `epubjs` table of contents and scrolling reader | Ebooks and long training materials |
 | UMD ebook | `umd` | UMD metadata, chapters, offsets, zlib text blocks | Legacy mobile ebooks |
 | Markdown | `md`, `markdown` | Markdown reading surface with theme-aware styles | README files and knowledge base articles |
-| Images | `gif`, `jpg`, `jpeg`, `bmp`, `tiff`, `tif`, `png`, `svg`, `webp` | Native image preview | Image attachments and design assets |
-| Source and text | `txt`, `json`, `js`, `mjs`, `cjs`, `css`, `java`, `py`, `html`, `htm`, `jsx`, `ts`, `tsx`, `xml`, `log`, `vue`, `yaml`, `yml`, `ini`, `sh`, `bash`, `sql`, `go`, `rs`, `php`, `c`, `cpp`, `cc`, `h`, `hpp`, `cs`, `diff` | Lightweight `highlight.js` language-specific highlighting, HTML shown as source | Logs, configs, code snippets, API responses |
-| Audio | `mp3`, `mpeg`, `wav`, `ogg`, `oga`, `opus`, `m4a`, `aac`, `flac`, `weba` | Native browser audio player | Recordings and audio attachments |
-| Video | `mp4` | Native browser video player | Screen recordings and demo videos |
+| Images | `gif`, `jpg`, `jpeg`, `bmp`, `tiff`, `tif`, `png`, `svg`, `webp`, `avif`, `ico`, `heic`, `heif`, `jxl` | Native image preview with HEIC/HEIF conversion loaded only when needed | Image attachments, screenshots, icons, design exports |
+| Source and text | `txt`, `json`, `jsonc`, `json5`, `ipynb`, `js`, `mjs`, `cjs`, `css`, `java`, `py`, `html`, `htm`, `jsx`, `ts`, `tsx`, `xml`, `log`, `vue`, `yaml`, `yml`, `toml`, `ini`, `proto`, `hcl`, `tex`, `gv`, `http`, `sh`, `bash`, `sql`, `go`, `rs`, `rb`, `swift`, `kt`, `react`, `php`, `c`, `cpp`, `cc`, `h`, `hpp`, `cs`, `diff` | Lightweight `highlight.js` language-specific highlighting, HTML shown as source | Logs, configs, notebooks, code snippets, API responses |
+| Audio | `mp3`, `mpeg`, `wav`, `ogg`, `oga`, `opus`, `m4a`, `aac`, `flac`, `weba`, `midi`, `mid` | Native browser audio player, plus MIDI metadata parsing with `@tonejs/midi` | Recordings, audio attachments, MIDI scores |
+| Video | `mp4`, `webm`, `m3u8` | Native browser video player with `hls.js` fallback for HLS streams | Screen recordings, demo videos, HLS previews |
+| Fonts, design assets, and data | `ttf`, `otf`, `woff`, `woff2`, `psd`, `ai`, `eps`, `sqlite`, `wasm`, `parquet`, `avro`, `webarchive` | FontFace previews, PSD metadata/layers, PDF-backed AI handoff, SQLite/Parquet/Avro/WASM structural summaries | Asset review, local databases, binary package inspection |
 
 ## Vue 3 Integration
 
@@ -361,7 +364,7 @@ The artifact repository also contains:
 The project provides a static nginx runtime image and build scripts for `linux/amd64` and `linux/arm64`. A typical deployment can serve the demo and comparison page directly:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.25
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.26
 ```
 
 Then open:
@@ -381,7 +384,7 @@ If you need source code access, second development resources, or commercial cust
 
 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-The self-service source access price is 4.99. It is designed to make legitimate second development and commercial evaluation straightforward without mixing source delivery into the public artifact repository.
+Source access can be opened from the shop page with a small lemonade-level support for the maintainers. This keeps legitimate second development and commercial evaluation straightforward without mixing source delivery into the public artifact repository.
 
 ## License and Attribution
 

@@ -18,7 +18,7 @@
 
 ## 主示例页
 
-主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、DXF、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
+主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体/设计资产和结构化数据。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
 
 - 快速演示当前项目支持哪些文件类型
 - 用本地上传验证 `file` 方案
@@ -143,7 +143,10 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `excel.ods` | 验证 OpenDocument 表格扩展名映射 | `ods` |
 | `excel.fods` | 验证 Flat ODS 扩展名映射 | `fods` |
 | `excel.numbers` | 验证 Numbers 扩展名映射 | `numbers` |
+| `sample.rtf` | 验证 RTF 富文本兼容预览 | `rtf` |
+| `document.odt` | 验证 OpenDocument 文本正文抽取和纸张阅读面 | `odt` |
 | `ppt.pptx` | R4Psy 公开中文课程课件，验证多页幻灯片、图片资源、主题背景、组合元素和富文本排版 | `pptx` |
+| `slides.odp` | 验证 OpenDocument 演示文稿页面结构和文本预览 | `odp` |
 | `pdf.pdf` | 项目方提供的 13 页真实技术说明 PDF，验证多页阅读、缩放工具栏、页面/目录导航窗格、完整打印和 HTML 导出 | `pdf` |
 | `ofd.ofd` | 验证 OFD 在线预览 | `ofd` |
 | `report.typ` | 验证 Typst 源文件直接读取、浏览器 WASM 编译、按页 SVG 预览、打印和 HTML 导出 | `typ` |
@@ -152,6 +155,9 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `samples/apache/blocks_and_tables.dwf` | 使用 Apache Tika 公开 Jira 附件验证原生 DWF 容器、块和表格渲染 | `dwf` |
 | `samples/autodesk/house.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 DWFx/XPS native renderer、多页结构和 CAD 视图适配 | `dwfx` |
 | `samples/autodesk/robot-arm.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 W2D/W3D native renderer 和复杂装配图形 | `dwfx` |
+| `map.geojson` | 验证 GeoJSON 点线面离线地图预览 | `geojson` |
+| `route.kml` | 验证 KML 转 GeoJSON 后预览 | `kml` |
+| `track.gpx` | 验证 GPX 轨迹转 GeoJSON 后预览 | `gpx` |
 | `model.gltf` | 使用项目内嵌入数据的最小 glTF 验证 Web 3D 预览 | `gltf` |
 | `model.obj` | 使用项目内生成的 OBJ 四面体验证 OBJ 几何预览 | `obj` |
 | `model.stl` | 使用项目内生成的 STL 四面体验证 STL 几何预览 | `stl` |
@@ -165,12 +171,16 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `archive.tar.gz` | 验证 TAR.GZ 压缩包兼容入口和内部文件预览 | `gz` |
 | `sample.eml` | 验证 EML 头信息、HTML/文本正文、附件下载和附件预览 | `eml` |
 | `sample.msg` | 使用 msgreader 上游公开样例验证 Outlook MSG 解析 | `msg` |
+| `sample.mbox` | 验证 MBOX 归档识别和首封邮件预览 | `mbox` |
 | `sample.olb` | 使用项目内生成的 CFB 元件库夹具验证 OLB 结构预览 | `olb` |
 | `sample.dra` | 使用项目内生成的 CFB 封装图纸夹具验证 DRA 结构预览 | `dra` |
 | `markdown.md` | 验证 Markdown 长内容、表格、代码块和明暗主题阅读面 | `md` |
 | `notes.markdown` | 验证 Markdown 长扩展名和主题隔离 | `markdown` |
 | `text.txt` | 验证纯文本展示 | `txt` |
 | `data.json` | 验证 JSON 高亮 | `json` |
+| `data.jsonc` | 验证 JSONC 注释配置高亮 | `jsonc` |
+| `data.json5` | 验证 JSON5 宽松对象语法高亮 | `json5` |
+| `notebook.ipynb` | 验证 Jupyter Notebook JSON 结构预览 | `ipynb` |
 | `code.js` | 验证 JavaScript 高亮 | `js` |
 | `code.mjs` | 验证 ES Module JavaScript 高亮 | `mjs` |
 | `code.cjs` | 验证 CommonJS JavaScript 高亮 | `cjs` |
@@ -184,12 +194,22 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `component.vue` | 验证 Vue 单文件组件高亮 | `vue` |
 | `config.yaml` | 验证 YAML 高亮 | `yaml` |
 | `config.yml` | 验证 YML 高亮 | `yml` |
+| `config.toml` | 验证 TOML 配置高亮 | `toml` |
 | `settings.ini` | 验证 INI 高亮 | `ini` |
+| `service.proto` | 验证 Protocol Buffers IDL 高亮 | `proto` |
+| `infrastructure.hcl` | 验证 HCL 基础设施配置展示 | `hcl` |
+| `formula.tex` | 验证 TeX / LaTeX 源码展示 | `tex` |
+| `graph.gv` | 验证 Graphviz DOT 源码展示 | `gv` |
+| `request.http` | 验证 HTTP 请求片段展示 | `http` |
 | `script.sh` | 验证 Shell 脚本高亮 | `sh` |
 | `script.bash` | 验证 Bash 脚本高亮 | `bash` |
 | `query.sql` | 验证 SQL 高亮 | `sql` |
 | `main.go` | 验证 Go 高亮 | `go` |
 | `main.rs` | 验证 Rust 高亮 | `rs` |
+| `code.rb` | 验证 Ruby 高亮 | `rb` |
+| `code.swift` | 验证 Swift 高亮 | `swift` |
+| `Main.kt` | 验证 Kotlin 高亮 | `kt` |
+| `component.react` | 验证 React 片段入口 | `react` |
 | `index.php` | 验证 PHP 高亮 | `php` |
 | `main.c` | 验证 C 高亮 | `c` |
 | `main.cpp` | 验证 C++ 高亮 | `cpp` |
@@ -212,7 +232,11 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 | `pic.webp` | 验证 WEBP 图片预览 | `webp` |
 | `audio.mp3` | 使用 MDN CC0 音频验证 MP3 原生播放 | `mp3` |
 | `audio.ogg` | 使用 Wikimedia Commons 音频验证 OGG 原生播放 | `ogg` |
+| `melody.mid` | 验证 MIDI 轨道、时长和音符摘要 | `mid` |
 | `video.mp4` | 验证视频播放 | `mp4` |
+| `icon.ico` | 验证 ICO 图标预览 | `ico` |
+| `sample.sqlite` | 验证 SQLite 表结构和少量数据行预览 | `sqlite` |
+| `module.wasm` | 验证 WASM 模块导入导出摘要 | `wasm` |
 
 <div class="doc-note">
   部分兼容格式示例复用了同一份可解析内容来覆盖扩展名入口，例如表格兼容格式和图片兼容格式。Excel 当前使用虚拟表格展示，打印按钮会按能力自动隐藏，避免只打印当前视口。上线前仍建议使用业务真实文件补一轮回归。
@@ -220,13 +244,13 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 ## 完整覆盖与绘图说明
 
-上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.2，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer 静态目录下 `wasm/cad/` 中的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 `dwf-viewer` 0.6.4 native renderer 与 `dwfv-render.wasm`。
+上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer 静态目录下 `wasm/cad/` 中的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
 
 3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，建议用客户真实模型补充回归。
 
 Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
 
-压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG 的头信息、正文切换、附件下载和附件预览。OLB / DRA 样例是项目内生成的 CFB 容器，用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引。
+压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG / MBOX 的头信息、正文切换、附件下载和附件预览。地理数据样例用于验证 GeoJSON/KML/GPX 到离线 SVG 地图的链路。OLB / DRA 样例是项目内生成的 CFB 容器，用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引。SQLite、WASM 和 ICO 样例用于验证资产/数据预览链路不会影响普通文档首屏。
 
 ## 公开样例来源
 

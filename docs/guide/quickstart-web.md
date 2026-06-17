@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.25
+npm install --save @flyfish-group/file-viewer-web@1.0.26
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -100,7 +100,7 @@ public/
 推荐通过 npm 安装后复制:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.25
+npm install @flyfish-group/file-viewer-web@1.0.26
 npx file-viewer-copy-assets ./public/file-viewer
 mkdir -p ./public/vendor/file-viewer-web
 cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
@@ -220,7 +220,7 @@ cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/f
 
 ```html
 <script type="module">
-  import { mountViewerFrame } from 'https://unpkg.com/@flyfish-group/file-viewer-web@1.0.25/dist/index.js'
+  import { mountViewerFrame } from 'https://unpkg.com/@flyfish-group/file-viewer-web@1.0.26/dist/index.js'
 
   mountViewerFrame(document.getElementById('viewer'), {
     viewerUrl: '/file-viewer/index.html',
@@ -270,7 +270,7 @@ URL 文件直接拼接 `url`:
 
 ```html
 <iframe
-  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.25"
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.26"
   style="width: 100%; height: 100vh; border: 0"
 ></iframe>
 ```
@@ -294,7 +294,7 @@ URL 文件直接拼接 `url`:
       frame.src = '/vendor/file-viewer/index.html' +
         '?name=' + encodeURIComponent('contract.docx') +
         '&from=' + encodeURIComponent(origin) +
-        '&__flyfish_viewer_version=1.0.25'
+        '&__flyfish_viewer_version=1.0.26'
     })
 </script>
 ```

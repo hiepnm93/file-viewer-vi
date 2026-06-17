@@ -1,6 +1,7 @@
 import { createApp, defineAsyncComponent } from 'vue'
 
 const AudioViewer = defineAsyncComponent(() => import('./AudioViewer.vue'))
+const MidiViewer = defineAsyncComponent(() => import('./MidiViewer.vue'))
 
 /**
  * 渲染音频文件。
@@ -9,8 +10,11 @@ const AudioViewer = defineAsyncComponent(() => import('./AudioViewer.vue'))
  * `<audio>`，这样常见音频格式不会把额外播放器运行时带进组件包。
  */
 export default async function renderAudio(buffer: ArrayBuffer, target: HTMLDivElement, type?: string) {
+  const normalizedType = (type || 'mp3').toLowerCase()
   const app = createApp({
-    render: () => <AudioViewer data={buffer} type={type || 'mp3'} />
+    render: () => normalizedType === 'midi' || normalizedType === 'mid'
+      ? <MidiViewer data={buffer} />
+      : <AudioViewer data={buffer} type={normalizedType} />
   })
   app.mount(target)
   return app

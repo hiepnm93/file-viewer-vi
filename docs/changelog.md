@@ -15,6 +15,7 @@
 - 修复 `@flyfish-group/file-viewer3@1.0.25` 在发布前被 Demo 构建覆盖 `dist` 后，npm 包缺少 `dist/src/package/index.d.ts`，导致 TypeScript 项目出现 `TS2307: Cannot find module '@flyfish-group/file-viewer3' or its corresponding type declarations` 的问题
 - 根包新增 `prepublishOnly` 发布前保护，会重新执行库模式构建并校验 `dist/index.mjs`、`dist/src/package/index.d.ts`、`dist/style.css` 和 CAD WASM Worker 产物，阻止 Demo HTML 产物误进入组件库 npm 包
 - 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；公开成品仓库只保留一份 scoped v3 tarball，避免重复占用存储
+- 支持格式矩阵补齐到 194 个扩展名、23 条预览链路，新增 RTF/ODT/ODP、MBOX、GeoJSON/KML/GPX/SHP、AVIF/ICO/HEIC/HEIF/JXL、WEBM/M3U8、MIDI、JSONC/JSON5/IPYNB/TOML/Proto/HCL/TeX/Graphviz/HTTP/Ruby/Swift/Kotlin/React 片段，以及字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro、WebArchive 等资产/数据预览入口
 
 ### `v1.0.25` 移动端压缩包与表格体验修复版本
 
@@ -28,7 +29,7 @@
 
 - DOCX 渲染链路移除临时轻量预览分支，默认通过 Web Worker 运行 `docx-preview` 解析和 HTML 构建，并把同一份 docx-preview 页面按批次渐进挂载，主线程只负责挂载、缩放和打印适配；CSP 或低版本浏览器不兼容时可通过 `options.docx.worker: false` 回退原生主线程渲染
 - DOCX Worker 新增 `options.docx.workerTimeout` 超时兜底，默认 15000ms。少量复杂 Word 文件如果在 Worker DOM 环境中无法及时返回，会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
-- CAD 渲染器升级到 `@flyfish-dev/cad-viewer` 0.6.2，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 `dwf-viewer` 0.6.4 native renderer 渲染 W2D/W3D/XPS 图形
+- CAD 渲染器保持在 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 native renderer 渲染 W2D/W3D/XPS 图形
 - 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer 静态目录下的 `wasm/cad/`
 - Demo 补充 Apache Tika `blocks_and_tables.dwf` 与 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，用于分别验证 DWF、DWFx/XPS、W2D/W3D native renderer 和大图纸按需加载体验
 - 入口组件在挂载重型渲染器前先释放浏览器绘制帧，确保 Loading 先显示，减少用户误以为页面无响应

@@ -1,17 +1,27 @@
+import { createApp, defineAsyncComponent, h } from 'vue'
+import type { FileRenderContext } from '@/package/common/type'
+
+const VideoViewer = defineAsyncComponent(() => import('./VideoViewer.vue'))
+
 /**
- * 渲染mp4
+ * 浏览器媒体预览。
+ *
+ * MP4 / WebM 使用原生 video；HLS(m3u8) 优先使用浏览器原生 HLS，
+ * 其他现代浏览器按需加载 hls.js，避免普通视频预览被 HLS runtime 拖慢。
  */
-export default function(buffer: ArrayBuffer, target: HTMLDivElement) {
-  const mp4 = document.createElement('video')
-  mp4.width = 840
-  mp4.height = 480
-  mp4.controls = true
-  Object.assign(mp4.style, {
-    margin: '40px auto',
-    display: 'block'
+export default async function renderVideo(
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+) {
+  const app = createApp({
+    render: () => h(VideoViewer, {
+      data: buffer,
+      type: type || 'mp4',
+      sourceUrl: context?.url
+    })
   })
-  const source = document.createElement('source')
-  source.src = URL.createObjectURL(new Blob([buffer]))
-  mp4.appendChild(source)
-  target.appendChild(mp4)
+  app.mount(target)
+  return app
 }

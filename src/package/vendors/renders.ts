@@ -38,6 +38,14 @@ const handlers: Array<FileHandlerComposite> = [
       return createWrapper(target)
     }
   },
+  // RTF / ODT / ODP 是兼容型开放文档入口，保持独立异步块，避免影响主 Office 链路。
+  {
+    accepts: ['rtf', 'odt', 'odp'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderOpenDocument } = await import('./open-document')
+      return renderOpenDocument(buffer, target, type)
+    }
+  },
   // 使用 styled-exceljs + e-virt-table，统一处理 XLSX / XLS 的数据和样式读取。
   {
     accepts: ['xlsx', 'xltx'],
@@ -88,7 +96,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // EML/MSG 使用成熟邮件解析库读取头信息、正文与附件，附件继续交给统一渲染器预览。
   {
-    accepts: ['eml', 'msg'],
+    accepts: ['eml', 'msg', 'mbox'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderEmail } = await import('./email')
       return renderEmail(buffer, target, type, context)
@@ -118,6 +126,14 @@ const handlers: Array<FileHandlerComposite> = [
       return renderModel(buffer, target, type, context)
     }
   },
+  // KML / GPX / Shapefile / GeoJSON 统一转换到 GeoJSON 后离线 SVG 预览，不依赖地图瓦片服务。
+  {
+    accepts: ['geojson', 'kml', 'gpx', 'shp'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      const { default: renderGeo } = await import('./geo')
+      return renderGeo(buffer, target, type)
+    }
+  },
   // Excalidraw / draw.io 都是绘图类文本格式，使用官方预览库并保持独立异步加载。
   {
     accepts: ['excalidraw', 'drawio', 'dio'],
@@ -144,10 +160,10 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 图片过滤器
   {
-    accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg','webp'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp', 'avif', 'ico', 'heic', 'heif', 'jxl'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderImage } = await import('./image')
-      return renderImage(buffer, target)
+      return renderImage(buffer, target, type)
     }
   },
   {
@@ -161,28 +177,36 @@ const handlers: Array<FileHandlerComposite> = [
   {
     accepts: [
       'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx', 'ts', 'tsx', 'xml', 'log',
-      'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs', 'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff'
+      'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs', 'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff',
+      'jsonc', 'json5', 'ipynb', 'toml', 'proto', 'hcl', 'tex', 'gv', 'http', 'react', 'rb', 'swift', 'kt'
     ],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderText } = await import('./text')
       return renderText(buffer, target, type)
     }
   },
-  // 视频预览，仅支持MP4
+  // 视频预览：MP4 / WebM 走原生 video，M3U8 按需加载 hls.js。
   {
-    accepts: ['mp4'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    accepts: ['mp4', 'webm', 'm3u8'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderMp4 } = await import('./mp4')
-      renderMp4(buffer, target)
-      return createWrapper(target)
+      return renderMp4(buffer, target, type, context)
     }
   },
   // 音频文件交给浏览器原生 `<audio>` 播放，扩展名入口覆盖主流 Web 可播放格式。
   {
-    accepts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba'],
+    accepts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'midi', 'mid'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderAudio } = await import('./audio')
       return renderAudio(buffer, target, type)
+    }
+  },
+  // 字体、设计资产和结构化数据使用专属异步链路，避免重型解析器进入常规首屏。
+  {
+    accepts: ['ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'sqlite', 'wasm', 'parquet', 'avro', 'webarchive'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      const { default: renderDataAsset } = await import('./data')
+      return renderDataAsset(buffer, target, type, context)
     }
   },
   // 错误处理
@@ -190,7 +214,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体和数据资产的在线预览</div>`
       return createWrapper(target)
     }
   }
