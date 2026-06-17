@@ -8,7 +8,6 @@ import {
   buildFileViewerOperationContext,
   createFileViewerErrorState,
   createFileViewerPostMessagePayload,
-  disposeFileViewerRendered,
   formatFileViewerErrorMessage,
   getExtension,
   normalizeFilename,
@@ -35,11 +34,10 @@ import type {
   FileViewerSearchState,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
-  FileViewerZoomState,
-  Rendered
+  FileViewerZoomState
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
-import { render } from './util'
+import { renderSession, type FileViewerVueRenderSession } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
@@ -145,7 +143,7 @@ const {
 
 const errorState = computed(() => createFileViewerErrorState(currentExtend.value, error.value, loadingTheme.value))
 
-let activeRendered: Rendered | undefined
+let activeRenderSession: FileViewerVueRenderSession | null = null
 let activeDocumentContext: FileViewerLifecycleContext | null = null
 let renderVersion = 0
 let pendingDownloadController: AbortController | null = null
@@ -373,6 +371,23 @@ const zoomButtonDisabled = (action: keyof Pick<FileViewerZoomState, 'canZoomIn' 
   return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
 }
 
+const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
+  if (!session) {
+    return
+  }
+
+  try {
+    const result = session.destroy?.()
+    if (result && typeof result === 'object' && 'then' in result) {
+      void (result as Promise<void>).catch(nextError => {
+        console.warn('预览内容卸载失败', nextError)
+      })
+    }
+  } catch (nextError) {
+    console.warn('预览内容卸载失败', nextError)
+  }
+}
+
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
 const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
   const context = activeDocumentContext
@@ -386,11 +401,9 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
   }
 
   try {
-    disposeFileViewerRendered(activeRendered)
-  } catch (nextError) {
-    console.warn('预览内容卸载失败', nextError)
+    destroyRenderSession(activeRenderSession)
   } finally {
-    activeRendered = undefined
+    activeRenderSession = null
     activeDocumentContext = null
     activeExportAdapter.value = null
     renderedReady.value = false
@@ -454,7 +467,7 @@ const mountRenderedContent = async (
   }
 
   try {
-    const rendered = await render(buffer, getExtension(file.name), child, {
+    const session = await renderSession(buffer, getExtension(file.name), child, {
       filename: file.name,
       url: sourceUrl,
       streamUrl,
@@ -467,7 +480,7 @@ const mountRenderedContent = async (
       }
     })
     if (!isCurrentRequest(version)) {
-      disposeFileViewerRendered(rendered)
+      destroyRenderSession(session)
       if (child.parentNode === out) {
         out.removeChild(child)
       }
@@ -475,7 +488,7 @@ const mountRenderedContent = async (
     }
     void refreshDocumentIndex()
     refreshZoomProvider()
-    return rendered
+    return session
   } catch (nextError) {
     if (child.parentNode === out) {
       out.removeChild(child)
@@ -500,12 +513,12 @@ const readAndRenderFile = async (
   currentBuffer.value = arrayBuffer
   currentSourceUrl.value = sourceUrl || null
 
-  const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
+  const session = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
-    disposeFileViewerRendered(rendered)
+    destroyRenderSession(session)
     return
   }
-  activeRendered = rendered
+  activeRenderSession = session || null
   renderedReady.value = true
   const context = buildLifecycleContext({
     phase: 'load-complete',
@@ -537,12 +550,12 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
   try {
     const placeholderFile = new File([], nextFilename || 'preview.pdf', { type: 'application/pdf' })
     currentSourceUrl.value = url
-    const rendered = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
+    const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
     if (!isCurrentRequest(version)) {
-      disposeFileViewerRendered(rendered)
+      destroyRenderSession(session)
       return
     }
-    activeRendered = rendered
+    activeRenderSession = session || null
     renderedReady.value = true
     const context = buildLifecycleContext({
       phase: 'load-complete',

@@ -129,6 +129,7 @@ export {
 } from './rendererDispatcher';
 export {
   buildFileRenderContextFromLoadContext,
+  createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
   disposeFileViewerRendered,

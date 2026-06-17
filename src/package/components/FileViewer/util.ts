@@ -1,4 +1,5 @@
 import {
+  createFileRenderHandlerRendererSession,
   normalizeSource,
   renderFileViewerHandler,
   type FileRenderHandlerRendererSession,
@@ -6,15 +7,22 @@ import {
 import { vueRendererDispatcher, vueRendererRegistry } from '@/package/vendors/renders'
 import type { FileRenderContext, Rendered } from '@/package/common/type'
 
+export type FileViewerVueRenderSession = FileRenderHandlerRendererSession<Rendered | undefined>
+
 export function getExtend(name: string) {
   const dot = name.lastIndexOf('.')
   return name.substring(dot + 1)
 }
 
-export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivElement, context?: FileRenderContext) {
+export async function renderSession(
+  buffer: ArrayBuffer,
+  type: string,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<FileViewerVueRenderSession> {
   const renderer = vueRendererRegistry.getByExtension(type)
   if (renderer?.load) {
-    const session = await renderer.load({
+    return await renderer.load({
       source: normalizeSource({
         buffer,
         filename: context?.filename || `preview.${type}`,
@@ -26,14 +34,19 @@ export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivE
       registerExportAdapter: context?.registerExportAdapter,
       renderContext: context
     }) as FileRenderHandlerRendererSession<Rendered>
-    return session.rendered
   }
 
-  return renderFileViewerHandler({
+  const rendered = await renderFileViewerHandler<Rendered | undefined, HTMLDivElement>({
     dispatcher: vueRendererDispatcher,
     buffer,
     target,
     type,
     context
   })
+  return createFileRenderHandlerRendererSession(rendered)
+}
+
+export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivElement, context?: FileRenderContext) {
+  const session = await renderSession(buffer, type, target, context)
+  return session.rendered
 }

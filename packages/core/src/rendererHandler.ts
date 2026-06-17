@@ -39,6 +39,19 @@ export interface FileRenderHandlerRendererSession<Rendered = unknown> extends Re
   rendered: Rendered;
 }
 
+export const createFileRenderHandlerRendererSession = <Rendered = unknown>(
+  rendered: Rendered,
+  destroy?: () => void | Promise<void>
+): FileRenderHandlerRendererSession<Rendered> => ({
+  rendered,
+  destroy: () => {
+    if (destroy) {
+      return destroy();
+    }
+    return disposeFileViewerRendered(rendered);
+  },
+});
+
 export interface CreateFileRenderHandlerRegistryOptions<
   Rendered = unknown,
   Target extends HTMLElement = HTMLElement,
@@ -142,15 +155,12 @@ export const createFileRenderHandlerLoader = <
       createContext(context)
     );
 
-    return {
-      rendered,
-      destroy: () => {
-        if (destroy) {
-          return destroy(rendered, context);
-        }
-        return disposeFileViewerRendered(rendered);
-      },
-    } satisfies FileRenderHandlerRendererSession<Rendered>;
+    return createFileRenderHandlerRendererSession(rendered, () => {
+      if (destroy) {
+        return destroy(rendered, context);
+      }
+      return disposeFileViewerRendered(rendered);
+    });
   };
 };
 

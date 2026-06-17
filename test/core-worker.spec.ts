@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   WorkerRefImpl,
+  createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
   createFileViewerRendererDispatcher,
@@ -145,6 +146,16 @@ describe('@file-viewer/core worker and render contracts', () => {
     const destroy = vi.fn();
     disposeFileViewerRendered({ destroy });
     expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('wraps legacy rendered instances into core renderer sessions', async () => {
+    const unmount = vi.fn();
+    const rendered = { unmount };
+    const session = createFileRenderHandlerRendererSession(rendered);
+
+    expect(session.rendered).toBe(rendered);
+    await session.destroy?.();
+    expect(unmount).toHaveBeenCalledTimes(1);
   });
 
   it('builds renderer registries from legacy render handlers', async () => {
