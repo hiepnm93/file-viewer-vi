@@ -441,6 +441,25 @@ async function verifyVue3ScopedCompatibility() {
     'controller.destroy()'
   ], vueZoomHookLabel)
 
+  const vueToolbarHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerToolbar.ts')
+  const vueToolbarHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerToolbar.ts`
+  assertImportsFrom(vueToolbarHookSource, '@file-viewer/core', vueToolbarHookLabel)
+  assertTokens(vueToolbarHookSource, [
+    'postFileViewerOperationAvailabilityChange',
+    'postFileViewerZoomChange',
+    'resolveFileViewerOperationAvailability',
+    'resolveVisibleFileViewerToolbar'
+  ], vueToolbarHookLabel)
+  for (const forbiddenToken of [
+    "createFileViewerRawPostMessagePayload('flyfish-viewer:operation'",
+    'postFileViewerMessageToParent('
+  ]) {
+    assert(
+      !vueToolbarHookSource.includes(forbiddenToken),
+      `${vueToolbarHookLabel} must delegate operation postMessage payloads to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueWorkerHookSource = await readSource(entry, 'src/package/vendors/xlsx/hooks/useWorker.ts')
   const vueWorkerHookLabel = `${entry.packageName} src/package/vendors/xlsx/hooks/useWorker.ts`
   assertImportsFrom(vueWorkerHookSource, '@file-viewer/core', vueWorkerHookLabel)

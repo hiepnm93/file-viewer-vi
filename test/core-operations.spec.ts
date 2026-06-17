@@ -11,7 +11,9 @@ import {
   executeFileViewerPrintOperation,
   isFileViewerFrameEvent,
   normalizeFileViewerToolbar,
+  postFileViewerOperationAvailabilityChange,
   postFileViewerMessageToParent,
+  postFileViewerZoomChange,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
@@ -136,6 +138,56 @@ describe('@file-viewer/core operation helpers', () => {
     const topWindow = {} as Window & { parent: Window };
     topWindow.parent = topWindow;
     expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
+  });
+
+  it('posts operation availability and zoom changes through named core helpers', () => {
+    const parent = {
+      postMessage: vi.fn(),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+
+    expect(postFileViewerOperationAvailabilityChange({
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: false,
+      zoomReset: false,
+    }, 'https://host.example', child)).toBe(true);
+    expect(postFileViewerZoomChange({
+      scale: 1,
+      label: '100%',
+      canZoomIn: true,
+      canZoomOut: false,
+      canReset: false,
+    }, 'https://host.example', child)).toBe(true);
+    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'flyfish-viewer:operation',
+      event: 'operation-availability-change',
+      payload: {
+        download: true,
+        print: false,
+        exportHtml: true,
+        zoom: true,
+        zoomIn: true,
+        zoomOut: false,
+        zoomReset: false,
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'flyfish-viewer:operation',
+      event: 'zoom-change',
+      payload: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      },
+    }, 'https://host.example');
   });
 
   it('guards iframe postMessage events through the core protocol', () => {

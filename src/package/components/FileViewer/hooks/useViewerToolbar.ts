@@ -1,7 +1,7 @@
 import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import {
-  createFileViewerRawPostMessagePayload,
-  postFileViewerMessageToParent,
+  postFileViewerOperationAvailabilityChange,
+  postFileViewerZoomChange,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar
@@ -29,18 +29,6 @@ interface UseViewerToolbarOptions {
   zoomState: FileViewerZoomState;
   emitOperationAvailabilityChange: (availability: FileViewerOperationAvailability) => void;
   emitZoomChange: (state: FileViewerZoomState) => void;
-}
-
-const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
-  postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability)
-  )
-}
-
-const postViewerZoomState = (state: FileViewerZoomState) => {
-  postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state)
-  )
 }
 
 /**
@@ -99,7 +87,7 @@ export const useViewerToolbar = ({
   watch(operationAvailability, availability => {
     const payload = { ...availability }
     emitOperationAvailabilityChange(payload)
-    postViewerAvailability(payload)
+    postFileViewerOperationAvailabilityChange(payload)
   }, { immediate: true })
 
   watch(
@@ -113,7 +101,7 @@ export const useViewerToolbar = ({
     () => {
       const state = getZoomState()
       emitZoomChange(state)
-      postViewerZoomState(state)
+      postFileViewerZoomChange(state)
     },
     { immediate: true }
   )

@@ -122,6 +122,7 @@
   - [x] Vue3 请求版本作用域拆到 `useViewerRequestScope`，入口组件不再直接创建 core request controller。
   - [x] toolbar 默认值、可见性、PDF 默认悬浮位置和 operation availability 迁入 `@file-viewer/core`。
   - [x] Vue3 工具栏与能力状态门面拆到组件 hooks，复用 core operation availability / toolbar position / postMessage 协议。
+  - [x] 工具栏 operation availability 与 zoom-change 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue hook 不再拼接 operation payload。
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
   - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。

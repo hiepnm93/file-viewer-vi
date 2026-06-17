@@ -354,6 +354,30 @@ export const postFileViewerMessageToParent = <Payload>(
   return true;
 };
 
+export const postFileViewerOperationAvailabilityChange = (
+  availability: FileViewerOperationAvailability,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability),
+    targetOrigin,
+    targetWindow
+  );
+};
+
+export const postFileViewerZoomChange = (
+  state: FileViewerZoomState,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state),
+    targetOrigin,
+    targetWindow
+  );
+};
+
 export const normalizeFileViewerToolbar = (
   options: Pick<FileViewerOptions, 'toolbar'> | undefined
 ): FileViewerToolbarOptions => {
