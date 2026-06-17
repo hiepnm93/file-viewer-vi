@@ -187,11 +187,15 @@ export {
 } from './rendererDispatcher';
 export {
   buildFileRenderContextFromLoadContext,
+  clearFileViewerRenderSurface,
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderTarget,
+  DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
   disposeFileViewerRendered,
   disposeFileViewerRendererSession,
+  removeFileViewerRenderTarget,
   renderFileViewerHandler,
 } from './rendererHandler';
 export {
@@ -319,6 +323,7 @@ export type {
   FileViewerRendererHandlerEntry,
 } from './rendererDispatcher';
 export type {
+  CreateFileViewerRenderTargetOptions,
   CreateFileRenderHandlerRegistryOptions,
   CreateFileRenderHandlerLoaderOptions,
   DisposeFileViewerRendererSessionOptions,

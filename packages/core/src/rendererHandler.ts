@@ -43,10 +43,48 @@ export interface DisposeFileViewerRendererSessionOptions {
   onError?: (error: unknown) => void;
 }
 
+export interface CreateFileViewerRenderTargetOptions {
+  className?: string;
+}
+
+export const DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS = 'file-render';
+
 const isPromiseLike = (value: unknown): value is PromiseLike<unknown> => {
   return !!value &&
     (typeof value === 'object' || typeof value === 'function') &&
     typeof (value as { then?: unknown }).then === 'function';
+};
+
+export const clearFileViewerRenderSurface = (container?: HTMLElement | null) => {
+  if (!container) {
+    return;
+  }
+
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+};
+
+export const createFileViewerRenderTarget = (
+  container: HTMLElement,
+  options: CreateFileViewerRenderTargetOptions = {}
+) => {
+  const target = container.ownerDocument.createElement('div');
+  target.className = options.className || DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS;
+  container.appendChild(target);
+  return target;
+};
+
+export const removeFileViewerRenderTarget = (
+  container: HTMLElement,
+  target: HTMLElement
+) => {
+  if (target.parentNode !== container) {
+    return false;
+  }
+
+  container.removeChild(target);
+  return true;
 };
 
 export const createFileRenderHandlerRendererSession = <Rendered = unknown>(

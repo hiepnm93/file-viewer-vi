@@ -1,13 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
+import { parseHTML } from 'linkedom';
 import {
+  DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
   WorkerRefImpl,
+  clearFileViewerRenderSurface,
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderTarget,
   createFileViewerRendererDispatcher,
   disposeFileViewerRendered,
   disposeFileViewerRendererSession,
   normalizeSource,
+  removeFileViewerRenderTarget,
   renderFileViewerHandler,
   refWorker,
   type FileRenderContext,
@@ -157,6 +162,24 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(session.rendered).toBe(rendered);
     await session.destroy?.();
     expect(unmount).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates and clears framework-neutral render surface targets', () => {
+    const { document } = parseHTML('<main id="root"><span>old</span></main>');
+    const root = document.getElementById('root') as HTMLElement;
+
+    clearFileViewerRenderSurface(root);
+    expect(root.childElementCount).toBe(0);
+
+    const target = createFileViewerRenderTarget(root);
+    expect(target.className).toBe(DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS);
+    expect(root.firstElementChild).toBe(target);
+
+    const customTarget = createFileViewerRenderTarget(root, { className: 'custom-render' });
+    expect(customTarget.className).toBe('custom-render');
+    expect(root.childElementCount).toBe(2);
+    expect(removeFileViewerRenderTarget(root, customTarget)).toBe(true);
+    expect(removeFileViewerRenderTarget(root, customTarget)).toBe(false);
   });
 
   it('safely disposes renderer sessions and reports teardown errors', async () => {

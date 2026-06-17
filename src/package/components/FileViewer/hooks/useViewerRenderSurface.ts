@@ -1,7 +1,10 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
+  clearFileViewerRenderSurface,
+  createFileViewerRenderTarget,
   disposeFileViewerRendererSession,
   getExtension,
+  removeFileViewerRenderTarget,
   waitForFileViewerNextPaint
 } from '@file-viewer/core'
 import type {
@@ -84,11 +87,7 @@ export const useViewerRenderSurface = ({
       clearZoomProvider()
 
       const out = output.value
-      if (out) {
-        while (out.firstChild) {
-          out.removeChild(out.firstChild)
-        }
-      }
+      clearFileViewerRenderSurface(out)
     }
 
     notifyActiveUnloadComplete(context, reason)
@@ -116,17 +115,13 @@ export const useViewerRenderSurface = ({
 
     clearRenderedContent('replace')
 
-    const child = document.createElement('div')
-    child.className = 'file-render'
-    out.appendChild(child)
+    const child = createFileViewerRenderTarget(out)
     startZoomObserver()
     await nextTick()
     await waitForFileViewerNextPaint()
 
     if (!isCurrentRequest(version)) {
-      if (child.parentNode === out) {
-        out.removeChild(child)
-      }
+      removeFileViewerRenderTarget(out, child)
       return undefined
     }
 
@@ -145,18 +140,14 @@ export const useViewerRenderSurface = ({
       })
       if (!isCurrentRequest(version)) {
         destroyRenderSession(session)
-        if (child.parentNode === out) {
-          out.removeChild(child)
-        }
+        removeFileViewerRenderTarget(out, child)
         return undefined
       }
       void refreshDocumentIndex()
       refreshZoomProvider()
       return session
     } catch (nextError) {
-      if (child.parentNode === out) {
-        out.removeChild(child)
-      }
+      removeFileViewerRenderTarget(out, child)
       throw nextError
     }
   }
