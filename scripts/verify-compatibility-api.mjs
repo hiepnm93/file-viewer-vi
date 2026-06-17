@@ -27,6 +27,51 @@ const webFacadeExports = [
   'toMessageBlob'
 ]
 
+const vue3ScopedTypeAliases = new Map([
+  ['AppWrapper', 'CoreFileViewerRenderedInstance'],
+  ['Rendered', 'CoreFileViewerRenderedInstance'],
+  ['FileRef', 'FileViewerFileRef'],
+  ['FileViewerWatermarkOptions', 'CoreFileViewerWatermarkOptions'],
+  ['FileViewerToolbarPosition', 'CoreFileViewerToolbarPosition'],
+  ['FileViewerToolbarOptions', 'CoreFileViewerToolbarOptions'],
+  ['FileViewerArchiveOptions', 'CoreFileViewerArchiveOptions'],
+  ['FileViewerPdfOptions', 'CoreFileViewerPdfOptions'],
+  ['FileViewerTypstOptions', 'CoreFileViewerTypstOptions'],
+  ['FileViewerCadRenderer', 'CoreFileViewerCadRenderer'],
+  ['FileViewerCadDwfLineWeightMode', 'CoreFileViewerCadDwfLineWeightMode'],
+  ['FileViewerCadOptions', 'CoreFileViewerCadOptions'],
+  ['FileViewerDocumentAnchor', 'CoreFileViewerDocumentAnchor'],
+  ['FileViewerDocumentChunk', 'CoreFileViewerDocumentChunk'],
+  ['FileViewerSearchOptions', 'CoreFileViewerSearchOptions'],
+  ['FileViewerSearchMatch', 'CoreFileViewerSearchMatch'],
+  ['FileViewerSearchState', 'CoreFileViewerSearchState'],
+  ['FileViewerSearchProvider', 'CoreFileViewerSearchProvider'],
+  ['FileViewerZoomState', 'CoreFileViewerZoomState'],
+  ['FileViewerZoomProvider', 'CoreFileViewerZoomProvider'],
+  ['FileViewerAiOptions', 'CoreFileViewerAiOptions'],
+  ['FileViewerThemeMode', 'CoreFileViewerThemeMode'],
+  ['FileViewerSourceType', 'CoreFileViewerSourceKind'],
+  ['FileViewerLifecyclePhase', 'CoreFileViewerLifecyclePhase'],
+  ['FileViewerLifecycleContext', 'CoreFileViewerLifecycleContext'],
+  ['FileViewerLifecycleHooks', 'CoreFileViewerLifecycleHooks'],
+  ['FileViewerOperationType', 'CoreFileViewerOperationType'],
+  ['FileViewerOperationAvailability', 'CoreFileViewerOperationAvailability'],
+  ['FileViewerOperationContext', 'CoreFileViewerOperationContext'],
+  ['FileViewerBeforeOperation', 'CoreFileViewerBeforeOperation'],
+  ['FileViewerProps', 'CoreFileViewerComponentProps'],
+  ['FileViewerEventMap', 'CoreFileViewerComponentEventMap'],
+  ['FileViewerEmits', 'CoreFileViewerComponentEmits'],
+  ['FileViewerExpose', 'CoreFileViewerPublicApi'],
+  ['FileViewerOptions', 'CoreFileViewerOptions'],
+  ['FileViewerDocxOptions', 'CoreFileViewerDocxOptions'],
+  ['FileRenderExportMode', 'CoreFileRenderExportMode'],
+  ['FileRenderExportOptions', 'CoreFileRenderExportOptions'],
+  ['FileRenderExportAdapter', 'CoreFileRenderExportAdapter'],
+  ['FileRenderContext', 'CoreFileRenderContext'],
+  ['FileHandler', 'FileRenderHandler<Rendered, HTMLDivElement>'],
+  ['FileHandlerComposite', 'FileRenderHandlerComposite<Rendered, HTMLDivElement>']
+])
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
@@ -58,6 +103,20 @@ function assertNotImportsFrom(source, packageName, label) {
     !source.includes(`from '${packageName}'`) && !source.includes(`from "${packageName}"`),
     `${label} must not import from ${packageName}`
   )
+}
+
+function normalizeTypeExpression(expression) {
+  return expression.replace(/\s+/g, ' ').trim()
+}
+
+function collectExportedTypeAliases(source) {
+  const aliases = new Map()
+  const aliasPattern = /^export\s+type\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);/gm
+  let match
+  while ((match = aliasPattern.exec(source))) {
+    aliases.set(match[1], normalizeTypeExpression(match[2]))
+  }
+  return aliases
 }
 
 async function readSource(entry, relativePath) {
@@ -142,9 +201,29 @@ async function verifyVue3ScopedCompatibility() {
     `${entry.packageName} type facade must not contain runtime imports`
   )
   assert(
-    /export\s+type\s+FileViewerEmits\s*=\s*CoreFileViewerComponentEmits/.test(typeFacadeSource),
-    `${entry.packageName} FileViewerEmits must be a core alias`
+    !/^export\s+(interface|const|class|function|enum)\b/m.test(typeFacadeSource),
+    `${entry.packageName} type facade must only export type aliases`
   )
+
+  const exportedAliases = collectExportedTypeAliases(typeFacadeSource)
+  assert(
+    exportedAliases.size === vue3ScopedTypeAliases.size,
+    `${entry.packageName} type facade exported ${exportedAliases.size} aliases; expected ${vue3ScopedTypeAliases.size}`
+  )
+  for (const [aliasName, expectedExpression] of vue3ScopedTypeAliases) {
+    const actualExpression = exportedAliases.get(aliasName)
+    assert(actualExpression, `${entry.packageName} type facade must export ${aliasName}`)
+    assert(
+      actualExpression === expectedExpression,
+      `${entry.packageName} ${aliasName} must alias ${expectedExpression}, got ${actualExpression}`
+    )
+  }
+  for (const aliasName of exportedAliases.keys()) {
+    assert(
+      vue3ScopedTypeAliases.has(aliasName),
+      `${entry.packageName} type facade must not export unexpected alias ${aliasName}`
+    )
+  }
 }
 
 async function verifyVue3UnscopedCompatibility() {
