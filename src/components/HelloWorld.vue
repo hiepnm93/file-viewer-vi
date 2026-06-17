@@ -5,6 +5,7 @@ import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
 import { listenForFile } from '@/components/utils'
 import type {
   FileRef,
+  FileViewerExpose,
   FileViewerOperationAvailability,
   FileViewerOptions,
   FileViewerSearchState,
@@ -37,21 +38,6 @@ const viewerSearchState = ref<FileViewerSearchState>({
 })
 
 type ViewerAction = 'download' | 'print' | 'exportHtml' | 'zoomIn' | 'zoomOut' | 'resetZoom'
-
-type FileViewerExpose = {
-  downloadOriginalFile: () => Promise<void>
-  printRenderedHtml: () => Promise<void>
-  exportRenderedHtml: () => Promise<void>
-  zoomIn: () => Promise<FileViewerZoomState>
-  zoomOut: () => Promise<FileViewerZoomState>
-  resetZoom: () => Promise<FileViewerZoomState>
-  getZoomState: () => FileViewerZoomState
-  getOperationAvailability: () => FileViewerOperationAvailability
-  searchDocument: (query: string) => Promise<FileViewerSearchState>
-  clearDocumentSearch: () => Promise<FileViewerSearchState>
-  nextSearchResult: () => Promise<FileViewerSearchState>
-  previousSearchResult: () => Promise<FileViewerSearchState>
-}
 
 const fileViewerRef = ref<FileViewerExpose | null>(null)
 const viewerAvailability = ref<FileViewerOperationAvailability>({

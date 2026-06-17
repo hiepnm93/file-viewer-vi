@@ -19,6 +19,7 @@ import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
 import { useViewerErrorState, useViewerPresentation } from './hooks/useViewerPresentation'
+import { useViewerPublicApi } from './hooks/useViewerPublicApi'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
@@ -282,7 +283,7 @@ const {
   watermarkInlineStyle
 })
 
-defineExpose({
+const publicApi = useViewerPublicApi({
   downloadOriginalFile,
   printRenderedHtml,
   exportRenderedHtml,
@@ -290,7 +291,7 @@ defineExpose({
   zoomOut,
   resetZoom,
   getZoomState,
-  getOperationAvailability: () => ({ ...operationAvailability.value }),
+  operationAvailability,
   getScrollContainer,
   searchDocument,
   clearDocumentSearch,
@@ -302,6 +303,8 @@ defineExpose({
   scrollToLine,
   getDocumentTextChunks
 })
+
+defineExpose(publicApi)
 
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()

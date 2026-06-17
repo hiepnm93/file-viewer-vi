@@ -69,6 +69,7 @@ export type {
   FileViewerBeforeOperation,
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk,
+  FileViewerExpose,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
   FileViewerLifecyclePhase,

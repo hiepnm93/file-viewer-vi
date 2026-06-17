@@ -5,8 +5,7 @@ import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { FileViewer } from '@/package'
 import type {
   FileRef,
-  FileViewerDocumentAnchor,
-  FileViewerDocumentChunk,
+  FileViewerExpose,
   FileViewerLifecycleContext,
   FileViewerOptions,
   FileViewerSearchState
@@ -31,17 +30,7 @@ interface ComparePanelState {
   status: string;
 }
 
-type FileViewerPublicApi = ComponentPublicInstance & {
-  getScrollContainer: () => HTMLElement | null;
-  searchDocument: (query: string) => Promise<FileViewerSearchState>;
-  clearDocumentSearch: () => Promise<FileViewerSearchState>;
-  nextSearchResult: () => Promise<FileViewerSearchState>;
-  previousSearchResult: () => Promise<FileViewerSearchState>;
-  getSearchState: () => FileViewerSearchState;
-  collectDocumentAnchors: () => Promise<FileViewerDocumentAnchor[]>;
-  scrollToLine: (line: number) => Promise<boolean>;
-  getDocumentTextChunks: () => FileViewerDocumentChunk[];
-}
+type FileViewerPublicApi = ComponentPublicInstance & FileViewerExpose
 
 const params = new URLSearchParams(window.location.search)
 

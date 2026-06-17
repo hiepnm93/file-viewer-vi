@@ -108,6 +108,7 @@
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
   - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
+  - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
     - [x] 导出 HTML 文档模板迁入 `@file-viewer/core`，Vue3 旧路径保留 re-export。
     - [x] 页面尺寸、`@page`、打印页样式工具迁入 `@file-viewer/core`。

@@ -427,6 +427,33 @@ export type FileViewerBeforeOperation = (
 ) => boolean | void | Promise<boolean | void>;
 
 /**
+ * `<file-viewer>` 组件实例对外暴露的统一方法集。
+ *
+ * Vue 模板 ref、文档比对页面、纯 JS iframe 桥接和后续 React / Svelte wrapper
+ * 都应围绕这组能力保持同名同语义，避免不同生态出现 API 漂移。
+ */
+export interface FileViewerExpose {
+  downloadOriginalFile: () => Promise<void>;
+  printRenderedHtml: () => Promise<void>;
+  exportRenderedHtml: () => Promise<void>;
+  zoomIn: () => Promise<FileViewerZoomState>;
+  zoomOut: () => Promise<FileViewerZoomState>;
+  resetZoom: () => Promise<FileViewerZoomState>;
+  getZoomState: () => FileViewerZoomState;
+  getOperationAvailability: () => FileViewerOperationAvailability;
+  getScrollContainer: () => HTMLElement | null;
+  searchDocument: (query: string) => Promise<FileViewerSearchState>;
+  clearDocumentSearch: () => Promise<FileViewerSearchState>;
+  nextSearchResult: () => Promise<FileViewerSearchState>;
+  previousSearchResult: () => Promise<FileViewerSearchState>;
+  getSearchState: () => FileViewerSearchState;
+  collectDocumentAnchors: () => Promise<FileViewerDocumentAnchor[]>;
+  scrollToAnchor: (anchor: FileViewerDocumentAnchor | string) => Promise<boolean>;
+  scrollToLine: (line: number) => Promise<boolean>;
+  getDocumentTextChunks: () => FileViewerDocumentChunk[];
+}
+
+/**
  * 预览器通用配置。
  */
 export interface FileViewerOptions {
