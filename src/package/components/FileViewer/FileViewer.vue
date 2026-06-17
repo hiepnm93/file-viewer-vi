@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { ref } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
   createFileViewerRequestController,
@@ -11,6 +11,7 @@ import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
 import { useViewerErrorState, useViewerPresentation } from './hooks/useViewerPresentation'
+import { useViewerPreviewLifecycle } from './hooks/useViewerPreviewLifecycle'
 import { useViewerPublicApi } from './hooks/useViewerPublicApi'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
@@ -266,14 +267,13 @@ const publicApi = useViewerPublicApi({
 
 defineExpose(publicApi)
 
-watch([() => props.file, () => props.url], () => {
-  void refreshPreview()
-}, { immediate: true })
-
-onBeforeUnmount(() => {
-  cancelPreview('component-unmount')
-  resetLoading()
-  stopZoomObserver()
+useViewerPreviewLifecycle({
+  getFile: () => props.file,
+  getUrl: () => props.url,
+  refreshPreview,
+  cancelPreview,
+  resetLoading,
+  stopZoomObserver
 })
 </script>
 

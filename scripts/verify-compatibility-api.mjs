@@ -359,6 +359,19 @@ async function verifyVue3ScopedCompatibility() {
     `${entry.packageName} must keep Vue lifecycle wrappers beside their owning component/renderer instead of reintroducing src/package/use`
   )
 
+  const vueFileViewerSource = await readSource(entry, 'src/package/components/FileViewer/FileViewer.vue')
+  const vueFileViewerLabel = `${entry.packageName} src/package/components/FileViewer/FileViewer.vue`
+  assertTokens(vueFileViewerSource, ['useViewerPreviewLifecycle'], vueFileViewerLabel)
+  for (const forbiddenToken of [
+    'watch([() => props.file',
+    'onBeforeUnmount(()'
+  ]) {
+    assert(
+      !vueFileViewerSource.includes(forbiddenToken),
+      `${vueFileViewerLabel} must delegate preview source watch and unmount cleanup to useViewerPreviewLifecycle instead of using ${forbiddenToken}`
+    )
+  }
+
   const vueLoadingHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useLoading.ts')
   const vueLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useLoading.ts`
   assertImportsFrom(vueLoadingHookSource, '@file-viewer/core', vueLoadingHookLabel)
