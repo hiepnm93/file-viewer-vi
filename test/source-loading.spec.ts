@@ -5,6 +5,7 @@ import {
   applyFileViewerEmptyPreviewState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
+  applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
   createFileViewerEmptyPreviewState,
   createFileViewerReadPreviewState,
@@ -163,6 +164,28 @@ describe('remote source loading helpers', () => {
     expect(target.sourceUrl).toBeNull()
     applyFileViewerPreviewSourceUrlState(target, '/example/pdf.pdf')
     expect(target.sourceUrl).toBe('/example/pdf.pdf')
+  })
+
+  it('applies render readiness state without framework-specific refs', () => {
+    const target = {
+      renderedReady: false,
+      progressiveReady: false
+    }
+
+    expect(applyFileViewerRenderReadinessState(target, { renderedReady: true })).toBe(target)
+    expect(target).toEqual({
+      renderedReady: true,
+      progressiveReady: false
+    })
+
+    applyFileViewerRenderReadinessState(target, {
+      renderedReady: false,
+      progressiveReady: true
+    })
+    expect(target).toEqual({
+      renderedReady: false,
+      progressiveReady: true
+    })
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {

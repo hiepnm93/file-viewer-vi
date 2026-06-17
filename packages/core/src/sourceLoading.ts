@@ -75,6 +75,13 @@ export type MutableFileViewerReadPreviewState = Pick<
 
 export type MutableFileViewerPreviewSourceUrlState = Pick<MutableFileViewerPreviewState, 'sourceUrl'>;
 
+export type FileViewerRenderReadinessState = Pick<
+  MutableFileViewerPreviewState,
+  'renderedReady' | 'progressiveReady'
+>;
+
+export type MutableFileViewerRenderReadinessState = FileViewerRenderReadinessState;
+
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
   let activeAbortController: AbortController | null = null;
@@ -216,6 +223,19 @@ export const applyFileViewerPreviewSourceUrlState = <Target extends MutableFileV
   sourceUrl?: string | null
 ) => {
   target.sourceUrl = normalizeFileViewerSourceUrl(sourceUrl);
+  return target;
+};
+
+export const applyFileViewerRenderReadinessState = <Target extends MutableFileViewerRenderReadinessState>(
+  target: Target,
+  state: Partial<FileViewerRenderReadinessState>
+) => {
+  if (typeof state.renderedReady === 'boolean') {
+    target.renderedReady = state.renderedReady;
+  }
+  if (typeof state.progressiveReady === 'boolean') {
+    target.progressiveReady = state.progressiveReady;
+  }
   return target;
 };
 

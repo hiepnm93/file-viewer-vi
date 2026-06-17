@@ -453,6 +453,7 @@ async function verifyVue3ScopedCompatibility() {
     'applyFileViewerEmptyPreviewState',
     'applyFileViewerPreviewSourceUrlState',
     'applyFileViewerReadPreviewState',
+    'applyFileViewerRenderReadinessState',
     'applyFileViewerPreviewRequestResetState',
     'createFileViewerReadPreviewState',
     'createFileViewerStreamingPdfPlaceholderFile',
@@ -482,7 +483,8 @@ async function verifyVue3ScopedCompatibility() {
     'currentFile.value = file',
     'currentBuffer.value = arrayBuffer',
     'currentSourceUrl.value = normalizeFileViewerSourceUrl',
-    'currentSourceUrl.value = url'
+    'currentSourceUrl.value = url',
+    'renderedReady.value = true'
   ]) {
     assert(
       !vueSourceLoadingHookSource.includes(forbiddenToken),
@@ -597,6 +599,7 @@ async function verifyVue3ScopedCompatibility() {
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
+    'applyFileViewerRenderReadinessState',
     'clearFileViewerRenderSurface',
     'createFileViewerRenderTarget',
     'disposeFileViewerRendererSession',
@@ -613,7 +616,10 @@ async function verifyVue3ScopedCompatibility() {
     'while (out.firstChild)',
     'out.removeChild',
     "document.createElement('div')",
-    "child.className = 'file-render'"
+    "child.className = 'file-render'",
+    'renderedReady.value = false',
+    'progressiveReady.value = false',
+    'progressiveReady.value = true'
   ]) {
     assert(
       !vueRenderSurfaceHookSource.includes(forbiddenToken),

@@ -1,5 +1,6 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
+  applyFileViewerRenderReadinessState,
   clearFileViewerRenderSurface,
   createFileViewerRenderTarget,
   disposeFileViewerRendererSession,
@@ -57,6 +58,20 @@ export const useViewerRenderSurface = ({
   const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
   const renderedReady = ref(false)
   const progressiveReady = ref(false)
+  const renderReadinessTarget = {
+    get renderedReady(): boolean {
+      return renderedReady.value
+    },
+    set renderedReady(value: boolean) {
+      renderedReady.value = value
+    },
+    get progressiveReady(): boolean {
+      return progressiveReady.value
+    },
+    set progressiveReady(value: boolean) {
+      progressiveReady.value = value
+    }
+  }
   let activeRenderSession: FileViewerVueRenderSession | null = null
 
   const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
@@ -80,8 +95,10 @@ export const useViewerRenderSurface = ({
       activeRenderSession = null
       clearActiveDocumentContext()
       activeExportAdapter.value = null
-      renderedReady.value = false
-      progressiveReady.value = false
+      applyFileViewerRenderReadinessState(renderReadinessTarget, {
+        renderedReady: false,
+        progressiveReady: false
+      })
       clearDocumentState()
       stopZoomObserver()
       clearZoomProvider()
@@ -134,7 +151,7 @@ export const useViewerRenderSurface = ({
         registerExportAdapter,
         onProgressiveRender: () => {
           if (isCurrentRequest(version)) {
-            progressiveReady.value = true
+            applyFileViewerRenderReadinessState(renderReadinessTarget, { progressiveReady: true })
           }
         }
       })

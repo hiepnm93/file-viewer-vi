@@ -6,6 +6,7 @@ import {
   applyFileViewerEmptyPreviewState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
+  applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
@@ -179,7 +180,7 @@ export const useViewerSourceLoading = ({
       return
     }
     setActiveRenderSession(session || null)
-    renderedReady.value = true
+    applyFileViewerRenderReadinessState(previewStateTarget, { renderedReady: true })
     const context = buildLifecycleContext({
       phase: 'load-complete',
       version,
@@ -204,7 +205,7 @@ export const useViewerSourceLoading = ({
         return
       }
       setActiveRenderSession(session || null)
-      renderedReady.value = true
+      applyFileViewerRenderReadinessState(previewStateTarget, { renderedReady: true })
       const context = buildLifecycleContext({
         phase: 'load-complete',
         version,
