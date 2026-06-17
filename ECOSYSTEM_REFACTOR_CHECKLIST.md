@@ -57,25 +57,25 @@
 ## Phase 1: 设计纯 TypeScript core 边界
 
 - [ ] 定义 `@file-viewer/core` 的公开 API:
-  - [ ] `createViewer(container, options)`
-  - [ ] `viewer.load(source)`
-  - [ ] `viewer.destroy()`
-  - [ ] `viewer.updateOptions(options)`
-  - [ ] `viewer.getCapabilities()`
+  - [x] `createViewer(container, options)`
+  - [x] `viewer.load(source)`
+  - [x] `viewer.destroy()`
+  - [x] `viewer.updateOptions(options)`
+  - [x] `viewer.getCapabilities()`
   - [ ] `viewer.zoomIn()/zoomOut()/resetZoom()`
   - [ ] `viewer.search()/nextSearchResult()/previousSearchResult()/clearSearch()`
   - [ ] `viewer.print()/download()/exportHtml()`
   - [ ] `viewer.collectDocumentAnchors()/getDocumentTextChunks()`
-- [ ] 定义 framework-neutral 类型:
-  - [ ] `FileViewerOptions`
-  - [ ] `FileViewerSource`
-  - [ ] `ViewerLifecycleContext`
-  - [ ] `ViewerOperationContext`
-  - [ ] `ViewerCapabilityState`
-  - [ ] `RendererPlugin`
-  - [ ] `RendererSession`
-  - [ ] `RenderSurface`
-- [ ] 定义 renderer registry，所有格式只通过 core 注册与派发。
+- [x] 定义 framework-neutral 类型:
+  - [x] `FileViewerOptions`
+  - [x] `FileViewerSource`
+  - [x] `ViewerLifecycleContext`
+  - [x] `ViewerOperationContext`
+  - [x] `ViewerCapabilityState`
+  - [x] `RendererPlugin`
+  - [x] `RendererSession`
+  - [x] `RenderSurface`
+- [x] 定义 renderer registry，所有格式只通过 core 注册与派发。
 - [ ] 定义统一 options 序列化协议，保证 iframe / pure JS / wrapper 行为一致。
 - [ ] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
 - [ ] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
@@ -208,12 +208,12 @@
 ## Phase 8: 验证与发布门禁
 
 - [ ] core 单测覆盖:
-  - [ ] 类型识别
-  - [ ] source loading
-  - [ ] lifecycle hooks
+  - [x] 类型识别
+  - [x] source loading
+  - [x] lifecycle hooks
   - [ ] beforeOperation
-  - [ ] renderer registry
-  - [ ] capability state
+  - [x] renderer registry
+  - [x] capability state
   - [ ] search/location/zoom provider
 - [ ] wrapper smoke 覆盖:
   - [ ] Vue 3
@@ -231,11 +231,11 @@
 
 ## 第一批可立即执行的代码任务
 
-- [ ] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
+- [x] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
 - [ ] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
 - [ ] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
-- [ ] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
+- [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
 - [ ] 新增 wrapper README 模板，统一中英文结构和格式矩阵。
 - [ ] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。
 

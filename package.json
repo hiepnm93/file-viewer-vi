@@ -43,6 +43,7 @@
     "prebuild-only": "node scripts/patch-msdoc-viewer.mjs && node scripts/copy-cad-wasm.mjs",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
+    "type-check:core": "pnpm --filter @file-viewer/core type-check",
     "type-check:adapters": "pnpm --filter @flyfish-group/file-viewer-web type-check && pnpm --filter @flyfish-group/file-viewer-react type-check",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",

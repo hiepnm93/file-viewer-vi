@@ -1,0 +1,51 @@
+{
+  "name": "@file-viewer/core",
+  "version": "1.0.26",
+  "private": false,
+  "type": "module",
+  "description": "Framework-neutral TypeScript core for Flyfish File Viewer",
+  "keywords": [
+    "file-viewer",
+    "document-preview",
+    "typescript",
+    "core"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": {
+    "name": "Wangyu",
+    "email": "wybaby168@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://git.flyfish.dev/flyfish-group/file-viewer.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://doc.flyfish.dev/",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "type-check": "tsc -b tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "license": "Apache-2.0"
+}
