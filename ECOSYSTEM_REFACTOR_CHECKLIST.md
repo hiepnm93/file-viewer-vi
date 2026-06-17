@@ -49,7 +49,8 @@
 ## Phase 0: 基线冻结与验收网
 
 - [ ] 给当前 `v3` 最新状态创建迁移基线 tag，记录支持矩阵和关键截图。
-- [ ] 把 `pnpm type-check`、`pnpm build-only`、`pnpm docs:build` 固化为每轮迁移必跑 gate。
+- [x] 把 `pnpm type-check`、`pnpm build-only`、`pnpm docs:build` 固化为每轮迁移必跑 gate。
+  - [x] 新增 `pnpm verify:migration-gates`，统一执行类型检查、主 Demo 构建、文档站构建、wrapper 源包校验和生态 npm manifest 列表校验。
 - [ ] 补充统一 smoke 清单，至少覆盖 PDF、DOCX、XLSX、PPTX、OFD、CAD、DWF/DWFX、EPUB、压缩包、邮件、Markdown、代码、图片、音视频、地理数据、数据资产。
 - [ ] 为 wrapper 迁移准备对比用例: Vue3 当前组件、iframe 当前组件、React 当前适配层、纯 JS 当前适配层。
 - [ ] 明确“体验完全相同”的证据: DOM 快照、关键截图、事件回调、能力按钮显隐、options 行为、打印/导出结果。
