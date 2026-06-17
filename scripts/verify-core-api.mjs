@@ -31,6 +31,7 @@ const requiredValueExports = [
   'createFileViewerFrameControllerHandle',
   'mountFileViewerFrame',
   'resolveFileViewerOperationAvailability',
+  'cloneFileViewerOperationAvailability',
   'resolveVisibleFileViewerToolbar',
   'createFileViewerLifecycleStateController',
   'postFileViewerOperationAvailabilityChange',

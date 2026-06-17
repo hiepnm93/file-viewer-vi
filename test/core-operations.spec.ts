@@ -3,6 +3,7 @@ import { parseHTML } from 'linkedom';
 import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
+  cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
@@ -358,6 +359,33 @@ describe('@file-viewer/core operation helpers', () => {
     });
     expect(resolveFileViewerToolbarPosition(undefined, 'pdf')).toBe('bottom-right');
     expect(resolveFileViewerToolbarPosition({ toolbar: { position: 'top' } }, 'pdf')).toBe('top');
+  });
+
+  it('clones operation availability snapshots without sharing mutable references', () => {
+    const availability = resolveFileViewerOperationAvailability({
+      extension: 'pdf',
+      hasOriginalSource: true,
+      renderedReady: true,
+      adapter: { toHtml: () => '<main>pdf</main>' },
+      zoomState: {
+        scale: 1.25,
+        label: '125%',
+        canZoomIn: false,
+        canZoomOut: true,
+        canReset: true,
+      },
+    });
+
+    const snapshot = cloneFileViewerOperationAvailability(availability);
+
+    expect(snapshot).toEqual(availability);
+    expect(snapshot).not.toBe(availability);
+
+    snapshot.download = false;
+    snapshot.zoomReset = false;
+
+    expect(availability.download).toBe(true);
+    expect(availability.zoomReset).toBe(true);
   });
 
   it('reports operation guard errors and cancels the operation', async () => {

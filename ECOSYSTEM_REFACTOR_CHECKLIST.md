@@ -136,6 +136,7 @@
   - [x] 缩放变更 emitter、搜索 provider 注册和缩放 provider 注册进入 `@file-viewer/core`，Vue3 vendor 不再通过 `src/package/use` 门面获取这些 framework-neutral 能力。
   - [x] 删除 `src/package/use/index.ts` 聚合入口，Vue3 内部只允许显式导入具体 hook 模块，避免 `use` 门面继续承载隐式架构边界。
   - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
+  - [x] 对外实例 API 的 operation availability 快照克隆迁入 `@file-viewer/core`，Vue hook 只保留公开方法组合。
   - [x] Vue3 props / emits 契约沉淀为 `FileViewerProps` / `FileViewerEmits`，入口组件复用公共类型。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
     - [x] 导出 HTML 文档模板迁入 `@file-viewer/core`，Vue3 旧路径保留 re-export。

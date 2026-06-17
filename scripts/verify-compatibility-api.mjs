@@ -525,6 +525,21 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vuePublicApiHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerPublicApi.ts')
+  const vuePublicApiHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPublicApi.ts`
+  assertImportsFrom(vuePublicApiHookSource, '@file-viewer/core', vuePublicApiHookLabel)
+  assertTokens(vuePublicApiHookSource, [
+    'cloneFileViewerOperationAvailability'
+  ], vuePublicApiHookLabel)
+  for (const forbiddenToken of [
+    '{ ...operationAvailability.value }'
+  ]) {
+    assert(
+      !vuePublicApiHookSource.includes(forbiddenToken),
+      `${vuePublicApiHookLabel} must delegate public operation availability snapshots to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueRenderSurfaceHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRenderSurface.ts')
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)

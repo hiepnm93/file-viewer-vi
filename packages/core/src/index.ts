@@ -137,6 +137,7 @@ export {
   FILE_VIEWER_OPERATION_LABELS,
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
+  cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,

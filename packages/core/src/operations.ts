@@ -454,6 +454,18 @@ export const resolveFileViewerOperationAvailability = ({
   };
 };
 
+export const cloneFileViewerOperationAvailability = (
+  availability: FileViewerOperationAvailability
+): FileViewerOperationAvailability => ({
+  download: availability.download,
+  print: availability.print,
+  exportHtml: availability.exportHtml,
+  zoom: availability.zoom,
+  zoomIn: availability.zoomIn,
+  zoomOut: availability.zoomOut,
+  zoomReset: availability.zoomReset,
+});
+
 export const resolveVisibleFileViewerToolbar = (
   toolbar: FileViewerToolbarOptions,
   availability: FileViewerOperationAvailability
