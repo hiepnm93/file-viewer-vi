@@ -109,9 +109,13 @@ describe('@file-viewer/core worker and render contracts', () => {
 
   it('adapts legacy render handlers into renderer loaders', async () => {
     const unmount = vi.fn();
+    const onProgressiveRender = vi.fn();
+    const registerExportAdapter = vi.fn();
     const handler: FileRenderHandler<{ unmount: () => void }, HTMLDivElement> = async (_buffer, target, type, context) => {
+      context?.onProgressiveRender?.();
       target.dataset.renderedType = type || '';
       target.dataset.filename = context?.filename || '';
+      target.dataset.streamUrl = context?.streamUrl || '';
       return { unmount };
     };
     const loader = createFileRenderHandlerLoader({ handler });
@@ -123,11 +127,18 @@ describe('@file-viewer/core worker and render contracts', () => {
       }),
       surface: { container: target },
       options: {},
-      registerExportAdapter: vi.fn(),
+      registerExportAdapter,
+      renderContext: {
+        filename: 'legacy.docx',
+        streamUrl: '/legacy-stream.docx',
+        onProgressiveRender,
+      },
     });
 
     expect(target.dataset.renderedType).toBe('docx');
-    expect(target.dataset.filename).toBe('demo.docx');
+    expect(target.dataset.filename).toBe('legacy.docx');
+    expect(target.dataset.streamUrl).toBe('/legacy-stream.docx');
+    expect(onProgressiveRender).toHaveBeenCalledTimes(1);
     await session.destroy?.();
     expect(unmount).toHaveBeenCalledTimes(1);
 

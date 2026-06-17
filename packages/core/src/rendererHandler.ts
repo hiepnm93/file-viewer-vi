@@ -85,12 +85,14 @@ export const buildFileRenderContextFromLoadContext = ({
   source,
   options,
   registerExportAdapter,
+  renderContext,
 }: RendererLoadContext): FileRenderContext => ({
   filename: source.filename,
   url: source.url,
   streamUrl: source.url,
   options,
   registerExportAdapter,
+  ...renderContext,
 });
 
 export const renderFileViewerHandler = async <

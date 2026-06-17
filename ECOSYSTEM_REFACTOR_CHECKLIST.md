@@ -122,6 +122,7 @@
   - [x] rendererId 到扩展名 handler 的派发器迁入 `@file-viewer/core`，Vue3 仅提供实际异步渲染 handler。
   - [x] FileRenderHandler 调用、legacy handler 到 RendererLoader 的适配和渲染实例销毁协议迁入 `@file-viewer/core`。
   - [x] Vue3 handler 列表可由 core 组合为带 `load()` 的 renderer registry，后续 wrapper 能复用同一桥接协议。
+  - [x] Vue3 实际渲染入口改为通过 core renderer registry `load()` 进入，并透传旧版 `FileRenderContext` 保持现有渲染行为。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT
   - [ ] Excel/表格

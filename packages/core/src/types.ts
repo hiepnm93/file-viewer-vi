@@ -392,6 +392,7 @@ export interface RendererLoadContext {
   options: FileViewerOptions;
   signal?: AbortSignal;
   registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
+  renderContext?: FileRenderContext;
 }
 
 export interface RendererSession {
