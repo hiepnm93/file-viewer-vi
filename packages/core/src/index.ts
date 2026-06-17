@@ -42,11 +42,13 @@ export {
 export {
   DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL,
   DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT,
+  DEFAULT_FILE_VIEWER_FRAME_TITLE,
   DEFAULT_FILE_VIEWER_PUBLIC_DIR,
   DEFAULT_FILE_VIEWER_URL,
   appendFileViewerFrameSearchParam,
   buildFileViewerFrameSrc,
   canUseFileViewerDom,
+  createFileViewerFrame,
   createFileViewerFrameFilePostController,
   createFileViewerFrameUrl,
   getFileViewerCurrentOrigin,
@@ -54,9 +56,11 @@ export {
   getFileViewerFrameSourceFilename,
   getFileViewerFrameUrl,
   isFileViewerAbsoluteUrl,
+  mountFileViewerFrame,
   normalizeFileViewerFrameUrl,
   postFileToFileViewerFrame,
   serializeFileViewerFrameUrl,
+  syncFileViewerFrame,
   toFileViewerFrameMessageBlob,
 } from './frame';
 export {
@@ -225,6 +229,8 @@ export type {
 } from './viewerOperations';
 export type {
   BuildFileViewerFrameSrcOptions,
+  CreateFileViewerFrameOptions,
+  FileViewerFrameController,
   FileViewerFrameFilePostController,
   FileViewerFrameFilePostControllerOptions,
   FileViewerFrameOptions,

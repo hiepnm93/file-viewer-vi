@@ -1,13 +1,95 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildFileViewerFrameSrc,
+  createFileViewerFrame,
   createFileViewerFrameFilePostController,
+  mountFileViewerFrame,
   getFileViewerFrameOrigin,
   getFileViewerFrameSourceFilename,
   getFileViewerFrameUrl,
   postFileToFileViewerFrame,
+  syncFileViewerFrame,
   toFileViewerFrameMessageBlob
 } from '../packages/core/src'
+
+const installFrameDom = () => {
+  const frameListeners = new Map<string, Set<(event?: unknown) => void>>()
+  const windowListeners = new Map<string, Set<(event: MessageEvent) => void>>()
+  const attributes = new Map<string, string>()
+  const contentWindow = {
+    postMessage: vi.fn()
+  }
+  const frame = {
+    className: '',
+    contentWindow,
+    src: '',
+    style: {},
+    title: '',
+    addEventListener: vi.fn((type: string, listener: (event?: unknown) => void) => {
+      const listeners = frameListeners.get(type) || new Set()
+      listeners.add(listener)
+      frameListeners.set(type, listeners)
+    }),
+    dispatchFrameEvent(type: string) {
+      frameListeners.get(type)?.forEach(listener => listener({ type }))
+    },
+    getAttribute: vi.fn((name: string) => attributes.get(name) || null),
+    remove: vi.fn(),
+    removeEventListener: vi.fn((type: string, listener: (event?: unknown) => void) => {
+      frameListeners.get(type)?.delete(listener)
+    }),
+    setAttribute: vi.fn((name: string, value: string) => {
+      attributes.set(name, value)
+      if (name === 'src') {
+        frame.src = value
+      }
+    })
+  } as unknown as HTMLIFrameElement & {
+    dispatchFrameEvent(type: string): void
+    style: Record<string, string>
+  }
+  const container = {
+    appendChild: vi.fn()
+  } as unknown as HTMLElement
+  const fakeWindow = {
+    location: {
+      href: 'https://host.example/app/',
+      origin: 'https://host.example'
+    },
+    addEventListener: vi.fn((type: string, listener: (event: MessageEvent) => void) => {
+      const listeners = windowListeners.get(type) || new Set()
+      listeners.add(listener)
+      windowListeners.set(type, listeners)
+    }),
+    dispatchMessage(data: unknown, source = contentWindow) {
+      windowListeners.get('message')?.forEach(listener => listener({
+        data,
+        source
+      } as MessageEvent))
+    },
+    removeEventListener: vi.fn((type: string, listener: (event: MessageEvent) => void) => {
+      windowListeners.get(type)?.delete(listener)
+    })
+  }
+  const fakeDocument = {
+    createElement: vi.fn(() => frame)
+  }
+
+  vi.stubGlobal('window', fakeWindow)
+  vi.stubGlobal('document', fakeDocument)
+
+  return {
+    container,
+    contentWindow,
+    fakeDocument,
+    fakeWindow,
+    frame
+  }
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('@file-viewer/core iframe frame helpers', () => {
   it('builds viewer iframe URLs with runtime options and cache keys', () => {
@@ -158,5 +240,56 @@ describe('@file-viewer/core iframe frame helpers', () => {
     controller.schedule()
     expect(postFile).not.toHaveBeenCalled()
     expect(setTimeout).not.toHaveBeenCalled()
+  })
+
+  it('creates, syncs and mounts iframe frames through the core DOM controller', () => {
+    const { container, fakeDocument, fakeWindow, frame } = installFrameDom()
+    const created = createFileViewerFrame({
+      className: 'viewer-frame',
+      defaultCacheKey: 'core',
+      style: { height: '80vh' },
+      url: '/demo.pdf'
+    })
+
+    expect(fakeDocument.createElement).toHaveBeenCalledWith('iframe')
+    expect(created).toBe(frame)
+    expect(frame.className).toBe('viewer-frame')
+    expect(frame.title).toBe('Flyfish Viewer 文件预览')
+    expect(frame.style.width).toBe('100%')
+    expect(frame.style.height).toBe('80vh')
+    expect(frame.getAttribute('src')).toContain('/file-viewer/index.html?')
+    expect(frame.getAttribute('src')).toContain('url=%2Fdemo.pdf')
+    expect(frame.getAttribute('src')).toContain('__flyfish_viewer_version=core')
+
+    const nextSrc = syncFileViewerFrame(frame, {
+      defaultCacheKey: 'core',
+      url: '/next.pdf'
+    })
+    expect(nextSrc).toContain('url=%2Fnext.pdf')
+    expect(frame.getAttribute('src')).toBe(nextSrc)
+
+    const onEvent = vi.fn()
+    const controller = mountFileViewerFrame(container, {
+      defaultCacheKey: 'core',
+      onEvent,
+      url: '/mounted.pdf'
+    })
+    expect(container.appendChild).toHaveBeenCalledWith(frame)
+    expect(controller.src).toContain('url=%2Fmounted.pdf')
+
+    fakeWindow.dispatchMessage({
+      type: 'flyfish-viewer:lifecycle',
+      event: 'load-start',
+      payload: null
+    })
+    expect(onEvent).toHaveBeenCalledWith(expect.objectContaining({
+      event: 'load-start',
+      type: 'flyfish-viewer:lifecycle'
+    }), expect.any(Object))
+
+    expect(controller.update({ url: '/updated.pdf' })).toContain('url=%2Fupdated.pdf')
+    controller.destroy()
+    expect(frame.remove).toHaveBeenCalled()
+    expect(fakeWindow.removeEventListener).toHaveBeenCalledWith('message', expect.any(Function))
   })
 })

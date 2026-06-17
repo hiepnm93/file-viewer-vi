@@ -2,7 +2,11 @@ import {
   setFileViewerOptionsSearchParam,
   type FileViewerSerializableOptions,
 } from './options';
-import { isFileViewerFrameEvent, type FileViewerFrameEventHandler } from './operations';
+import {
+  isFileViewerFrameEvent,
+  type FileViewerFrameEventHandler,
+  type FileViewerFrameEventPayload,
+} from './operations';
 import type { FileViewerFileRef } from './types';
 
 export type FileViewerFrameParamValue = string | number | boolean | null | undefined;
@@ -133,8 +137,37 @@ export interface FileViewerFrameFilePostController {
   cancel(): void;
 }
 
+export interface CreateFileViewerFrameOptions extends BuildFileViewerFrameSrcOptions {
+  /**
+   * iframe load 后是否立即尝试投递本地文件。默认开启。
+   */
+  autoPostFile?: boolean;
+  /**
+   * 透传给 iframe 的 className。
+   */
+  className?: string;
+  /**
+   * 合并到 iframe 默认样式上的行内样式。
+   */
+  style?: Partial<CSSStyleDeclaration>;
+  /**
+   * iframe title，便于无障碍和浏览器工具识别。
+   */
+  title?: string;
+}
+
+export interface FileViewerFrameController {
+  readonly frame: HTMLIFrameElement;
+  readonly src: string;
+  destroy(): void;
+  postFile(): boolean;
+  reload(): void;
+  update(options: FileViewerFrameOptions): string;
+}
+
 export const DEFAULT_FILE_VIEWER_PUBLIC_DIR = '/file-viewer';
 export const DEFAULT_FILE_VIEWER_URL = `${DEFAULT_FILE_VIEWER_PUBLIC_DIR}/index.html`;
+export const DEFAULT_FILE_VIEWER_FRAME_TITLE = 'Flyfish Viewer 文件预览';
 export const DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT = 8;
 export const DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL = 120;
 
@@ -289,6 +322,12 @@ export const postFileToFileViewerFrame = (
   return true;
 };
 
+const isSerializableFileViewerFrameEvent = (
+  value: unknown
+): value is FileViewerFrameEventPayload<Record<string, unknown> | null> => {
+  return isFileViewerFrameEvent(value);
+};
+
 export const createFileViewerFrameFilePostController = (
   controllerOptions: FileViewerFrameFilePostControllerOptions
 ): FileViewerFrameFilePostController => {
@@ -370,5 +409,104 @@ export const createFileViewerFrameFilePostController = (
       cancel();
     },
     cancel,
+  };
+};
+
+export const syncFileViewerFrame = (
+  frame: HTMLIFrameElement | null | undefined,
+  options: BuildFileViewerFrameSrcOptions
+) => {
+  if (!frame || !canUseFileViewerDom()) {
+    return '';
+  }
+  const nextSrc = buildFileViewerFrameSrc(options);
+  if (frame.getAttribute('src') !== nextSrc) {
+    frame.setAttribute('src', nextSrc);
+  }
+  return nextSrc;
+};
+
+export const createFileViewerFrame = (options: CreateFileViewerFrameOptions = {}) => {
+  if (!canUseFileViewerDom()) {
+    throw new Error('createFileViewerFrame 只能在浏览器环境中使用');
+  }
+
+  const frame = document.createElement('iframe');
+  frame.setAttribute('src', buildFileViewerFrameSrc(options));
+  frame.title = options.title || DEFAULT_FILE_VIEWER_FRAME_TITLE;
+  frame.style.width = '100%';
+  frame.style.height = '100%';
+  frame.style.border = '0';
+  frame.style.display = 'block';
+
+  if (options.className) {
+    frame.className = options.className;
+  }
+  if (options.style) {
+    Object.assign(frame.style, options.style);
+  }
+
+  if (options.autoPostFile !== false) {
+    frame.addEventListener('load', () => {
+      postFileToFileViewerFrame(frame, options);
+    });
+  }
+
+  return frame;
+};
+
+export const mountFileViewerFrame = (
+  container: HTMLElement,
+  initialOptions: CreateFileViewerFrameOptions = {}
+): FileViewerFrameController => {
+  let options = initialOptions;
+  let src = buildFileViewerFrameSrc(options);
+  const frame = createFileViewerFrame({ ...options, autoPostFile: false });
+  const filePostController = createFileViewerFrameFilePostController({
+    getFrame: () => frame,
+    getOptions: () => options,
+  });
+
+  const handleLoad = () => {
+    filePostController.schedule();
+  };
+  const handleMessage = (event: MessageEvent) => {
+    if (event.source !== frame.contentWindow || !isSerializableFileViewerFrameEvent(event.data)) {
+      return;
+    }
+    filePostController.handleFrameEvent(event.data);
+    options.onEvent?.(event.data, event);
+  };
+
+  frame.addEventListener('load', handleLoad);
+  window.addEventListener('message', handleMessage);
+  container.appendChild(frame);
+
+  return {
+    frame,
+    get src() {
+      return src;
+    },
+    destroy() {
+      filePostController.cancel();
+      frame.removeEventListener('load', handleLoad);
+      window.removeEventListener('message', handleMessage);
+      frame.remove();
+    },
+    postFile() {
+      return filePostController.postNow();
+    },
+    reload() {
+      frame.src = src;
+    },
+    update(nextOptions: FileViewerFrameOptions) {
+      options = { ...options, ...nextOptions };
+      const previousSrc = frame.src;
+      src = syncFileViewerFrame(frame, options);
+      if (frame.src === previousSrc) {
+        filePostController.schedule();
+      }
+      return src;
+    },
   };
 };
