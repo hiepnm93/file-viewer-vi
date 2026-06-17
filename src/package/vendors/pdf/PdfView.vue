@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import { DEFAULT_PDF_RANGE_CHUNK_SIZE } from '@/package/common/sourceLoading'
-import { buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
+import { buildPrintPageStyle, formatCssPixels } from '@file-viewer/core'
 import {
   registerFileViewerSearchProvider,
   unregisterFileViewerSearchProvider

@@ -16,6 +16,25 @@ export {
   normalizeFileViewerAiOptions,
   normalizeFileViewerSearchOptions,
 } from './document';
+export {
+  buildFileViewerRenderedHtmlDocument,
+  buildExportHtmlDocument,
+  collectDocumentStyles,
+  prepareFileViewerRenderedContentForSnapshot,
+  replaceFileViewerCanvasWithImages,
+  resolveFileViewerPrintStyle,
+  triggerFileViewerBlobDownload,
+  triggerFileViewerUrlDownload,
+  waitForFileViewerImages,
+  waitForFileViewerNextPaint,
+  waitForFileViewerPrintWindowReady,
+} from './export';
+export {
+  applyPrintPageSize,
+  buildPrintPageStyle,
+  formatCssPixels,
+  getElementPrintPageSize,
+} from './printLayout';
 export { createRendererRegistry } from './registry';
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
@@ -72,6 +91,15 @@ export type {
   SerializedFileViewerContext,
 } from './operations';
 export type { CreateViewerOptions } from './viewer';
+export type {
+  BuildExportHtmlDocumentOptions,
+  BuildFileViewerRenderedHtmlDocumentOptions,
+} from './export';
+export type {
+  ApplyPrintPageSizeOptions,
+  BuildPrintPageStyleOptions,
+  PrintPageSize,
+} from './printLayout';
 export type { WorkerProvider, WorkerRef } from './worker';
 export type {
   FileViewerAiOptions,

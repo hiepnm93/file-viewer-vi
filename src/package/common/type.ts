@@ -2,6 +2,9 @@ import type { App } from 'vue'
 import type {
   FileViewerFileRef,
   FileRenderContext as CoreFileRenderContext,
+  FileRenderExportAdapter as CoreFileRenderExportAdapter,
+  FileRenderExportMode as CoreFileRenderExportMode,
+  FileRenderExportOptions as CoreFileRenderExportOptions,
   FileRenderHandler,
   FileRenderHandlerComposite,
   FileViewerSearchProvider as CoreFileViewerSearchProvider,
@@ -492,7 +495,7 @@ export interface FileViewerDocxOptions {
 /**
  * 导出/打印模式。
  */
-export type FileRenderExportMode = 'export' | 'print';
+export type FileRenderExportMode = CoreFileRenderExportMode;
 
 /**
  * 渲染器自定义导出上下文。
@@ -500,38 +503,12 @@ export type FileRenderExportMode = 'export' | 'print';
  * 大多数格式可以直接克隆当前 DOM；PDF 这类虚拟滚动或按需渲染格式
  * 需要在打印前重新生成完整页面，因此允许渲染器注册专属适配器。
  */
-export interface FileRenderExportOptions {
-  mode: FileRenderExportMode;
-  title: string;
-}
+export type FileRenderExportOptions = CoreFileRenderExportOptions;
 
 /**
  * 渲染器专属导出适配器。
  */
-export interface FileRenderExportAdapter {
-  /**
-   * 当前渲染器是否允许打印。未设置时由文件类型能力矩阵兜底判断。
-   */
-  print?: boolean;
-  /**
-   * 当前渲染器是否允许导出渲染后的 HTML。
-   */
-  exportHtml?: boolean;
-  /**
-   * 是否把当前页面的全局 style/link 一并带进导出窗口。
-   *
-   * 专属分页适配器通常会自行输出必要样式，应关闭该项，避免宿主应用的
-   * `height: 100vh`、`overflow: hidden` 等布局样式干扰浏览器分页打印。
-   */
-  includeDocumentStyles?: boolean;
-  beforeSnapshot?: () => Promise<void> | void;
-  /**
-   * 打印专用样式。适合 PDF / Word 等有真实页面尺寸的格式输出 `@page size`，
-   * 避免浏览器默认纸张或外层容器把页面缩放、裁切。
-   */
-  printStyle?: string | ((options: FileRenderExportOptions) => Promise<string> | string);
-  toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
-}
+export type FileRenderExportAdapter = CoreFileRenderExportAdapter;
 
 /**
  * 渲染器可选上下文。

@@ -1,7 +1,7 @@
 import type { Options, renderAsync } from 'docx-preview'
 import DocxWorker from './docx.worker.ts?worker&inline'
-import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels, getElementPrintPageSize } from '@/package/common/printLayout'
-import type { PrintPageSize } from '@/package/common/printLayout'
+import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels, getElementPrintPageSize } from '@file-viewer/core'
+import type { PrintPageSize } from '@file-viewer/core'
 import type { AppWrapper, FileRenderContext, FileViewerZoomState } from '@/package/common/type'
 import {
   createZoomChangeEmitter,

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildPrintPageStyle, formatCssPixels } from '../src/package/common/printLayout'
-import { buildExportHtmlDocument } from '../src/package/components/FileViewer/exportDocumentTemplate'
+import {
+  buildExportHtmlDocument,
+  buildFileViewerRenderedHtmlDocument,
+  buildPrintPageStyle,
+  formatCssPixels,
+  resolveFileViewerPrintStyle,
+} from '../packages/core/src'
 
 describe('print layout helpers', () => {
   it('builds a fixed-size print page from CSS pixels', () => {
@@ -45,5 +50,24 @@ describe('print layout helpers', () => {
     expect(html).toContain('<div class="viewer-export-content"><section class="pdf-export-page">page</section></div>')
     expect(html).toContain('viewer-export-watermark')
     expect(html.trim()).toContain('<style data-viewer-print-style>@page { size: 8.5in 11in; margin: 0; }</style>')
+  })
+
+  it('builds rendered HTML through a core export adapter', async () => {
+    const html = await buildFileViewerRenderedHtmlDocument({
+      source: {} as HTMLElement,
+      mode: 'print',
+      title: 'adapter.docx',
+      adapter: {
+        includeDocumentStyles: false,
+        printStyle: options => `/* ${options.mode}:${options.title} */`,
+        toHtml: options => `<article data-mode="${options.mode}">${options.title}</article>`
+      },
+      watermarkInlineStyle: 'opacity:0.2'
+    })
+
+    await expect(resolveFileViewerPrintStyle(null, { mode: 'print', title: 'x' })).resolves.toBe('')
+    expect(html).toContain('<article data-mode="print">adapter.docx</article>')
+    expect(html).toContain('<style data-viewer-print-style>/* print:adapter.docx */</style>')
+    expect(html).toContain('viewer-export-watermark')
   })
 })
