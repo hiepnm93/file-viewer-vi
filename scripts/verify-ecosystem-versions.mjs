@@ -41,6 +41,34 @@ function assertUnique(map, key, label, packageName) {
   map.set(key, packageName)
 }
 
+function normalizeRepositoryUrl(value) {
+  return String(value || '')
+    .replace(/^git\+/, '')
+    .replace(/\.git$/, '')
+}
+
+function assertPackageFiles(entry, requiredFiles) {
+  const files = new Set(entry.packageJson.files || [])
+  for (const requiredFile of requiredFiles) {
+    assert(
+      files.has(requiredFile),
+      `${entry.packageName} package.json files must include ${requiredFile}`
+    )
+  }
+}
+
+function assertRepositoryMetadata(entry, expectedUrl, expectedDirectory) {
+  assert(entry.packageJson.repository?.type === 'git', `${entry.packageName} repository.type must be git`)
+  assert(
+    normalizeRepositoryUrl(entry.packageJson.repository?.url) === normalizeRepositoryUrl(expectedUrl),
+    `${entry.packageName} repository.url must point to ${expectedUrl}`
+  )
+  assert(
+    entry.packageJson.repository?.directory === expectedDirectory,
+    `${entry.packageName} repository.directory must be ${expectedDirectory}`
+  )
+}
+
 for (const wrapper of wrapperManifest.wrappers) {
   for (const packageName of wrapper.historicalPackages) {
     assert(!historicalPackageNames.has(packageName), `Duplicate historical package ${packageName}`)
@@ -62,6 +90,7 @@ for (const entry of entries) {
     entry.packageJson.publishConfig?.access === 'public',
     `${entry.packageName} publishConfig.access must be public`
   )
+  assertPackageFiles(entry, ['README.md', 'README.en.md'])
 }
 
 const releasePackageNames = new Set(entryByName.keys())
@@ -69,6 +98,7 @@ const coreEntry = entries.find(entry => entry.packageName === corePackageName)
 assert(coreEntry, `Missing core package ${corePackageName} in ecosystem release list`)
 assert(coreEntry.kind === 'core', `${corePackageName} must be marked as the core release package`)
 assert(coreEntry.version === rootVersion, `${corePackageName} version must match ${rootVersion}`)
+assertRepositoryMetadata(coreEntry, wrapperManifest.corePackage.sourceRepository, coreEntry.packageDir)
 
 for (const wrapper of wrapperManifest.wrappers) {
   const entry = entries.find(candidate => candidate.id === wrapper.id)
@@ -76,6 +106,11 @@ for (const wrapper of wrapperManifest.wrappers) {
   assert(entry.kind === 'standard-wrapper', `${wrapper.packageName} must be a standard-wrapper release entry`)
   assert(entry.packageName === wrapper.packageName, `${wrapper.id} package name drifted from wrappers.json`)
   assert(entry.packageDir === wrapper.packageDir, `${wrapper.id} packageDir drifted from wrappers.json`)
+  assertRepositoryMetadata(entry, wrapper.github, wrapper.packageDir)
+  assert(
+    entry.packageJson.bugs?.url === `${wrapper.github}/issues`,
+    `${entry.packageName} bugs.url must be ${wrapper.github}/issues`
+  )
 }
 
 for (const entry of entries) {

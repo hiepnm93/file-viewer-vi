@@ -30,7 +30,7 @@ pnpm install
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
-| `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、标准 wrapper 不依赖历史包名 |
+| `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、smoke 矩阵、分支职责、wrapper 源包、wrapper 参数面、兼容包 README、生态版本和 npm manifest 校验 |
@@ -129,7 +129,7 @@ pnpm release:pack
 - 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、smoke 矩阵、分支职责/源码边界、wrapper 源包校验、wrapper 参数面一致性、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
-- 生态 npm 版本和内部 workspace 依赖是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移
+- 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移，且标准 wrapper 仍指向对应 GitHub 公开仓库
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入
 - 本地构建和文档构建是否全部通过
