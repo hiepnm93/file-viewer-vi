@@ -122,8 +122,9 @@
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
   - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
-  - [x] `pnpm verify:compatibility-api` 锁定 Vue3 旧 `src/package/common` 运行时文件只能作为 `@file-viewer/core` re-export 门面，禁止回流本地实现逻辑。
+  - [x] `pnpm verify:compatibility-api` 锁定 Vue3 旧 `src/package/common` 运行时文件删除状态，禁止回流本地实现逻辑。
   - [x] Vue3 渲染链路不再从旧 `src/package/common` 运行时门面取工具函数，文本读取、worker ref 和 PDF range 常量统一直接使用 `@file-viewer/core`。
+  - [x] 删除 `src/package/common` 下 print/source/util/worker-ref 运行时兼容门面，仅保留 `common/type.ts` 作为公共类型兼容出口。
   - [x] Vue3 vendor 层渲染上下文、缩放状态、导出 adapter 和 rendered instance 类型直接从 `@file-viewer/core` 获取，`common/type` 仅保留对外兼容类型门面。
   - [x] Vue3 入口组件、组件 hooks 和渲染器生命周期门面直接使用 `@file-viewer/core` 类型，只有 `src/package/index.ts` 继续从 `common/type` re-export 公开兼容类型。
   - [x] 缩放变更 emitter、搜索 provider 注册和缩放 provider 注册进入 `@file-viewer/core`，Vue3 vendor 不再通过 `src/package/use` 门面获取这些 framework-neutral 能力。

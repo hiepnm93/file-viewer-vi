@@ -113,62 +113,6 @@ const vue3ScopedPublicTypeExports = new Set([
   'FileViewerZoomState'
 ])
 
-const vue3ScopedRuntimeFacades = new Map([
-  ['src/package/common/printCapability.ts', [
-    'ADAPTER_PRINT_REQUIRED_EXTENSIONS',
-    'DOM_PRINTABLE_EXTENSIONS',
-    'isDomPrintableExtension',
-    'isKnownNonPrintableExtension',
-    'needsDedicatedPrintAdapter',
-    'NON_PRINTABLE_EXTENSIONS',
-    'normalizeFileExtension',
-    'resolvePrintAvailability'
-  ]],
-  ['src/package/common/printLayout.ts', [
-    'applyPrintPageSize',
-    'buildPrintPageStyle',
-    'formatCssPixels',
-    'getElementPrintPageSize',
-    'ApplyPrintPageSizeOptions',
-    'BuildPrintPageStyleOptions',
-    'PrintPageSize'
-  ]],
-  ['src/package/common/sourceLoading.ts', [
-    'DEFAULT_PDF_RANGE_CHUNK_SIZE',
-    'isSameOriginUrl',
-    'normalizePdfStreamingMode',
-    'shouldStreamPdfUrl'
-  ]],
-  ['src/package/common/util.ts', [
-    'FileViewerReadResult',
-    'readFileViewerBuffer as readBuffer',
-    'readFileViewerDataUrl as readDataURL',
-    'readFileViewerText as readText'
-  ]],
-  ['src/package/common/worker-ref.ts', [
-    'WorkerRefImpl',
-    'refWorker',
-    'WorkerProvider',
-    'WorkerRef',
-    'WorkerRefImpl as default'
-  ]]
-])
-
-const forbiddenVue3ScopedRuntimeFacadeTokens = [
-  'new FileReader',
-  'readAsArrayBuffer',
-  'readAsDataURL',
-  'readAsText',
-  'new Promise',
-  'reader.',
-  'function ',
-  '=>',
-  'const ',
-  'let ',
-  'class ',
-  'return '
-]
-
 const vue3ScopedRuntimeFacadeNames = [
   'printCapability',
   'printLayout',
@@ -176,6 +120,9 @@ const vue3ScopedRuntimeFacadeNames = [
   'util',
   'worker-ref'
 ]
+const removedVue3ScopedRuntimeFacadePaths = vue3ScopedRuntimeFacadeNames.map(
+  name => `src/package/common/${name}.ts`
+)
 
 const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
   `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
@@ -458,25 +405,16 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
-  for (const [relativePath, requiredTokens] of vue3ScopedRuntimeFacades) {
-    const facadeSource = await readSource(entry, relativePath)
-    const label = `${entry.packageName} ${relativePath}`
-    assertImportsFrom(facadeSource, '@file-viewer/core', label)
-    assertTokens(facadeSource, requiredTokens, label)
-    for (const forbiddenToken of forbiddenVue3ScopedRuntimeFacadeTokens) {
-      assert(
-        !facadeSource.includes(forbiddenToken),
-        `${label} must remain a pure @file-viewer/core re-export facade and must not contain ${forbiddenToken.trim()}`
-      )
-    }
+  for (const removedRuntimeFacadePath of removedVue3ScopedRuntimeFacadePaths) {
+    assert(
+      !existsSync(join(entry.absoluteDir, removedRuntimeFacadePath)),
+      `${entry.packageName} must import runtime helpers from @file-viewer/core instead of reintroducing ${removedRuntimeFacadePath}`
+    )
   }
 
   const sourceFiles = await readAllSourceFiles(join(entry.absoluteDir, 'src'))
   for (const file of sourceFiles) {
     const relativePath = relative(entry.absoluteDir, file)
-    if (vue3ScopedRuntimeFacades.has(relativePath)) {
-      continue
-    }
     const source = await readFile(file, 'utf8')
     assert(
       !/from\s+['"]@\/package\/use['"]/.test(source),
