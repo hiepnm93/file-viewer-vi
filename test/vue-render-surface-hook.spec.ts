@@ -4,15 +4,15 @@ import { ref } from 'vue'
 import { useViewerRenderSurface } from '../src/package/components/FileViewer/hooks/useViewerRenderSurface'
 import type { FileRenderExportAdapter } from '../src/package/common/type'
 
-const renderSessionMock = vi.hoisted(() => vi.fn())
+const createVueRenderSessionMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../src/package/components/FileViewer/util', () => ({
-  renderSession: renderSessionMock
+vi.mock('../src/package/components/FileViewer/rendererBridge', () => ({
+  createVueRenderSession: createVueRenderSessionMock
 }))
 
 describe('Vue FileViewer render surface hook', () => {
   afterEach(() => {
-    renderSessionMock.mockReset()
+    createVueRenderSessionMock.mockReset()
     vi.unstubAllGlobals()
   })
 
@@ -34,7 +34,7 @@ describe('Vue FileViewer render surface hook', () => {
     const clearZoomProvider = vi.fn()
     const clearDocumentState = vi.fn()
 
-    renderSessionMock.mockImplementation(async (_buffer, _type, target, context) => {
+    createVueRenderSessionMock.mockImplementation(async (_buffer, _type, target, context) => {
       context.registerExportAdapter(adapter)
       context.onProgressiveRender()
       target.appendChild(document.createElement('strong'))
@@ -64,7 +64,7 @@ describe('Vue FileViewer render surface hook', () => {
     )
 
     expect(renderedSession).toBe(session)
-    expect(renderSessionMock).toHaveBeenCalledWith(
+    expect(createVueRenderSessionMock).toHaveBeenCalledWith(
       expect.any(ArrayBuffer),
       'pdf',
       expect.objectContaining({ className: 'file-render' }),
@@ -102,7 +102,7 @@ describe('Vue FileViewer render surface hook', () => {
     const session = { destroy: vi.fn() }
     let currentVersion = 1
 
-    renderSessionMock.mockImplementation(async () => {
+    createVueRenderSessionMock.mockImplementation(async () => {
       currentVersion = 2
       return session
     })

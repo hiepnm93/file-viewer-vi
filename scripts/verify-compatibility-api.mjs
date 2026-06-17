@@ -371,6 +371,29 @@ async function verifyVue3ScopedCompatibility() {
       `${vueFileViewerLabel} must delegate preview source watch and unmount cleanup to useViewerPreviewLifecycle instead of using ${forbiddenToken}`
     )
   }
+  assert(
+    !existsSync(join(entry.absoluteDir, 'src/package/components/FileViewer/util.ts')),
+    `${entry.packageName} must keep FileViewer renderer bridging in rendererBridge.ts instead of reintroducing a catch-all FileViewer util.ts`
+  )
+
+  const vueRendererBridgeSource = await readSource(entry, 'src/package/components/FileViewer/rendererBridge.ts')
+  const vueRendererBridgeLabel = `${entry.packageName} src/package/components/FileViewer/rendererBridge.ts`
+  assertImportsFrom(vueRendererBridgeSource, '@file-viewer/core', vueRendererBridgeLabel)
+  assertTokens(vueRendererBridgeSource, [
+    'createVueRenderSession',
+    'createFileRenderHandlerRendererSession',
+    'renderFileViewerHandler',
+    'vueRendererRegistry'
+  ], vueRendererBridgeLabel)
+  for (const forbiddenToken of [
+    'export function getExtend',
+    'export async function render('
+  ]) {
+    assert(
+      !vueRendererBridgeSource.includes(forbiddenToken),
+      `${vueRendererBridgeLabel} must expose only session-based renderer bridging instead of ${forbiddenToken}`
+    )
+  }
 
   const vueLoadingHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useLoading.ts')
   const vueLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useLoading.ts`

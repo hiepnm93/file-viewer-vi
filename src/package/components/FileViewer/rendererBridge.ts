@@ -2,20 +2,21 @@ import {
   createFileRenderHandlerRendererSession,
   normalizeSource,
   renderFileViewerHandler,
-  type FileRenderHandlerRendererSession,
   type FileRenderContext,
+  type FileRenderHandlerRendererSession,
   type FileViewerRenderedInstance as Rendered,
 } from '@file-viewer/core'
 import { vueRendererDispatcher, vueRendererRegistry } from '@/package/vendors/renders'
 
 export type FileViewerVueRenderSession = FileRenderHandlerRendererSession<Rendered | undefined>
 
-export function getExtend(name: string) {
-  const dot = name.lastIndexOf('.')
-  return name.substring(dot + 1)
-}
-
-export async function renderSession(
+/**
+ * Bridges the Vue renderer registry into the framework-neutral core renderer session.
+ *
+ * The Vue wrapper owns only the async component loaders and DOM surface; source
+ * normalization, handler dispatch and session teardown stay in @file-viewer/core.
+ */
+export async function createVueRenderSession(
   buffer: ArrayBuffer,
   type: string,
   target: HTMLDivElement,
@@ -45,9 +46,4 @@ export async function renderSession(
     context
   })
   return createFileRenderHandlerRendererSession(rendered)
-}
-
-export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivElement, context?: FileRenderContext) {
-  const session = await renderSession(buffer, type, target, context)
-  return session.rendered
 }

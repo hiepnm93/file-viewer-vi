@@ -8,7 +8,7 @@ import type {
   FileViewerLifecycleContext,
   FileViewerOptions
 } from '@file-viewer/core'
-import { renderSession, type FileViewerVueRenderSession } from '../util'
+import { createVueRenderSession, type FileViewerVueRenderSession } from '../rendererBridge'
 
 interface UseViewerRenderSurfaceOptions {
   output: Ref<HTMLDivElement | null>;
@@ -147,7 +147,7 @@ export const useViewerRenderSurface = ({
     }
 
     try {
-      const session = await renderSession(buffer, getExtension(file.name), child, {
+      const session = await createVueRenderSession(buffer, getExtension(file.name), child, {
         filename: file.name,
         url: sourceUrl,
         streamUrl,

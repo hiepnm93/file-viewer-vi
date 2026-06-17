@@ -15,7 +15,7 @@ import type {
   FileViewerLifecycleContext,
   FileViewerOptions
 } from '@file-viewer/core'
-import type { FileViewerVueRenderSession } from '../util'
+import type { FileViewerVueRenderSession } from '../rendererBridge'
 
 interface UseViewerSourceLoadingOptions {
   getFile: () => FileRef | undefined;
