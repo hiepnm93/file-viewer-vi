@@ -1,14 +1,41 @@
 import type { App } from 'vue'
 import type {
+  FileViewerAiOptions as CoreFileViewerAiOptions,
+  FileViewerArchiveOptions as CoreFileViewerArchiveOptions,
+  FileViewerBeforeOperation as CoreFileViewerBeforeOperation,
+  FileViewerCadDwfLineWeightMode as CoreFileViewerCadDwfLineWeightMode,
+  FileViewerCadOptions as CoreFileViewerCadOptions,
+  FileViewerCadRenderer as CoreFileViewerCadRenderer,
+  FileViewerDocxOptions as CoreFileViewerDocxOptions,
+  FileViewerDocumentAnchor as CoreFileViewerDocumentAnchor,
+  FileViewerDocumentChunk as CoreFileViewerDocumentChunk,
   FileViewerFileRef,
+  FileViewerLifecycleContext as CoreFileViewerLifecycleContext,
+  FileViewerLifecycleHooks as CoreFileViewerLifecycleHooks,
+  FileViewerLifecyclePhase as CoreFileViewerLifecyclePhase,
+  FileViewerOperationAvailability as CoreFileViewerOperationAvailability,
+  FileViewerOperationContext as CoreFileViewerOperationContext,
+  FileViewerOperationType as CoreFileViewerOperationType,
+  FileViewerOptions as CoreFileViewerOptions,
+  FileViewerPdfOptions as CoreFileViewerPdfOptions,
   FileRenderContext as CoreFileRenderContext,
   FileRenderExportAdapter as CoreFileRenderExportAdapter,
   FileRenderExportMode as CoreFileRenderExportMode,
   FileRenderExportOptions as CoreFileRenderExportOptions,
   FileRenderHandler,
   FileRenderHandlerComposite,
+  FileViewerSearchMatch as CoreFileViewerSearchMatch,
+  FileViewerSearchOptions as CoreFileViewerSearchOptions,
   FileViewerSearchProvider as CoreFileViewerSearchProvider,
-  FileViewerZoomProvider as CoreFileViewerZoomProvider
+  FileViewerSearchState as CoreFileViewerSearchState,
+  FileViewerSourceKind as CoreFileViewerSourceKind,
+  FileViewerThemeMode as CoreFileViewerThemeMode,
+  FileViewerToolbarOptions as CoreFileViewerToolbarOptions,
+  FileViewerToolbarPosition as CoreFileViewerToolbarPosition,
+  FileViewerTypstOptions as CoreFileViewerTypstOptions,
+  FileViewerWatermarkOptions as CoreFileViewerWatermarkOptions,
+  FileViewerZoomProvider as CoreFileViewerZoomProvider,
+  FileViewerZoomState as CoreFileViewerZoomState
 } from '@file-viewer/core'
 
 /**
@@ -43,20 +70,7 @@ export type FileRef = FileViewerFileRef;
  * `text` 与 `image` 至少设置一个；同时传入时优先使用图片水印。
  * 图片水印可以是 http(s) URL、相对路径或 data URL。
  */
-export interface FileViewerWatermarkOptions {
-  enabled?: boolean;
-  text?: string;
-  image?: string;
-  opacity?: number;
-  rotate?: number;
-  gapX?: number;
-  gapY?: number;
-  width?: number;
-  height?: number;
-  fontSize?: number;
-  color?: string;
-  fontFamily?: string;
-}
+export type FileViewerWatermarkOptions = CoreFileViewerWatermarkOptions;
 
 /**
  * 预览器内置操作栏位置。
@@ -64,124 +78,30 @@ export interface FileViewerWatermarkOptions {
  * `auto` 是默认策略: PDF 这类有独立阅读工具栏的格式会自动悬浮到右下角，
  * 其他格式继续使用顶部操作栏；也可以显式传 `top` 或 `bottom-right`。
  */
-export type FileViewerToolbarPosition = 'auto' | 'top' | 'bottom-right';
+export type FileViewerToolbarPosition = CoreFileViewerToolbarPosition;
 
 /**
  * 预览器内置操作栏配置。
  */
-export interface FileViewerToolbarOptions {
-  download?: boolean;
-  print?: boolean;
-  exportHtml?: boolean;
-  /**
-   * 是否显示统一缩放控制。渲染器会按文件类型注册自己的缩放实现；
-   * 虚拟表格等不适合外层缩放的格式不会强行显示该按钮组。
-   */
-  zoom?: boolean;
-  /**
-   * 操作栏位置。`bottom-right` 会以胶囊按钮组悬浮在预览区右下角，
-   * 适合 PDF 等自身已经有顶部导航栏的格式。
-   */
-  position?: FileViewerToolbarPosition;
-  /**
-   * 内置操作按钮执行前的统一前置钩子。返回 `false` 时会取消本次操作。
-   */
-  beforeOperation?: FileViewerBeforeOperation;
-  beforeDownload?: FileViewerBeforeOperation;
-  beforePrint?: FileViewerBeforeOperation;
-  beforeExportHtml?: FileViewerBeforeOperation;
-}
+export type FileViewerToolbarOptions = CoreFileViewerToolbarOptions;
 
 /**
  * 压缩包预览配置。
  */
-export interface FileViewerArchiveOptions {
-  /**
-   * libarchive.js Worker 地址。私有化部署时建议把
-   * `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录后传入。
-   *
-   * 没有传入时，预览器会先尝试当前部署 base 下的
-   * `vendor/libarchive/worker-bundle.js`，失败后自动回退到内置 Worker。
-   */
-  workerUrl?: string;
-  /**
-   * 内置 Worker 回退时使用的 libarchive WASM 地址。只有在不希望使用打包产物中
-   * 的 wasm 资源、或需要指向私有 CDN 时才需要配置。
-   */
-  wasmUrl?: string;
-  /**
-   * Worker 初始化、加密检测和目录读取的超时时间，单位毫秒。默认 30000。
-   * 手机 WebView 或本地临时服务器不稳定时，超时后会自动尝试兼容模式。
-   */
-  workerTimeoutMs?: number;
-  /**
-   * 是否启用 IndexedDB 缓存压缩包内已解压的文件。
-   */
-  cache?: boolean;
-  /**
-   * 单个压缩包允许解析的最大体积，单位字节。
-   */
-  maxArchiveSize?: number;
-  /**
-   * 压缩包内单文件允许在线预览的最大体积，单位字节。
-   */
-  maxEntryPreviewSize?: number;
-}
+export type FileViewerArchiveOptions = CoreFileViewerArchiveOptions;
 
 /**
  * PDF 预览配置。
  */
-export interface FileViewerPdfOptions {
-  /**
-   * 是否显示 PDF 渲染器自己的阅读工具栏。
-   *
-   * 独立预览建议保持默认显示；在文档比对这类左右排版场景中可以设为
-   * `false`，让 PDF 与 Word / Markdown 等格式从同一内容起点对齐。
-   */
-  toolbar?: boolean;
-  /**
-   * 是否启用左侧页面/目录导航窗格。设为 `false` 时会同时隐藏侧栏和切换按钮。
-   */
-  navigation?: boolean;
-  /**
-   * 导航窗格初始是否展开。未设置时默认展开，`navigation: false` 时会被忽略。
-   */
-  defaultNavigationVisible?: boolean;
-  /**
-   * 初始页面旋转角度。会按 90 度归一化到 0 / 90 / 180 / 270。
-   */
-  rotation?: number;
-  /**
-   * 远端 PDF 是否优先交给 PDF.js 直接按 URL 渐进读取。
-   *
-   * 默认 `same-origin`，即同源 PDF 交给 PDF.js 通过 URL 渐进读取；
-   * 当文件服务支持 Range 时会进一步使用分片加载。跨域 URL 仍保持
-   * 旧的 Blob 下载后预览链路，最大化兼容鉴权下载和 CORS 场景。
-   * 设为 `true` 会对所有 URL 启用，设为 `false` 会完全禁用。
-   */
-  streaming?: boolean | 'same-origin';
-  /**
-   * PDF.js Range 请求的分片大小，默认 64KB；仅在文件服务支持 Range 时生效。
-   */
-  rangeChunkSize?: number;
-  /**
-   * PDF.js URL 读取 PDF 时是否携带浏览器凭据。
-   */
-  withCredentials?: boolean;
-}
+export type FileViewerPdfOptions = CoreFileViewerPdfOptions;
 
 /**
  * Typst 预览配置。
  */
-export interface FileViewerTypstOptions {
-  /**
-   * Typst compiler WASM 地址。需要浏览器端编译时才会加载。
-   */
-  compilerWasmUrl?: string;
-}
+export type FileViewerTypstOptions = CoreFileViewerTypstOptions;
 
-export type FileViewerCadRenderer = 'auto' | 'webgl' | 'canvas2d';
-export type FileViewerCadDwfLineWeightMode = 'adaptive' | 'physical' | 'hairline';
+export type FileViewerCadRenderer = CoreFileViewerCadRenderer;
+export type FileViewerCadDwfLineWeightMode = CoreFileViewerCadDwfLineWeightMode;
 
 /**
  * CAD 预览配置。
@@ -190,37 +110,7 @@ export type FileViewerCadDwfLineWeightMode = 'adaptive' | 'physical' | 'hairline
  * `wasm/cad/` 按需加载 LibreDWG WASM、DWF raster WASM 与 DWG Worker。
  * 私有化部署或 CDN 路径不同的场景，可以显式覆盖对应 URL。
  */
-export interface FileViewerCadOptions {
-  wasmPath?: string;
-  workerUrl?: string | URL;
-  dwfWasmUrl?: string;
-  /**
-   * DXF 文本编码覆盖。一般会自动读取 `$DWGCODEPAGE`，仅在历史文件声明缺失
-   * 或错误时指定，例如 `gb18030`、`big5`、`shift_jis`、`windows-1252`。
-   */
-  dxfEncoding?: string;
-  useWorker?: boolean;
-  workerTimeoutMs?: number;
-  renderer?: FileViewerCadRenderer;
-  preferDwgWasm?: boolean;
-  includePaperSpace?: boolean;
-  maxInsertDepth?: number;
-  keepRaw?: boolean;
-  preloadDwg?: boolean;
-  dwfPreferWebgl?: boolean;
-  dwfPreferWasm?: boolean;
-  dwfBackground?: string;
-  dwfMaxDevicePixelRatio?: number;
-  dwfMaxCanvasPixels?: number;
-  dwfMaxGpuCacheBytes?: number;
-  dwfMaxCachedScenes?: number;
-  dwfLineWeightMode?: FileViewerCadDwfLineWeightMode;
-  dwfMinStrokeCssPx?: number;
-  dwfMaxOverviewStrokeCssPx?: number;
-  dwfMinTextCssPx?: number;
-  dwfMinFilledAreaCssPx?: number;
-  canvasOptions?: Record<string, unknown>;
-}
+export type FileViewerCadOptions = CoreFileViewerCadOptions;
 
 /**
  * 文档定位锚点。
@@ -229,89 +119,29 @@ export interface FileViewerCadOptions {
  * 抽象成稳定锚点。不同格式的“行”粒度不完全相同：文本类文档通常可到
  * 段落/行块，PDF 这类画布型文档会优先回退到页与可用文本层。
  */
-export interface FileViewerDocumentAnchor {
-  id: string;
-  index: number;
-  line: number;
-  type: 'page' | 'line' | 'block';
-  label: string;
-  text: string;
-  page?: number;
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
+export type FileViewerDocumentAnchor = CoreFileViewerDocumentAnchor;
 
 /**
  * AI / 搜索可复用的文档文本切片。
  *
  * 这里不直接绑定任何云端能力，只提供溯源、向量化和高亮所需的稳定结构。
  */
-export interface FileViewerDocumentChunk {
-  id: string;
-  text: string;
-  anchor: FileViewerDocumentAnchor;
-  startLine: number;
-  endLine: number;
-}
+export type FileViewerDocumentChunk = CoreFileViewerDocumentChunk;
 
 /**
  * 文档搜索配置。
  */
-export interface FileViewerSearchOptions {
-  /**
-   * 是否启用搜索能力。设为 `false` 时公开方法仍存在，但不会执行高亮。
-   */
-  enabled?: boolean;
-  /**
-   * 是否区分大小写。
-   */
-  caseSensitive?: boolean;
-  /**
-   * 是否整词匹配。
-   */
-  wholeWord?: boolean;
-  /**
-   * 单次搜索最多保留的命中数量，避免极端大文档一次性插入过多高亮节点。
-   */
-  maxMatches?: number;
-  /**
-   * 搜索 MutationObserver 重新扫描的防抖时间。
-   */
-  debounce?: number;
-  /**
-   * 自定义高亮类名。
-   */
-  className?: string;
-  /**
-   * 当前命中高亮类名。
-   */
-  activeClassName?: string;
-}
+export type FileViewerSearchOptions = CoreFileViewerSearchOptions;
 
 /**
  * 单条搜索命中。
  */
-export interface FileViewerSearchMatch {
-  id: string;
-  index: number;
-  text: string;
-  anchor: FileViewerDocumentAnchor | null;
-  line?: number;
-  page?: number;
-}
+export type FileViewerSearchMatch = CoreFileViewerSearchMatch;
 
 /**
  * 当前搜索状态。
  */
-export interface FileViewerSearchState {
-  query: string;
-  total: number;
-  currentIndex: number;
-  current: FileViewerSearchMatch | null;
-  matches: FileViewerSearchMatch[];
-}
+export type FileViewerSearchState = CoreFileViewerSearchState;
 
 /**
  * 渲染器自定义搜索提供器。
@@ -328,15 +158,7 @@ export type FileViewerSearchProvider = CoreFileViewerSearchProvider;
  * `scale` 使用 1 = 100% 的语义。部分格式会先按容器宽度自动适配，再在此
  * 基础上放大缩小；对外仍返回最终有效比例，便于业务工具栏同步显示。
  */
-export interface FileViewerZoomState {
-  scale: number;
-  label: string;
-  canZoomIn: boolean;
-  canZoomOut: boolean;
-  canReset: boolean;
-  minScale?: number;
-  maxScale?: number;
-}
+export type FileViewerZoomState = CoreFileViewerZoomState;
 
 /**
  * 渲染器自定义缩放提供器。
@@ -353,13 +175,7 @@ export type FileViewerZoomProvider = CoreFileViewerZoomProvider;
  * 预览器本身不内置云端模型调用；这里提供可选文本切片结构，业务侧可以
  * 基于 `getDocumentTextChunks()` 做向量化、溯源、AI 摘要和命中高亮。
  */
-export interface FileViewerAiOptions {
-  enabled?: boolean;
-  collectText?: boolean;
-  maxTextLength?: number;
-  chunkSize?: number;
-  chunkOverlap?: number;
-}
+export type FileViewerAiOptions = CoreFileViewerAiOptions;
 
 /**
  * 预览器主题模式。
@@ -368,34 +184,17 @@ export interface FileViewerAiOptions {
  * 浅色业务系统即使运行在深色操作系统中，也可以显式传 `light`
  * 锁定预览区、工具栏和支持主题切换的渲染器为浅色。
  */
-export type FileViewerThemeMode = 'light' | 'dark' | 'system';
+export type FileViewerThemeMode = CoreFileViewerThemeMode;
 
-export type FileViewerSourceType = 'file' | 'url' | 'buffer' | 'empty';
+export type FileViewerSourceType = CoreFileViewerSourceKind;
 
-export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
+export type FileViewerLifecyclePhase = CoreFileViewerLifecyclePhase;
 
-export interface FileViewerLifecycleContext {
-  phase: FileViewerLifecyclePhase;
-  type: string;
-  filename: string;
-  source: FileViewerSourceType;
-  url?: string;
-  file?: File;
-  size?: number;
-  version: number;
-  timestamp: number;
-  duration?: number;
-  reason?: 'replace' | 'reset' | 'component-unmount';
-}
+export type FileViewerLifecycleContext = CoreFileViewerLifecycleContext;
 
-export interface FileViewerLifecycleHooks {
-  onLoadStart?: (context: FileViewerLifecycleContext) => void | Promise<void>;
-  onLoadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
-  onUnloadStart?: (context: FileViewerLifecycleContext) => void | Promise<void>;
-  onUnloadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
-}
+export type FileViewerLifecycleHooks = CoreFileViewerLifecycleHooks;
 
-export type FileViewerOperationType = 'download' | 'print' | 'export-html' | 'zoom-in' | 'zoom-out' | 'zoom-reset';
+export type FileViewerOperationType = CoreFileViewerOperationType;
 
 /**
  * 当前文档对内置操作的真实可用性。
@@ -404,27 +203,11 @@ export type FileViewerOperationType = 'download' | 'print' | 'export-html' | 'zo
  * 是否真的能稳定完成该操作。尤其是打印，虚拟表格、播放器、3D 画布、
  * EPUB iframe 等链路无法保证完整分页输出时会主动关闭。
  */
-export interface FileViewerOperationAvailability {
-  download: boolean;
-  print: boolean;
-  exportHtml: boolean;
-  /**
-   * 当前渲染链路是否提供内部缩放能力。
-   */
-  zoom: boolean;
-  zoomIn: boolean;
-  zoomOut: boolean;
-  zoomReset: boolean;
-}
+export type FileViewerOperationAvailability = CoreFileViewerOperationAvailability;
 
-export interface FileViewerOperationContext extends Omit<FileViewerLifecycleContext, 'phase'> {
-  operation: FileViewerOperationType;
-  label: string;
-}
+export type FileViewerOperationContext = CoreFileViewerOperationContext;
 
-export type FileViewerBeforeOperation = (
-  context: FileViewerOperationContext
-) => boolean | void | Promise<boolean | void>;
+export type FileViewerBeforeOperation = CoreFileViewerBeforeOperation;
 
 /**
  * `<file-viewer>` 组件的标准输入参数。
@@ -501,39 +284,7 @@ export interface FileViewerExpose {
 /**
  * 预览器通用配置。
  */
-export interface FileViewerOptions {
-  /**
-   * 预览器主题。默认 `system`，即跟随浏览器 `prefers-color-scheme`。
-   * 业务系统已有固定浅色/深色 UI 时，建议显式传 `light` 或 `dark`，
-   * 避免部分渲染器在系统深色模式下自动切换后和宿主视觉不一致。
-   */
-  theme?: FileViewerThemeMode;
-  watermark?: boolean | FileViewerWatermarkOptions;
-  toolbar?: boolean | FileViewerToolbarOptions;
-  /**
-   * 文档搜索能力配置。设为 `false` 可关闭内置搜索/高亮扫描；
-   * 默认启用公开 API，业务 UI 可通过组件 ref 调用 `searchDocument()`。
-   */
-  search?: boolean | FileViewerSearchOptions;
-  /**
-   * AI 友好能力配置。预览器只提供文本切片、锚点和溯源上下文，不绑定模型服务。
-   */
-  ai?: boolean | FileViewerAiOptions;
-  archive?: FileViewerArchiveOptions;
-  pdf?: FileViewerPdfOptions;
-  docx?: FileViewerDocxOptions;
-  typst?: FileViewerTypstOptions;
-  cad?: FileViewerCadOptions;
-  /**
-   * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
-   * iframe 集成时同名事件会通过 `postMessage` 向宿主发送。
-   */
-  hooks?: FileViewerLifecycleHooks;
-  /**
-   * 内置操作按钮执行前的全局前置钩子。返回 `false` 时会取消本次操作。
-   */
-  beforeOperation?: FileViewerBeforeOperation;
-}
+export type FileViewerOptions = CoreFileViewerOptions;
 
 /**
  * DOCX 渲染配置。
@@ -542,27 +293,7 @@ export interface FileViewerOptions {
  * 主线程只负责把最终 HTML 挂载到预览区并执行缩放、打印等交互适配。
  * 这样可以保持 docxjs 的真实渲染结果，同时减少复杂 DOCX 首屏卡顿。
  */
-export interface FileViewerDocxOptions {
-  /**
-   * 是否启用 DOCX Worker 渲染链路。默认开启。
-   * 极少数 CSP 或低版本浏览器不允许内联 Worker 时，可设为 `false`
-   * 回退到 docx-preview 原生主线程渲染。
-   */
-  worker?: boolean;
-  /**
-   * 是否把 Worker 返回的 docx-preview HTML 按页面分批挂载。默认开启。
-   * 它不改变渲染器，只是避免一次性插入长文档 DOM 时阻塞首屏。
-   */
-  progressive?: boolean;
-  /**
-   * DOCX Worker 最大等待时间，单位毫秒，默认 15000。
-   *
-   * 少量复杂 Word 文件会触发浏览器 Worker DOM 兼容边界，设置超时可以避免
-   * 永久停留在 loading；超时后仍会回到 docx-preview 原生主线程渲染。
-   * 传入 0 或负数可关闭超时保护。
-   */
-  workerTimeout?: number;
-}
+export type FileViewerDocxOptions = CoreFileViewerDocxOptions;
 
 /**
  * 导出/打印模式。
