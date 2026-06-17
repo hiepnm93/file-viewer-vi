@@ -1,0 +1,97 @@
+import { describe, expect, it, vi } from 'vitest'
+import {
+  getFileViewerOptionsSearchParam,
+  parseFileViewerOptions,
+  sanitizeFileViewerOptions,
+  serializeFileViewerOptions,
+  setFileViewerOptionsSearchParam
+} from '../packages/core/src'
+
+describe('@file-viewer/core option serialization helpers', () => {
+  it('serializes iframe-safe options without runtime-only hooks', () => {
+    const serialized = serializeFileViewerOptions({
+      theme: 'light',
+      toolbar: {
+        print: true,
+        position: 'bottom-right',
+        beforePrint: vi.fn()
+      },
+      archive: {
+        workerUrl: '/viewer/vendor/libarchive/worker-bundle.js',
+        cache: true
+      },
+      cad: {
+        workerUrl: new URL('https://viewer.example.com/cad-worker.js'),
+        dxfEncoding: 'gbk'
+      },
+      hooks: {
+        onLoadStart: vi.fn()
+      },
+      beforeOperation: vi.fn()
+    })
+
+    expect(serialized).toBeTruthy()
+    const options = JSON.parse(serialized || '{}')
+    expect(options.theme).toBe('light')
+    expect(options.toolbar).toEqual({
+      print: true,
+      position: 'bottom-right'
+    })
+    expect(options.archive.cache).toBe(true)
+    expect(options.cad.workerUrl).toBe('https://viewer.example.com/cad-worker.js')
+    expect(options.hooks).toBeUndefined()
+    expect(options.beforeOperation).toBeUndefined()
+  })
+
+  it('parses query options through the same sanitizer', () => {
+    expect(parseFileViewerOptions('{bad json')).toBeUndefined()
+    expect(parseFileViewerOptions(JSON.stringify({
+      watermark: {
+        text: '内部预览',
+        opacity: 0.12
+      },
+      toolbar: {
+        download: false
+      }
+    }))).toEqual({
+      watermark: {
+        text: '内部预览',
+        opacity: 0.12
+      },
+      toolbar: {
+        download: false
+      }
+    })
+  })
+
+  it('can write and read options from URLSearchParams', () => {
+    const params = new URLSearchParams()
+    setFileViewerOptionsSearchParam(params, {
+      pdf: {
+        toolbar: false,
+        streaming: 'same-origin'
+      }
+    })
+
+    expect(params.has('options')).toBe(true)
+    expect(getFileViewerOptionsSearchParam(params)).toEqual({
+      pdf: {
+        toolbar: false,
+        streaming: 'same-origin'
+      }
+    })
+
+    setFileViewerOptionsSearchParam(params, null)
+    expect(params.has('options')).toBe(false)
+  })
+
+  it('returns undefined for empty or runtime-only option objects', () => {
+    expect(sanitizeFileViewerOptions(undefined)).toBeUndefined()
+    expect(sanitizeFileViewerOptions({
+      hooks: {
+        onLoadComplete: vi.fn()
+      },
+      beforeOperation: vi.fn()
+    })).toBeUndefined()
+  })
+})

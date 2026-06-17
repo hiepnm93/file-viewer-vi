@@ -76,7 +76,10 @@
   - [x] `RendererSession`
   - [x] `RenderSurface`
 - [x] 定义 renderer registry，所有格式只通过 core 注册与派发。
-- [ ] 定义统一 options 序列化协议，保证 iframe / pure JS / wrapper 行为一致。
+- [x] 定义统一 options 序列化协议，保证 iframe / pure JS / wrapper 行为一致。
+  - [x] `@file-viewer/core` 提供 JSON-safe options 清洗、序列化、URLSearchParams 写入和解析。
+  - [x] runtime-only hooks / beforeOperation 在 iframe 查询参数中显式剥离，避免不同 wrapper 行为漂移。
+  - [x] `packages/web`、Vue 基线入口和 React wrapper 复用同一协议。
 - [ ] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
 - [ ] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
 
@@ -259,6 +262,7 @@
   - [x] Vue3 公共搜索/缩放 provider 类型改为复用 core 类型。
   - [x] Vue3 公共 `FileRenderContext` / `FileHandler` 类型改为复用 core 类型。
   - [x] Vue3 公共打印布局和导出 HTML 模板改为复用 core。
+  - [x] Vue3 iframe options 解析改为复用 core 序列化协议。
   - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 相关 `Rendered` 类型，需要继续拆薄。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。

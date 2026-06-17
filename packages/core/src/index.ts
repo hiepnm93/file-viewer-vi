@@ -65,6 +65,13 @@ export {
   serializeFileViewerContext,
 } from './operations';
 export {
+  getFileViewerOptionsSearchParam,
+  parseFileViewerOptions,
+  sanitizeFileViewerOptions,
+  serializeFileViewerOptions,
+  setFileViewerOptionsSearchParam,
+} from './options';
+export {
   decodeFilename,
   getExtension,
   normalizeFileExtension,
@@ -90,6 +97,11 @@ export type {
   RunFileViewerBeforeOperationInput,
   SerializedFileViewerContext,
 } from './operations';
+export type {
+  FileViewerSerializableCadOptions,
+  FileViewerSerializableOptions,
+  FileViewerSerializableToolbarOptions,
+} from './options';
 export type { CreateViewerOptions } from './viewer';
 export type {
   BuildExportHtmlDocumentOptions,

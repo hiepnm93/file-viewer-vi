@@ -12,6 +12,7 @@ import {
 } from 'react'
 import {
   buildViewerSrc,
+  isViewerFrameEvent,
   postFileToViewer,
   type FileRef,
   type ViewerFrameEventHandler,
@@ -194,10 +195,7 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
       if (event.source !== iframeRef.current?.contentWindow) {
         return
       }
-      if (
-        event.data?.type !== 'flyfish-viewer:lifecycle' &&
-        event.data?.type !== 'flyfish-viewer:operation'
-      ) {
+      if (!isViewerFrameEvent(event.data)) {
         return
       }
       if (event.data.type === 'flyfish-viewer:lifecycle') {

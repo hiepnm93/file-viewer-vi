@@ -1,29 +1,13 @@
 import { parse } from 'qs'
+import { parseFileViewerOptions } from '@file-viewer/core'
 import type { FileViewerOptions } from '@/package/common/type'
 
 type ListenCallback = (file?: File, url?: string, options?: FileViewerOptions) => void;
 
-const parseViewerOptions = (value: unknown): FileViewerOptions | undefined => {
-  if (!value) {
-    return undefined
-  }
-  if (typeof value === 'string') {
-    try {
-      return JSON.parse(value) as FileViewerOptions
-    } catch {
-      return undefined
-    }
-  }
-  if (typeof value === 'object') {
-    return value as FileViewerOptions
-  }
-  return undefined
-}
-
 export function listenForFile(callback: ListenCallback) {
   const params: any = parse(location.search.substring(1));
   const { url, from, name, options } = params;
-  const viewerOptions = parseViewerOptions(options)
+  const viewerOptions = parseFileViewerOptions(options) as FileViewerOptions | undefined
   // 优先从url获取文件路径
   if (url) {
     return callback(undefined, url, viewerOptions);

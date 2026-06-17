@@ -1,84 +1,29 @@
+import { setFileViewerOptionsSearchParam } from '@file-viewer/core'
+import type {
+  FileViewerAiOptions,
+  FileViewerArchiveOptions,
+  FileViewerPdfOptions,
+  FileViewerSearchOptions,
+  FileViewerSerializableOptions,
+  FileViewerSerializableToolbarOptions,
+  FileViewerThemeMode,
+  FileViewerToolbarPosition,
+  FileViewerWatermarkOptions
+} from '@file-viewer/core'
+
 export type FileRef = File | Blob | ArrayBuffer
 
 export type ViewerFrameParamValue = string | number | boolean | null | undefined
 
-export interface ViewerWatermarkOptions {
-  enabled?: boolean
-  text?: string
-  image?: string
-  opacity?: number
-  rotate?: number
-  gapX?: number
-  gapY?: number
-  width?: number
-  height?: number
-  fontSize?: number
-  color?: string
-  fontFamily?: string
-}
-
-export type ViewerToolbarPosition = 'auto' | 'top' | 'bottom-right'
-
-export interface ViewerToolbarOptions {
-  download?: boolean
-  print?: boolean
-  exportHtml?: boolean
-  /**
-   * 操作栏位置。默认 `auto`: PDF 自动悬浮到右下角，其他格式保持顶部。
-   */
-  position?: ViewerToolbarPosition
-}
-
-export interface ViewerArchiveOptions {
-  workerUrl?: string
-  cache?: boolean
-  maxArchiveSize?: number
-  maxEntryPreviewSize?: number
-}
-
-export interface ViewerPdfOptions {
-  toolbar?: boolean
-  navigation?: boolean
-  defaultNavigationVisible?: boolean
-  rotation?: number
-  streaming?: boolean | 'same-origin'
-  rangeChunkSize?: number
-  withCredentials?: boolean
-}
-
-export interface ViewerSearchOptions {
-  enabled?: boolean
-  caseSensitive?: boolean
-  wholeWord?: boolean
-  maxMatches?: number
-  debounce?: number
-  className?: string
-  activeClassName?: string
-}
-
-export interface ViewerAiOptions {
-  enabled?: boolean
-  collectText?: boolean
-  maxTextLength?: number
-  chunkSize?: number
-  chunkOverlap?: number
-}
-
-export type ViewerThemeMode = 'light' | 'dark' | 'system'
-
-export interface ViewerRuntimeOptions {
-  /**
-   * 预览器主题。默认 `system`，即跟随浏览器 `prefers-color-scheme`。
-   * 浅色业务系统建议传 `light`，避免 iframe 内预览区被系统深色模式自动切暗。
-   */
-  theme?: ViewerThemeMode
-  watermark?: boolean | ViewerWatermarkOptions
-  toolbar?: boolean | ViewerToolbarOptions
-  search?: boolean | ViewerSearchOptions
-  ai?: boolean | ViewerAiOptions
-  archive?: ViewerArchiveOptions
-  pdf?: ViewerPdfOptions
-}
+export type ViewerWatermarkOptions = FileViewerWatermarkOptions
+export type ViewerToolbarPosition = FileViewerToolbarPosition
+export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
+export type ViewerArchiveOptions = FileViewerArchiveOptions
+export type ViewerPdfOptions = FileViewerPdfOptions
+export type ViewerSearchOptions = FileViewerSearchOptions
+export type ViewerAiOptions = FileViewerAiOptions
+export type ViewerThemeMode = FileViewerThemeMode
+export type ViewerRuntimeOptions = FileViewerSerializableOptions
 
 export type ViewerFrameEventType =
   | 'flyfish-viewer:lifecycle'
@@ -212,15 +157,7 @@ const appendSearchParam = (target: URL, key: string, value: ViewerFrameParamValu
   target.searchParams.set(key, String(value))
 }
 
-const appendJsonSearchParam = (target: URL, key: string, value: unknown) => {
-  if (value === undefined || value === null) {
-    target.searchParams.delete(key)
-    return
-  }
-  target.searchParams.set(key, JSON.stringify(value))
-}
-
-const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
+export const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
   if (!value || typeof value !== 'object') {
     return false
   }
@@ -269,7 +206,7 @@ export const buildViewerSrc = (options: ViewerFrameOptions = {}) => {
     '__flyfish_viewer_version',
     options.cacheKey === false ? undefined : (options.cacheKey || VIEWER_FRAME_CACHE_KEY)
   )
-  appendJsonSearchParam(src, 'options', options.options)
+  setFileViewerOptionsSearchParam(src.searchParams, options.options)
 
   if (options.file) {
     appendSearchParam(src, 'url', undefined)

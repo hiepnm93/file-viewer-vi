@@ -26,6 +26,30 @@ describe('viewer iframe options', () => {
     expect(options.archive.cache).toBe(true)
   })
 
+  it('uses the core serializer for iframe-safe runtime options', () => {
+    const src = buildViewerSrc({
+      viewerUrl: '/file-viewer/index.html',
+      url: '/files/demo.pdf',
+      options: {
+        theme: 'light',
+        toolbar: {
+          print: true,
+          beforePrint: () => false
+        },
+        beforeOperation: () => false
+      } as any
+    })
+
+    const parsed = new URL(src, 'https://example.com')
+    const options = JSON.parse(parsed.searchParams.get('options') || '{}')
+    expect(options).toEqual({
+      theme: 'light',
+      toolbar: {
+        print: true
+      }
+    })
+  })
+
   it('adds a package cache key for nested private viewer deployments', () => {
     const src = buildViewerSrc({
       viewerUrl: '/vendor/file-viewer/',
