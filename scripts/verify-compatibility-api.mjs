@@ -540,6 +540,26 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vueExportHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerExport.ts')
+  const vueExportHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerExport.ts`
+  assertImportsFrom(vueExportHookSource, '@file-viewer/core', vueExportHookLabel)
+  assertTokens(vueExportHookSource, [
+    'executeFileViewerDownloadOperation',
+    'executeFileViewerExportHtmlOperation',
+    'executeFileViewerPrintOperation'
+  ], vueExportHookLabel)
+  for (const forbiddenToken of [
+    'const getFilename',
+    'getFilename(',
+    'file-viewer-preview',
+    'preview.bin'
+  ]) {
+    assert(
+      !vueExportHookSource.includes(forbiddenToken),
+      `${vueExportHookLabel} must delegate operation filename fallbacks to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueRenderSurfaceHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRenderSurface.ts')
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)

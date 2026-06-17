@@ -37,19 +37,17 @@ export const useViewerExport = ({
   showError,
   watermarkInlineStyle
 }: UseViewerExportOptions) => {
-  const getFilename = (fallback = 'file-viewer-preview') => displayFilename.value || fallback
-
   const downloadOriginalFile = async () => {
     try {
+      const source = {
+        buffer: currentBuffer.value,
+        file: currentFile.value,
+        url: currentSourceUrl.value,
+        filename: displayFilename.value,
+        mimeType: currentFile.value?.type
+      }
       await executeFileViewerDownloadOperation({
-        source: {
-          buffer: currentBuffer.value,
-          file: currentFile.value,
-          url: currentSourceUrl.value,
-          filename: getFilename(currentFile.value?.name || 'preview.bin'),
-          mimeType: currentFile.value?.type
-        },
-        filename: getFilename(currentFile.value?.name || 'preview.bin'),
+        source,
         beforeOperation: runBeforeOperation,
         throwOnMissingSource: false
       })
@@ -63,8 +61,8 @@ export const useViewerExport = ({
       await executeFileViewerExportHtmlOperation({
         source: output.value,
         adapter: activeExportAdapter.value,
-        filename: getFilename('preview'),
-        title: getFilename(),
+        filename: displayFilename.value,
+        title: displayFilename.value,
         watermarkInlineStyle: watermarkInlineStyle.value,
         beforeOperation: runBeforeOperation
       })
@@ -78,7 +76,7 @@ export const useViewerExport = ({
       await executeFileViewerPrintOperation({
         source: output.value,
         adapter: activeExportAdapter.value,
-        title: getFilename(),
+        title: displayFilename.value,
         watermarkInlineStyle: watermarkInlineStyle.value,
         printAvailable: operationAvailability.value.print,
         beforeOperation: runBeforeOperation

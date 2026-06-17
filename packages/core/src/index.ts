@@ -107,10 +107,14 @@ export {
   waitForFileViewerPrintWindowReady,
 } from './export';
 export {
+  DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+  DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+  DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
   hasFileViewerOriginalSource,
+  resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
 } from './viewerOperations';
 export {
@@ -267,6 +271,7 @@ export type {
   ExecuteFileViewerPrintOperationInput,
   FileViewerOperationExecutorBase,
   FileViewerOriginalSourceState,
+  ResolveFileViewerOperationFilenameInput,
 } from './viewerOperations';
 export type {
   BuildFileViewerFrameSrcOptions,

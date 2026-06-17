@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
+  DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+  DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+  DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
   cloneFileViewerOperationAvailability,
@@ -17,6 +20,7 @@ import {
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
   postFileViewerZoomChange,
+  resolveFileViewerOperationFilename,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
@@ -359,6 +363,26 @@ describe('@file-viewer/core operation helpers', () => {
     });
     expect(resolveFileViewerToolbarPosition(undefined, 'pdf')).toBe('bottom-right');
     expect(resolveFileViewerToolbarPosition({ toolbar: { position: 'top' } }, 'pdf')).toBe('top');
+  });
+
+  it('resolves operation filenames from display names, original source metadata, and core defaults', () => {
+    expect(resolveFileViewerOperationFilename({
+      filename: '显示文档.pdf',
+      fallback: DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+    })).toBe('显示文档.pdf');
+    expect(resolveFileViewerOperationFilename({
+      source: {
+        file: new File(['demo'], '原始文档.docx'),
+      },
+      fallback: DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+    })).toBe('原始文档.docx');
+    expect(resolveFileViewerOperationFilename({
+      fallback: DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+    })).toBe(DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME);
+    expect(resolveFileViewerOperationFilename({
+      fallback: DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+    })).toBe(DEFAULT_FILE_VIEWER_EXPORT_FILENAME);
+    expect(resolveFileViewerOperationFilename({})).toBe(DEFAULT_FILE_VIEWER_PREVIEW_TITLE);
   });
 
   it('clones operation availability snapshots without sharing mutable references', () => {

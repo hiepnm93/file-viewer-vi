@@ -20,6 +20,16 @@ export interface FileViewerOriginalSourceState {
   mimeType?: string | null;
 }
 
+export const DEFAULT_FILE_VIEWER_PREVIEW_TITLE = 'file-viewer-preview';
+export const DEFAULT_FILE_VIEWER_EXPORT_FILENAME = 'preview';
+export const DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME = 'preview.bin';
+
+export interface ResolveFileViewerOperationFilenameInput {
+  filename?: string | null;
+  source?: FileViewerOriginalSourceState | null;
+  fallback?: string;
+}
+
 export interface FileViewerOperationExecutorBase {
   beforeOperation?: (operation: FileViewerOperationType) => boolean | Promise<boolean>;
 }
@@ -65,6 +75,14 @@ export const resolveFileViewerOriginalFilename = (
   return source.filename || getBlobFilename(source.file) || fallback;
 };
 
+export const resolveFileViewerOperationFilename = ({
+  filename,
+  source,
+  fallback = DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+}: ResolveFileViewerOperationFilenameInput) => {
+  return filename || (source ? resolveFileViewerOriginalFilename(source, '') : '') || fallback;
+};
+
 export const hasFileViewerOriginalSource = (source: FileViewerOriginalSourceState) => {
   return !!source.buffer || !!source.file || !!source.url;
 };
@@ -96,7 +114,10 @@ const buildRenderedHtmlDocumentFromOperation = async (
   return buildFileViewerRenderedHtmlDocument({
     source,
     mode,
-    title: title || filename || 'file-viewer-preview',
+    title: resolveFileViewerOperationFilename({
+      filename: title || filename,
+      fallback: DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+    }),
     adapter,
     watermarkInlineStyle,
   });
@@ -119,7 +140,11 @@ export const executeFileViewerDownloadOperation = async ({
     return false;
   }
 
-  const resolvedFilename = filename || resolveFileViewerOriginalFilename(source, 'preview.bin');
+  const resolvedFilename = resolveFileViewerOperationFilename({
+    filename,
+    source,
+    fallback: DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+  });
 
   if (source.buffer) {
     triggerFileViewerBlobDownload(
@@ -154,7 +179,10 @@ export const executeFileViewerExportHtmlOperation = async ({
   });
 
   if (download !== false) {
-    const baseName = filename || input.title || 'preview';
+    const baseName = resolveFileViewerOperationFilename({
+      filename: filename || input.title,
+      fallback: DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+    });
     triggerFileViewerBlobDownload(
       new Blob([html], { type: 'text/html;charset=utf-8' }),
       `${baseName}.rendered.html`

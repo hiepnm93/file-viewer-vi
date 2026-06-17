@@ -9,9 +9,13 @@ import {
 import { createFileViewerDomSearchController, cloneFileViewerSearchState } from './documentSearch';
 import { createFileViewerZoomController } from './documentZoom';
 import {
+  DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+  DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+  DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
+  resolveFileViewerOperationFilename,
 } from './viewerOperations';
 import { getRendererAvailability, createUnsupportedAvailability } from './capabilities';
 import {
@@ -216,14 +220,18 @@ export const createViewer = (
       return activeExportAdapter;
     },
     async download(downloadOptions: FileViewerDownloadOptions = {}) {
+      const source = {
+        buffer: currentSource?.buffer,
+        file: currentSource?.file,
+        url: currentSource?.url,
+        filename: getDisplayFilename(),
+      };
       await executeFileViewerDownloadOperation({
-        source: {
-          buffer: currentSource?.buffer,
-          file: currentSource?.file,
-          url: currentSource?.url,
-          filename: getDisplayFilename(),
-        },
-        filename: downloadOptions.filename || getDisplayFilename() || 'preview.bin',
+        source,
+        filename: downloadOptions.filename || resolveFileViewerOperationFilename({
+          source,
+          fallback: DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
+        }),
         beforeOperation: runBeforeViewerOperation,
       });
     },
@@ -232,8 +240,14 @@ export const createViewer = (
         source: container,
         adapter: activeExportAdapter,
         download: exportOptions.download,
-        filename: exportOptions.filename || getDisplayFilename() || 'preview',
-        title: exportOptions.title || getDisplayFilename() || 'file-viewer-preview',
+        filename: exportOptions.filename || resolveFileViewerOperationFilename({
+          filename: getDisplayFilename(),
+          fallback: DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
+        }),
+        title: exportOptions.title || resolveFileViewerOperationFilename({
+          filename: getDisplayFilename(),
+          fallback: DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+        }),
         watermarkInlineStyle: getWatermarkInlineStyle(exportOptions.watermarkInlineStyle),
         beforeOperation: runBeforeViewerOperation,
       });
@@ -245,7 +259,10 @@ export const createViewer = (
         autoPrint: printOptions.autoPrint,
         openWindow: printOptions.openWindow,
         printWindow: printOptions.printWindow,
-        title: printOptions.title || getDisplayFilename() || 'file-viewer-preview',
+        title: printOptions.title || resolveFileViewerOperationFilename({
+          filename: getDisplayFilename(),
+          fallback: DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+        }),
         watermarkInlineStyle: getWatermarkInlineStyle(printOptions.watermarkInlineStyle),
         printAvailable: getCapabilitiesForExtension().print,
         beforeOperation: runBeforeViewerOperation,
