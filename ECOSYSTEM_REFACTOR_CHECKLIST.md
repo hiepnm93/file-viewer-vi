@@ -210,21 +210,22 @@
 - [x] 建立 `ecosystem/wrappers.json` 作为 wrapper npm 包、GitHub/Gitee 仓库和历史兼容包名的单一维护来源。
 - [x] 提供 `scripts/sync-wrapper-readmes.mjs`，从 core 格式定义和 wrapper manifest 生成中英文 README 的生态矩阵与完整格式矩阵。
 - [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖。
+- [x] 提供 `scripts/verify-wrapper-repos.mjs`，校验 wrapper 源目录和独立导出仓库的包名、中英文 README、格式矩阵、Demo/文档链接、License、manifest、GitHub/Gitee 元数据和 `workspace:` 依赖泄露。
 - [x] `scripts/sync-public-artifacts.mjs` 接入 wrapper manifest，公开产物仓库会同步所有标准 wrapper tarball 和仓库矩阵。
 - [x] 根 README / README.en.md 接入同一份 wrapper manifest，公开产物仓库同步时会自动写明标准 npm 包、GitHub/Gitee wrapper 仓库、core 源码私有边界和当前格式数量。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
 - [ ] 为每个 wrapper 创建 Gitee 镜像仓库。
 - [ ] 每个 wrapper 仓库包含:
-  - [ ] 中文 README
-  - [ ] English README
-  - [ ] 安装方式
-  - [ ] 快速开始
-  - [ ] 完整 options 指引
-  - [ ] 完整格式支持矩阵
-  - [ ] 与 `@file-viewer/core` 的关系说明
-  - [ ] 与历史包名兼容说明
-  - [ ] Demo 链接
-  - [ ] License / attribution / contribution 说明
+  - [x] 中文 README
+  - [x] English README
+  - [x] 安装方式
+  - [x] 快速开始
+  - [x] 完整 options 指引
+  - [x] 完整格式支持矩阵
+  - [x] 与 `@file-viewer/core` 的关系说明
+  - [x] 与历史包名兼容说明
+  - [x] Demo 链接
+  - [x] License / attribution / contribution 说明
 - [x] 公开 README 明确 core 源码不在公开仓库，源码/商业二开入口仍按当前商业入口说明。
 - [x] `flyfish-dev/file-viewer` 公开产物仓库 README 列出所有开源 wrapper 仓库和 npm 包。
 
@@ -287,6 +288,7 @@
   - [ ] Pure JS
   - [ ] jQuery
   - [ ] Svelte
+- [x] wrapper repository export smoke 覆盖: `pnpm wrappers:export` 会刷新 README、导出 8 个独立 wrapper 仓库目录并运行 `pnpm wrappers:verify`。
 - [ ] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
 - [ ] 生产构建验证每个 wrapper 的 ESM/CJS/UMD/script tag 入口。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。

@@ -142,6 +142,8 @@ function generatedWrapperBlock(locale) {
       ),
       '',
       '完整参数、生命周期 hooks、beforeOperation、主题、水印、搜索、缩放、打印和导出说明见官方文档: https://doc.flyfish.dev/',
+      '',
+      '在线 Demo: https://viewer.flyfish.dev/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应 wrapper 仓库。',
       wrapperMarkers.end
     ].join('\n')
   }
@@ -167,6 +169,8 @@ function generatedWrapperBlock(locale) {
     ),
     '',
     'See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish.dev/',
+    '',
+    'Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching wrapper repository.',
     wrapperMarkers.end
   ].join('\n')
 }

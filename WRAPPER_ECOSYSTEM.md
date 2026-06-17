@@ -43,6 +43,14 @@ pnpm wrappers:readme
 
 The same command also refreshes the generated public ecosystem block in the root `README.md` and `README.en.md`. Because the public artifact repository copies those files, the artifact homepage keeps the standard npm packages, GitHub wrapper repositories, Gitee mirrors, core source visibility note and current format-count summary in sync with `ecosystem/wrappers.json`.
 
+Verify source wrapper packages and exported standalone repositories:
+
+```bash
+pnpm wrappers:verify
+```
+
+The verifier checks package names, README language pairs, generated ecosystem/format blocks, official documentation and demo links, Apache-2.0 attribution guidance, standalone manifests, GitHub/Gitee metadata and the absence of `workspace:` dependencies in exported repositories.
+
 ## Public Artifact Sync
 
 `scripts/sync-public-artifacts.mjs` also reads `ecosystem/wrappers.json`. During a full public artifact release it packs:
