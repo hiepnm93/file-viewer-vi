@@ -3,6 +3,7 @@ import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
   applyFileViewerRenderReadinessState,
@@ -16,6 +17,7 @@ import {
   isFileViewerAbortError,
   normalizeFileViewerSourceUrl,
   normalizePdfStreamingMode,
+  resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerSourceFilename,
@@ -164,6 +166,28 @@ describe('remote source loading helpers', () => {
     expect(target.sourceUrl).toBeNull()
     applyFileViewerPreviewSourceUrlState(target, '/example/pdf.pdf')
     expect(target.sourceUrl).toBe('/example/pdf.pdf')
+  })
+
+  it('plans FileRef sources and applies filenames in core', () => {
+    const file = new File(['demo'], '合同.docx')
+    const filePlan = resolveFileViewerFileRefSourcePlan({ source: file })
+
+    expect(filePlan.file).toBe(file)
+    expect(filePlan.filename).toBe('合同.docx')
+
+    const blobPlan = resolveFileViewerFileRefSourcePlan({
+      source: new Blob(['demo'], { type: 'text/plain' }),
+      currentFilename: '/tmp/manual.txt?token=1'
+    })
+
+    expect(blobPlan.file.name).toBe('manual.txt')
+    expect(blobPlan.filename).toBe('manual.txt')
+
+    const target = { filename: 'old.bin' }
+    expect(applyFileViewerPreviewFilenameState(target, '/example/%E5%90%88%E5%90%8C.pdf?download=1')).toBe(target)
+    expect(target.filename).toBe('合同.pdf')
+    applyFileViewerPreviewFilenameState(target, '', DEFAULT_FILE_VIEWER_SOURCE_FILENAME)
+    expect(target.filename).toBe(DEFAULT_FILE_VIEWER_SOURCE_FILENAME)
   })
 
   it('applies render readiness state without framework-specific refs', () => {

@@ -1,9 +1,9 @@
 import axios from 'axios'
 import type { Ref } from 'vue'
 import {
-  DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
   applyFileViewerRenderReadinessState,
@@ -11,11 +11,10 @@ import {
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
+  resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
   readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
-  resolveFileViewerSourceFilename,
-  wrapFileViewerFileRef
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -228,8 +227,12 @@ export const useViewerSourceLoading = ({
   }
 
   const previewLocalFile = async (source: FileRef, version: number) => {
-    const file = wrapFileViewerFileRef(source, filename.value || DEFAULT_FILE_VIEWER_SOURCE_FILENAME)
-    filename.value = resolveFileViewerSourceFilename({ file, fallback: DEFAULT_FILE_VIEWER_SOURCE_FILENAME })
+    const localSource = resolveFileViewerFileRefSourcePlan({
+      source,
+      currentFilename: filename.value
+    })
+    const { file } = localSource
+    applyFileViewerPreviewFilenameState(previewStateTarget, localSource.filename)
     markLoadStarted(version)
     notifyLifecycle(buildLifecycleContext({
       phase: 'load-start',
@@ -260,7 +263,7 @@ export const useViewerSourceLoading = ({
       url
     })
     const nextFilename = remoteSource.filename
-    filename.value = nextFilename
+    applyFileViewerPreviewFilenameState(previewStateTarget, nextFilename)
     markLoadStarted(version)
     notifyLifecycle(buildLifecycleContext({
       phase: 'load-start',
@@ -295,7 +298,11 @@ export const useViewerSourceLoading = ({
       }
 
       setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)
-      await readAndRenderFile(wrapFileViewerFileRef(data, nextFilename), version, url, 'url')
+      const downloadedSource = resolveFileViewerFileRefSourcePlan({
+        source: data,
+        currentFilename: nextFilename
+      })
+      await readAndRenderFile(downloadedSource.file, version, url, 'url')
     } catch (nextError) {
       if (!isCurrentRequest(version) || isFileViewerAbortError(nextError)) {
         return

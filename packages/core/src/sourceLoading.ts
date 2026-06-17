@@ -61,6 +61,17 @@ export interface FileViewerReadPreviewState {
   sourceUrl: string | null;
 }
 
+export interface FileViewerFileRefSourcePlan {
+  file: File;
+  filename: string;
+}
+
+export interface ResolveFileViewerFileRefSourcePlanInput {
+  source: FileViewerFileRef;
+  currentFilename?: string;
+  fallbackFilename?: string;
+}
+
 export interface CreateFileViewerReadPreviewStateInput {
   file: File;
   buffer: ArrayBuffer;
@@ -74,6 +85,8 @@ export type MutableFileViewerReadPreviewState = Pick<
 >;
 
 export type MutableFileViewerPreviewSourceUrlState = Pick<MutableFileViewerPreviewState, 'sourceUrl'>;
+
+export type MutableFileViewerPreviewFilenameState = Pick<MutableFileViewerPreviewState, 'filename'>;
 
 export type FileViewerRenderReadinessState = Pick<
   MutableFileViewerPreviewState,
@@ -226,6 +239,15 @@ export const applyFileViewerPreviewSourceUrlState = <Target extends MutableFileV
   return target;
 };
 
+export const applyFileViewerPreviewFilenameState = <Target extends MutableFileViewerPreviewFilenameState>(
+  target: Target,
+  filename?: string,
+  fallbackFilename = ''
+) => {
+  target.filename = resolveFileViewerSourceFilename({ filename, fallback: fallbackFilename });
+  return target;
+};
+
 export const applyFileViewerRenderReadinessState = <Target extends MutableFileViewerRenderReadinessState>(
   target: Target,
   state: Partial<FileViewerRenderReadinessState>
@@ -237,6 +259,18 @@ export const applyFileViewerRenderReadinessState = <Target extends MutableFileVi
     target.progressiveReady = state.progressiveReady;
   }
   return target;
+};
+
+export const resolveFileViewerFileRefSourcePlan = ({
+  source,
+  currentFilename,
+  fallbackFilename = DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
+}: ResolveFileViewerFileRefSourcePlanInput): FileViewerFileRefSourcePlan => {
+  const file = wrapFileViewerFileRef(source, currentFilename || fallbackFilename);
+  return {
+    file,
+    filename: resolveFileViewerSourceFilename({ file, fallback: fallbackFilename }),
+  };
 };
 
 export const normalizePdfStreamingMode = (
