@@ -1,10 +1,15 @@
+import { DEFAULT_RENDERER_DEFINITIONS } from './formats';
+import { createFileViewerRendererDispatcher } from './rendererDispatcher';
 import type { FileViewerRendererDispatcher } from './rendererDispatcher';
+import { createRendererRegistry } from './registry';
 import { normalizeFileExtension } from './source';
 import type {
   FileRenderContext,
   FileRenderHandler,
+  RendererDefinition,
   RendererLoadContext,
   RendererLoader,
+  RendererRegistry,
   RendererSession,
 } from './types';
 
@@ -32,6 +37,26 @@ export interface CreateFileRenderHandlerLoaderOptions<
 
 export interface FileRenderHandlerRendererSession<Rendered = unknown> extends RendererSession {
   rendered: Rendered;
+}
+
+export interface CreateFileRenderHandlerRegistryOptions<
+  Rendered = unknown,
+  Target extends HTMLElement = HTMLElement,
+> extends Omit<CreateFileRenderHandlerLoaderOptions<Rendered, Target>, 'handler'> {
+  definitions?: readonly RendererDefinition[];
+  handlers: Iterable<{
+    rendererId: string;
+    handler: FileRenderHandler<Rendered, Target>;
+  }>;
+}
+
+export interface FileRenderHandlerRegistryResult<
+  Rendered = unknown,
+  Target extends HTMLElement = HTMLElement,
+> {
+  registry: RendererRegistry;
+  dispatcher: FileViewerRendererDispatcher<FileRenderHandler<Rendered, Target>>;
+  missingRendererIds: string[];
 }
 
 export const disposeFileViewerRendered = (rendered?: unknown) => {
@@ -124,5 +149,44 @@ export const createFileRenderHandlerLoader = <
         return disposeFileViewerRendered(rendered);
       },
     } satisfies FileRenderHandlerRendererSession<Rendered>;
+  };
+};
+
+export const createFileRenderHandlerRegistry = <
+  Rendered = unknown,
+  Target extends HTMLElement = HTMLElement,
+>({
+  definitions = DEFAULT_RENDERER_DEFINITIONS,
+  handlers,
+  getTarget,
+  createContext,
+  destroy,
+}: CreateFileRenderHandlerRegistryOptions<Rendered, Target>): FileRenderHandlerRegistryResult<Rendered, Target> => {
+  const baseRegistry = createRendererRegistry(definitions);
+  const dispatcher = createFileViewerRendererDispatcher<FileRenderHandler<Rendered, Target>>({
+    registry: baseRegistry,
+    handlers,
+  });
+  const definitionsWithLoaders = baseRegistry.list().map(definition => {
+    const handler = dispatcher.handlersByRendererId.get(definition.id);
+    if (!handler) {
+      return definition;
+    }
+
+    return {
+      ...definition,
+      load: createFileRenderHandlerLoader({
+        handler,
+        getTarget,
+        createContext,
+        destroy,
+      }),
+    } satisfies RendererDefinition;
+  });
+
+  return {
+    registry: createRendererRegistry(definitionsWithLoaders),
+    dispatcher,
+    missingRendererIds: dispatcher.missingRendererIds,
   };
 };

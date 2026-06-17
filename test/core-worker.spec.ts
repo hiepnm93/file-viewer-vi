@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   WorkerRefImpl,
+  createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
   createFileViewerRendererDispatcher,
   disposeFileViewerRendered,
@@ -133,5 +134,45 @@ describe('@file-viewer/core worker and render contracts', () => {
     const destroy = vi.fn();
     disposeFileViewerRendered({ destroy });
     expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('builds renderer registries from legacy render handlers', async () => {
+    const unmount = vi.fn();
+    const handler: FileRenderHandler<{ unmount: () => void }, HTMLDivElement> = async (_buffer, target, type, context) => {
+      target.dataset.renderedType = type || '';
+      target.dataset.filename = context?.filename || '';
+      return { unmount };
+    };
+    const target = { dataset: {} } as HTMLDivElement;
+    const { registry, missingRendererIds } = createFileRenderHandlerRegistry({
+      definitions: [{
+        id: 'text-fixture',
+        label: 'Text Fixture',
+        category: 'code',
+        extensions: ['txt-fixture'],
+      }],
+      handlers: [{
+        rendererId: 'text-fixture',
+        handler,
+      }],
+    });
+    const renderer = registry.getByExtension('TXT-FIXTURE');
+
+    expect(missingRendererIds).toEqual([]);
+    expect(renderer?.load).toBeTypeOf('function');
+
+    const session = await renderer?.load?.({
+      source: normalizeSource({
+        buffer: new ArrayBuffer(1),
+        filename: 'demo.txt-fixture',
+      }),
+      surface: { container: target },
+      options: {},
+    });
+
+    expect(target.dataset.renderedType).toBe('txt-fixture');
+    expect(target.dataset.filename).toBe('demo.txt-fixture');
+    await session?.destroy?.();
+    expect(unmount).toHaveBeenCalledTimes(1);
   });
 });

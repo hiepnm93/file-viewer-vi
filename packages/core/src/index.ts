@@ -129,6 +129,7 @@ export {
 } from './rendererDispatcher';
 export {
   buildFileRenderContextFromLoadContext,
+  createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
   disposeFileViewerRendered,
   renderFileViewerHandler,
@@ -203,7 +204,9 @@ export type {
   FileViewerRendererHandlerEntry,
 } from './rendererDispatcher';
 export type {
+  CreateFileRenderHandlerRegistryOptions,
   CreateFileRenderHandlerLoaderOptions,
+  FileRenderHandlerRegistryResult,
   FileRenderHandlerRendererSession,
   RenderFileViewerHandlerInput,
 } from './rendererHandler';
