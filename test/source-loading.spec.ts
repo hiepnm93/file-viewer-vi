@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizePdfStreamingMode, shouldStreamPdfUrl } from '../src/package/common/sourceLoading'
+import { normalizePdfStreamingMode, shouldStreamPdfUrl } from '../packages/core/src'
 
 const pageHref = 'https://viewer.flyfish.dev/app/index.html'
 

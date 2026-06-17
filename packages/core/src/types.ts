@@ -78,6 +78,22 @@ export interface FileViewerDocxOptions {
   workerTimeout?: number;
 }
 
+export type FileRenderExportMode = 'export' | 'print';
+
+export interface FileRenderExportOptions {
+  mode: FileRenderExportMode;
+  title: string;
+}
+
+export interface FileRenderExportAdapter {
+  print?: boolean;
+  exportHtml?: boolean;
+  includeDocumentStyles?: boolean;
+  beforeSnapshot?: () => Promise<void> | void;
+  printStyle?: string | ((options: FileRenderExportOptions) => Promise<string> | string);
+  toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
+}
+
 export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
 }

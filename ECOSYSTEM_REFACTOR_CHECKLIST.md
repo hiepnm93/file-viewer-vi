@@ -83,6 +83,11 @@
 ## Phase 2: 抽离现有能力到 core
 
 - [ ] 从 `src/package/common` 抽出 source loading、类型识别、能力判断、打印导出、worker ref、生命周期事件。
+  - [x] source loading 的 PDF 流式策略迁入 `@file-viewer/core`。
+  - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。
+  - [x] 打印能力矩阵和 `resolvePrintAvailability` 迁入 `@file-viewer/core`。
+  - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
+  - [ ] worker ref 和生命周期事件迁入 `@file-viewer/core`。
 - [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
 - [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
@@ -235,6 +240,8 @@
 
 - [x] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
 - [ ] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
+  - [x] `FileViewerOptions`、source、生命周期、操作、导出适配、渲染器 registry 等 framework-neutral 类型已进入 core。
+  - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 相关 `Rendered` 类型，需要继续拆薄。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
 - [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。

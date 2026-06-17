@@ -4,6 +4,14 @@ export const normalizeFileExtension = (extension: string) => {
   return extension.trim().replace(/^\./, '').toLowerCase();
 };
 
+export const decodeFilename = (name: string) => {
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+};
+
 export const getExtension = (name: string) => {
   const clean = name.split(/[?#]/)[0] || name;
   const dot = clean.lastIndexOf('.');
@@ -16,7 +24,7 @@ export const normalizeFilename = (value: string | undefined, fallback = 'preview
     return fallback;
   }
   const slash = Math.max(next.lastIndexOf('/'), next.lastIndexOf('\\'));
-  return slash === -1 ? next : next.slice(slash + 1);
+  return decodeFilename(slash === -1 ? next : next.slice(slash + 1));
 };
 
 const getSourceKind = (source: FileViewerSource): FileViewerSourceKind => {

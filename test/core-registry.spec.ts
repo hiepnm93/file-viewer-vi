@@ -21,6 +21,11 @@ describe('@file-viewer/core registry', () => {
 
   it('normalizes file names, query strings and explicit type overrides', () => {
     expect(getExtension('/docs/report.PDF?token=1')).toBe('pdf');
+    expect(normalizeSource({ url: '/example/PDF%20%E6%B2%89%E6%B5%B8.pdf?token=1' })).toMatchObject({
+      kind: 'url',
+      filename: 'PDF 沉浸.pdf',
+      extension: 'pdf',
+    });
     expect(normalizeSource({ url: 'https://example.com/a/b/合同.docx?download=1' })).toMatchObject({
       kind: 'url',
       filename: '合同.docx',

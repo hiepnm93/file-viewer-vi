@@ -2,8 +2,7 @@
 import axios from 'axios'
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
-import { resolvePrintAvailability } from '../../common/printCapability'
-import { shouldStreamPdfUrl } from '../../common/sourceLoading'
+import { getExtension, normalizeFilename, resolvePrintAvailability, shouldStreamPdfUrl } from '@file-viewer/core'
 import { readBuffer } from '../../common/util'
 import type {
   FileRef,
@@ -23,7 +22,7 @@ import type {
   Rendered
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
-import { getExtend, render } from './util'
+import { render } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
@@ -98,11 +97,7 @@ const {
 
 const displayFilename = computed(() => getSourceFilename())
 const currentExtend = computed(() => {
-  const name = displayFilename.value
-  if (!name || !name.includes('.')) {
-    return ''
-  }
-  return getExtend(name).toLowerCase()
+  return getExtension(displayFilename.value)
 })
 
 const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
@@ -181,20 +176,6 @@ const operationLabels: Record<FileViewerOperationType, string> = {
   'zoom-reset': '还原预览比例'
 }
 
-const normalizeFilename = (name: string) => {
-  try {
-    return decodeURIComponent(name)
-  } catch {
-    return name
-  }
-}
-
-const getFilenameFromUrl = (url: string) => {
-  const clean = url.split('?')[0]?.split('#')[0] || url
-  const tail = clean.substring(clean.lastIndexOf('/') + 1) || clean
-  return normalizeFilename(tail)
-}
-
 const getSourceFilename = () => {
   if (filename.value) {
     return filename.value
@@ -203,14 +184,9 @@ const getSourceFilename = () => {
     return normalizeFilename(props.file.name)
   }
   if (typeof props.url === 'string' && props.url) {
-    return getFilenameFromUrl(props.url)
+    return normalizeFilename(props.url)
   }
   return ''
-}
-
-const getFilenameExtension = (name: string) => {
-  const dot = name.lastIndexOf('.')
-  return dot >= 0 ? name.substring(dot + 1).toLowerCase() : ''
 }
 
 const toSerializableContext = (
@@ -275,12 +251,12 @@ const buildLifecycleContext = ({
   sourceUrl?: string;
   reason?: FileViewerLifecycleContext['reason'];
 }): FileViewerLifecycleContext => {
-  const name = normalizeFilename(file?.name || filename.value || (sourceUrl ? getFilenameFromUrl(sourceUrl) : ''))
+  const name = normalizeFilename(file?.name || filename.value || sourceUrl || '')
   const startedAt = loadStartedAt.get(version)
   const now = Date.now()
   return {
     phase,
-    type: getFilenameExtension(name),
+    type: getExtension(name),
     filename: name,
     source,
     url: sourceUrl,
@@ -612,7 +588,7 @@ const mountRenderedContent = async (
   }
 
   try {
-    const rendered = await render(buffer, getExtend(file.name), child, {
+    const rendered = await render(buffer, getExtension(file.name), child, {
       filename: file.name,
       url: sourceUrl,
       streamUrl,
@@ -682,7 +658,7 @@ const canStreamRemotePdf = (url: string, nextFilename: string) => {
     return false
   }
   return shouldStreamPdfUrl({
-    extension: getFilenameExtension(nextFilename),
+    extension: getExtension(nextFilename),
     pageHref: window.location.href,
     streaming: props.options?.pdf?.streaming,
     url
@@ -751,7 +727,7 @@ const previewLocalFile = async (source: FileRef, version: number) => {
 
 // 远端预览额外管理下载控制器，新的请求进来时可以立即中断旧下载。
 const previewRemoteFile = async (url: string, version: number) => {
-  const nextFilename = getFilenameFromUrl(url)
+  const nextFilename = normalizeFilename(url)
   filename.value = nextFilename
   loadStartedAt.set(version, Date.now())
   notifyLifecycle(buildLifecycleContext({

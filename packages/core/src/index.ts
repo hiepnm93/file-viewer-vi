@@ -7,8 +7,25 @@ export {
   TEXT_EXTENSIONS,
 } from './formats';
 export { createRendererRegistry } from './registry';
-export { createUnsupportedAvailability, DEFAULT_OPERATION_AVAILABILITY, getRendererAvailability } from './capabilities';
-export { getExtension, normalizeFileExtension, normalizeFilename, normalizeSource } from './source';
+export {
+  ADAPTER_PRINT_REQUIRED_EXTENSIONS,
+  createUnsupportedAvailability,
+  DEFAULT_OPERATION_AVAILABILITY,
+  DOM_PRINTABLE_EXTENSIONS,
+  getRendererAvailability,
+  isDomPrintableExtension,
+  isKnownNonPrintableExtension,
+  needsDedicatedPrintAdapter,
+  NON_PRINTABLE_EXTENSIONS,
+  resolvePrintAvailability,
+} from './capabilities';
+export { decodeFilename, getExtension, normalizeFileExtension, normalizeFilename, normalizeSource } from './source';
+export {
+  DEFAULT_PDF_RANGE_CHUNK_SIZE,
+  isSameOriginUrl,
+  normalizePdfStreamingMode,
+  shouldStreamPdfUrl,
+} from './sourceLoading';
 export { createViewer } from './viewer';
 export type { CreateViewerOptions } from './viewer';
 export type {
@@ -21,6 +38,9 @@ export type {
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk,
   FileViewerDocxOptions,
+  FileRenderExportAdapter,
+  FileRenderExportMode,
+  FileRenderExportOptions,
   FileViewerInstance,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
