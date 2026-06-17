@@ -40,6 +40,23 @@ export {
   createFileViewerZoomController,
 } from './documentZoom';
 export {
+  DEFAULT_FILE_VIEWER_PUBLIC_DIR,
+  DEFAULT_FILE_VIEWER_URL,
+  appendFileViewerFrameSearchParam,
+  buildFileViewerFrameSrc,
+  canUseFileViewerDom,
+  createFileViewerFrameUrl,
+  getFileViewerCurrentOrigin,
+  getFileViewerFrameOrigin,
+  getFileViewerFrameSourceFilename,
+  getFileViewerFrameUrl,
+  isFileViewerAbsoluteUrl,
+  normalizeFileViewerFrameUrl,
+  postFileToFileViewerFrame,
+  serializeFileViewerFrameUrl,
+  toFileViewerFrameMessageBlob,
+} from './frame';
+export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
   collectFileViewerDocumentAnchors,
@@ -203,6 +220,11 @@ export type {
   FileViewerOperationExecutorBase,
   FileViewerOriginalSourceState,
 } from './viewerOperations';
+export type {
+  BuildFileViewerFrameSrcOptions,
+  FileViewerFrameOptions,
+  FileViewerFrameParamValue,
+} from './frame';
 export type {
   FileViewerSerializableCadOptions,
   FileViewerSerializableOptions,

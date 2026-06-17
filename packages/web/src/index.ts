@@ -1,12 +1,24 @@
 import {
+  DEFAULT_FILE_VIEWER_PUBLIC_DIR,
+  DEFAULT_FILE_VIEWER_URL,
+  buildFileViewerFrameSrc,
+  canUseFileViewerDom,
+  getFileViewerCurrentOrigin,
+  getFileViewerFrameOrigin,
+  getFileViewerFrameSourceFilename,
+  getFileViewerFrameUrl,
   isFileViewerFrameEvent,
-  setFileViewerOptionsSearchParam
+  postFileToFileViewerFrame,
+  toFileViewerFrameMessageBlob
 } from '@file-viewer/core'
 import type {
+  FileViewerFileRef,
   FileViewerAiOptions,
   FileViewerArchiveOptions,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
+  FileViewerFrameOptions,
+  FileViewerFrameParamValue,
   FileViewerPdfOptions,
   FileViewerPostMessageType,
   FileViewerSearchOptions,
@@ -17,9 +29,9 @@ import type {
   FileViewerWatermarkOptions
 } from '@file-viewer/core'
 
-export type FileRef = File | Blob | ArrayBuffer
+export type FileRef = FileViewerFileRef
 
-export type ViewerFrameParamValue = string | number | boolean | null | undefined
+export type ViewerFrameParamValue = FileViewerFrameParamValue
 
 export type ViewerWatermarkOptions = FileViewerWatermarkOptions
 export type ViewerToolbarPosition = FileViewerToolbarPosition
@@ -35,52 +47,7 @@ export type ViewerFrameEventType = FileViewerPostMessageType
 export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
 export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
 
-export interface ViewerFrameOptions {
-  /**
-   * 私有化部署后的 Vue 基线预览器页面地址。
-   *
-   * 默认使用安装后复制到宿主项目的 `/file-viewer/index.html`。
-   */
-  viewerUrl?: string
-  /**
-   * 远端文件地址。会透传为预览器的 `url` 查询参数。
-   */
-  url?: string
-  /**
-   * 本地二进制输入。优先级高于 `url`，会通过 postMessage 推送给 iframe。
-   */
-  file?: FileRef
-  /**
-   * 当 file 是 Blob 或 ArrayBuffer 时用于识别扩展名。
-   */
-  name?: string
-  /**
-   * 允许推送二进制的宿主 origin。默认取当前页面 origin。
-   */
-  from?: string
-  /**
-   * postMessage 的目标 origin。默认从 viewerUrl 推导。
-   */
-  targetOrigin?: string
-  /**
-   * 预留给后续 Vue 基线页面扩展的查询参数。
-   */
-  params?: Record<string, ViewerFrameParamValue>
-  /**
-   * iframe 入口页的缓存标识。默认使用当前 web 包版本，避免部署后浏览器继续命中旧 index.html。
-   *
-   * 传入 false 可关闭自动追加。
-   */
-  cacheKey?: string | false
-  /**
-   * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
-   */
-  options?: ViewerRuntimeOptions
-  /**
-   * iframe 模式下接收基线预览器抛出的生命周期和操作事件。
-   */
-  onEvent?: ViewerFrameEventHandler
-}
+export interface ViewerFrameOptions extends FileViewerFrameOptions {}
 
 export interface CreateViewerFrameOptions extends ViewerFrameOptions {
   autoPostFile?: boolean
@@ -98,140 +65,44 @@ export interface ViewerFrameController {
   update(options: ViewerFrameOptions): string
 }
 
-export const DEFAULT_VIEWER_PUBLIC_DIR = '/file-viewer'
-export const DEFAULT_VIEWER_URL = `${DEFAULT_VIEWER_PUBLIC_DIR}/index.html`
+export const DEFAULT_VIEWER_PUBLIC_DIR = DEFAULT_FILE_VIEWER_PUBLIC_DIR
+export const DEFAULT_VIEWER_URL = DEFAULT_FILE_VIEWER_URL
 export const VIEWER_FRAME_CACHE_KEY = '1.0.23'
 const DEFAULT_FRAME_TITLE = 'Flyfish Viewer 文件预览'
 const FILE_POST_RETRY_LIMIT = 8
 const FILE_POST_RETRY_INTERVAL = 120
 
-const canUseDom = () => typeof window !== 'undefined' && typeof document !== 'undefined'
-
-const isFile = (value: unknown): value is File => {
-  return typeof File !== 'undefined' && value instanceof File
-}
-
-const isBlob = (value: unknown): value is Blob => {
-  return typeof Blob !== 'undefined' && value instanceof Blob
-}
-
-const isArrayBuffer = (value: unknown): value is ArrayBuffer => {
-  return typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer
-}
-
-const normalizeViewerUrl = (viewerUrl?: string) => {
-  const value = viewerUrl || DEFAULT_VIEWER_URL
-  return value.endsWith('/') ? `${value}index.html` : value
-}
-
-const createUrl = (viewerUrl?: string) => {
-  if (canUseDom()) {
-    return new URL(normalizeViewerUrl(viewerUrl), window.location.href)
-  }
-  return new URL(normalizeViewerUrl(viewerUrl), 'http://localhost')
-}
-
-const isAbsoluteUrl = (value?: string) => {
-  return !!value && (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(value) || value.startsWith('//'))
-}
-
-const serializeViewerUrl = (url: URL, viewerUrl?: string) => {
-  if (isAbsoluteUrl(viewerUrl)) {
-    return url.toString()
-  }
-  return url.pathname + url.search + url.hash
-}
-
-const appendSearchParam = (target: URL, key: string, value: ViewerFrameParamValue) => {
-  if (value === undefined || value === null || value === '') {
-    target.searchParams.delete(key)
-    return
-  }
-  target.searchParams.set(key, String(value))
-}
+const canUseDom = canUseFileViewerDom
 
 export const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
   return isFileViewerFrameEvent(value)
 }
 
-export const getCurrentOrigin = () => {
-  return canUseDom() ? window.location.origin : ''
-}
+export const getCurrentOrigin = getFileViewerCurrentOrigin
 
-export const getViewerUrl = (viewerUrl?: string) => normalizeViewerUrl(viewerUrl)
+export const getViewerUrl = (viewerUrl?: string) => getFileViewerFrameUrl(viewerUrl, DEFAULT_VIEWER_URL)
 
 export const getViewerOrigin = (viewerUrl?: string) => {
-  if (!viewerUrl && !canUseDom()) {
-    return ''
-  }
-  return createUrl(viewerUrl).origin
+  return getFileViewerFrameOrigin(viewerUrl, DEFAULT_VIEWER_URL)
 }
 
-export const getSourceFilename = (options: Pick<ViewerFrameOptions, 'file' | 'name' | 'url'>) => {
-  if (isFile(options.file) && options.file.name) {
-    return options.file.name
-  }
-  if (options.name) {
-    return options.name
-  }
-  if (options.url) {
-    const clean = options.url.split('?')[0]?.split('#')[0] || options.url
-    return clean.substring(clean.lastIndexOf('/') + 1) || clean
-  }
-  return 'preview.bin'
-}
+export const getSourceFilename = getFileViewerFrameSourceFilename
 
 export const buildViewerSrc = (options: ViewerFrameOptions = {}) => {
-  const src = createUrl(options.viewerUrl)
-
-  Object.entries(options.params || {}).forEach(([key, value]) => {
-    appendSearchParam(src, key, value)
+  return buildFileViewerFrameSrc({
+    ...options,
+    defaultViewerUrl: DEFAULT_VIEWER_URL,
+    defaultCacheKey: VIEWER_FRAME_CACHE_KEY
   })
-  appendSearchParam(
-    src,
-    '__flyfish_viewer_version',
-    options.cacheKey === false ? undefined : (options.cacheKey || VIEWER_FRAME_CACHE_KEY)
-  )
-  setFileViewerOptionsSearchParam(src.searchParams, options.options)
-
-  if (options.file) {
-    appendSearchParam(src, 'url', undefined)
-    appendSearchParam(src, 'name', getSourceFilename(options))
-    appendSearchParam(src, 'from', options.from || getCurrentOrigin())
-    return serializeViewerUrl(src, options.viewerUrl)
-  }
-
-  appendSearchParam(src, 'name', undefined)
-  appendSearchParam(src, 'from', undefined)
-  appendSearchParam(src, 'url', options.url)
-  return serializeViewerUrl(src, options.viewerUrl)
 }
 
-export const toMessageBlob = (file?: FileRef) => {
-  if (!file) {
-    return undefined
-  }
-  if (isBlob(file)) {
-    return file
-  }
-  if (isArrayBuffer(file)) {
-    return new Blob([file])
-  }
-  return undefined
-}
+export const toMessageBlob = toFileViewerFrameMessageBlob
 
 export const postFileToViewer = (
   frame: HTMLIFrameElement | null | undefined,
   options: ViewerFrameOptions
 ) => {
-  const data = toMessageBlob(options.file)
-  const targetWindow = frame?.contentWindow
-  if (!data || !targetWindow) {
-    return false
-  }
-
-  targetWindow.postMessage(data, options.targetOrigin || getViewerOrigin(options.viewerUrl))
-  return true
+  return postFileToFileViewerFrame(frame, options)
 }
 
 export const syncViewerFrame = (
