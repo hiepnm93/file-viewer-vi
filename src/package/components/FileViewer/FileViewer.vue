@@ -8,6 +8,7 @@ import {
   buildFileViewerOperationContext,
   createFileViewerErrorState,
   createFileViewerPostMessagePayload,
+  disposeFileViewerRendered,
   formatFileViewerErrorMessage,
   getExtension,
   normalizeFilename,
@@ -372,18 +373,6 @@ const zoomButtonDisabled = (action: keyof Pick<FileViewerZoomState, 'canZoomIn' 
   return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
 }
 
-const disposeRendered = (rendered?: Rendered) => {
-  if (!rendered) {
-    return
-  }
-  const disposable = rendered as { unmount?: () => void; $destroy?: () => void }
-  if (disposable.unmount) {
-    disposable.unmount()
-    return
-  }
-  disposable.$destroy?.()
-}
-
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
 const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
   const context = activeDocumentContext
@@ -397,7 +386,7 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
   }
 
   try {
-    disposeRendered(activeRendered)
+    disposeFileViewerRendered(activeRendered)
   } catch (nextError) {
     console.warn('预览内容卸载失败', nextError)
   } finally {
@@ -478,7 +467,7 @@ const mountRenderedContent = async (
       }
     })
     if (!isCurrentRequest(version)) {
-      disposeRendered(rendered)
+      disposeFileViewerRendered(rendered)
       if (child.parentNode === out) {
         out.removeChild(child)
       }
@@ -513,7 +502,7 @@ const readAndRenderFile = async (
 
   const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
-    disposeRendered(rendered)
+    disposeFileViewerRendered(rendered)
     return
   }
   activeRendered = rendered
@@ -550,7 +539,7 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
     currentSourceUrl.value = url
     const rendered = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
     if (!isCurrentRequest(version)) {
-      disposeRendered(rendered)
+      disposeFileViewerRendered(rendered)
       return
     }
     activeRendered = rendered

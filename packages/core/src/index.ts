@@ -128,6 +128,12 @@ export {
   createFileViewerRendererDispatcher,
 } from './rendererDispatcher';
 export {
+  buildFileRenderContextFromLoadContext,
+  createFileRenderHandlerLoader,
+  disposeFileViewerRendered,
+  renderFileViewerHandler,
+} from './rendererHandler';
+export {
   decodeFilename,
   getExtension,
   normalizeFileExtension,
@@ -196,6 +202,11 @@ export type {
   FileViewerRendererDispatcher,
   FileViewerRendererHandlerEntry,
 } from './rendererDispatcher';
+export type {
+  CreateFileRenderHandlerLoaderOptions,
+  FileRenderHandlerRendererSession,
+  RenderFileViewerHandlerInput,
+} from './rendererHandler';
 export type {
   FileViewerSearchProviderHost,
   FileViewerZoomProviderHost,

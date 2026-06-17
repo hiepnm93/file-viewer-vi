@@ -1,3 +1,4 @@
+import { renderFileViewerHandler } from '@file-viewer/core'
 import { vueRendererDispatcher } from "@/package/vendors/renders";
 import type { FileRenderContext } from '@/package/common/type'
 
@@ -7,9 +8,11 @@ export function getExtend(name: string) {
 }
 
 export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivElement, context?: FileRenderContext) {
-  const normalizedType = type.toLowerCase()
-  const handler = vueRendererDispatcher.resolve(normalizedType)
-  if (handler) {
-    return handler(buffer, target, normalizedType, context);
-  }
+  return renderFileViewerHandler({
+    dispatcher: vueRendererDispatcher,
+    buffer,
+    target,
+    type,
+    context
+  })
 }

@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   WorkerRefImpl,
+  createFileRenderHandlerLoader,
+  createFileViewerRendererDispatcher,
+  disposeFileViewerRendered,
+  normalizeSource,
+  renderFileViewerHandler,
   refWorker,
   type FileRenderContext,
   type FileRenderHandler,
+  type RendererDefinition,
 } from '../packages/core/src';
 
 describe('@file-viewer/core worker and render contracts', () => {
@@ -57,5 +63,75 @@ describe('@file-viewer/core worker and render contracts', () => {
     await expect(handler(new ArrayBuffer(1), target, 'pdf', context)).resolves.toBe('demo.pdf');
     expect(target.dataset.renderedType).toBe('pdf');
     expect(context.onProgressiveRender).toHaveBeenCalledTimes(1);
+  });
+
+  it('invokes render handlers through the core dispatcher contract', async () => {
+    const context: FileRenderContext = {
+      filename: 'demo.pdf',
+      onProgressiveRender: vi.fn(),
+    };
+    const handler: FileRenderHandler<string, HTMLDivElement> = async (_buffer, target, type, nextContext) => {
+      nextContext?.onProgressiveRender?.();
+      target.dataset.renderedType = type || '';
+      return nextContext?.filename || '';
+    };
+    const dispatcher = createFileViewerRendererDispatcher({
+      registry: {
+        list: () => [{
+          id: 'pdf',
+          label: 'PDF',
+          category: 'document',
+          extensions: ['pdf'],
+        } as RendererDefinition],
+        register: () => undefined,
+        unregister: () => false,
+        getById: () => undefined,
+        getByExtension: () => undefined,
+        hasExtension: () => false,
+        listExtensions: () => [],
+      },
+      handlers: [{ rendererId: 'pdf', handler }],
+    });
+    const target = { dataset: {} } as HTMLDivElement;
+
+    await expect(renderFileViewerHandler({
+      dispatcher,
+      buffer: new ArrayBuffer(1),
+      target,
+      type: '.PDF',
+      context,
+    })).resolves.toBe('demo.pdf');
+
+    expect(target.dataset.renderedType).toBe('pdf');
+    expect(context.onProgressiveRender).toHaveBeenCalledTimes(1);
+  });
+
+  it('adapts legacy render handlers into renderer loaders', async () => {
+    const unmount = vi.fn();
+    const handler: FileRenderHandler<{ unmount: () => void }, HTMLDivElement> = async (_buffer, target, type, context) => {
+      target.dataset.renderedType = type || '';
+      target.dataset.filename = context?.filename || '';
+      return { unmount };
+    };
+    const loader = createFileRenderHandlerLoader({ handler });
+    const target = { dataset: {} } as HTMLDivElement;
+    const session = await loader({
+      source: normalizeSource({
+        buffer: new ArrayBuffer(1),
+        filename: 'demo.docx',
+      }),
+      surface: { container: target },
+      options: {},
+      registerExportAdapter: vi.fn(),
+    });
+
+    expect(target.dataset.renderedType).toBe('docx');
+    expect(target.dataset.filename).toBe('demo.docx');
+    await session.destroy?.();
+    expect(unmount).toHaveBeenCalledTimes(1);
+
+    const destroy = vi.fn();
+    disposeFileViewerRendered({ destroy });
+    expect(destroy).toHaveBeenCalledTimes(1);
   });
 });
