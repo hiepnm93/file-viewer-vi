@@ -232,6 +232,7 @@
   - [x] wrapper 共享 mounted/controller handle 工厂，Vue2.6 / Vue2.7 / Vue3 / React legacy / Svelte 的公开实例方法默认值和销毁语义由 core/web 统一维护。
   - [x] React 标准 wrapper 的 iframe 文件投递控制器改为经由 `@file-viewer/web` 门面获取，标准 wrapper 不再直接 import `@file-viewer/core`。
   - [x] React 历史兼容包改为经由 `@flyfish-group/file-viewer-web` 门面获取 iframe 协议能力，不再直接 import `@file-viewer/core`。
+  - [x] 新增 `pnpm verify:compatibility-api`，校验历史兼容包运行门面边界，防止 React 兼容包绕过 web 门面、`file-viewer3` 非 scoped alias 携带重复源码或纯 Web 兼容包丢失 core 门面导出。
 
 ## Phase 5: 公开仓库与 README
 

@@ -30,6 +30,7 @@ pnpm install
 | `pnpm verify:branch-roles` | 校验 `origin` 私有 Gitea 源码边界、main/v2/v3 分支职责、core 私有策略、wrapper 公开仓库和公开成品仓库策略 |
 | `pnpm verify:core-api` | 校验 `@file-viewer/core` 入口、实例方法、framework-neutral 类型、ESM/声明产物元数据和纯 TS 源码边界 |
 | `pnpm verify:format-support` | 校验 core 格式矩阵保持 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致 |
+| `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包经由 web 兼容门面接入 iframe 协议，纯 Web 兼容包统一承接 core，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
@@ -38,7 +39,7 @@ pnpm install
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
-| `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 README、生态版本和 npm manifest 校验 |
+| `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 API/README、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
 | `pnpm docker:build` | 使用 Dockerfile 构建本机架构镜像 |
