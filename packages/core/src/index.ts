@@ -1,13 +1,19 @@
 export {
   DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_ARCHIVE_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_DWF_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS,
   DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL,
+  DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_PACKAGE_PATH,
+  getFileViewerRendererAssetManifest,
+  listFileViewerRendererAssetManifests,
   resolveFileViewerArchiveWasmUrl,
   resolveFileViewerArchiveWorkerUrl,
   resolveFileViewerAssetUrl,
   resolveFileViewerCadAssetUrls,
+  resolveFileViewerRendererAssets,
   resolveFileViewerTypstCompilerWasmUrl,
 } from './assets';
 export {
@@ -201,7 +207,14 @@ export type { FileViewerRequestController } from './sourceLoading';
 export { createViewer } from './viewer';
 export { WorkerRefImpl, refWorker } from './worker';
 export type {
+  FileViewerRendererAssetDefinition,
+  FileViewerRendererAssetKind,
+  FileViewerRendererAssetManifest,
+  FileViewerRendererAssetOptionPath,
+  FileViewerRendererAssetTarget,
   ResolveFileViewerAssetUrlOptions,
+  ResolveFileViewerRendererAssetsOptions,
+  ResolvedFileViewerRendererAsset,
   ResolvedFileViewerCadAssetUrls,
 } from './assets';
 export type {

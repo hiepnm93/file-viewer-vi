@@ -94,7 +94,7 @@
 - [x] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
   - [x] `@file-viewer/core` 提供 viewer asset URL、archive worker/wasm、CAD wasm/worker、Typst compiler wasm 默认解析。
   - [x] archive / CAD / Typst 首批重型资源链路接入 core resolver，保持现有默认路径与 fallback 行为。
-  - [ ] 后续 renderer plugin manifest 需要继续声明各自 assets，供 React/Vue/Svelte/pure JS wrapper 自动复制或外链。
+  - [x] renderer asset manifest 已由 core 声明 archive、CAD、Typst 的 worker/WASM 资源，并提供统一解析 API，供 React/Vue/Svelte/pure JS wrapper 自动复制或外链。
 
 ## Phase 2: 抽离现有能力到 core
 
