@@ -518,15 +518,18 @@ async function verifyVue3ScopedCompatibility() {
     'postFileViewerOperationAvailabilityChange',
     'postFileViewerZoomChange',
     'resolveFileViewerOperationAvailability',
-    'resolveVisibleFileViewerToolbar'
+    'resolveVisibleFileViewerToolbar',
+    'source: {'
   ], vueToolbarHookLabel)
   for (const forbiddenToken of [
     "createFileViewerRawPostMessagePayload('flyfish-viewer:operation'",
-    'postFileViewerMessageToParent('
+    'postFileViewerMessageToParent(',
+    'hasOriginalSource: !!currentBuffer.value || !!currentSourceUrl.value',
+    '!!currentBuffer.value || !!currentSourceUrl.value'
   ]) {
     assert(
       !vueToolbarHookSource.includes(forbiddenToken),
-      `${vueToolbarHookLabel} must delegate operation postMessage payloads to @file-viewer/core instead of ${forbiddenToken}`
+      `${vueToolbarHookLabel} must delegate operation payloads and source availability to @file-viewer/core instead of ${forbiddenToken}`
     )
   }
 

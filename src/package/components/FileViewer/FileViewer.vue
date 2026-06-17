@@ -182,6 +182,7 @@ const {
   activeExportAdapter,
   currentBuffer,
   currentExtend,
+  currentFile,
   currentSourceUrl,
   error,
   getOptions: () => props.options,

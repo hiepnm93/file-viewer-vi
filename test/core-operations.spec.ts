@@ -424,6 +424,32 @@ describe('@file-viewer/core operation helpers', () => {
       exportHtml: true,
       zoom: true,
     });
+    expect(resolveFileViewerOperationAvailability({
+      extension: 'docx',
+      source: {
+        file: new File(['demo'], 'demo.docx'),
+      },
+      renderedReady: false,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: false,
+        canZoomOut: false,
+        canReset: false,
+      },
+    }).download).toBe(true);
+    expect(resolveFileViewerOperationAvailability({
+      extension: 'docx',
+      source: {},
+      renderedReady: false,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: false,
+        canZoomOut: false,
+        canReset: false,
+      },
+    }).download).toBe(false);
     expect(resolveFileViewerToolbarPosition(undefined, 'pdf')).toBe('bottom-right');
     expect(resolveFileViewerToolbarPosition({ toolbar: { position: 'top' } }, 'pdf')).toBe('top');
   });

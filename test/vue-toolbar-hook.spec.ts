@@ -12,6 +12,7 @@ describe('Vue FileViewer toolbar hook', () => {
     const activeExportAdapter = shallowRef(null)
     const currentBuffer = ref(new ArrayBuffer(8))
     const currentExtend = computed(() => 'pdf')
+    const currentFile = ref<File | null>(null)
     const currentSourceUrl = ref<string | null>(null)
     const error = ref('')
     const loading = ref(false)
@@ -39,6 +40,7 @@ describe('Vue FileViewer toolbar hook', () => {
       activeExportAdapter,
       currentBuffer,
       currentExtend,
+      currentFile,
       currentSourceUrl,
       error,
       getOptions: () => undefined,

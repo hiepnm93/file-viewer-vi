@@ -1,5 +1,9 @@
 import { resolvePrintAvailability } from './capabilities';
 import { getExtension, normalizeFilename } from './source';
+import {
+  hasFileViewerOriginalSource,
+  type FileViewerOriginalSourceState,
+} from './viewerOperations';
 import type {
   FileRenderExportAdapter,
   FileViewerDocumentAnchor,
@@ -98,7 +102,8 @@ export type FileViewerFrameEventHandler<Payload = unknown> = (
 
 export interface ResolveFileViewerOperationAvailabilityInput {
   extension: string;
-  hasOriginalSource: boolean;
+  hasOriginalSource?: boolean;
+  source?: FileViewerOriginalSourceState | null;
   renderedReady: boolean;
   hasError?: boolean;
   adapter?: FileRenderExportAdapter | null;
@@ -467,13 +472,15 @@ export const resolveFileViewerOperationAvailability = ({
   renderedReady,
   hasError = false,
   adapter,
+  source,
   zoomState,
 }: ResolveFileViewerOperationAvailabilityInput): FileViewerOperationAvailability => {
   const hasRenderableOutput = renderedReady && !hasError;
+  const hasSource = hasOriginalSource ?? (source ? hasFileViewerOriginalSource(source) : false);
   const zoomEnabled = hasRenderableOutput && (zoomState.canZoomIn || zoomState.canZoomOut || zoomState.canReset);
 
   return {
-    download: hasOriginalSource,
+    download: hasSource,
     print: hasRenderableOutput && resolvePrintAvailability(extension, adapter ?? null, renderedReady),
     exportHtml: hasRenderableOutput && adapter?.exportHtml !== false,
     zoom: zoomEnabled,

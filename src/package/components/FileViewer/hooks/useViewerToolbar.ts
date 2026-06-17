@@ -19,6 +19,7 @@ interface UseViewerToolbarOptions {
   activeExportAdapter: ShallowRef<FileRenderExportAdapter | null>;
   currentBuffer: Ref<ArrayBuffer | null>;
   currentExtend: ComputedRef<string>;
+  currentFile: Ref<File | null>;
   currentSourceUrl: Ref<string | null>;
   error: Ref<string>;
   getOptions: () => FileViewerOptions | undefined;
@@ -41,6 +42,7 @@ export const useViewerToolbar = ({
   activeExportAdapter,
   currentBuffer,
   currentExtend,
+  currentFile,
   currentSourceUrl,
   error,
   getOptions,
@@ -55,7 +57,11 @@ export const useViewerToolbar = ({
   const operationAvailability = computed<FileViewerOperationAvailability>(() => {
     return resolveFileViewerOperationAvailability({
       extension: currentExtend.value,
-      hasOriginalSource: !!currentBuffer.value || !!currentSourceUrl.value,
+      source: {
+        buffer: currentBuffer.value,
+        file: currentFile.value,
+        url: currentSourceUrl.value
+      },
       renderedReady: renderedReady.value,
       hasError: !!error.value,
       adapter: activeExportAdapter.value,
