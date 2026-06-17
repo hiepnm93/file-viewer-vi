@@ -8,10 +8,12 @@ import {
   buildFileViewerOperationContext,
   createFileViewerErrorState,
   createFileViewerPostMessagePayload,
+  createFileViewerRawPostMessagePayload,
   formatFileViewerErrorMessage,
   getExtension,
   normalizeFilename,
   normalizeFileViewerToolbar,
+  postFileViewerMessageToParent,
   readFileViewerBuffer,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
@@ -167,32 +169,19 @@ const postViewerEvent = (
   event: string,
   context: FileViewerLifecycleContext | FileViewerOperationContext
 ) => {
-  if (typeof window === 'undefined' || window.parent === window) {
-    return
-  }
-  window.parent.postMessage(createFileViewerPostMessagePayload(type, event, context), '*')
+  postFileViewerMessageToParent(createFileViewerPostMessagePayload(type, event, context))
 }
 
 const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
-  if (typeof window === 'undefined' || window.parent === window) {
-    return
-  }
-  window.parent.postMessage({
-    type: 'flyfish-viewer:operation',
-    event: 'operation-availability-change',
-    payload: availability
-  }, '*')
+  postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability)
+  )
 }
 
 const postViewerZoomState = (state: FileViewerZoomState) => {
-  if (typeof window === 'undefined' || window.parent === window) {
-    return
-  }
-  window.parent.postMessage({
-    type: 'flyfish-viewer:operation',
-    event: 'zoom-change',
-    payload: state
-  }, '*')
+  postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state)
+  )
 }
 
 const buildLifecycleContext = ({

@@ -6,6 +6,10 @@ import type {
   FileViewerSearchState
 } from '@/package/common/type'
 import {
+  createFileViewerRawPostMessagePayload,
+  postFileViewerMessageToParent
+} from '@file-viewer/core'
+import {
   buildDocumentTextChunks,
   getCurrentDocumentAnchor,
   scrollToDocumentAnchor,
@@ -19,21 +23,12 @@ interface UseViewerDocumentFeaturesOptions {
   emitLocationChange: (anchor: FileViewerDocumentAnchor | null) => void;
 }
 
-const canPostToParent = () => typeof window !== 'undefined' && window.parent !== window
-
 const postViewerPayload = (
   type: 'flyfish-viewer:search' | 'flyfish-viewer:location',
   event: string,
   payload: FileViewerSearchState | FileViewerDocumentAnchor | null
 ) => {
-  if (!canPostToParent()) {
-    return
-  }
-  window.parent.postMessage({
-    type,
-    event,
-    payload
-  }, '*')
+  postFileViewerMessageToParent(createFileViewerRawPostMessagePayload(type, event, payload))
 }
 
 const getScrollableRange = (element: HTMLElement) => {

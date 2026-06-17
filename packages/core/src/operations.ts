@@ -68,8 +68,14 @@ export type SerializedFileViewerContext<
   hasFile: boolean;
 };
 
+export type FileViewerPostMessageType =
+  | 'flyfish-viewer:lifecycle'
+  | 'flyfish-viewer:operation'
+  | 'flyfish-viewer:search'
+  | 'flyfish-viewer:location';
+
 export interface FileViewerPostMessagePayload<Payload = unknown> {
-  type: 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation';
+  type: FileViewerPostMessageType;
   event: string;
   payload: Payload;
 }
@@ -243,6 +249,31 @@ export const createFileViewerPostMessagePayload = <
     event,
     payload: serializeFileViewerContext(context),
   };
+};
+
+export const createFileViewerRawPostMessagePayload = <Payload>(
+  type: FileViewerPostMessageType,
+  event: string,
+  payload: Payload
+): FileViewerPostMessagePayload<Payload> => {
+  return {
+    type,
+    event,
+    payload,
+  };
+};
+
+export const postFileViewerMessageToParent = <Payload>(
+  payload: FileViewerPostMessagePayload<Payload>,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  if (!targetWindow || targetWindow.parent === targetWindow) {
+    return false;
+  }
+
+  targetWindow.parent.postMessage(payload, targetOrigin);
+  return true;
 };
 
 export const normalizeFileViewerToolbar = (

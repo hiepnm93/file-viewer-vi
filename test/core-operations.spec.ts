@@ -4,10 +4,12 @@ import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
   createFileViewerPostMessagePayload,
+  createFileViewerRawPostMessagePayload,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
   normalizeFileViewerToolbar,
+  postFileViewerMessageToParent,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
@@ -75,6 +77,25 @@ describe('@file-viewer/core operation helpers', () => {
         hasFile: true,
       },
     });
+  });
+
+  it('posts raw viewer payloads to parent windows through the core bridge', () => {
+    const parent = {
+      postMessage: vi.fn(),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const payload = createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', {
+      query: 'pdf',
+    });
+
+    expect(postFileViewerMessageToParent(payload, 'https://host.example', child)).toBe(true);
+    expect(parent.postMessage).toHaveBeenCalledWith(payload, 'https://host.example');
+
+    const topWindow = {} as Window & { parent: Window };
+    topWindow.parent = topWindow;
+    expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
   });
 
   it('runs lifecycle hooks and operation guards in deterministic order', async () => {
