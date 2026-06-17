@@ -36,7 +36,7 @@
 | 能力 | 标准 npm 包名 | 兼容/历史 npm 包名 | 代码归属 | 公开仓库 | Gitee 镜像 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | 待定 | Gitea 私有当前仓库 `main` | 不公开源码，仅公开包和产物 | 不公开源码，仅公开包和产物 | [ ] 待建 |
-| Vue 3 wrapper | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue3` | `gitee.com/flyfish-dev/file-viewer-vue3` | [ ] 待建 |
+| Vue 3 wrapper | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue3` | `gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [ ] 待建 |
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [ ] 待建 |
 | React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
@@ -179,6 +179,7 @@
 - [ ] Vue 3 wrapper:
   - [ ] 支持 plugin install、组件用法、props、events、slots/ref API。
   - [ ] 兼容当前 `<file-viewer :url :file :options />` 体验。
+  - [x] `@file-viewer/vue3` 标准包名作为兼容别名接入当前 Vue3 基线包，保留 plugin install、组件导出和 CSS 入口。
 - [ ] Vue 2.7 wrapper:
   - [ ] 支持 `Vue.use(FileViewer)`。
   - [ ] 保持现有 `@flyfish-group/file-viewer` API 行为。

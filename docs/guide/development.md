@@ -23,7 +23,7 @@ pnpm install
 | `pnpm obfuscate` | 对 `dist/` 中的库 JS 产物做压缩混淆 |
 | `pnpm release:pack` | 类型检查、库构建、混淆并生成 npm tarball |
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
-| `pnpm build:adapters` | 构建 Vue3 基线 viewer、纯 JS 包和 React 包 |
+| `pnpm build:adapters` | 构建 Vue3 基线 viewer、纯 JS / React / Vue3 标准 wrapper 包 |
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
@@ -31,8 +31,8 @@ pnpm install
 | `pnpm docker:publish` | 使用 buildx 推送 `linux/amd64` / `linux/arm64` Docker Hub 镜像 |
 | `pnpm dev:adapters` | 启动 React + 纯 JS 私有化适配层 Demo |
 | `pnpm build:adapter-demo` | 构建适配层 Demo，验证上线静态产物 |
-| `pnpm release:adapters:pack` | 构建并打包 React / 纯 JS npm tarball |
-| `pnpm release:adapters:publish` | 构建并发布 React / 纯 JS npm 包 |
+| `pnpm release:adapters:pack` | 构建并打包 React / 纯 JS / Vue3 标准 wrapper npm tarball |
+| `pnpm release:adapters:publish` | 构建并发布 React / 纯 JS / Vue3 标准 wrapper npm 包 |
 | `pnpm docs:dev` | 启动 VitePress 文档站 |
 | `pnpm docs:build` | 构建 VitePress 文档站 |
 | `pnpm type-check` | 执行 Vue3 基线 TypeScript 类型检查 |
@@ -72,7 +72,7 @@ pnpm release:pack
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
-| Vue3 | `v3` | `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
+| Vue3 | `v3` | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
 | Vue2.7 | `main` | `@flyfish-group/file-viewer` | `Vue.use(FileViewer)` |
 | React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.26` | `<FileViewer url="/files/demo.pdf" />` |
 | 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.26` | `mountViewerFrame(container, options)` |

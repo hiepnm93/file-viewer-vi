@@ -33,7 +33,7 @@
 ### 1. 安装
 
 ```bash
-pnpm add @flyfish-group/file-viewer3
+pnpm add @file-viewer/vue3
 ```
 
 ### 2. 注册插件
@@ -41,7 +41,7 @@ pnpm add @flyfish-group/file-viewer3
 ```ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer3'
+import FileViewer from '@file-viewer/vue3'
 
 createApp(App).use(FileViewer).mount('#app')
 ```

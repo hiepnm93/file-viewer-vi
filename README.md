@@ -4,11 +4,12 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，Vue3 构建产物作为 React、纯 Web 和其他适配层的统一预览基线。
+`@file-viewer/vue3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件，历史包名 `@flyfish-group/file-viewer3` 继续同步维护。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，Vue3 构建产物作为 React、纯 Web 和其他适配层的统一预览基线。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
-- npm(Vue3): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm(Vue3 标准包): [@file-viewer/vue3](https://www.npmjs.com/package/@file-viewer/vue3)
+- npm(Vue3 兼容包): [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - npm(Vue2): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - npm(React): [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
 - npm(纯 JS): [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
@@ -25,7 +26,7 @@
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.26` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
+| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `1.0.26` | `v3` | 主推版本，也是 React / 纯 Web 私有化 iframe 适配层的构建基线 |
 | Vue2.7 | `@flyfish-group/file-viewer` | `1.0.26` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
 | React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.26` | 当前仓库子工程 | iframe 组件，默认加载 `/file-viewer/index.html` |
 | 纯 JS | `@flyfish-group/file-viewer-web` | `1.0.26` | 当前仓库子工程 | iframe helper 和 viewer 产物复制工具 |
@@ -34,6 +35,7 @@
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
@@ -49,6 +51,7 @@ GitHub Release 会同步提供完整下载项:
 | `file-viewer-v3-*-adapter-demo.tar.gz` | React / 纯 JS 适配层演示站 |
 | `file-viewer-v3-*-lib-dist.tar.gz` | Vue3 组件库构建产物，适合离线检查 dist 内容 |
 | `file-viewer-v3-*-docs.tar.gz` | 文档站静态产物 |
+| `file-viewer-vue3-*.tgz` | Vue3 标准包名本地 npm 安装包 |
 | `flyfish-group-file-viewer3-*.tgz` | Vue3 本地 npm 安装包 |
 | `flyfish-group-file-viewer-*.tgz` | Vue2.7 本地 npm 安装包 |
 | `flyfish-group-file-viewer-web-*.tgz` | 纯 JS iframe helper，本地安装后复制 viewer 静态产物 |

@@ -4,11 +4,12 @@
 
 Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
-`@flyfish-group/file-viewer3` is a pure frontend file preview component built with Vue 3, TypeScript, and Vite. Vue 2.7 projects should use the matching `@flyfish-group/file-viewer` package. The Vue 3 build is also the baseline runtime for the React, vanilla JavaScript, and iframe integration packages.
+`@file-viewer/vue3` is a pure frontend file preview component built with Vue 3, TypeScript, and Vite. The historical package name `@flyfish-group/file-viewer3` remains supported. Vue 2.7 projects should use the matching `@flyfish-group/file-viewer` package. The Vue 3 build is also the baseline runtime for the React, vanilla JavaScript, and iframe integration packages.
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
-- npm for Vue 3: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
+- npm for Vue 3 standard package: [@file-viewer/vue3](https://www.npmjs.com/package/@file-viewer/vue3)
+- npm for Vue 3 compatibility package: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - npm for Vue 2.7: [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - npm for React: [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
 - npm for vanilla JavaScript: [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
@@ -24,7 +25,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@flyfish-group/file-viewer3` | `1.0.26` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
+| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `1.0.26` | `v3` | Recommended version and the runtime baseline for React / vanilla JS iframe integrations |
 | Vue 2.7 | `@flyfish-group/file-viewer` | `1.0.26` | `main` | Vue 2 compatible package with the same format coverage and API semantics |
 | React 17 / 18 / 19 | `@flyfish-group/file-viewer-react` | `1.0.26` | adapter package | iframe component that loads `/file-viewer/index.html` by default |
 | Vanilla JavaScript | `@flyfish-group/file-viewer-web` | `1.0.26` | adapter package | iframe helpers and static viewer asset copier |
@@ -33,6 +34,7 @@ For intranet or offline environments, this artifact repository also ships npm ta
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
+npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
@@ -60,6 +62,7 @@ GitHub Releases provide all distribution downloads:
 | `file-viewer-v3-*-adapter-demo.tar.gz` | React / vanilla JavaScript adapter demo site |
 | `file-viewer-v3-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
 | `file-viewer-v3-*-docs.tar.gz` | Documentation site static output |
+| `file-viewer-vue3-*.tgz` | Vue 3 standard package tarball |
 | `flyfish-group-file-viewer3-*.tgz` | Vue 3 local npm package |
 | `flyfish-group-file-viewer-*.tgz` | Vue 2.7 local npm package |
 | `flyfish-group-file-viewer-web-*.tgz` | Vanilla JavaScript iframe helper with viewer asset copy tooling |

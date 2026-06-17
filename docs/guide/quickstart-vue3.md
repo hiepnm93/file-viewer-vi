@@ -7,18 +7,18 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.26`。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
+当前 Vue3 标准 npm 包是 `@file-viewer/vue3@1.0.26`，历史包名 `@flyfish-group/file-viewer3@1.0.26` 会继续同步维护。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
 
 ## 安装
 
 ```bash
-pnpm add @flyfish-group/file-viewer3
+pnpm add @file-viewer/vue3
 ```
 
 也可以使用 `npm`:
 
 ```bash
-npm install --save @flyfish-group/file-viewer3
+npm install --save @file-viewer/vue3
 ```
 
 ## 全局注册
@@ -28,7 +28,7 @@ npm install --save @flyfish-group/file-viewer3
 ```ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer3'
+import FileViewer from '@file-viewer/vue3'
 
 createApp(App).use(FileViewer).mount('#app')
 ```
@@ -168,7 +168,7 @@ file.value = new File([blob], 'contract.pdf', { type: blob.type })
 如果你不想全局 `use()`，也可以从包中按需导出组件:
 
 ```ts
-import { FileViewer } from '@flyfish-group/file-viewer3'
+import { FileViewer } from '@file-viewer/vue3'
 ```
 
 ## Vue2 项目怎么选
