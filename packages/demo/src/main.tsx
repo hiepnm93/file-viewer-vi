@@ -50,6 +50,9 @@ function App() {
           <a href="/jquery.html" target="_blank" rel="noreferrer">
             jQuery
           </a>
+          <a href="/vue3.html" target="_blank" rel="noreferrer">
+            Vue 3
+          </a>
           <a href="/svelte-action.html" target="_blank" rel="noreferrer">
             Svelte
           </a>

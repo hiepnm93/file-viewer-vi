@@ -273,6 +273,9 @@ importers:
       '@file-viewer/svelte':
         specifier: workspace:^1.0.26
         version: link:../svelte-standard
+      '@file-viewer/vue3':
+        specifier: workspace:^1.0.26
+        version: link:../vue3-standard
       '@file-viewer/web':
         specifier: workspace:^1.0.26
         version: link:../web-standard
@@ -285,6 +288,9 @@ importers:
       react-dom:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
+      vue:
+        specifier: ^3.5.35
+        version: 3.5.35(typescript@6.0.3)
     devDependencies:
       '@types/jquery':
         specifier: ^4.0.1
@@ -410,11 +416,15 @@ importers:
 
   packages/vue3-standard:
     dependencies:
-      '@flyfish-group/file-viewer3':
+      '@file-viewer/web':
         specifier: workspace:^1.0.26
-        version: link:../..
+        version: link:../web-standard
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
       vue:
-        specifier: '>=3.3 <4'
+        specifier: ^3.5.35
         version: 3.5.35(typescript@6.0.3)
 
   packages/vue3-unscoped:

@@ -1,9 +1,9 @@
 # @file-viewer/vue3
 
-The standard Vue 3 wrapper for Flyfish File Viewer. It is the new package name for the existing `@flyfish-group/file-viewer3` package and reuses the same Vue 3 component, `@file-viewer/core` capabilities, rendering routes, options, and lifecycle behavior.
+The standard Vue 3 wrapper for Flyfish File Viewer. It reuses the `@file-viewer/web` iframe protocol, static viewer assets, and the shared `@file-viewer/core` runtime while keeping Vue-specific plugin install, component props, events, and instance methods thin.
 
 ```bash
-npm install @file-viewer/vue3
+npm install vue @file-viewer/vue3 @file-viewer/web
 ```
 
 ```ts
@@ -18,21 +18,31 @@ createApp(App).use(FileViewer).mount('#app')
 
 ```vue
 <template>
-  <file-viewer
-    url="/example/demo.pdf"
-    :options="{
-      theme: 'light',
-      toolbar: { position: 'bottom-right' }
-    }"
-  />
+  <section style="height: 100vh">
+    <file-viewer
+      ref="viewer"
+      url="/example/demo.pdf"
+      :options="{
+        theme: 'light',
+        toolbar: { position: 'bottom-right' }
+      }"
+      @viewer-event="handleViewerEvent"
+    />
+  </section>
 </template>
 ```
 
-The historical packages `@flyfish-group/file-viewer3` and `file-viewer3` remain supported for compatibility. New integrations should prefer `@file-viewer/vue3`.
+The wrapper loads `/file-viewer/index.html` by default. Copy the viewer runtime into your public directory with the helper shipped by `@file-viewer/web`:
+
+```bash
+npx file-viewer-copy-assets ./public/file-viewer
+```
+
+The component instance exposes `reload()`, `postFile()`, `update()`, `destroy()`, `getController()`, and `getIframe()`. The historical packages `@flyfish-group/file-viewer3` and `file-viewer3` remain supported for compatibility with existing projects; new integrations should prefer the standard wrapper package `@file-viewer/vue3`.
 
 ## Capabilities
 
-`@file-viewer/vue3` is the full baseline viewer entry. It supports PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets. See the complete format matrix and option reference at https://doc.flyfish.dev/guide/formats
+`@file-viewer/vue3` shares the same `@file-viewer/core` runtime with the Pure Web, Vue 2, React, jQuery, and Svelte wrappers. It supports PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets. See the complete format matrix and option reference at https://doc.flyfish.dev/guide/formats
 
 <!-- FILE_VIEWER_GENERATED:START -->
 ## Ecosystem Matrix
@@ -84,4 +94,3 @@ See the official documentation for options, lifecycle hooks, beforeOperation, th
 
 Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching wrapper repository.
 <!-- FILE_VIEWER_GENERATED:END -->
-

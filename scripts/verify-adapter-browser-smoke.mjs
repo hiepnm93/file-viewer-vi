@@ -237,6 +237,12 @@ const run = async () => {
       path: 'jquery.html'
     }, failures)
     await verifySingleAdapterDemo(page, serverHandle.url, {
+      adapter: 'vue3',
+      frameSelector: '[data-testid="vue3-viewer-host"] iframe',
+      label: 'Vue 3 adapter',
+      path: 'vue3.html'
+    }, failures)
+    await verifySingleAdapterDemo(page, serverHandle.url, {
       adapter: 'svelte-action',
       frameSelector: '[data-testid="svelte-viewer-host"] iframe',
       label: 'Svelte action adapter',
@@ -248,7 +254,7 @@ const run = async () => {
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[adapter-browser-smoke] Verified React, Web, jQuery, Svelte action, and script tag IIFE demos at ${serverHandle.url}`)
+  console.log(`[adapter-browser-smoke] Verified React, Web, Vue 3, jQuery, Svelte action, and script tag IIFE demos at ${serverHandle.url}`)
 }
 
 run().catch(error => {

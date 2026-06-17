@@ -8,6 +8,7 @@ const requiredFiles = [
   'manual-js.html',
   'manual-iife.html',
   'svelte-action.html',
+  'vue3.html',
   'example/preview.md',
   'example/word.docx',
   'file-viewer/index.html',

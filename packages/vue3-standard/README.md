@@ -1,9 +1,9 @@
 # @file-viewer/vue3
 
-标准 Vue3 wrapper 包。当前作为 `@flyfish-group/file-viewer3` 的标准命名入口，复用同一套 Vue3 组件、`@file-viewer/core` 能力、渲染链路、参数和生命周期体验。
+标准 Vue3 wrapper 包。它复用 `@file-viewer/web` 和 `@file-viewer/core` 的 iframe 协议、静态 viewer 产物和完整预览能力，只在 Vue3 层提供插件安装、组件 props、事件和实例方法。
 
 ```bash
-npm install @file-viewer/vue3
+npm install vue @file-viewer/vue3 @file-viewer/web
 ```
 
 ```ts
@@ -18,21 +18,31 @@ createApp(App).use(FileViewer).mount('#app')
 
 ```vue
 <template>
-  <file-viewer
-    url="/example/demo.pdf"
-    :options="{
-      theme: 'light',
-      toolbar: { position: 'bottom-right' }
-    }"
-  />
+  <section style="height: 100vh">
+    <file-viewer
+      ref="viewer"
+      url="/example/demo.pdf"
+      :options="{
+        theme: 'light',
+        toolbar: { position: 'bottom-right' }
+      }"
+      @viewer-event="handleViewerEvent"
+    />
+  </section>
 </template>
 ```
 
-历史包名 `@flyfish-group/file-viewer3` 和 `file-viewer3` 会继续同步维护；新项目建议优先使用 `@file-viewer/vue3`。
+默认加载 `/file-viewer/index.html`。请通过 `@file-viewer/web` 提供的复制命令把 viewer 静态产物放入站点目录:
+
+```bash
+npx file-viewer-copy-assets ./public/file-viewer
+```
+
+组件实例支持 `reload()`、`postFile()`、`update()`、`destroy()`、`getController()` 和 `getIframe()`。历史包名 `@flyfish-group/file-viewer3` 和 `file-viewer3` 会继续同步维护，用于兼容旧项目；新项目建议优先使用标准 wrapper 包 `@file-viewer/vue3`。
 
 ## 能力范围
 
-`@file-viewer/vue3` 是当前完整基线 viewer 入口，覆盖 PDF、Word、Excel、PPT、OFD、CAD/DWG/DXF/DWF、EPUB/UMD、压缩包、邮件、Markdown、代码高亮、图片、音频、视频、3D 模型、地理数据和结构化数据资产等预览链路。完整格式矩阵和参数说明见官方文档: https://doc.flyfish.dev/guide/formats
+`@file-viewer/vue3` 与纯 Web、Vue2、React、jQuery 和 Svelte wrapper 共享同一套 `@file-viewer/core` 能力，覆盖 PDF、Word、Excel、PPT、OFD、CAD/DWG/DXF/DWF、EPUB/UMD、压缩包、邮件、Markdown、代码高亮、图片、音频、视频、3D 模型、地理数据和结构化数据资产等预览链路。完整格式矩阵和参数说明见官方文档: https://doc.flyfish.dev/guide/formats
 
 English README: [README.en.md](./README.en.md)。
 
@@ -86,4 +96,3 @@ English README: [README.en.md](./README.en.md)。
 
 在线 Demo: https://viewer.flyfish.dev/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应 wrapper 仓库。
 <!-- FILE_VIEWER_GENERATED:END -->
-

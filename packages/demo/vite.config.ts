@@ -18,7 +18,8 @@ export default defineConfig({
         jquery: resolve(demoRoot, 'jquery.html'),
         'manual-js': resolve(demoRoot, 'manual-js.html'),
         'manual-iife': resolve(demoRoot, 'manual-iife.html'),
-        'svelte-action': resolve(demoRoot, 'svelte-action.html')
+        'svelte-action': resolve(demoRoot, 'svelte-action.html'),
+        vue3: resolve(demoRoot, 'vue3.html')
       }
     }
   }

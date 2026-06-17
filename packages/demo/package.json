@@ -13,10 +13,12 @@
     "@file-viewer/jquery": "workspace:^1.0.26",
     "@file-viewer/react": "workspace:^1.0.26",
     "@file-viewer/svelte": "workspace:^1.0.26",
+    "@file-viewer/vue3": "workspace:^1.0.26",
     "@file-viewer/web": "workspace:^1.0.26",
     "jquery": "^4.0.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "vue": "^3.5.35"
   },
   "devDependencies": {
     "@types/jquery": "^4.0.1",
