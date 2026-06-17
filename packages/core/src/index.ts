@@ -1,4 +1,16 @@
 export {
+  DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_CAD_DWF_WASM_PATH,
+  DEFAULT_FILE_VIEWER_CAD_WASM_PATH,
+  DEFAULT_FILE_VIEWER_CAD_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL,
+  resolveFileViewerArchiveWasmUrl,
+  resolveFileViewerArchiveWorkerUrl,
+  resolveFileViewerAssetUrl,
+  resolveFileViewerCadAssetUrls,
+  resolveFileViewerTypstCompilerWasmUrl,
+} from './assets';
+export {
   ARCHIVE_EXTENSIONS,
   DEFAULT_RENDERER_DEFINITIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
@@ -88,6 +100,10 @@ export {
 } from './sourceLoading';
 export { createViewer } from './viewer';
 export { WorkerRefImpl, refWorker } from './worker';
+export type {
+  ResolveFileViewerAssetUrlOptions,
+  ResolvedFileViewerCadAssetUrls,
+} from './assets';
 export type {
   BuildFileViewerLifecycleContextInput,
   BuiltFileViewerLifecycleContext,

@@ -7,6 +7,10 @@ import { loadArchiveEntriesWithoutWorker } from './fallback'
 import { renderNestedBuffer } from '../nestedRender'
 import libarchiveWorkerSource from 'libarchive.js/dist/worker-bundle.js?raw'
 import libarchiveWasmUrl from 'libarchive.js/dist/libarchive.wasm?url'
+import {
+  resolveFileViewerArchiveWasmUrl,
+  resolveFileViewerArchiveWorkerUrl
+} from '@file-viewer/core'
 
 const DEFAULT_MAX_ARCHIVE_SIZE = 320 * 1024 * 1024
 const DEFAULT_MAX_ENTRY_PREVIEW_SIZE = 64 * 1024 * 1024
@@ -93,7 +97,7 @@ const getViewerBaseUrl = () => {
 }
 
 const createBundledWorkerUrl = () => {
-  const wasmUrlLiteral = JSON.stringify(props.options?.wasmUrl || libarchiveWasmUrl)
+  const wasmUrlLiteral = JSON.stringify(resolveFileViewerArchiveWasmUrl(props.options, libarchiveWasmUrl))
   const workerSource = libarchiveWorkerSource
     .replace(/new URL\((['"])libarchive\.wasm\1\s*,\s*import\.meta\.url\)\.href/g, wasmUrlLiteral)
   const workerUrl = URL.createObjectURL(new Blob([workerSource], { type: 'application/javascript' }))
@@ -136,11 +140,11 @@ const resolveWorkerCandidates = async (): Promise<ArchiveWorkerCandidate[]> => {
   if (props.options?.workerUrl) {
     candidates.push({
       label: '自定义 libarchive Worker',
-      workerUrl: props.options.workerUrl
+      workerUrl: resolveFileViewerArchiveWorkerUrl(props.options)
     })
   }
 
-  const publicWorkerUrl = new URL('vendor/libarchive/worker-bundle.js', getViewerBaseUrl()).toString()
+  const publicWorkerUrl = resolveFileViewerArchiveWorkerUrl(undefined, getViewerBaseUrl())
   if (!props.options?.workerUrl && await probeWorkerUrl(publicWorkerUrl)) {
     candidates.push({
       label: '静态 libarchive Worker',

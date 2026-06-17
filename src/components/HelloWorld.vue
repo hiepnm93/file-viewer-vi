@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ChevronDown, ChevronUp, RotateCcw, X, ZoomIn, ZoomOut } from '@lucide/vue'
+import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
 import { listenForFile } from '@/components/utils'
 import type {
   FileRef,
@@ -622,7 +623,7 @@ const viewerSearchSummary = computed(() => {
 
 const viewerOptions = computed<FileViewerOptions>(() => ({
   archive: {
-    workerUrl: '/vendor/libarchive/worker-bundle.js',
+    workerUrl: `/${DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH}`,
     cache: true,
     ...runtimeOptions.value.archive
   },

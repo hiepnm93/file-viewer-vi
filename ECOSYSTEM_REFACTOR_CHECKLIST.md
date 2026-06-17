@@ -81,7 +81,10 @@
   - [x] runtime-only hooks / beforeOperation 在 iframe 查询参数中显式剥离，避免不同 wrapper 行为漂移。
   - [x] `packages/web`、Vue 基线入口和 React wrapper 复用同一协议。
 - [ ] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
-- [ ] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
+- [x] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
+  - [x] `@file-viewer/core` 提供 viewer asset URL、archive worker/wasm、CAD wasm/worker、Typst compiler wasm 默认解析。
+  - [x] archive / CAD / Typst 首批重型资源链路接入 core resolver，保持现有默认路径与 fallback 行为。
+  - [ ] 后续 renderer plugin manifest 需要继续声明各自 assets，供 React/Vue/Svelte/pure JS wrapper 自动复制或外链。
 
 ## Phase 2: 抽离现有能力到 core
 

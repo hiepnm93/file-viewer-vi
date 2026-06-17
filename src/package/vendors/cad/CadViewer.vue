@@ -10,6 +10,7 @@ import type {
   ViewChangeEvent
 } from '@flyfish-dev/cad-viewer'
 import { CadViewer } from '@flyfish-dev/cad-viewer'
+import { resolveFileViewerCadAssetUrls } from '@file-viewer/core'
 import type { FileViewerCadOptions, FileViewerZoomState } from '@/package/common/type'
 import {
   createZoomChangeEmitter,
@@ -29,9 +30,6 @@ type CadLayerItem = CadLayer & {
   name: string;
 }
 
-const CAD_WASM_PATH = 'wasm/cad/'
-const CAD_WORKER_PATH = 'wasm/cad/dwg-worker.js'
-const CAD_DWF_WASM_PATH = 'wasm/cad/dwfv-render.wasm'
 const CAD_WORKER_TIMEOUT = 120000
 
 const root = ref<HTMLDivElement | null>(null)
@@ -60,12 +58,6 @@ const cadZoomEmitter = createZoomChangeEmitter()
 const normalizeType = () => {
   const normalized = props.type.toLowerCase()
   return normalized || 'dxf'
-}
-
-const resolvePublicUrl = (value: string | URL | undefined, fallback: string, trimTrailingSlash = false) => {
-  const raw = value ? String(value) : fallback
-  const resolved = new URL(raw, document.baseURI).href
-  return trimTrailingSlash ? resolved.replace(/\/+$/, '') : resolved
 }
 
 const buildFileName = () => `drawing.${normalizeType()}`
@@ -167,9 +159,7 @@ const createViewer = async () => {
   }
 
   const options = props.options || {}
-  const wasmPath = resolvePublicUrl(options.wasmPath, CAD_WASM_PATH, true)
-  const workerUrl = resolvePublicUrl(options.workerUrl, CAD_WORKER_PATH)
-  const dwfWasmUrl = resolvePublicUrl(options.dwfWasmUrl, CAD_DWF_WASM_PATH)
+  const { wasmPath, workerUrl, dwfWasmUrl } = resolveFileViewerCadAssetUrls(options)
 
   const nextViewer = new CadViewer({
     container,
@@ -255,13 +245,14 @@ const loadCad = async () => {
     }
 
     const options = props.options || {}
+    const cadAssets = resolveFileViewerCadAssetUrls(options)
     const result = await viewer.loadBuffer(props.data.slice(0), buildFileName(), {
       signal: abortController.signal,
       transferInputBuffer: false,
       dxfEncoding: options.dxfEncoding,
-      wasmPath: resolvePublicUrl(options.wasmPath, CAD_WASM_PATH, true),
-      workerUrl: resolvePublicUrl(options.workerUrl, CAD_WORKER_PATH),
-      dwfWasmUrl: resolvePublicUrl(options.dwfWasmUrl, CAD_DWF_WASM_PATH)
+      wasmPath: cadAssets.wasmPath,
+      workerUrl: cadAssets.workerUrl,
+      dwfWasmUrl: cadAssets.dwfWasmUrl
     })
     loadResult.value = result
     layers.value = collectLayers(result)

@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { $typst } from '@myriaddreamin/typst.ts'
 import typstRendererWasmUrl from '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url'
-import { formatCssPixels, type PrintPageSize } from '@file-viewer/core'
+import { formatCssPixels, resolveFileViewerTypstCompilerWasmUrl, type PrintPageSize } from '@file-viewer/core'
 import type { FileRenderExportAdapter, FileViewerZoomState } from '@/package/common/type'
 import {
   createZoomChangeEmitter,
@@ -38,13 +38,15 @@ const zoom = ref(1)
 const typstZoomEmitter = createZoomChangeEmitter()
 let renderToken = 0
 let runtimeConfigured = false
-const DEFAULT_TYPST_COMPILER_WASM_URL = 'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm'
 
 const resolveTypstCompilerWasmUrl = () => {
-  return props.compilerWasmUrl ||
-    window.__FLYFISH_TYPST_COMPILER_WASM_URL__ ||
-    import.meta.env.VITE_TYPST_COMPILER_WASM_URL ||
-    DEFAULT_TYPST_COMPILER_WASM_URL
+  return resolveFileViewerTypstCompilerWasmUrl(
+    { compilerWasmUrl: props.compilerWasmUrl },
+    [
+      window.__FLYFISH_TYPST_COMPILER_WASM_URL__,
+      import.meta.env.VITE_TYPST_COMPILER_WASM_URL
+    ]
+  )
 }
 
 const ensureTypstRuntime = () => {
