@@ -118,6 +118,7 @@
   - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。
   - [x] Vue3 生命周期与 beforeOperation 门面拆到组件 hooks，复用 core context / hook / postMessage 协议，继续降低主入口职责。
   - [x] Vue3 来源 watch 与组件卸载清理拆到 `useViewerPreviewLifecycle`，入口组件只组合 source getter 和各 hook 清理动作。
+  - [x] Vue3 请求版本作用域拆到 `useViewerRequestScope`，入口组件不再直接创建 core request controller。
   - [x] toolbar 默认值、可见性、PDF 默认悬浮位置和 operation availability 迁入 `@file-viewer/core`。
   - [x] Vue3 工具栏与能力状态门面拆到组件 hooks，复用 core operation availability / toolbar position / postMessage 协议。
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。

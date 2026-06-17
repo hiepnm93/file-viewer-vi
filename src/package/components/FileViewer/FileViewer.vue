@@ -1,10 +1,9 @@
 <script setup lang='ts'>
 import { ref } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
-import {
-  createFileViewerRequestController,
-  type FileViewerComponentEmits as FileViewerEmits,
-  type FileViewerComponentProps as FileViewerProps
+import type {
+  FileViewerComponentEmits as FileViewerEmits,
+  FileViewerComponentProps as FileViewerProps
 } from '@file-viewer/core'
 import { useLoading } from './hooks/useLoading'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
@@ -14,6 +13,7 @@ import { useViewerErrorState, useViewerPresentation } from './hooks/useViewerPre
 import { useViewerPreviewLifecycle } from './hooks/useViewerPreviewLifecycle'
 import { useViewerPublicApi } from './hooks/useViewerPublicApi'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
+import { useViewerRequestScope } from './hooks/useViewerRequestScope'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
@@ -86,11 +86,11 @@ const errorState = useViewerErrorState({
   loadingTheme
 })
 
-const requestController = createFileViewerRequestController()
-
-const isCurrentRequest = (version: number) => {
-  return requestController.isCurrent(version)
-}
+const {
+  requestController,
+  getCurrentVersion,
+  isCurrentRequest
+} = useViewerRequestScope()
 
 const {
   markLoadStarted,
@@ -107,7 +107,7 @@ const {
   getFilename: () => filename.value,
   getBufferSize: () => currentBuffer.value?.byteLength,
   getCurrentFile: () => currentFile.value,
-  getCurrentVersion: () => requestController.version,
+  getCurrentVersion,
   getFallbackSource: () => props.file ? 'file' : (props.url ? 'url' : 'empty'),
   getFallbackSourceUrl: () => props.url,
   emitLifecycle: (event, context) => {

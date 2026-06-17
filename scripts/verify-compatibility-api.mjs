@@ -361,7 +361,10 @@ async function verifyVue3ScopedCompatibility() {
 
   const vueFileViewerSource = await readSource(entry, 'src/package/components/FileViewer/FileViewer.vue')
   const vueFileViewerLabel = `${entry.packageName} src/package/components/FileViewer/FileViewer.vue`
-  assertTokens(vueFileViewerSource, ['useViewerPreviewLifecycle'], vueFileViewerLabel)
+  assertTokens(vueFileViewerSource, [
+    'useViewerPreviewLifecycle',
+    'useViewerRequestScope'
+  ], vueFileViewerLabel)
   for (const forbiddenToken of [
     'watch([() => props.file',
     'onBeforeUnmount(()'
@@ -371,6 +374,23 @@ async function verifyVue3ScopedCompatibility() {
       `${vueFileViewerLabel} must delegate preview source watch and unmount cleanup to useViewerPreviewLifecycle instead of using ${forbiddenToken}`
     )
   }
+  assert(
+    !vueFileViewerSource.includes('createFileViewerRequestController'),
+    `${vueFileViewerLabel} must delegate request version scope to useViewerRequestScope instead of creating a core request controller directly`
+  )
+  assert(
+    !/\bimport\s+(?!type\b)(?:{[^}]*}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*)(?:\s*,\s*{[^}]*})?\s+from\s+['"]@file-viewer\/core['"]/.test(vueFileViewerSource),
+    `${vueFileViewerLabel} must use type-only core imports and keep runtime core controllers inside component hooks`
+  )
+
+  const vueRequestScopeHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRequestScope.ts')
+  const vueRequestScopeHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRequestScope.ts`
+  assertImportsFrom(vueRequestScopeHookSource, '@file-viewer/core', vueRequestScopeHookLabel)
+  assertTokens(vueRequestScopeHookSource, [
+    'createFileViewerRequestController',
+    'getCurrentVersion',
+    'isCurrentRequest'
+  ], vueRequestScopeHookLabel)
   assert(
     !existsSync(join(entry.absoluteDir, 'src/package/components/FileViewer/util.ts')),
     `${entry.packageName} must keep FileViewer renderer bridging in rendererBridge.ts instead of reintroducing a catch-all FileViewer util.ts`
