@@ -43,7 +43,7 @@
 | React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | jQuery wrapper | `@file-viewer/jquery` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-jquery` | `gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
-| Svelte wrapper | `@file-viewer/svelte` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-svelte` | `gitee.com/flyfish-dev/file-viewer-svelte` | [ ] 待建 |
+| Svelte wrapper | `@file-viewer/svelte` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-svelte` | `gitee.com/flyfish-dev/file-viewer-svelte` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开产物仓库 | `github.com/flyfish-dev/file-viewer` | `gitee.com/flyfish-dev/file-viewer` | [ ] 待更新 |
 
 ## Phase 0: 基线冻结与验收网
@@ -201,8 +201,8 @@
   - [x] 支持 `$(el).fileViewer(options)`。
   - [x] 支持 `destroy` / `reload` / `postFile` / `update` 方法调用，并可通过 `getFileViewerController()` 取得底层 controller。
 - [ ] Svelte wrapper:
-  - [ ] 支持 Svelte component props/events/actions。
-  - [ ] 兼容 SvelteKit SSR 边界，浏览器端挂载 core。
+  - [x] 支持 Svelte component props/events/actions。
+  - [x] 兼容 SvelteKit SSR 边界，浏览器端挂载 `@file-viewer/web` controller。
 - [ ] 所有 wrapper 的 options、hooks、beforeOperation、toolbar、watermark、theme、search、ai、pdf、docx、archive、cad 等参数保持完整一致。
 
 ## Phase 5: 公开仓库与 README
