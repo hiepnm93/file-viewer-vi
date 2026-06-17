@@ -455,6 +455,25 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vueWatermarkHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerWatermark.ts')
+  const vueWatermarkHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerWatermark.ts`
+  assertImportsFrom(vueWatermarkHookSource, '@file-viewer/core', vueWatermarkHookLabel)
+  assertTokens(vueWatermarkHookSource, [
+    'normalizeFileViewerWatermark',
+    'buildFileViewerWatermarkStyle',
+    'buildFileViewerWatermarkInlineStyle'
+  ], vueWatermarkHookLabel)
+  for (const forbiddenToken of [
+    'buildFileViewerWatermarkBackgroundImage',
+    'const backgroundImage =',
+    'return {\n      backgroundImage\n    }'
+  ]) {
+    assert(
+      !vueWatermarkHookSource.includes(forbiddenToken),
+      `${vueWatermarkHookLabel} must delegate watermark style object construction to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueSourceLoadingHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerSourceLoading.ts')
   const vueSourceLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerSourceLoading.ts`
   assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)

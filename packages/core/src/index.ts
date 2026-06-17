@@ -245,8 +245,12 @@ export {
 export {
   buildFileViewerWatermarkBackgroundImage,
   buildFileViewerWatermarkInlineStyle,
+  buildFileViewerWatermarkStyle,
   buildFileViewerWatermarkSvg,
   normalizeFileViewerWatermark,
+} from './watermark';
+export type {
+  FileViewerWatermarkStyle,
 } from './watermark';
 export {
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,

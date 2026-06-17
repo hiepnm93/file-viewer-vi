@@ -1,5 +1,9 @@
 import type { FileViewerWatermarkOptions } from './types';
 
+export type FileViewerWatermarkStyle = Record<string, string> & {
+  backgroundImage: string;
+};
+
 const escapeXml = (value: string) => value
   .replace(/&/g, '&amp;')
   .replace(/"/g, '&quot;')
@@ -69,6 +73,13 @@ export const buildFileViewerWatermarkBackgroundImage = (
 ) => {
   const normalized = normalizeFileViewerWatermark(watermark);
   return normalized ? encodeSvgDataUrl(buildFileViewerWatermarkSvg(normalized)) : '';
+};
+
+export const buildFileViewerWatermarkStyle = (
+  watermark?: boolean | FileViewerWatermarkOptions
+): FileViewerWatermarkStyle | undefined => {
+  const backgroundImage = buildFileViewerWatermarkBackgroundImage(watermark);
+  return backgroundImage ? { backgroundImage } : undefined;
 };
 
 export const buildFileViewerWatermarkInlineStyle = (

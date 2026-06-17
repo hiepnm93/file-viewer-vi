@@ -86,6 +86,7 @@ const requiredValueExports = [
   'applyFileViewerZoomState',
   'createFileViewerZoomChangeEmitter',
   'createFileViewerZoomController',
+  'buildFileViewerWatermarkStyle',
   'createFileViewerWorkerController',
   'resolveFileViewerRendererAssets',
   'DEFAULT_RENDERER_DEFINITIONS',
@@ -156,7 +157,8 @@ const requiredTypeExports = [
   'FileViewerLoadingRuntimeState',
   'MutableFileViewerLoadingRuntimeState',
   'MutableFileViewerSearchState',
-  'MutableFileViewerZoomState'
+  'MutableFileViewerZoomState',
+  'FileViewerWatermarkStyle'
 ]
 
 const requiredInstanceMethods = [
