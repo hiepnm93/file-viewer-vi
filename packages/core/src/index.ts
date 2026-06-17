@@ -6,6 +6,16 @@ export {
   MODEL_EXTENSIONS,
   TEXT_EXTENSIONS,
 } from './formats';
+export {
+  DEFAULT_FILE_VIEWER_TEXT_CHUNK_OVERLAP,
+  DEFAULT_FILE_VIEWER_TEXT_CHUNK_SIZE,
+  DEFAULT_FILE_VIEWER_ZOOM_SCALE,
+  buildFileViewerDocumentTextChunks,
+  createEmptyFileViewerSearchState,
+  createFileViewerZoomState,
+  normalizeFileViewerAiOptions,
+  normalizeFileViewerSearchOptions,
+} from './document';
 export { createRendererRegistry } from './registry';
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
@@ -87,6 +97,7 @@ export type {
   FileViewerRendererCategory,
   FileViewerSearchMatch,
   FileViewerSearchOptions,
+  FileViewerSearchProvider,
   FileViewerSearchState,
   FileViewerSource,
   FileViewerSourceKind,
@@ -95,6 +106,7 @@ export type {
   FileViewerToolbarPosition,
   FileViewerTypstOptions,
   FileViewerWatermarkOptions,
+  FileViewerZoomProvider,
   FileViewerZoomState,
   NormalizedFileViewerSource,
   RendererCapability,

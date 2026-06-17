@@ -1,4 +1,8 @@
 import { computed, nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
+import {
+  createEmptyFileViewerSearchState,
+  normalizeFileViewerSearchOptions
+} from '@file-viewer/core'
 import type {
   FileViewerDocumentAnchor,
   FileViewerSearchMatch,
@@ -65,16 +69,6 @@ export const unregisterFileViewerSearchProvider = (host: HTMLElement | null | un
   delete (host as SearchProviderHost).__flyfishViewerSearchProvider
 }
 
-const normalizeOptions = (options?: boolean | FileViewerSearchOptions): FileViewerSearchOptions => {
-  if (options === false) {
-    return { enabled: false }
-  }
-  if (options === true || options === undefined) {
-    return {}
-  }
-  return options
-}
-
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const normalizeQuery = (value: string) => value.replace(/\s+/g, ' ').trim()
@@ -87,14 +81,6 @@ const createSearchRegExp = (query: string, options: FileViewerSearchOptions) => 
 const getSerializableMatches = (matches: InternalSearchMatch[]): FileViewerSearchMatch[] => {
   return matches.map(({ element: _element, ...match }) => match)
 }
-
-const createEmptyState = (query = ''): FileViewerSearchState => ({
-  query,
-  total: 0,
-  currentIndex: -1,
-  current: null,
-  matches: []
-})
 
 const unwrapMark = (mark: HTMLElement) => {
   const parent = mark.parentNode
@@ -139,7 +125,7 @@ export const useDocumentSearch = (
   optionsSource?: () => boolean | FileViewerSearchOptions | undefined,
   scrollContainerSource?: () => HTMLElement | null | undefined
 ) => {
-  const options = computed(() => normalizeOptions(optionsSource?.()))
+  const options = computed(() => normalizeFileViewerSearchOptions(optionsSource?.()))
   const anchors = shallowRef<FileViewerDocumentAnchor[]>([])
   const internalMatches = shallowRef<InternalSearchMatch[]>([])
   const marks = new Set<HTMLElement>()
@@ -190,7 +176,7 @@ export const useDocumentSearch = (
     }
     clearMarks()
     const nextState = await action(provider)
-    return applyExternalState(nextState || provider.getState?.() || createEmptyState(fallbackQuery))
+    return applyExternalState(nextState || provider.getState?.() || createEmptyFileViewerSearchState(fallbackQuery))
   }
 
   const clearMarks = () => {

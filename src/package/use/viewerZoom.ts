@@ -1,26 +1,12 @@
 import { reactive, shallowRef, type Ref } from 'vue'
+import { createFileViewerZoomState } from '@file-viewer/core'
 import type { FileViewerZoomProvider, FileViewerZoomState } from '@/package/common/type'
-
-const DEFAULT_SCALE = 1
 
 type ZoomProviderHost = HTMLElement & {
   __flyfishViewerZoomProvider?: FileViewerZoomProvider;
 }
 
 const zoomProviderRegistry = new WeakMap<HTMLElement, FileViewerZoomProvider>()
-
-export const createFileViewerZoomState = (patch: Partial<FileViewerZoomState> = {}): FileViewerZoomState => {
-  const scale = Number.isFinite(patch.scale) && patch.scale ? Number(patch.scale) : DEFAULT_SCALE
-  return {
-    scale,
-    label: patch.label || `${Math.round(scale * 100)}%`,
-    canZoomIn: patch.canZoomIn ?? false,
-    canZoomOut: patch.canZoomOut ?? false,
-    canReset: patch.canReset ?? false,
-    minScale: patch.minScale,
-    maxScale: patch.maxScale
-  }
-}
 
 export const registerFileViewerZoomProvider = (
   host: HTMLElement,

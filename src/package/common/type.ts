@@ -1,5 +1,9 @@
 import type { App } from 'vue'
-import type { FileViewerFileRef } from '@file-viewer/core'
+import type {
+  FileViewerFileRef,
+  FileViewerSearchProvider as CoreFileViewerSearchProvider,
+  FileViewerZoomProvider as CoreFileViewerZoomProvider
+} from '@file-viewer/core'
 
 /**
  * 渲染器返回的 Vue 包装实例。
@@ -310,13 +314,7 @@ export interface FileViewerSearchState {
  * 不能总是由通用 DOM 高亮直接改写内部节点。渲染器可以在根节点上注册
  * 该提供器，让 FileViewer 的搜索 API 继续保持统一入口。
  */
-export interface FileViewerSearchProvider {
-  search: (query: string, options?: FileViewerSearchOptions) => FileViewerSearchState | Promise<FileViewerSearchState>;
-  next?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
-  previous?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
-  clear?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
-  getState?: () => FileViewerSearchState;
-}
+export type FileViewerSearchProvider = CoreFileViewerSearchProvider;
 
 /**
  * 当前预览内容的缩放状态。
@@ -341,14 +339,7 @@ export interface FileViewerZoomState {
  * 统一工具栏只调用该协议，不对外层 DOM 做粗暴 CSS transform，避免表格、
  * canvas、CAD 交互出现坐标偏移。
  */
-export interface FileViewerZoomProvider {
-  zoomIn: () => FileViewerZoomState | Promise<FileViewerZoomState>;
-  zoomOut: () => FileViewerZoomState | Promise<FileViewerZoomState>;
-  resetZoom: () => FileViewerZoomState | Promise<FileViewerZoomState>;
-  setZoom?: (scale: number) => FileViewerZoomState | Promise<FileViewerZoomState>;
-  getState: () => FileViewerZoomState;
-  subscribe?: (listener: () => void) => () => void;
-}
+export type FileViewerZoomProvider = CoreFileViewerZoomProvider;
 
 /**
  * AI 友好能力配置。

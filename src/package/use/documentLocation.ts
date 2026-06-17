@@ -1,4 +1,5 @@
 import { nextTick, shallowRef, type Ref } from 'vue'
+import { buildFileViewerDocumentTextChunks } from '@file-viewer/core'
 import type {
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
@@ -54,9 +55,6 @@ const DEFAULT_EXCLUDE_SELECTOR = [
   '.pdf-nav-pane',
   '.flyfish-search-match'
 ].join(',')
-
-const DEFAULT_CHUNK_SIZE = 1200
-const DEFAULT_CHUNK_OVERLAP = 160
 
 const cssEscape = (value: string) => {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -243,55 +241,7 @@ export const buildDocumentTextChunks = (
   anchors: FileViewerDocumentAnchor[],
   options?: boolean | FileViewerAiOptions
 ): FileViewerDocumentChunk[] => {
-  if (options === false) {
-    return []
-  }
-  const normalized = typeof options === 'object' ? options : {}
-  if (normalized.enabled === false || normalized.collectText === false) {
-    return []
-  }
-
-  const chunkSize = Math.max(200, normalized.chunkSize || DEFAULT_CHUNK_SIZE)
-  const overlap = Math.max(0, Math.min(chunkSize - 1, normalized.chunkOverlap ?? DEFAULT_CHUNK_OVERLAP))
-  const maxTextLength = Math.max(0, normalized.maxTextLength || 0)
-  const chunks: FileViewerDocumentChunk[] = []
-
-  anchors.forEach(anchor => {
-    const source = maxTextLength ? anchor.text.slice(0, maxTextLength) : anchor.text
-    if (!source) {
-      return
-    }
-    if (source.length <= chunkSize) {
-      chunks.push({
-        id: `${anchor.id}-chunk-1`,
-        text: source,
-        anchor,
-        startLine: anchor.line,
-        endLine: anchor.line
-      })
-      return
-    }
-
-    let offset = 0
-    let chunkIndex = 1
-    while (offset < source.length) {
-      const text = source.slice(offset, offset + chunkSize)
-      chunks.push({
-        id: `${anchor.id}-chunk-${chunkIndex}`,
-        text,
-        anchor,
-        startLine: anchor.line,
-        endLine: anchor.line
-      })
-      if (offset + chunkSize >= source.length) {
-        break
-      }
-      offset += chunkSize - overlap
-      chunkIndex += 1
-    }
-  })
-
-  return chunks
+  return buildFileViewerDocumentTextChunks(anchors, options)
 }
 
 export const useDocumentLocation = (root: Ref<HTMLElement | null>) => {

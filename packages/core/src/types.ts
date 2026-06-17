@@ -214,6 +214,15 @@ export interface FileViewerZoomState {
   maxScale?: number;
 }
 
+export interface FileViewerZoomProvider {
+  zoomIn: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+  zoomOut: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+  resetZoom: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+  setZoom?: (scale: number) => FileViewerZoomState | Promise<FileViewerZoomState>;
+  getState: () => FileViewerZoomState;
+  subscribe?: (listener: () => void) => () => void;
+}
+
 export interface FileViewerSearchMatch {
   id: string;
   index: number;
@@ -229,6 +238,14 @@ export interface FileViewerSearchState {
   currentIndex: number;
   current: FileViewerSearchMatch | null;
   matches: FileViewerSearchMatch[];
+}
+
+export interface FileViewerSearchProvider {
+  search: (query: string, options?: FileViewerSearchOptions) => FileViewerSearchState | Promise<FileViewerSearchState>;
+  next?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  previous?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  clear?: () => FileViewerSearchState | Promise<FileViewerSearchState>;
+  getState?: () => FileViewerSearchState;
 }
 
 export interface FileViewerDocumentAnchor {
