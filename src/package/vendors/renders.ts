@@ -1,4 +1,8 @@
-import { DEFAULT_RENDERER_DEFINITIONS, createRendererRegistry } from '@file-viewer/core'
+import {
+  DEFAULT_RENDERER_DEFINITIONS,
+  createFileViewerUnsupportedState,
+  createRendererRegistry
+} from '@file-viewer/core'
 import type { AppWrapper, FileHandler, FileRenderContext } from '@/package/common/type'
 
 interface VueRendererHandler {
@@ -205,8 +209,22 @@ const handlers: Array<VueRendererHandler> = [
 
 // 错误处理
 const renderUnsupported: FileHandler = async (_buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-  target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体和数据资产的在线预览</div>`
+  const state = createFileViewerUnsupportedState(type)
+  const wrapper = document.createElement('div')
+  wrapper.style.textAlign = 'center'
+  wrapper.style.marginTop = '80px'
+
+  const message = document.createElement('div')
+  message.textContent = state.message
+  wrapper.appendChild(message)
+
+  if (state.description) {
+    const description = document.createElement('div')
+    description.textContent = state.description
+    wrapper.appendChild(description)
+  }
+
+  target.replaceChildren(wrapper)
   return createWrapper(target)
 }
 

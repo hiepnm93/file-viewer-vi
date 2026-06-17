@@ -1,12 +1,7 @@
 import { computed, ref, toValue, type MaybeRefOrGetter } from 'vue'
+import type { FileViewerStateTheme } from '@file-viewer/core'
 
-export interface LoadingTheme {
-  accent: string
-  badge: string
-  hint: string
-  label: string
-  soft: string
-}
+export type LoadingTheme = FileViewerStateTheme
 
 const FALLBACK_LOADING_THEME: LoadingTheme = {
   accent: '#5f6f82',

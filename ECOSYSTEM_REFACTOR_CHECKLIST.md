@@ -80,7 +80,10 @@
   - [x] `@file-viewer/core` 提供 JSON-safe options 清洗、序列化、URLSearchParams 写入和解析。
   - [x] runtime-only hooks / beforeOperation 在 iframe 查询参数中显式剥离，避免不同 wrapper 行为漂移。
   - [x] `packages/web`、Vue 基线入口和 React wrapper 复用同一协议。
-- [ ] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
+- [x] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
+  - [x] `@file-viewer/core` 提供 `FileViewerStateDescriptor` / `FileViewerStateTheme`，覆盖 loading、ready、empty、unsupported、error。
+  - [x] 下载、流式 PDF、常规解析的默认进度文案迁入 core，Vue3 入口复用同一常量。
+  - [x] unsupported fallback 和错误格式化复用 core descriptor，避免 wrapper 各自硬编码状态文案。
 - [x] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
   - [x] `@file-viewer/core` 提供 viewer asset URL、archive worker/wasm、CAD wasm/worker、Typst compiler wasm 默认解析。
   - [x] archive / CAD / Typst 首批重型资源链路接入 core resolver，保持现有默认路径与 fallback 行为。

@@ -93,6 +93,18 @@ export {
   wrapFileViewerFileRef,
 } from './source';
 export {
+  DEFAULT_FILE_VIEWER_STATE_THEME,
+  DEFAULT_FILE_VIEWER_UNSUPPORTED_DESCRIPTION,
+  FILE_VIEWER_PREVIEW_MESSAGES,
+  createFileViewerEmptyState,
+  createFileViewerErrorState,
+  createFileViewerLoadingState,
+  createFileViewerReadyState,
+  createFileViewerUnsupportedState,
+  formatFileViewerErrorMessage,
+  normalizeFileViewerErrorMessage,
+} from './state';
+export {
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   isSameOriginUrl,
   normalizePdfStreamingMode,
@@ -155,6 +167,7 @@ export type {
   FileViewerOperationType,
   FileViewerOptions,
   FileViewerPdfOptions,
+  FileViewerRenderStateKind,
   FileViewerRendererCategory,
   FileViewerSearchMatch,
   FileViewerSearchOptions,
@@ -162,6 +175,8 @@ export type {
   FileViewerSearchState,
   FileViewerSource,
   FileViewerSourceKind,
+  FileViewerStateDescriptor,
+  FileViewerStateTheme,
   FileViewerThemeMode,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,

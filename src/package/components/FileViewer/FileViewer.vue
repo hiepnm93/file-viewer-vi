@@ -3,9 +3,12 @@ import axios from 'axios'
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
+  FILE_VIEWER_PREVIEW_MESSAGES,
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
+  createFileViewerErrorState,
   createFileViewerPostMessagePayload,
+  formatFileViewerErrorMessage,
   getExtension,
   normalizeFilename,
   normalizeFileViewerToolbar,
@@ -77,12 +80,6 @@ const emit = defineEmits<{
   (event: 'zoom-change', state: FileViewerZoomState): void;
 }>()
 
-const PREVIEW_MESSAGE = {
-  downloading: '正在下载文件资源...',
-  streamingPdf: '正在建立 PDF 流式预览...',
-  reading: '正在解析文件内容...'
-}
-
 const filename = ref('')
 const output = ref<HTMLDivElement | null>(null)
 const currentFile = ref<File | null>(null)
@@ -144,6 +141,8 @@ const {
   clearError,
   resetLoading
 } = useLoading(currentExtend)
+
+const errorState = computed(() => createFileViewerErrorState(currentExtend.value, error.value, loadingTheme.value))
 
 let activeRendered: Rendered | undefined
 let activeDocumentContext: FileViewerLifecycleContext | null = null
@@ -324,10 +323,7 @@ const isAbortError = (nextError: unknown) => {
 }
 
 const formatErrorMessage = (prefix: string, nextError: unknown) => {
-  if (nextError instanceof Error) {
-    return `${prefix}：${nextError.message}`
-  }
-  return `${prefix}：${String(nextError)}`
+  return formatFileViewerErrorMessage(prefix, nextError)
 }
 
 const {
@@ -547,7 +543,7 @@ const canStreamRemotePdf = (url: string, nextFilename: string) => {
 }
 
 const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
-  startLoading(PREVIEW_MESSAGE.streamingPdf)
+  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)
 
   try {
     const placeholderFile = new File([], nextFilename || 'preview.pdf', { type: 'application/pdf' })
@@ -590,7 +586,7 @@ const previewLocalFile = async (source: FileRef, version: number) => {
     source: 'file',
     file
   }))
-  startLoading(PREVIEW_MESSAGE.reading)
+  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.reading)
 
   try {
     await readAndRenderFile(file, version, undefined, 'file')
@@ -617,7 +613,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     source: 'url',
     sourceUrl: url
   }))
-  startLoading(PREVIEW_MESSAGE.downloading)
+  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.downloading)
 
   if (canStreamRemotePdf(url, nextFilename)) {
     await previewRemotePdfStream(url, version, nextFilename)
@@ -644,7 +640,7 @@ const previewRemoteFile = async (url: string, version: number) => {
       return
     }
 
-    setLoadingMessage(PREVIEW_MESSAGE.reading)
+    setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)
     await readAndRenderFile(wrapFileViewerFileRef(data, nextFilename), version, url, 'url')
   } catch (nextError) {
     if (!isCurrentRequest(version) || isAbortError(nextError)) {
@@ -860,8 +856,8 @@ onBeforeUnmount(() => {
 
         <div v-else-if='error' class='state-panel error-panel'>
           <div class='error-card'>
-            <strong>预览失败</strong>
-            <p>{{ error }}</p>
+            <strong>{{ errorState.title }}</strong>
+            <p>{{ errorState.message }}</p>
           </div>
         </div>
 

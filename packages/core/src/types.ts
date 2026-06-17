@@ -10,6 +10,8 @@ export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-
 
 export type FileViewerOperationType = 'download' | 'print' | 'export-html' | 'zoom-in' | 'zoom-out' | 'zoom-reset';
 
+export type FileViewerRenderStateKind = 'idle' | 'loading' | 'ready' | 'empty' | 'unsupported' | 'error';
+
 export type FileViewerRendererCategory =
   | 'office'
   | 'document'
@@ -229,6 +231,24 @@ export interface FileViewerOperationAvailability {
   zoomIn: boolean;
   zoomOut: boolean;
   zoomReset: boolean;
+}
+
+export interface FileViewerStateTheme {
+  accent: string;
+  badge: string;
+  hint: string;
+  label: string;
+  soft: string;
+}
+
+export interface FileViewerStateDescriptor {
+  state: FileViewerRenderStateKind;
+  extension: string;
+  title: string;
+  message: string;
+  description?: string;
+  theme: FileViewerStateTheme;
+  recoverable: boolean;
 }
 
 export interface FileViewerZoomState {
