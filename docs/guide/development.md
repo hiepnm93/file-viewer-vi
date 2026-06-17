@@ -41,9 +41,9 @@ pnpm install
 | `pnpm release:ecosystem:pack` | 构建完整生态并生成可离线安装的 npm tarball |
 | `pnpm release:ecosystem:publish:dry-run` | 对完整生态包执行 npm publish dry-run |
 | `pnpm release:ecosystem:publish` | 正式发布完整生态包；MFA 账号请使用交互式终端确认 |
-| `pnpm wrappers:publish:dry-run` | 导出并校验独立 wrapper 仓库，预览 GitHub/Gitee 推送动作 |
+| `pnpm wrappers:publish:dry-run` | 导出并校验独立 wrapper 仓库，发布脚本复跑目标仓库预检后预览 GitHub/Gitee 推送动作 |
 | `pnpm wrappers:standalone-smoke` | 构建 core 与 wrapper 包，导出独立 wrapper 仓库，并用 npm 在临时独立仓库中安装、构建验证 |
-| `pnpm wrappers:publish` | 导出、校验、提交并推送所有独立 wrapper 仓库到 GitHub 和 Gitee |
+| `pnpm wrappers:publish` | 导出、校验，并由发布脚本复跑 freshness / 依赖边界预检后提交推送所有独立 wrapper 仓库到 GitHub 和 Gitee |
 | `pnpm docs:dev` | 启动 VitePress 文档站 |
 | `pnpm docs:build` | 构建 VitePress 文档站 |
 | `pnpm type-check` | 执行 Vue3 基线 TypeScript 类型检查 |
@@ -125,7 +125,7 @@ Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
 - `file-viewer-copy-assets` 是否生成 `flyfish-viewer-assets.json`，且 archive / CAD 等 worker/WASM 资源校验为 `valid: true`
-- `.release/wrapper-repos/*` 是否已经通过 `pnpm wrappers:publish:dry-run` 预检，确认 GitHub/Gitee remotes、README、manifest 和 npm 入口元数据均来自 `ecosystem/wrappers.json`
+- `.release/wrapper-repos/*` 是否已经通过 `pnpm wrappers:publish:dry-run` 预检，确认 GitHub/Gitee remotes、README、manifest、source HEAD freshness、依赖边界和 npm 入口元数据均来自 `ecosystem/wrappers.json`
 - 独立 wrapper 仓库是否已经通过 `pnpm wrappers:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`

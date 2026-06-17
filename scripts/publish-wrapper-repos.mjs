@@ -34,6 +34,10 @@ const selectedIds = new Set(
     .filter(arg => arg.startsWith('--id='))
     .map(arg => arg.slice('--id='.length))
 )
+const selectedVerifyArgs = [
+  ...[...selectedPackages].map(packageName => `--package=${packageName}`),
+  ...[...selectedIds].map(id => `--id=${id}`)
+]
 
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'))
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
@@ -126,6 +130,18 @@ const ensureRemote = (cwd, name, url) => {
     run('git', ['remote', 'add', name, url], cwd)
   }
 }
+
+const verifyWrapperRepos = () => {
+  console.log('Verifying wrapper repositories before publishing...')
+  run(
+    'node',
+    ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
+    sourceRoot,
+    { mutates: false }
+  )
+}
+
+verifyWrapperRepos()
 
 for (const wrapper of wrappers) {
   const repoDir = join(outputRoot, wrapper.repository)
