@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "sourceRemote": {
+    "name": "origin",
+    "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
+    "visibility": "private"
+  },
+  "publicOrganization": "flyfish-dev",
+  "publicArtifactRepository": {
+    "github": "https://github.com/flyfish-dev/file-viewer",
+    "gitee": "https://gitee.com/flyfish-dev/file-viewer",
+    "sourcePolicy": "artifacts-only"
+  },
+  "branches": [
+    {
+      "name": "main",
+      "role": "core",
+      "packageName": "@file-viewer/core",
+      "sourcePolicy": "private-core-source-only",
+      "description": "Maintains the pure TypeScript core foundation, renderer registry, shared protocols, types, capability model, and worker/asset contracts."
+    },
+    {
+      "name": "v2",
+      "role": "vue2.7-wrapper",
+      "wrapperId": "vue2.7",
+      "packageName": "@file-viewer/vue2.7",
+      "compatibilityPackages": [
+        "@flyfish-group/file-viewer"
+      ],
+      "sourcePolicy": "wrapper-source-exported-publicly",
+      "description": "Tracks the Vue 2.7 integration experience while sharing the same @file-viewer/core foundation and public wrapper repository."
+    },
+    {
+      "name": "v3",
+      "role": "vue3-wrapper",
+      "wrapperId": "vue3",
+      "packageName": "@file-viewer/vue3",
+      "compatibilityPackages": [
+        "@flyfish-group/file-viewer3",
+        "file-viewer3"
+      ],
+      "sourcePolicy": "wrapper-source-exported-publicly",
+      "description": "Tracks the Vue 3 baseline viewer and demo experience while sharing the same @file-viewer/core foundation and public wrapper repository."
+    }
+  ]
+}

@@ -170,9 +170,14 @@
 
 - [ ] 在 Gitea 私有仓库继续使用 `origin`。
 - [ ] 将 `main` 改造为仅维护 core 核心底座代码。
+  - [x] 新增 `ecosystem/branch-roles.json`，机器可读声明 `main` 的 core-only 私有源码职责。
 - [ ] 将 `v2` 定义为 Vue 2.7 wrapper 分支。
+  - [x] `ecosystem/branch-roles.json` 绑定 `v2 -> @file-viewer/vue2.7` 和 `@flyfish-group/file-viewer` 兼容包。
 - [ ] 将 `v3` 定义为 Vue 3 wrapper 分支。
+  - [x] `ecosystem/branch-roles.json` 绑定 `v3 -> @file-viewer/vue3`、`@flyfish-group/file-viewer3` 和 `file-viewer3` 兼容包。
 - [ ] 给 `main`、`v2`、`v3` 写入分支职责 README 和发布流程说明。
+  - [x] 新增根目录 `BRANCHES.md`，写明 core 私有源码、Vue2.7/Vue3 wrapper 线、公开 wrapper 仓库和公开成品仓库边界。
+  - [x] 新增 `pnpm verify:branch-roles`，校验 `origin` Gitea 私有远端、branch role manifest、core visibility、wrapper GitHub/Gitee 组织和公开产物仓库 artifacts-only 策略。
 - [ ] 确保 `v2` / `v3` wrapper 都依赖同一个 `@file-viewer/core`，不复制核心渲染逻辑。
   - [x] `v3` 的格式矩阵和渲染分发入口先接入 `@file-viewer/core`。
   - [ ] `v2` 同步接入同一个 `@file-viewer/core`。
