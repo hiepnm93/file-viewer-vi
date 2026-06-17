@@ -16,6 +16,8 @@ const requiredValueExports = [
   'normalizeSource',
   'resolveFileViewerRemoteSourcePlan',
   'resolveFileViewerSourceFilename',
+  'postFileViewerSearchChange',
+  'postFileViewerLocationChange',
   'readFileViewerBuffer',
   'readFileViewerDataUrl',
   'readFileViewerText',

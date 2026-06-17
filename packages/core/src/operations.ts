@@ -2,6 +2,7 @@ import { resolvePrintAvailability } from './capabilities';
 import { getExtension, normalizeFilename } from './source';
 import type {
   FileRenderExportAdapter,
+  FileViewerDocumentAnchor,
   FileViewerBeforeOperation,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
@@ -10,6 +11,7 @@ import type {
   FileViewerOperationContext,
   FileViewerOperationType,
   FileViewerOptions,
+  FileViewerSearchState,
   FileViewerSourceKind,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
@@ -373,6 +375,30 @@ export const postFileViewerZoomChange = (
 ) => {
   return postFileViewerMessageToParent(
     createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state),
+    targetOrigin,
+    targetWindow
+  );
+};
+
+export const postFileViewerSearchChange = (
+  state: FileViewerSearchState,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', state),
+    targetOrigin,
+    targetWindow
+  );
+};
+
+export const postFileViewerLocationChange = (
+  anchor: FileViewerDocumentAnchor | null,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerRawPostMessagePayload('flyfish-viewer:location', 'location-change', anchor),
     targetOrigin,
     targetWindow
   );

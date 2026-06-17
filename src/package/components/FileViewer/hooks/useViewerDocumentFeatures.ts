@@ -8,9 +8,9 @@ import type {
 import {
   buildFileViewerDocumentTextChunks,
   cloneFileViewerSearchState,
-  createFileViewerRawPostMessagePayload,
   getCurrentFileViewerDocumentAnchor,
-  postFileViewerMessageToParent,
+  postFileViewerLocationChange,
+  postFileViewerSearchChange,
   resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor
 } from '@file-viewer/core'
@@ -21,14 +21,6 @@ interface UseViewerDocumentFeaturesOptions {
   getOptions: () => FileViewerOptions | undefined;
   emitSearchChange: (state: FileViewerSearchState) => void;
   emitLocationChange: (anchor: FileViewerDocumentAnchor | null) => void;
-}
-
-const postViewerPayload = (
-  type: 'flyfish-viewer:search' | 'flyfish-viewer:location',
-  event: string,
-  payload: FileViewerSearchState | FileViewerDocumentAnchor | null
-) => {
-  postFileViewerMessageToParent(createFileViewerRawPostMessagePayload(type, event, payload))
 }
 
 /**
@@ -58,14 +50,14 @@ export const useViewerDocumentFeatures = ({
   const notifySearchChange = () => {
     const state = getSearchState()
     emitSearchChange(state)
-    postViewerPayload('flyfish-viewer:search', 'search-change', state)
+    postFileViewerSearchChange(state)
     return state
   }
 
   const notifyLocationChange = () => {
     const anchor = getCurrentFileViewerDocumentAnchor(output.value, documentSearch.anchors.value)
     emitLocationChange(anchor)
-    postViewerPayload('flyfish-viewer:location', 'location-change', anchor)
+    postFileViewerLocationChange(anchor)
     return anchor
   }
 

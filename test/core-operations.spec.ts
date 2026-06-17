@@ -11,8 +11,10 @@ import {
   executeFileViewerPrintOperation,
   isFileViewerFrameEvent,
   normalizeFileViewerToolbar,
+  postFileViewerLocationChange,
   postFileViewerOperationAvailabilityChange,
   postFileViewerMessageToParent,
+  postFileViewerSearchChange,
   postFileViewerZoomChange,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
@@ -140,7 +142,7 @@ describe('@file-viewer/core operation helpers', () => {
     expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
   });
 
-  it('posts operation availability and zoom changes through named core helpers', () => {
+  it('posts operation, search and location changes through named core helpers', () => {
     const parent = {
       postMessage: vi.fn(),
     };
@@ -164,6 +166,31 @@ describe('@file-viewer/core operation helpers', () => {
       canZoomOut: false,
       canReset: false,
     }, 'https://host.example', child)).toBe(true);
+    expect(postFileViewerSearchChange({
+      query: 'pdf',
+      total: 1,
+      currentIndex: 0,
+      current: {
+        id: 'match-1',
+        index: 0,
+        text: 'PDF',
+        anchor: null,
+        line: 3,
+      },
+      matches: [],
+    }, 'https://host.example', child)).toBe(true);
+    expect(postFileViewerLocationChange({
+      id: 'anchor-1',
+      index: 0,
+      line: 3,
+      type: 'line',
+      label: 'PDF intro',
+      text: 'PDF intro text',
+      top: 32,
+      left: 0,
+      width: 120,
+      height: 18,
+    }, 'https://host.example', child)).toBe(true);
     expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
       type: 'flyfish-viewer:operation',
       event: 'operation-availability-change',
@@ -186,6 +213,39 @@ describe('@file-viewer/core operation helpers', () => {
         canZoomIn: true,
         canZoomOut: false,
         canReset: false,
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(3, {
+      type: 'flyfish-viewer:search',
+      event: 'search-change',
+      payload: {
+        query: 'pdf',
+        total: 1,
+        currentIndex: 0,
+        current: {
+          id: 'match-1',
+          index: 0,
+          text: 'PDF',
+          anchor: null,
+          line: 3,
+        },
+        matches: [],
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(4, {
+      type: 'flyfish-viewer:location',
+      event: 'location-change',
+      payload: {
+        id: 'anchor-1',
+        index: 0,
+        line: 3,
+        type: 'line',
+        label: 'PDF intro',
+        text: 'PDF intro text',
+        top: 32,
+        left: 0,
+        width: 120,
+        height: 18,
       },
     }, 'https://host.example');
   });
