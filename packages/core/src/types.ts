@@ -338,6 +338,46 @@ export interface FileViewerDocumentChunk {
   endLine: number;
 }
 
+export interface FileViewerComponentProps {
+  file?: FileViewerFileRef;
+  url?: string;
+  options?: FileViewerOptions;
+}
+
+export interface FileViewerComponentEventMap {
+  'load-start': FileViewerLifecycleContext;
+  'load-complete': FileViewerLifecycleContext;
+  'unload-start': FileViewerLifecycleContext;
+  'unload-complete': FileViewerLifecycleContext;
+  'operation-before': FileViewerOperationContext;
+  'operation-cancel': FileViewerOperationContext;
+  'operation-availability-change': FileViewerOperationAvailability;
+  'search-change': FileViewerSearchState;
+  'location-change': FileViewerDocumentAnchor | null;
+  'zoom-change': FileViewerZoomState;
+}
+
+export interface FileViewerPublicApi {
+  downloadOriginalFile(): Promise<void>;
+  printRenderedHtml(): Promise<void>;
+  exportRenderedHtml(): Promise<void>;
+  zoomIn(): Promise<FileViewerZoomState>;
+  zoomOut(): Promise<FileViewerZoomState>;
+  resetZoom(): Promise<FileViewerZoomState>;
+  getZoomState(): FileViewerZoomState;
+  getOperationAvailability(): FileViewerOperationAvailability;
+  getScrollContainer(): HTMLElement | null;
+  searchDocument(query: string): Promise<FileViewerSearchState>;
+  clearDocumentSearch(): Promise<FileViewerSearchState>;
+  nextSearchResult(): Promise<FileViewerSearchState>;
+  previousSearchResult(): Promise<FileViewerSearchState>;
+  getSearchState(): FileViewerSearchState;
+  collectDocumentAnchors(): Promise<FileViewerDocumentAnchor[]>;
+  scrollToAnchor(anchor: FileViewerDocumentAnchor | string): Promise<boolean>;
+  scrollToLine(line: number): Promise<boolean>;
+  getDocumentTextChunks(): FileViewerDocumentChunk[];
+}
+
 export interface FileViewerDownloadOptions {
   filename?: string;
 }

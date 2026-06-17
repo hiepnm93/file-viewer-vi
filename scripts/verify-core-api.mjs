@@ -60,7 +60,10 @@ const requiredTypeExports = [
   'FileViewerFrameController',
   'FileViewerSerializableOptions',
   'CreateViewerOptions',
-  'FileViewerRenderedInstance'
+  'FileViewerRenderedInstance',
+  'FileViewerComponentProps',
+  'FileViewerComponentEventMap',
+  'FileViewerPublicApi'
 ]
 
 const requiredInstanceMethods = [
