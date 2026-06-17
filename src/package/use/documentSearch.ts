@@ -1,7 +1,13 @@
 import { computed, nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
   createEmptyFileViewerSearchState,
+  findFileViewerAnchorForElement,
+  findFileViewerSearchProvider,
   normalizeFileViewerSearchOptions
+} from '@file-viewer/core'
+export {
+  registerFileViewerSearchProvider,
+  unregisterFileViewerSearchProvider
 } from '@file-viewer/core'
 import type {
   FileViewerDocumentAnchor,
@@ -10,10 +16,7 @@ import type {
   FileViewerSearchProvider,
   FileViewerSearchState
 } from '@/package/common/type'
-import {
-  collectDocumentAnchors,
-  findAnchorForElement
-} from './documentLocation'
+import { collectDocumentAnchors } from './documentLocation'
 
 interface InternalSearchMatch extends FileViewerSearchMatch {
   element: HTMLElement;
@@ -45,29 +48,6 @@ const SKIP_SELECTOR = [
   'video',
   'audio'
 ].join(',')
-
-type SearchProviderHost = HTMLElement & {
-  __flyfishViewerSearchProvider?: FileViewerSearchProvider;
-}
-
-const searchProviderRegistry = new WeakMap<HTMLElement, FileViewerSearchProvider>()
-
-export const registerFileViewerSearchProvider = (
-  host: HTMLElement,
-  provider: FileViewerSearchProvider
-) => {
-  searchProviderRegistry.set(host, provider)
-  // Keep the legacy expando for integrations that already read it directly.
-  ;(host as SearchProviderHost).__flyfishViewerSearchProvider = provider
-}
-
-export const unregisterFileViewerSearchProvider = (host: HTMLElement | null | undefined) => {
-  if (!host) {
-    return
-  }
-  searchProviderRegistry.delete(host)
-  delete (host as SearchProviderHost).__flyfishViewerSearchProvider
-}
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -159,18 +139,11 @@ export const useDocumentSearch = (
     return state
   }
 
-  const getSearchProvider = () => {
-    const providerHost = root.value?.querySelector<SearchProviderHost>('[data-viewer-search-provider]')
-    return providerHost
-      ? searchProviderRegistry.get(providerHost) || providerHost.__flyfishViewerSearchProvider || null
-      : null
-  }
-
   const runProviderAction = async (
     action: (provider: FileViewerSearchProvider) => FileViewerSearchState | Promise<FileViewerSearchState> | undefined,
     fallbackQuery = state.query
   ) => {
-    const provider = getSearchProvider()
+    const provider = findFileViewerSearchProvider(root.value)
     if (!provider) {
       return null
     }
@@ -320,7 +293,7 @@ export const useDocumentSearch = (
       fragment.appendChild(mark)
       matched = true
 
-      const anchor = findAnchorForElement(node.parentElement, anchors.value, root.value)
+      const anchor = findFileViewerAnchorForElement(node.parentElement, anchors.value, root.value)
       nextMatches.push({
         id: mark.dataset.searchMatchId,
         index: nextMatches.length,

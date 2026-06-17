@@ -112,6 +112,9 @@
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [ ] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。
+    - [x] DOM 锚点采集、当前定位和锚点滚动迁入 `@file-viewer/core`，Vue 旧路径保留 re-export/门面。
+    - [x] 搜索/缩放 provider 注册表和查找协议迁入 `@file-viewer/core`，Vue 旧路径保持兼容。
+    - [ ] DOM 搜索高亮和 MutationObserver 调度仍在 Vue hook 中，后续继续抽成 pure TS controller。
 - [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT

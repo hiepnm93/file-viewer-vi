@@ -29,6 +29,20 @@ export {
   normalizeFileViewerSearchOptions,
 } from './document';
 export {
+  DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
+  DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
+  collectFileViewerDocumentAnchors,
+  findFileViewerAnchorForElement,
+  findFileViewerSearchProvider,
+  findFileViewerZoomProvider,
+  getCurrentFileViewerDocumentAnchor,
+  registerFileViewerSearchProvider,
+  registerFileViewerZoomProvider,
+  scrollToFileViewerDocumentAnchor,
+  unregisterFileViewerSearchProvider,
+  unregisterFileViewerZoomProvider,
+} from './documentDom';
+export {
   buildFileViewerRenderedHtmlDocument,
   buildExportHtmlDocument,
   collectDocumentStyles,
@@ -130,6 +144,10 @@ export type {
   FileViewerSerializableOptions,
   FileViewerSerializableToolbarOptions,
 } from './options';
+export type {
+  FileViewerSearchProviderHost,
+  FileViewerZoomProviderHost,
+} from './documentDom';
 export type { CreateViewerOptions } from './viewer';
 export type {
   BuildExportHtmlDocumentOptions,

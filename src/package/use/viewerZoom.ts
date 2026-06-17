@@ -1,47 +1,14 @@
 import { reactive, shallowRef, type Ref } from 'vue'
-import { createFileViewerZoomState } from '@file-viewer/core'
+import {
+  createFileViewerZoomState,
+  findFileViewerZoomProvider
+} from '@file-viewer/core'
+export {
+  findFileViewerZoomProvider,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@file-viewer/core'
 import type { FileViewerZoomProvider, FileViewerZoomState } from '@/package/common/type'
-
-type ZoomProviderHost = HTMLElement & {
-  __flyfishViewerZoomProvider?: FileViewerZoomProvider;
-}
-
-const zoomProviderRegistry = new WeakMap<HTMLElement, FileViewerZoomProvider>()
-
-export const registerFileViewerZoomProvider = (
-  host: HTMLElement,
-  provider: FileViewerZoomProvider
-) => {
-  zoomProviderRegistry.set(host, provider)
-  host.dataset.viewerZoomProvider = host.dataset.viewerZoomProvider || 'custom'
-  // 保留 expando，便于非 Vue 包装层或旧集成直接读取。
-  ;(host as ZoomProviderHost).__flyfishViewerZoomProvider = provider
-}
-
-export const unregisterFileViewerZoomProvider = (host: HTMLElement | null | undefined) => {
-  if (!host) {
-    return
-  }
-  zoomProviderRegistry.delete(host)
-  delete host.dataset.viewerZoomProvider
-  delete (host as ZoomProviderHost).__flyfishViewerZoomProvider
-}
-
-export const findFileViewerZoomProvider = (root: HTMLElement | null | undefined) => {
-  if (!root) {
-    return null
-  }
-
-  const direct = zoomProviderRegistry.get(root) || (root as ZoomProviderHost).__flyfishViewerZoomProvider
-  if (direct) {
-    return direct
-  }
-
-  const host = root.querySelector<ZoomProviderHost>('[data-viewer-zoom-provider]')
-  return host
-    ? zoomProviderRegistry.get(host) || host.__flyfishViewerZoomProvider || null
-    : null
-}
 
 export const createZoomChangeEmitter = () => {
   const listeners = new Set<() => void>()
