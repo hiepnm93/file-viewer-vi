@@ -427,6 +427,51 @@ export type FileViewerBeforeOperation = (
 ) => boolean | void | Promise<boolean | void>;
 
 /**
+ * `<file-viewer>` 组件的标准输入参数。
+ *
+ * 各生态 wrapper 可以围绕这三个核心参数扩展自己的外层属性，但文件来源、
+ * URL 来源和通用预览选项应保持同名同语义，确保迁移成本最低。
+ */
+export interface FileViewerProps {
+  /**
+   * 本地二进制输入。优先级高于 `url`。
+   *
+   * 推荐传入带正确扩展名的 `File`；如果业务侧只有 Blob 或 ArrayBuffer，
+   * 请先包装成 `new File([...], 'demo.pdf')`，保证格式识别稳定。
+   */
+  file?: FileRef;
+  /**
+   * 远端文件地址。组件会在浏览器内下载该地址，再根据路径里的扩展名选择渲染器。
+   *
+   * 目标资源必须允许浏览器访问；鉴权或无扩展名下载接口建议由宿主侧先取回，
+   * 再通过 `file` 参数传入。
+   */
+  url?: string;
+  /**
+   * 预览器通用选项。
+   *
+   * 目前覆盖内置操作栏、水印，以及压缩包内文件预览的缓存/体积限制。
+   */
+  options?: FileViewerOptions;
+}
+
+/**
+ * `<file-viewer>` 组件的标准事件契约。
+ */
+export interface FileViewerEmits {
+  (event: 'load-start', context: FileViewerLifecycleContext): void;
+  (event: 'load-complete', context: FileViewerLifecycleContext): void;
+  (event: 'unload-start', context: FileViewerLifecycleContext): void;
+  (event: 'unload-complete', context: FileViewerLifecycleContext): void;
+  (event: 'operation-before', context: FileViewerOperationContext): void;
+  (event: 'operation-cancel', context: FileViewerOperationContext): void;
+  (event: 'operation-availability-change', availability: FileViewerOperationAvailability): void;
+  (event: 'search-change', state: FileViewerSearchState): void;
+  (event: 'location-change', anchor: FileViewerDocumentAnchor | null): void;
+  (event: 'zoom-change', state: FileViewerZoomState): void;
+}
+
+/**
  * `<file-viewer>` 组件实例对外暴露的统一方法集。
  *
  * Vue 模板 ref、文档比对页面、纯 JS iframe 桥接和后续 React / Svelte wrapper
