@@ -38,8 +38,12 @@ export {
   DEFAULT_FILE_VIEWER_SEARCH_ACTIVE_CLASS,
   DEFAULT_FILE_VIEWER_SEARCH_MATCH_CLASS,
   DEFAULT_FILE_VIEWER_SEARCH_MAX_MATCHES,
+  applyFileViewerSearchState,
   cloneFileViewerSearchState,
   createFileViewerDomSearchController,
+} from './documentSearch';
+export type {
+  MutableFileViewerSearchState,
 } from './documentSearch';
 export {
   applyFileViewerZoomState,

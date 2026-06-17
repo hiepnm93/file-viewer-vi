@@ -77,6 +77,7 @@ const requiredValueExports = [
   'removeFileViewerRenderTarget',
   'waitForFileViewerNextPaint',
   'collectFileViewerDocumentAnchors',
+  'applyFileViewerSearchState',
   'cloneFileViewerSearchState',
   'resolveFileViewerScrollContainer',
   'createFileViewerDomSearchController',
@@ -152,6 +153,7 @@ const requiredTypeExports = [
   'FileViewerWorkerController',
   'FileViewerLoadingRuntimeState',
   'MutableFileViewerLoadingRuntimeState',
+  'MutableFileViewerSearchState',
   'MutableFileViewerZoomState'
 ]
 

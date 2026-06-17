@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
+  applyFileViewerSearchState,
   applyFileViewerZoomState,
   buildFileViewerDocumentTextChunks,
   collectFileViewerDocumentAnchors,
@@ -123,6 +124,13 @@ describe('@file-viewer/core document helpers', () => {
     expect(cloned.current?.anchor).not.toBe(source.current.anchor);
     expect(cloned.matches[0]).not.toBe(source.matches[0]);
     expect(cloned.matches[0].anchor).not.toBe(source.matches[0].anchor);
+
+    const target = createEmptyFileViewerSearchState('old');
+    expect(applyFileViewerSearchState(target, source)).toBe(target);
+    expect(target).toEqual(source);
+    expect(target.current).not.toBe(source.current);
+    expect(target.current?.anchor).not.toBe(source.current.anchor);
+    expect(target.matches[0]).not.toBe(source.matches[0]);
   });
 
   it('builds AI-friendly document text chunks with overlap and limits', () => {

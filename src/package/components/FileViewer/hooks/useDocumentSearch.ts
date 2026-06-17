@@ -1,24 +1,12 @@
 import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
-  cloneFileViewerSearchState,
+  applyFileViewerSearchState,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
   type FileViewerDocumentAnchor,
   type FileViewerSearchOptions,
   type FileViewerSearchState
 } from '@file-viewer/core'
-
-const applySearchState = (
-  target: FileViewerSearchState,
-  source: FileViewerSearchState
-) => {
-  const nextState = cloneFileViewerSearchState(source)
-  target.query = nextState.query
-  target.total = nextState.total
-  target.currentIndex = nextState.currentIndex
-  target.current = nextState.current
-  target.matches = nextState.matches
-}
 
 /**
  * FileViewer 组件内的文档搜索响应式门面。
@@ -42,7 +30,7 @@ export const useDocumentSearch = (
 
   const syncFromController = () => {
     anchors.value = controller.anchors
-    applySearchState(state, controller.state)
+    applyFileViewerSearchState(state, controller.state)
     return state
   }
 

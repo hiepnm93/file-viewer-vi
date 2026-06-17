@@ -66,6 +66,22 @@ export const cloneFileViewerSearchState = (state: FileViewerSearchState): FileVi
   matches: state.matches.map(cloneSearchMatch),
 });
 
+export type MutableFileViewerSearchState = FileViewerSearchState;
+
+export const applyFileViewerSearchState = <Target extends MutableFileViewerSearchState>(
+  target: Target,
+  source: FileViewerSearchState
+) => {
+  const nextState = cloneFileViewerSearchState(source);
+  target.query = nextState.query;
+  target.total = nextState.total;
+  target.currentIndex = nextState.currentIndex;
+  target.current = nextState.current;
+  target.matches = nextState.matches;
+
+  return target;
+};
+
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const normalizeQuery = (value: string) => value.replace(/\s+/g, ' ').trim();
@@ -179,12 +195,7 @@ export const createFileViewerDomSearchController = ({
   };
 
   const applyExternalState = (nextState: FileViewerSearchState) => {
-    state.query = nextState.query;
-    state.total = nextState.total;
-    state.currentIndex = nextState.currentIndex;
-    state.current = nextState.current ? cloneSearchMatch(nextState.current) : null;
-    state.matches = nextState.matches.map(cloneSearchMatch);
-    return state;
+    return applyFileViewerSearchState(state, nextState);
   };
 
   const clearMarks = () => {
