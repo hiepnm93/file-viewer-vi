@@ -217,6 +217,15 @@ cp ./node_modules/@flyfish-group/file-viewer-web/dist/flyfish-file-viewer-web.ii
 
 IIFE 包只提供 iframe 控制器，不会把完整预览器和重型渲染器打进业务页面。业务系统仍然要部署同版本的 `/file-viewer/` 静态目录。
 
+仓库的 adapter demo 会随构建输出 `/manual-iife.html`，这是普通 script 标签接入的最小可运行页面；如果客户系统不使用构建工具，优先按这个页面的目录结构和调用方式对接。
+
+本地验证可以执行:
+
+```bash
+pnpm build:adapter-demo
+pnpm verify:adapter-browser-smoke
+```
+
 ### CDN 只适合快速验证
 
 也可以临时用 CDN 验证 helper:

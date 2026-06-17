@@ -1,4 +1,8 @@
 import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const demoRoot = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   server: {
@@ -6,5 +10,14 @@ export default defineConfig({
   },
   preview: {
     host: '127.0.0.1'
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        index: resolve(demoRoot, 'index.html'),
+        'manual-js': resolve(demoRoot, 'manual-js.html'),
+        'manual-iife': resolve(demoRoot, 'manual-iife.html')
+      }
+    }
   }
 })

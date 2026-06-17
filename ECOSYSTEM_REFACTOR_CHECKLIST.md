@@ -202,6 +202,8 @@
   - [x] 支持 script tag / ESM / UMD 或 IIFE 分发。
     - [x] `@flyfish-group/file-viewer-web` 和 `@file-viewer/web` 构建 `dist/flyfish-file-viewer-web.iife.js`，暴露 `window.FlyfishFileViewerWeb`。
     - [x] 生产入口校验会执行 IIFE bundle，并断言 `mountViewerFrame`、`mountViewer`、`buildViewerSrc` 全局 API 存在。
+    - [x] Adapter demo 输出 `/manual-iife.html`，使用普通 `<script>` 加载 IIFE 全局包，并由 `pnpm verify:adapter-demo-output` 校验页面和 helper 产物完整。
+    - [x] 新增 `pnpm verify:adapter-browser-smoke`，可在 Playwright 环境下启动 adapter demo dist 并真实打开 `/manual-iife.html` 验证全局 API 和 iframe 挂载。
   - [x] `@file-viewer/web` 标准包名作为兼容别名接入当前纯 Web wrapper，并保留 viewer 静态产物复制 bin。
 - [ ] jQuery wrapper:
   - [x] 支持 `$(el).fileViewer(options)`。
@@ -303,6 +305,8 @@
   - [x] 新增 `pnpm verify:production-entrypoints`，校验完整生态构建后的 package 声明入口、可导入 ESM 入口、纯 Web viewer 静态入口和 Vue3 基线静态资源入口。
   - [x] `pnpm release:ecosystem:build` 已在构建 core、viewer、标准 wrapper、历史兼容包、混淆产物和 wrapper 仓库导出后自动执行生产入口校验。
   - [x] 纯 Web IIFE script tag bundle 已纳入生产入口校验和 tarball 校验。
+  - [x] Adapter demo 构建会输出并校验 `/manual-js.html` 与 `/manual-iife.html`，覆盖手写 iframe 和普通 script 标签接入的静态产物完整性。
+  - [x] 新增可复现的 Playwright 浏览器 smoke 脚本，覆盖 script tag IIFE 页面。
   - [ ] 独立 CJS / UMD / script tag 浏览器烟测仍需继续补齐到完整自动化。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
 - [x] 发布前检查 npm tarball 内容，不泄露私有源码。

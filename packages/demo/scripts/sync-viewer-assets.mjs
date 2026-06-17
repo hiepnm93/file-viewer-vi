@@ -10,6 +10,9 @@ const targetDirs = [
   resolve(demoDir, 'public/file-viewer'),
   resolve(demoDir, 'public/vendor/file-viewer')
 ]
+const helperSourceDir = resolve(repoDir, 'packages/web/dist')
+const helperTargetDir = resolve(demoDir, 'public/vendor/file-viewer-web')
+const helperFiles = ['index.js', 'flyfish-file-viewer-web.iife.js']
 const exampleSourceDir = resolve(repoDir, 'public/example')
 const exampleTargetDir = resolve(demoDir, 'public/example')
 
@@ -38,6 +41,17 @@ for (const targetDir of targetDirs) {
   await removeMacMetadata(targetDir)
   console.log(`[file-viewer-demo] viewer assets copied to ${targetDir}`)
 }
+
+await rm(helperTargetDir, { force: true, recursive: true })
+await mkdir(helperTargetDir, { recursive: true })
+for (const helperFile of helperFiles) {
+  const sourceFile = resolve(helperSourceDir, helperFile)
+  if (!existsSync(sourceFile)) {
+    throw new Error(`缺少 ${sourceFile}，请先运行 pnpm --filter @flyfish-group/file-viewer-web build`)
+  }
+  await cp(sourceFile, resolve(helperTargetDir, helperFile))
+}
+console.log(`[file-viewer-demo] web helper assets copied to ${helperTargetDir}`)
 
 await mkdir(exampleTargetDir, { recursive: true })
 await cp(resolve(exampleSourceDir, 'word.docx'), resolve(exampleTargetDir, 'word.docx'))
