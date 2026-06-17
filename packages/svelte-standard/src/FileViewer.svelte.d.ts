@@ -1,25 +1,13 @@
 import type { SvelteComponentTyped } from 'svelte'
 import type {
   CreateViewerFrameOptions,
-  FileRef,
+  ViewerFrameComponentProps,
   ViewerFrameController,
-  ViewerFrameEventHandler,
   ViewerFrameEventPayload,
   ViewerMountedFrameHandle,
-  ViewerRuntimeOptions
 } from '@file-viewer/web'
 
-export interface FileViewerSvelteProps {
-  viewerUrl?: string
-  url?: string
-  file?: FileRef
-  name?: string
-  from?: string
-  targetOrigin?: string
-  params?: CreateViewerFrameOptions['params']
-  cacheKey?: CreateViewerFrameOptions['cacheKey']
-  options?: ViewerRuntimeOptions
-  onViewerEvent?: ViewerFrameEventHandler
+export interface FileViewerSvelteProps extends ViewerFrameComponentProps {
   className?: string
   containerStyle?: string
   iframeClassName?: string

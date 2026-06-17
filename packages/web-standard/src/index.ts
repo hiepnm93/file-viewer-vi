@@ -23,6 +23,7 @@ import type {
   FileViewerFrameController as CoreFileViewerFrameController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
+  FileViewerFrameComponentProps as CoreFileViewerFrameComponentProps,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
   FileViewerMountedFrameHandle as CoreFileViewerMountedFrameHandle,
@@ -60,6 +61,8 @@ export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string,
 export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
 
 export interface ViewerFrameOptions extends FileViewerFrameOptions {}
+
+export interface ViewerFrameComponentProps extends CoreFileViewerFrameComponentProps {}
 
 export interface CreateViewerFrameOptions extends ViewerFrameOptions {
   autoPostFile?: boolean

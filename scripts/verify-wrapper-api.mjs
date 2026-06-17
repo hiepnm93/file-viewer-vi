@@ -119,6 +119,7 @@ function verifyWebWrapper(source, label) {
     'DEFAULT_VIEWER_URL',
     'VIEWER_FRAME_CACHE_KEY',
     'ViewerRuntimeOptions',
+    'ViewerFrameComponentProps',
     'ViewerFrameController',
     'ViewerDirectFrameHandle',
     'ViewerMountedFrameHandle',
@@ -143,6 +144,7 @@ function verifyVueWrapper(source, label, version) {
     'viewer-event',
     'viewerEvent',
     'ViewerRuntimeOptions',
+    'ViewerFrameComponentProps',
     'ViewerMountedFrameHandle'
   ], label)
   if (version === 'vue3') {
@@ -170,6 +172,7 @@ function verifyReactWrapper(source, label) {
     'reload',
     'onViewerEvent',
     'ViewerFrameOptions',
+    'ViewerFrameComponentProps',
     'ViewerDirectFrameHandle'
   ], label)
   assert(/export\s+default\s+FileViewer/.test(source), `${label} must default-export FileViewer`)
@@ -193,6 +196,7 @@ function verifyReactLegacyWrapper(source, label) {
     'useImperativeHandle',
     'React.createElement',
     'mountViewerFrame',
+    'ViewerFrameComponentProps',
     'ViewerFrameControllerHandle'
   ], label)
   assert(/export\s+default\s+FileViewerLegacy/.test(source), `${label} must default-export FileViewerLegacy`)
@@ -226,6 +230,7 @@ function verifySvelteWrapper(source, label) {
     'update',
     'destroy',
     'replace',
+    'ViewerFrameComponentProps',
     'ViewerMountedFrameHandle'
   ], label)
   assert(/export\s+default\s+fileViewer/.test(source), `${label} must default-export fileViewer action`)

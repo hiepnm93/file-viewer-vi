@@ -10,12 +10,10 @@ import React, {
 import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
-  type FileRef,
+  type ViewerFrameComponentProps,
   type ViewerFrameControllerHandle,
   type ViewerFrameController,
-  type ViewerFrameEventHandler,
   type ViewerFrameOptions,
-  type ViewerRuntimeOptions
 } from '@file-viewer/web'
 
 export type {
@@ -25,6 +23,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentProps,
   ViewerFrameControllerHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
@@ -43,49 +42,9 @@ export type {
 
 export interface FileViewerLegacyHandle extends ViewerFrameControllerHandle {}
 
-export interface FileViewerLegacyProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
-  /**
-   * Private deployment URL for the baseline viewer page.
-   *
-   * Defaults to `/file-viewer/index.html` after copying assets with `@file-viewer/web`.
-   */
-  viewerUrl?: string
-  /**
-   * Remote file URL. It is passed to the iframe viewer as the `url` query parameter.
-   */
-  url?: string
-  /**
-   * Local binary input. It has priority over `url` and is delivered through postMessage.
-   */
-  file?: FileRef
-  /**
-   * Filename used when `file` is a Blob or ArrayBuffer.
-   */
-  name?: string
-  /**
-   * Host origin allowed to post local binary data.
-   */
-  from?: string
-  /**
-   * Target origin for postMessage delivery.
-   */
-  targetOrigin?: string
-  /**
-   * Additional iframe query parameters reserved for the baseline viewer.
-   */
-  params?: ViewerFrameOptions['params']
-  /**
-   * Cache key for the iframe entry. Set to false to disable the automatic version query.
-   */
-  cacheKey?: ViewerFrameOptions['cacheKey']
-  /**
-   * Runtime options forwarded to the baseline viewer, including theme, toolbar and watermark.
-   */
-  options?: ViewerRuntimeOptions
-  /**
-   * Lifecycle and operation events emitted by the iframe viewer.
-   */
-  onViewerEvent?: ViewerFrameEventHandler
+export interface FileViewerLegacyProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
+    ViewerFrameComponentProps {
   /**
    * Class name applied to the generated iframe.
    */

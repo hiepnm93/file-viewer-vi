@@ -3,13 +3,11 @@ import type { CreateElement, PluginObject, VueConstructor, VNode } from 'vue'
 import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
-  type FileRef,
+  type ViewerFrameComponentProps,
   type ViewerMountedFrameHandle,
   type ViewerFrameController,
-  type ViewerFrameEventHandler,
   type ViewerFrameEventPayload,
   type ViewerFrameOptions,
-  type ViewerRuntimeOptions
 } from '@file-viewer/web'
 
 export type {
@@ -19,6 +17,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentProps,
   ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
@@ -41,17 +40,7 @@ export interface FileViewerVue27PluginOptions {
 
 export interface FileViewerVue27PublicInstance extends Vue, ViewerMountedFrameHandle {}
 
-interface FileViewerVue27Props {
-  viewerUrl?: string
-  url?: string
-  file?: FileRef
-  name?: string
-  from?: string
-  targetOrigin?: string
-  params?: CreateViewerFrameOptions['params']
-  cacheKey?: CreateViewerFrameOptions['cacheKey']
-  options?: ViewerRuntimeOptions
-  onViewerEvent?: ViewerFrameEventHandler
+interface FileViewerVue27Props extends ViewerFrameComponentProps {
   iframeClassName?: string
   iframeStyle?: Partial<CSSStyleDeclaration>
   iframeTitle?: string

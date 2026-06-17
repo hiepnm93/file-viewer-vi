@@ -57,6 +57,16 @@ export interface FileViewerFrameOptions {
   onEvent?: FileViewerFrameEventHandler<Record<string, unknown> | null>;
 }
 
+export interface FileViewerFrameComponentProps extends Omit<FileViewerFrameOptions, 'onEvent'> {
+  /**
+   * Lifecycle and operation events emitted by the iframe viewer.
+   *
+   * Framework wrappers expose this friendlier prop name while mapping it to the
+   * core iframe protocol's `onEvent` callback internally.
+   */
+  onViewerEvent?: FileViewerFrameOptions['onEvent'];
+}
+
 export interface BuildFileViewerFrameSrcOptions extends FileViewerFrameOptions {
   /**
    * wrapper 包可以用自己的默认入口覆盖 core 默认地址。

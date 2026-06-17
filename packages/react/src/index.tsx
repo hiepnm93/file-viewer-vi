@@ -18,6 +18,8 @@ import {
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
+  FileViewerDirectFrameHandle,
+  FileViewerFrameComponentProps,
   FileViewerFrameFilePostController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
@@ -30,6 +32,8 @@ import type {
 } from '@file-viewer/core'
 
 export type FileRef = FileViewerFileRef
+export type ViewerDirectFrameHandle = FileViewerDirectFrameHandle
+export type ViewerFrameComponentProps = FileViewerFrameComponentProps
 export type ViewerFrameOptions = FileViewerFrameOptions
 export type ViewerFrameEventType = FileViewerPostMessageType
 export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
@@ -39,56 +43,11 @@ export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
 export type ViewerToolbarPosition = FileViewerToolbarPosition
 export type ViewerThemeMode = FileViewerThemeMode
 
-export interface FileViewerHandle {
-  iframe: HTMLIFrameElement | null
-  postFile(): boolean
-  reload(): void
-}
+export interface FileViewerHandle extends ViewerDirectFrameHandle {}
 
-export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'> {
-  /**
-   * 私有化部署后的 Vue 基线预览器页面地址。
-   *
-   * 不传时默认使用 `@flyfish-group/file-viewer-web` 安装后复制到宿主项目的 `/file-viewer/index.html`。
-   */
-  viewerUrl?: string
-  /**
-   * 远端文件地址。会透传给 iframe 里的 Vue 基线预览器。
-   */
-  url?: string
-  /**
-   * 本地二进制输入。优先级高于 url，会通过 postMessage 推送给 iframe。
-   */
-  file?: FileRef
-  /**
-   * 当 file 是 Blob 或 ArrayBuffer 时用于识别扩展名。
-   */
-  name?: string
-  /**
-   * 允许推送二进制的宿主 origin。默认取当前页面 origin。
-   */
-  from?: string
-  /**
-   * postMessage 的目标 origin。默认从 viewerUrl 推导。
-   */
-  targetOrigin?: string
-  /**
-   * 预留给 Vue 基线页面的查询参数。
-   */
-  params?: ViewerFrameOptions['params']
-  /**
-   * iframe 入口页的缓存标识。默认使用 web 包版本；传 false 可关闭。
-   */
-  cacheKey?: ViewerFrameOptions['cacheKey']
-  /**
-   * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
-   */
-  options?: ViewerFrameOptions['options']
-  /**
-   * iframe 模式下接收基线预览器抛出的生命周期和操作事件。
-   */
-  onViewerEvent?: ViewerFrameEventHandler
-}
+export interface FileViewerProps
+  extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'>,
+    ViewerFrameComponentProps {}
 
 const defaultStyle: CSSProperties = {
   width: '100%',

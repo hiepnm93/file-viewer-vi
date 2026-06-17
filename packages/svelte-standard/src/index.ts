@@ -12,6 +12,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentProps,
   ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,

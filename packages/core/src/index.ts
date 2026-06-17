@@ -248,6 +248,7 @@ export type {
   FileViewerFrameController,
   FileViewerFrameFilePostController,
   FileViewerFrameFilePostControllerOptions,
+  FileViewerFrameComponentProps,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
   FileViewerFrameTimer,

@@ -3,6 +3,7 @@ import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
   type FileRef,
+  type ViewerFrameComponentProps,
   type ViewerMountedFrameHandle,
   type ViewerFrameController,
   type ViewerFrameEventHandler,
@@ -18,6 +19,7 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerFrameComponentProps,
   ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
@@ -39,6 +41,14 @@ export interface FileViewerVue3PluginOptions {
 }
 
 export interface FileViewerVue3Handle extends ViewerMountedFrameHandle {}
+
+export interface FileViewerVue3Props extends ViewerFrameComponentProps {
+  iframeClassName?: string
+  iframeStyle?: Partial<CSSStyleDeclaration>
+  iframeTitle?: string
+  containerClass?: unknown
+  containerStyle?: unknown
+}
 
 const defaultContainerStyle: CSSProperties = {
   width: '100%',

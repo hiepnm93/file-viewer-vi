@@ -19,9 +19,8 @@ import type {
 import {
   buildViewerSrc,
   isViewerFrameEvent,
-  type FileRef,
   type ViewerDirectFrameHandle,
-  type ViewerFrameEventHandler,
+  type ViewerFrameComponentProps,
   type ViewerFrameEventPayload,
   type ViewerFrameOptions
 } from '@file-viewer/web'
@@ -34,6 +33,7 @@ export type {
   ViewerCadOptions,
   ViewerDocxOptions,
   ViewerDirectFrameHandle,
+  ViewerFrameComponentProps,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
@@ -51,50 +51,9 @@ export type {
 
 export interface FileViewerHandle extends ViewerDirectFrameHandle {}
 
-export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'> {
-  /**
-   * Private deployment URL for the baseline viewer page.
-   *
-   * Defaults to `/file-viewer/index.html` after copying assets with `@file-viewer/web`.
-   */
-  viewerUrl?: string
-  /**
-   * Remote file URL passed to the iframe viewer as the `url` query parameter.
-   */
-  url?: string
-  /**
-   * Local binary input. It has priority over `url` and is delivered through postMessage.
-   */
-  file?: FileRef
-  /**
-   * Filename used when `file` is a Blob or ArrayBuffer.
-   */
-  name?: string
-  /**
-   * Host origin allowed to post local binary data.
-   */
-  from?: string
-  /**
-   * Target origin for postMessage delivery. Defaults to the origin inferred from `viewerUrl`.
-   */
-  targetOrigin?: string
-  /**
-   * Additional iframe query parameters reserved for the baseline viewer.
-   */
-  params?: ViewerFrameOptions['params']
-  /**
-   * Cache key for the iframe entry. Set to false to disable the automatic version query.
-   */
-  cacheKey?: ViewerFrameOptions['cacheKey']
-  /**
-   * Runtime options forwarded to the baseline viewer, including theme, toolbar and watermark.
-   */
-  options?: ViewerFrameOptions['options']
-  /**
-   * Lifecycle and operation events emitted by the iframe viewer.
-   */
-  onViewerEvent?: ViewerFrameEventHandler
-}
+export interface FileViewerProps
+  extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'>,
+    ViewerFrameComponentProps {}
 
 const defaultStyle: CSSProperties = {
   width: '100%',
