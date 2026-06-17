@@ -232,7 +232,7 @@
   - [x] wrapper 共享 mounted/controller handle 工厂，Vue2.6 / Vue2.7 / Vue3 / React legacy / Svelte 的公开实例方法默认值和销毁语义由 core/web 统一维护。
   - [x] React 标准 wrapper 的 iframe 文件投递控制器改为经由 `@file-viewer/web` 门面获取，标准 wrapper 不再直接 import `@file-viewer/core`。
   - [x] React 历史兼容包改为经由 `@flyfish-group/file-viewer-web` 门面获取 iframe 协议能力，不再直接 import `@file-viewer/core`。
-  - [x] 新增 `pnpm verify:compatibility-api`，校验历史兼容包运行门面边界，防止 React 兼容包绕过 web 门面、`file-viewer3` 非 scoped alias 携带重复源码或纯 Web 兼容包丢失 core 门面导出。
+  - [x] 新增 `pnpm verify:compatibility-api`，校验历史兼容包运行门面边界，防止 React 兼容包绕过 web 门面、scoped Vue3 兼容包重新声明 core 类型契约、`file-viewer3` 非 scoped alias 携带重复源码或纯 Web 兼容包丢失 core 门面导出。
 
 ## Phase 5: 公开仓库与 README
 
@@ -360,7 +360,8 @@
   - [x] Vue3 公共 watermark、toolbar、archive、PDF、DOCX、Typst、CAD、search、AI、lifecycle、operation、zoom 等 options / state 类型改为 core 类型别名，避免两套声明漂移。
   - [x] Vue3 `Rendered` / `AppWrapper` 兼容名改为 core `FileViewerRenderedInstance`，入口类型不再绑定 Vue `App`。
   - [x] Vue3 `file/url/options` props、事件 payload map 和 ref expose 方法面迁入 core，Vue 层仅保留 overload / alias。
-  - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 事件 overload，需要继续拆薄。
+  - [x] Vue3 `FileViewerEmits` 事件 overload 迁入 core `FileViewerComponentEmits`，旧 `src/package/common/type.ts` 仅保留同名兼容 alias。
+  - [ ] Vue3 入口仍存在旧类型 re-export，需要继续拆薄为兼容层。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
   - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。

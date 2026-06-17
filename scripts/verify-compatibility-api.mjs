@@ -122,6 +122,31 @@ async function verifyReactCompatibility() {
   )
 }
 
+async function verifyVue3ScopedCompatibility() {
+  const entry = requireEntry('@flyfish-group/file-viewer3')
+  const dependencies = runtimeDependencies(entry.packageJson)
+  assert(
+    dependencies['@file-viewer/core'] === expectedWorkspaceRange,
+    `${entry.packageName} must depend on @file-viewer/core@${expectedWorkspaceRange}`
+  )
+
+  const typeFacadeSource = await readSource(entry, 'src/package/common/type.ts')
+  assertImportsFrom(typeFacadeSource, '@file-viewer/core', `${entry.packageName} type facade`)
+  assertNotImportsFrom(typeFacadeSource, 'vue', `${entry.packageName} type facade`)
+  assert(
+    /import\s+type\s*{[\s\S]*}\s+from\s+['"]@file-viewer\/core['"]/.test(typeFacadeSource),
+    `${entry.packageName} type facade must import core contracts with import type`
+  )
+  assert(
+    !/\bimport\s+(?!type\b)/.test(typeFacadeSource),
+    `${entry.packageName} type facade must not contain runtime imports`
+  )
+  assert(
+    /export\s+type\s+FileViewerEmits\s*=\s*CoreFileViewerComponentEmits/.test(typeFacadeSource),
+    `${entry.packageName} FileViewerEmits must be a core alias`
+  )
+}
+
 async function verifyVue3UnscopedCompatibility() {
   const entry = requireEntry('file-viewer3')
   const dependencies = runtimeDependencies(entry.packageJson)
@@ -148,6 +173,7 @@ async function verifyVue3UnscopedCompatibility() {
 
 await verifyWebCompatibility()
 await verifyReactCompatibility()
+await verifyVue3ScopedCompatibility()
 await verifyVue3UnscopedCompatibility()
 
 console.log('Verified compatibility package runtime facades and alias boundaries.')

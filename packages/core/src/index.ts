@@ -309,6 +309,7 @@ export type {
   FileViewerCadDwfLineWeightMode,
   FileViewerCadOptions,
   FileViewerCadRenderer,
+  FileViewerComponentEmits,
   FileViewerComponentEventMap,
   FileViewerComponentProps,
   FileViewerDocumentAnchor,

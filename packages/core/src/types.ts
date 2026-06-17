@@ -357,6 +357,19 @@ export interface FileViewerComponentEventMap {
   'zoom-change': FileViewerZoomState;
 }
 
+export interface FileViewerComponentEmits {
+  (event: 'load-start', context: FileViewerComponentEventMap['load-start']): void;
+  (event: 'load-complete', context: FileViewerComponentEventMap['load-complete']): void;
+  (event: 'unload-start', context: FileViewerComponentEventMap['unload-start']): void;
+  (event: 'unload-complete', context: FileViewerComponentEventMap['unload-complete']): void;
+  (event: 'operation-before', context: FileViewerComponentEventMap['operation-before']): void;
+  (event: 'operation-cancel', context: FileViewerComponentEventMap['operation-cancel']): void;
+  (event: 'operation-availability-change', availability: FileViewerComponentEventMap['operation-availability-change']): void;
+  (event: 'search-change', state: FileViewerComponentEventMap['search-change']): void;
+  (event: 'location-change', anchor: FileViewerComponentEventMap['location-change']): void;
+  (event: 'zoom-change', state: FileViewerComponentEventMap['zoom-change']): void;
+}
+
 export interface FileViewerPublicApi {
   downloadOriginalFile(): Promise<void>;
   printRenderedHtml(): Promise<void>;

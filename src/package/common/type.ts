@@ -5,6 +5,7 @@ import type {
   FileViewerCadDwfLineWeightMode as CoreFileViewerCadDwfLineWeightMode,
   FileViewerCadOptions as CoreFileViewerCadOptions,
   FileViewerCadRenderer as CoreFileViewerCadRenderer,
+  FileViewerComponentEmits as CoreFileViewerComponentEmits,
   FileViewerComponentEventMap as CoreFileViewerComponentEventMap,
   FileViewerComponentProps as CoreFileViewerComponentProps,
   FileViewerDocxOptions as CoreFileViewerDocxOptions,
@@ -215,18 +216,7 @@ export type FileViewerEventMap = CoreFileViewerComponentEventMap;
 /**
  * `<file-viewer>` 组件的标准事件契约。
  */
-export interface FileViewerEmits {
-  (event: 'load-start', context: FileViewerEventMap['load-start']): void;
-  (event: 'load-complete', context: FileViewerEventMap['load-complete']): void;
-  (event: 'unload-start', context: FileViewerEventMap['unload-start']): void;
-  (event: 'unload-complete', context: FileViewerEventMap['unload-complete']): void;
-  (event: 'operation-before', context: FileViewerEventMap['operation-before']): void;
-  (event: 'operation-cancel', context: FileViewerEventMap['operation-cancel']): void;
-  (event: 'operation-availability-change', availability: FileViewerEventMap['operation-availability-change']): void;
-  (event: 'search-change', state: FileViewerEventMap['search-change']): void;
-  (event: 'location-change', anchor: FileViewerEventMap['location-change']): void;
-  (event: 'zoom-change', state: FileViewerEventMap['zoom-change']): void;
-}
+export type FileViewerEmits = CoreFileViewerComponentEmits;
 
 /**
  * `<file-viewer>` 组件实例对外暴露的统一方法集。
