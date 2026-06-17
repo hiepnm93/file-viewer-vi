@@ -63,6 +63,7 @@ const requiredValueExports = [
   'runFileViewerBeforeOperation',
   'runFileViewerLifecycleHook',
   'resolveFileViewerLifecycleFallbackSource',
+  'applyFileViewerLoadingRuntimeState',
   'executeFileViewerDownloadOperation',
   'executeFileViewerExportHtmlOperation',
   'executeFileViewerPrintOperation',
@@ -147,7 +148,9 @@ const requiredTypeExports = [
   'FileViewerDirectFrameHandle',
   'FileViewerMountedFrameHandle',
   'FileViewerFrameControllerHandle',
-  'FileViewerWorkerController'
+  'FileViewerWorkerController',
+  'FileViewerLoadingRuntimeState',
+  'MutableFileViewerLoadingRuntimeState'
 ]
 
 const requiredInstanceMethods = [

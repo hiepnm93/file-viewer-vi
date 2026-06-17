@@ -168,6 +168,7 @@ export {
 export {
   FALLBACK_FILE_VIEWER_LOADING_THEME,
   FILE_VIEWER_LOADING_THEME_MAP,
+  applyFileViewerLoadingRuntimeState,
   cloneFileViewerLoadingRuntimeState,
   createFileViewerLoadingController,
   createFileViewerLoadingRuntimeState,
@@ -314,6 +315,7 @@ export type {
 export type {
   FileViewerLoadingRuntimeState,
   FileViewerLoadingTheme,
+  MutableFileViewerLoadingRuntimeState,
 } from './loading';
 export type {
   ExecuteFileViewerDownloadOperationInput,

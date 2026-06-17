@@ -3,6 +3,7 @@ import {
   DEFAULT_FILE_VIEWER_STATE_THEME,
   DEFAULT_FILE_VIEWER_UNSUPPORTED_DESCRIPTION,
   FILE_VIEWER_PREVIEW_MESSAGES,
+  applyFileViewerLoadingRuntimeState,
   createFileViewerLoadingController,
   createFileViewerEmptyState,
   createFileViewerErrorState,
@@ -119,5 +120,19 @@ describe('@file-viewer/core render state helpers', () => {
       message: '',
       error: ''
     })
+
+    const source = controller.startLoading('再次加载')
+    const target = createFileViewerLoadingRuntimeState('pdf')
+    expect(applyFileViewerLoadingRuntimeState(target, source)).toBe(target)
+    expect(target).toMatchObject({
+      loading: true,
+      message: '再次加载',
+      theme: {
+        badge: 'X',
+        label: 'Excel 表格'
+      }
+    })
+    expect(target.theme).not.toBe(source.theme)
+    expect(target.styleVars).not.toBe(source.styleVars)
   })
 })

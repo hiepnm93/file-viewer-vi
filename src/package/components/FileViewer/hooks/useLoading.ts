@@ -1,6 +1,6 @@
 import { computed, reactive, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import {
-  cloneFileViewerLoadingRuntimeState,
+  applyFileViewerLoadingRuntimeState,
   createFileViewerLoadingController,
   resolveFileViewerLoadingTheme,
   type FileViewerLoadingRuntimeState,
@@ -10,17 +10,6 @@ import {
 export type LoadingTheme = FileViewerStateTheme
 
 export const resolveLoadingTheme = resolveFileViewerLoadingTheme
-
-const applyLoadingState = (
-  target: FileViewerLoadingRuntimeState,
-  source: FileViewerLoadingRuntimeState
-) => {
-  target.loading = source.loading
-  target.error = source.error
-  target.message = source.message
-  target.theme = source.theme
-  target.styleVars = source.styleVars
-}
 
 /**
  * FileViewer loading 响应式门面。
@@ -33,7 +22,7 @@ export const useLoading = (extendSource: MaybeRefOrGetter<string>) => {
   const state = reactive<FileViewerLoadingRuntimeState>(controller.getState())
 
   const syncFromController = (nextState = controller.getState()) => {
-    applyLoadingState(state, cloneFileViewerLoadingRuntimeState(nextState))
+    applyFileViewerLoadingRuntimeState(state, nextState)
   }
 
   watch(

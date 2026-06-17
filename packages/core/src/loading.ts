@@ -10,6 +10,8 @@ export interface FileViewerLoadingRuntimeState {
   styleVars: Record<'--viewer-accent' | '--viewer-soft', string>;
 }
 
+export type MutableFileViewerLoadingRuntimeState = FileViewerLoadingRuntimeState;
+
 export const FALLBACK_FILE_VIEWER_LOADING_THEME: FileViewerLoadingTheme = {
   accent: '#5f6f82',
   soft: 'rgba(95, 111, 130, 0.12)',
@@ -405,6 +407,19 @@ export const cloneFileViewerLoadingRuntimeState = (
   theme: { ...state.theme },
   styleVars: { ...state.styleVars },
 });
+
+export const applyFileViewerLoadingRuntimeState = <Target extends MutableFileViewerLoadingRuntimeState>(
+  target: Target,
+  source: FileViewerLoadingRuntimeState
+) => {
+  target.loading = source.loading;
+  target.error = source.error;
+  target.message = source.message;
+  target.theme = { ...source.theme };
+  target.styleVars = { ...source.styleVars };
+
+  return target;
+};
 
 /**
  * 统一管理加载、错误、文案和主题色。

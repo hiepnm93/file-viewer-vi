@@ -99,6 +99,7 @@
   - [x] unsupported fallback 和错误格式化复用 core descriptor，避免 wrapper 各自硬编码状态文案。
   - [x] Vue3 展示派生状态拆到组件 hooks，文件名、扩展名、主题、toolbar 默认值和错误状态复用 core 规则。
   - [x] 展示文件名推导和 viewer theme 归一化迁入 `@file-viewer/core`，Vue presentation hook 只保留响应式组合。
+  - [x] loading runtime state 应用迁入 `@file-viewer/core`，Vue loading hook 只做响应式映射。
 - [x] 定义 assets/worker/wasm 路径解析策略，避免 wrapper 各自实现资源路径逻辑。
   - [x] `@file-viewer/core` 提供 viewer asset URL、archive worker/wasm、CAD wasm/worker、Typst compiler wasm 默认解析。
   - [x] archive / CAD / Typst 首批重型资源链路接入 core resolver，保持现有默认路径与 fallback 行为。

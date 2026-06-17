@@ -421,10 +421,20 @@ async function verifyVue3ScopedCompatibility() {
   const vueLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useLoading.ts`
   assertImportsFrom(vueLoadingHookSource, '@file-viewer/core', vueLoadingHookLabel)
   assertTokens(vueLoadingHookSource, [
+    'applyFileViewerLoadingRuntimeState',
     'createFileViewerLoadingController',
-    'cloneFileViewerLoadingRuntimeState',
     'resolveFileViewerLoadingTheme'
   ], vueLoadingHookLabel)
+  for (const forbiddenToken of [
+    'const applyLoadingState',
+    'target.loading = source.loading',
+    'target.styleVars = source.styleVars'
+  ]) {
+    assert(
+      !vueLoadingHookSource.includes(forbiddenToken),
+      `${vueLoadingHookLabel} must delegate loading state application to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
 
   const vuePresentationHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerPresentation.ts')
   const vuePresentationHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPresentation.ts`
