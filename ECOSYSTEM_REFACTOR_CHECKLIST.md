@@ -39,9 +39,9 @@
 | Vue 3 wrapper | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue3` | `gitee.com/flyfish-dev/file-viewer-vue3` | [ ] 待建 |
 | Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [ ] 待建 |
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [ ] 待建 |
-| React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [ ] 待建 |
+| React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [ ] 待建 |
-| Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [ ] 待建 |
+| Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | jQuery wrapper | `@file-viewer/jquery` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-jquery` | `gitee.com/flyfish-dev/file-viewer-jquery` | [ ] 待建 |
 | Svelte wrapper | `@file-viewer/svelte` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-svelte` | `gitee.com/flyfish-dev/file-viewer-svelte` | [ ] 待建 |
 | Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开产物仓库 | `github.com/flyfish-dev/file-viewer` | `gitee.com/flyfish-dev/file-viewer` | [ ] 待更新 |
@@ -188,12 +188,14 @@
 - [ ] React modern wrapper:
   - [ ] 面向 React 18/19。
   - [ ] 支持 `ref` API、受控 props、事件回调。
+  - [x] `@file-viewer/react` 标准包名作为兼容别名接入当前 React wrapper，demo 已切换到标准包导入。
 - [ ] React legacy wrapper:
   - [ ] 面向 React 16/17。
   - [ ] 避免新 JSX transform / concurrent-only 依赖。
 - [ ] Pure JS wrapper:
   - [ ] 支持 `mountViewer(container, options)`。
   - [ ] 支持 script tag / ESM / UMD 或 IIFE 分发。
+  - [x] `@file-viewer/web` 标准包名作为兼容别名接入当前纯 Web wrapper，并保留 viewer 静态产物复制 bin。
 - [ ] jQuery wrapper:
   - [ ] 支持 `$(el).fileViewer(options)`。
   - [ ] 支持方法调用和 destroy。

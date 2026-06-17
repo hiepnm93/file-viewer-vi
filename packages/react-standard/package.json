@@ -1,0 +1,62 @@
+{
+  "name": "@file-viewer/react",
+  "version": "1.0.26",
+  "private": false,
+  "type": "module",
+  "description": "Standard React wrapper for Flyfish File Viewer",
+  "keywords": [
+    "file-viewer",
+    "document-preview",
+    "react",
+    "iframe",
+    "office-preview"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": {
+    "name": "Wangyu",
+    "email": "wybaby168@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer-react.git",
+    "directory": "packages/react-standard"
+  },
+  "homepage": "https://doc.flyfish.dev/",
+  "bugs": {
+    "url": "https://github.com/flyfish-dev/file-viewer-react/issues"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "type-check": "tsc -b tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": ">=17 <20"
+  },
+  "dependencies": {
+    "@file-viewer/web": "workspace:^1.0.26",
+    "@flyfish-group/file-viewer-react": "workspace:^1.0.25"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "license": "Apache-2.0"
+}

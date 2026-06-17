@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
-import FileViewer from '@flyfish-group/file-viewer-react'
-import { mountViewerFrame, type ViewerFrameController } from '@flyfish-group/file-viewer-web'
+import FileViewer from '@file-viewer/react'
+import { mountViewerFrame, type ViewerFrameController } from '@file-viewer/web'
 import './styles.css'
 
 const docxPreviewUrl = '/example/word.docx'

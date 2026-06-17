@@ -264,12 +264,12 @@ importers:
 
   packages/demo:
     dependencies:
-      '@flyfish-group/file-viewer-react':
-        specifier: workspace:^1.0.25
-        version: link:../react
-      '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.25
-        version: link:../web
+      '@file-viewer/react':
+        specifier: workspace:^1.0.26
+        version: link:../react-standard
+      '@file-viewer/web':
+        specifier: workspace:^1.0.26
+        version: link:../web-standard
       react:
         specifier: ^19.2.7
         version: 19.2.7
@@ -309,6 +309,22 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/react-standard:
+    dependencies:
+      '@file-viewer/web':
+        specifier: workspace:^1.0.26
+        version: link:../web-standard
+      '@flyfish-group/file-viewer-react':
+        specifier: workspace:^1.0.25
+        version: link:../react
+      react:
+        specifier: '>=17 <20'
+        version: 19.2.7
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   packages/web:
     dependencies:
       '@file-viewer/core':
@@ -318,6 +334,16 @@ importers:
       '@types/node':
         specifier: ^25.8.0
         version: 25.8.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/web-standard:
+    dependencies:
+      '@flyfish-group/file-viewer-web':
+        specifier: workspace:^1.0.25
+        version: link:../web
+    devDependencies:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
