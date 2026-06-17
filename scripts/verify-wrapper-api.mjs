@@ -34,6 +34,7 @@ const sharedFrameComponentTypes = [
   'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
+  'ViewerFrameControllerAccessor',
   'ViewerFrameHostComponentProps',
   'ViewerFrameIframeComponentProps'
 ]
@@ -41,6 +42,8 @@ const sharedFrameComponentTypes = [
 const webHelperExports = [
   'buildViewerSrc',
   'createViewerFrame',
+  'createViewerFrameControllerHandle',
+  'createViewerMountedFrameHandle',
   'mountViewerFrame',
   'mountViewer',
   'syncViewerFrame',
@@ -117,6 +120,12 @@ function assertSharedFrameProps(source, label) {
 }
 
 function assertSharedControllerMethods(source, label) {
+  if (
+    source.includes('createViewerMountedFrameHandle') ||
+    source.includes('createViewerFrameControllerHandle')
+  ) {
+    return
+  }
   assertTokens(source, sharedControllerMethods, label)
 }
 
@@ -195,12 +204,6 @@ function verifyReactLegacyWrapper(source, label) {
   assertTokens(source, [
     'FileViewerLegacyHandle',
     'FileViewerLegacyProps',
-    'controller',
-    'iframe',
-    'update',
-    'postFile',
-    'reload',
-    'destroy',
     'forwardRef',
     'useImperativeHandle',
     'React.createElement',
@@ -208,6 +211,11 @@ function verifyReactLegacyWrapper(source, label) {
     ...sharedFrameComponentTypes,
     'ViewerFrameControllerHandle'
   ], label)
+  if (source.includes('createViewerFrameControllerHandle')) {
+    assertTokens(source, ['createViewerFrameControllerHandle'], label)
+  } else {
+    assertTokens(source, ['controller', 'iframe', 'update', 'postFile', 'reload', 'destroy'], label)
+  }
   assert(/export\s+default\s+FileViewerLegacy/.test(source), `${label} must default-export FileViewerLegacy`)
 }
 

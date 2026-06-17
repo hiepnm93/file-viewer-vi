@@ -15,6 +15,7 @@ export type {
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerMountedFrameHandle,

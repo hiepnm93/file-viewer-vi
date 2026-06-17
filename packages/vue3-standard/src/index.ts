@@ -1,5 +1,6 @@
 import { defineComponent, h, onBeforeUnmount, onMounted, ref, watch, type App, type CSSProperties, type PropType } from 'vue'
 import {
+  createViewerMountedFrameHandle,
   mountViewerFrame,
   toViewerFrameOptions,
   type CreateViewerFrameOptions,
@@ -23,6 +24,7 @@ export type {
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerMountedFrameHandle,
@@ -106,26 +108,10 @@ export const FileViewer = defineComponent({
       controllerRef.value = null
     }
 
-    const publicApi: FileViewerVue3Handle = {
-      getController() {
-        return controllerRef.value
-      },
-      getIframe() {
-        return controllerRef.value?.frame ?? null
-      },
-      update(options: ViewerFrameOptions) {
-        return controllerRef.value?.update(options) ?? ''
-      },
-      postFile() {
-        return controllerRef.value?.postFile() ?? false
-      },
-      reload() {
-        controllerRef.value?.reload()
-      },
-      destroy() {
-        disposeViewer()
-      }
-    }
+    const publicApi: FileViewerVue3Handle = createViewerMountedFrameHandle(
+      () => controllerRef.value,
+      disposeViewer
+    )
 
     expose(publicApi)
 

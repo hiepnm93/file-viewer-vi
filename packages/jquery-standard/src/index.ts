@@ -174,6 +174,7 @@ export type {
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,

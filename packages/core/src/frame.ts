@@ -221,6 +221,8 @@ export interface FileViewerFrameController {
   update(options: FileViewerFrameOptions): string;
 }
 
+export type FileViewerFrameControllerAccessor = () => FileViewerFrameController | null | undefined;
+
 export interface FileViewerDirectFrameHandle {
   readonly iframe: HTMLIFrameElement | null;
   postFile(): boolean;
@@ -536,6 +538,50 @@ export const syncFileViewerFrame = (
   }
   return nextSrc;
 };
+
+export const createFileViewerMountedFrameHandle = (
+  getController: FileViewerFrameControllerAccessor,
+  destroy: () => void
+): FileViewerMountedFrameHandle => ({
+  getController() {
+    return getController() ?? null;
+  },
+  getIframe() {
+    return getController()?.frame ?? null;
+  },
+  update(options: FileViewerFrameOptions) {
+    return getController()?.update(options) ?? '';
+  },
+  postFile() {
+    return getController()?.postFile() ?? false;
+  },
+  reload() {
+    getController()?.reload();
+  },
+  destroy,
+});
+
+export const createFileViewerFrameControllerHandle = (
+  getController: FileViewerFrameControllerAccessor,
+  destroy: () => void
+): FileViewerFrameControllerHandle => ({
+  get controller() {
+    return getController() ?? null;
+  },
+  get iframe() {
+    return getController()?.frame ?? null;
+  },
+  update(options: FileViewerFrameOptions) {
+    return getController()?.update(options) ?? '';
+  },
+  postFile() {
+    return getController()?.postFile() ?? false;
+  },
+  reload() {
+    getController()?.reload();
+  },
+  destroy,
+});
 
 export const createFileViewerFrame = (options: CreateFileViewerFrameOptions = {}) => {
   if (!canUseFileViewerDom()) {

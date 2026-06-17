@@ -18,6 +18,7 @@ const requiredViewerTypeExports = [
   'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
+  'ViewerFrameControllerAccessor',
   'ViewerFrameController',
   'ViewerFrameEventHandler',
   'ViewerFrameEventPayload',

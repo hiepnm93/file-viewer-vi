@@ -2,7 +2,9 @@ import {
   DEFAULT_FILE_VIEWER_PUBLIC_DIR,
   DEFAULT_FILE_VIEWER_URL,
   buildFileViewerFrameSrc,
+  createFileViewerFrameControllerHandle,
   createFileViewerFrame as createCoreFileViewerFrame,
+  createFileViewerMountedFrameHandle,
   getFileViewerCurrentOrigin,
   getFileViewerFrameOrigin,
   getFileViewerFrameSourceFilename,
@@ -29,6 +31,7 @@ import type {
   FileViewerFrameContainerComponentProps as CoreFileViewerFrameContainerComponentProps,
   FileViewerFrameHostComponentProps as CoreFileViewerFrameHostComponentProps,
   FileViewerFrameIframeComponentProps as CoreFileViewerFrameIframeComponentProps,
+  FileViewerFrameControllerAccessor,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
   FileViewerMountedFrameHandle as CoreFileViewerMountedFrameHandle,
@@ -91,6 +94,8 @@ export interface CreateViewerFrameOptions extends ViewerFrameOptions {
 }
 
 export interface ViewerFrameController extends CoreFileViewerFrameController {}
+
+export type ViewerFrameControllerAccessor = FileViewerFrameControllerAccessor
 
 export interface ViewerDirectFrameHandle extends CoreFileViewerDirectFrameHandle {}
 
@@ -156,6 +161,10 @@ export const syncViewerFrame = (
 export const createViewerFrame = (options: CreateViewerFrameOptions = {}) => {
   return createCoreFileViewerFrame(withViewerFrameDefaults(options))
 }
+
+export const createViewerMountedFrameHandle = createFileViewerMountedFrameHandle
+
+export const createViewerFrameControllerHandle = createFileViewerFrameControllerHandle
 
 export const mountViewerFrame = (
   container: HTMLElement,

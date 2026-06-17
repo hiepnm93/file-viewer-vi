@@ -21,6 +21,7 @@ import type {
   FileViewerFrameComponentBridgeOptions,
   FileViewerFrameContainerComponentProps,
   FileViewerDirectFrameHandle,
+  FileViewerFrameControllerAccessor,
   FileViewerFrameComponentProps,
   FileViewerFrameHostComponentProps,
   FileViewerFrameIframeComponentProps,
@@ -38,6 +39,7 @@ import type {
 export type FileRef = FileViewerFileRef
 export type ViewerDirectFrameHandle = FileViewerDirectFrameHandle
 export type ViewerFrameComponentBridgeOptions = FileViewerFrameComponentBridgeOptions
+export type ViewerFrameControllerAccessor = FileViewerFrameControllerAccessor
 export type ViewerFrameComponentProps = FileViewerFrameComponentProps
 export type ViewerFrameContainerComponentProps<
   ContainerClass = unknown,

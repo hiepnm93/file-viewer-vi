@@ -8,6 +8,7 @@ import React, {
   type HTMLAttributes
 } from 'react'
 import {
+  createViewerFrameControllerHandle,
   mountViewerFrame,
   toViewerFrameOptions,
   type CreateViewerFrameOptions,
@@ -15,7 +16,6 @@ import {
   type ViewerFrameIframeComponentProps,
   type ViewerFrameControllerHandle,
   type ViewerFrameController,
-  type ViewerFrameOptions,
 } from '@file-viewer/web'
 
 export type {
@@ -28,6 +28,7 @@ export type {
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerFrameControllerHandle,
@@ -136,26 +137,10 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
     controllerRef.current?.update(frameOptions)
   }, [frameOptions])
 
-  useImperativeHandle(ref, () => ({
-    get controller() {
-      return controllerRef.current
-    },
-    get iframe() {
-      return controllerRef.current?.frame ?? null
-    },
-    update(nextOptions: ViewerFrameOptions) {
-      return controllerRef.current?.update(nextOptions) ?? ''
-    },
-    postFile() {
-      return controllerRef.current?.postFile() ?? false
-    },
-    reload() {
-      controllerRef.current?.reload()
-    },
-    destroy() {
-      destroyController(controllerRef, containerRef.current)
-    }
-  }), [])
+  useImperativeHandle(ref, () => createViewerFrameControllerHandle(
+    () => controllerRef.current,
+    () => destroyController(controllerRef, containerRef.current)
+  ), [])
 
   return React.createElement('div', {
     ...containerProps,

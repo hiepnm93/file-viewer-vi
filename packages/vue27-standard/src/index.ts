@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import type { CreateElement, PluginObject, VueConstructor, VNode } from 'vue'
 import {
+  createViewerMountedFrameHandle,
   mountViewerFrame,
   toViewerFrameOptions,
   type CreateViewerFrameOptions,
@@ -21,6 +22,7 @@ export type {
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerMountedFrameHandle,
@@ -63,6 +65,9 @@ const defaultContainerStyle = {
 }
 
 const toVm = (value: Vue) => value as FileViewerVue27Vm
+const getVmHandle = (vm: FileViewerVue27Vm): ViewerMountedFrameHandle => {
+  return createViewerMountedFrameHandle(() => vm.controller, () => vm.disposeViewer())
+}
 
 export const FileViewer = Vue.extend({
   name: 'FileViewer',
@@ -150,22 +155,22 @@ export const FileViewer = Vue.extend({
       vm.controller = null
     },
     getController() {
-      return toVm(this).controller
+      return getVmHandle(toVm(this)).getController()
     },
     getIframe() {
-      return toVm(this).controller?.frame ?? null
+      return getVmHandle(toVm(this)).getIframe()
     },
     update(options: ViewerFrameOptions) {
-      return toVm(this).controller?.update(options) ?? ''
+      return getVmHandle(toVm(this)).update(options)
     },
     postFile() {
-      return toVm(this).controller?.postFile() ?? false
+      return getVmHandle(toVm(this)).postFile()
     },
     reload() {
-      toVm(this).controller?.reload()
+      getVmHandle(toVm(this)).reload()
     },
     destroy() {
-      toVm(this).disposeViewer()
+      getVmHandle(toVm(this)).destroy()
     }
   },
   render(h: CreateElement): VNode {

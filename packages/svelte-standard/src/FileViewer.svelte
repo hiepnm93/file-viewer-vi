@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { mountViewerFrame, toViewerFrameOptions } from '@file-viewer/web'
+  import { createViewerMountedFrameHandle, mountViewerFrame, toViewerFrameOptions } from '@file-viewer/web'
 
   export let viewerUrl = undefined
   export let url = undefined
@@ -47,6 +47,8 @@
     controller = null
   }
 
+  const handle = createViewerMountedFrameHandle(() => controller, dispose)
+
   onMount(() => {
     controller = mountViewerFrame(container, frameOptions)
     return dispose
@@ -59,27 +61,27 @@
   }
 
   export function getController() {
-    return controller
+    return handle.getController()
   }
 
   export function getIframe() {
-    return controller?.frame ?? null
+    return handle.getIframe()
   }
 
   export function update(nextOptions) {
-    return controller?.update(nextOptions) ?? ''
+    return handle.update(nextOptions)
   }
 
   export function postFile() {
-    return controller?.postFile() ?? false
+    return handle.postFile()
   }
 
   export function reload() {
-    controller?.reload()
+    handle.reload()
   }
 
   export function destroy() {
-    dispose()
+    handle.destroy()
   }
 </script>
 

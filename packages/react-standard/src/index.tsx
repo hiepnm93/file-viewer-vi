@@ -36,6 +36,7 @@ export type {
   ViewerDirectFrameHandle,
   ViewerFrameComponentProps,
   ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
