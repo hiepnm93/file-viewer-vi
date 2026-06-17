@@ -244,6 +244,7 @@
 - [x] 提供 `scripts/publish-wrapper-repos.mjs`，可把独立 wrapper 导出目录初始化为 Git 仓库，配置 GitHub/Gitee 远端，并在提交/推送前强制执行导出仓库 freshness、依赖边界和元数据预检。
 - [x] `scripts/sync-public-artifacts.mjs` 接入统一 ecosystem npm release manifest，公开产物仓库会同步标准 wrapper tarball、仓库矩阵，并记录重复兼容 tarball 的省略策略。
 - [x] 根 README / README.en.md 接入同一份 wrapper manifest，公开产物仓库同步时会自动写明标准 npm 包、GitHub/Gitee wrapper 仓库、core 源码私有边界和当前格式数量。
+  - [x] 新增 `pnpm verify:ecosystem-readmes`，源码侧校验根 README / README.en.md 的公开生态索引，确保公开成品仓库同步前已包含标准包、历史兼容包、GitHub/Gitee wrapper 仓库、官方文档/Demo、源码自助开通入口和 core 私有边界。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
 - [ ] 为每个 wrapper 创建 Gitee 镜像仓库。
 - [ ] 每个 wrapper 仓库包含:
@@ -368,6 +369,7 @@
   - [x] 新增 `ecosystem/wrapper-readme-template.json`，集中声明 wrapper/public README 生成 marker、中英文标题、矩阵表头、必备官方链接和必备术语。
   - [x] `scripts/sync-wrapper-readmes.mjs` 改为读取 README 模板规范生成中英文生态矩阵和格式矩阵。
   - [x] `scripts/verify-wrapper-repos.mjs` / `scripts/verify-public-artifacts.mjs` 按模板规范校验 wrapper 与公开成品 README，确保所有标准包、GitHub/Gitee 仓库、官方文档、Demo、License 和格式数量不漂移。
+  - [x] `scripts/verify-ecosystem-readmes.mjs` 复用同一模板规范，提前校验根 README 中英文公开生态索引，避免 release 同步后才发现公开说明缺口。
 - [x] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。
 
 ## 完成审计标准
