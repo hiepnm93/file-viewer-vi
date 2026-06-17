@@ -57,6 +57,27 @@ GitHub Release 会同步提供完整下载项:
 | `flyfish-group-file-viewer-web-*.tgz` | 纯 JS iframe helper，本地安装后复制 viewer 静态产物 |
 | `flyfish-group-file-viewer-react-*.tgz` | React iframe 组件，本地安装时请同时安装同版本 web 包 |
 
+<!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
+## 标准生态包与公开仓库
+
+下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开成品仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开 wrapper 仓库。
+
+核心底座包: `@file-viewer/core`。core 源码只在私有 Gitea 仓库维护；公开 GitHub/Gitee 只发布 wrapper 源码、压缩构建产物、Demo、文档站、示例文件和 tarball。
+
+| 框架 | 标准 npm 包 | GitHub | Gitee | 兼容历史包 |
+| --- | --- | --- | --- | --- |
+| Vue 3 | `@file-viewer/vue3` | [file-viewer-vue3](https://github.com/flyfish-dev/file-viewer-vue3) | [file-viewer-vue3](https://gitee.com/flyfish-dev/file-viewer-vue3) | `@flyfish-group/file-viewer3`, `file-viewer3` |
+| Vue 2.7 | `@file-viewer/vue2.7` | [file-viewer-vue2.7](https://github.com/flyfish-dev/file-viewer-vue2.7) | [file-viewer-vue2.7](https://gitee.com/flyfish-dev/file-viewer-vue2.7) | `@flyfish-group/file-viewer` |
+| Vue 2.6 | `@file-viewer/vue2.6` | [file-viewer-vue2.6](https://github.com/flyfish-dev/file-viewer-vue2.6) | [file-viewer-vue2.6](https://gitee.com/flyfish-dev/file-viewer-vue2.6) | 无 |
+| React 18/19 | `@file-viewer/react` | [file-viewer-react](https://github.com/flyfish-dev/file-viewer-react) | [file-viewer-react](https://gitee.com/flyfish-dev/file-viewer-react) | `@flyfish-group/file-viewer-react` |
+| React 16.8/17 | `@file-viewer/react-legacy` | [file-viewer-react-legacy](https://github.com/flyfish-dev/file-viewer-react-legacy) | [file-viewer-react-legacy](https://gitee.com/flyfish-dev/file-viewer-react-legacy) | 无 |
+| Pure Web | `@file-viewer/web` | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
+| jQuery | `@file-viewer/jquery` | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | 无 |
+| Svelte | `@file-viewer/svelte` | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | 无 |
+
+共享 core 当前声明 23 条预览链路、194 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.flyfish.dev/guide/formats
+<!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
+
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
 
 ## 为什么值得接入

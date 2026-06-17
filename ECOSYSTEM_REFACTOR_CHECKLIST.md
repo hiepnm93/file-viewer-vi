@@ -211,6 +211,7 @@
 - [x] 提供 `scripts/sync-wrapper-readmes.mjs`，从 core 格式定义和 wrapper manifest 生成中英文 README 的生态矩阵与完整格式矩阵。
 - [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖。
 - [x] `scripts/sync-public-artifacts.mjs` 接入 wrapper manifest，公开产物仓库会同步所有标准 wrapper tarball 和仓库矩阵。
+- [x] 根 README / README.en.md 接入同一份 wrapper manifest，公开产物仓库同步时会自动写明标准 npm 包、GitHub/Gitee wrapper 仓库、core 源码私有边界和当前格式数量。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
 - [ ] 为每个 wrapper 创建 Gitee 镜像仓库。
 - [ ] 每个 wrapper 仓库包含:
@@ -224,8 +225,8 @@
   - [ ] 与历史包名兼容说明
   - [ ] Demo 链接
   - [ ] License / attribution / contribution 说明
-- [ ] 公开 README 明确 core 源码不在公开仓库，源码/商业二开入口仍按当前商业入口说明。
-- [ ] `flyfish-dev/file-viewer` 公开产物仓库 README 列出所有开源 wrapper 仓库和 npm 包。
+- [x] 公开 README 明确 core 源码不在公开仓库，源码/商业二开入口仍按当前商业入口说明。
+- [x] `flyfish-dev/file-viewer` 公开产物仓库 README 列出所有开源 wrapper 仓库和 npm 包。
 
 ## Phase 6: npm 发布与兼容别名
 

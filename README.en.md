@@ -68,6 +68,27 @@ GitHub Releases provide all distribution downloads:
 | `flyfish-group-file-viewer-web-*.tgz` | Vanilla JavaScript iframe helper with viewer asset copy tooling |
 | `flyfish-group-file-viewer-react-*.tgz` | React iframe component; install the same-version web package together with it |
 
+<!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
+## Standard Ecosystem Packages and Public Repositories
+
+This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public artifact repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public wrapper repositories from one place.
+
+Core foundation package: `@file-viewer/core`. Core source is maintained only in the private Gitea repository; public GitHub/Gitee repositories publish wrapper source, minified build artifacts, demos, documentation output, examples, and tarballs.
+
+| Framework | Standard npm package | GitHub | Gitee | Historical aliases |
+| --- | --- | --- | --- | --- |
+| Vue 3 | `@file-viewer/vue3` | [file-viewer-vue3](https://github.com/flyfish-dev/file-viewer-vue3) | [file-viewer-vue3](https://gitee.com/flyfish-dev/file-viewer-vue3) | `@flyfish-group/file-viewer3`, `file-viewer3` |
+| Vue 2.7 | `@file-viewer/vue2.7` | [file-viewer-vue2.7](https://github.com/flyfish-dev/file-viewer-vue2.7) | [file-viewer-vue2.7](https://gitee.com/flyfish-dev/file-viewer-vue2.7) | `@flyfish-group/file-viewer` |
+| Vue 2.6 | `@file-viewer/vue2.6` | [file-viewer-vue2.6](https://github.com/flyfish-dev/file-viewer-vue2.6) | [file-viewer-vue2.6](https://gitee.com/flyfish-dev/file-viewer-vue2.6) | none |
+| React 18/19 | `@file-viewer/react` | [file-viewer-react](https://github.com/flyfish-dev/file-viewer-react) | [file-viewer-react](https://gitee.com/flyfish-dev/file-viewer-react) | `@flyfish-group/file-viewer-react` |
+| React 16.8/17 | `@file-viewer/react-legacy` | [file-viewer-react-legacy](https://github.com/flyfish-dev/file-viewer-react-legacy) | [file-viewer-react-legacy](https://gitee.com/flyfish-dev/file-viewer-react-legacy) | none |
+| Pure Web | `@file-viewer/web` | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
+| jQuery | `@file-viewer/jquery` | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | none |
+| Svelte | `@file-viewer/svelte` | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | none |
+
+The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish.dev/guide/formats
+<!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
+
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
 
 ## Why Use It

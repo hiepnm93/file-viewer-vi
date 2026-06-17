@@ -109,10 +109,20 @@ function markdownTable(headers, rows) {
   ].join('\n')
 }
 
-function generatedBlock(locale) {
+const wrapperMarkers = {
+  start: '<!-- FILE_VIEWER_GENERATED:START -->',
+  end: '<!-- FILE_VIEWER_GENERATED:END -->'
+}
+
+const publicMarkers = {
+  start: '<!-- FILE_VIEWER_PUBLIC_GENERATED:START -->',
+  end: '<!-- FILE_VIEWER_PUBLIC_GENERATED:END -->'
+}
+
+function generatedWrapperBlock(locale) {
   if (locale === 'zh') {
     return [
-      '<!-- FILE_VIEWER_GENERATED:START -->',
+      wrapperMarkers.start,
       '## 生态包矩阵',
       '',
       '所有 wrapper 都复用同一个 `@file-viewer/core` / `@file-viewer/web` 底座。core 源码保留在私有 Gitea 仓库，wrapper 仓库面向 GitHub/Gitee 公开发布。',
@@ -132,12 +142,12 @@ function generatedBlock(locale) {
       ),
       '',
       '完整参数、生命周期 hooks、beforeOperation、主题、水印、搜索、缩放、打印和导出说明见官方文档: https://doc.flyfish.dev/',
-      '<!-- FILE_VIEWER_GENERATED:END -->'
+      wrapperMarkers.end
     ].join('\n')
   }
 
   return [
-    '<!-- FILE_VIEWER_GENERATED:START -->',
+    wrapperMarkers.start,
     '## Ecosystem Matrix',
     '',
     'Every wrapper reuses the same `@file-viewer/core` / `@file-viewer/web` foundation. Core source stays in the private Gitea repository, while wrappers are prepared for public GitHub/Gitee distribution.',
@@ -157,17 +167,60 @@ function generatedBlock(locale) {
     ),
     '',
     'See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish.dev/',
-    '<!-- FILE_VIEWER_GENERATED:END -->'
+    wrapperMarkers.end
   ].join('\n')
 }
 
-function syncBlock(text, block) {
-  const start = '<!-- FILE_VIEWER_GENERATED:START -->'
-  const end = '<!-- FILE_VIEWER_GENERATED:END -->'
+function generatedPublicBlock(locale) {
+  const core = wrapperManifest.corePackage
+
+  if (locale === 'zh') {
+    return [
+      publicMarkers.start,
+      '## 标准生态包与公开仓库',
+      '',
+      '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开成品仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开 wrapper 仓库。',
+      '',
+      `核心底座包: \`${core.packageName}\`。core 源码只在私有 Gitea 仓库维护；公开 GitHub/Gitee 只发布 wrapper 源码、压缩构建产物、Demo、文档站、示例文件和 tarball。`,
+      '',
+      markdownTable(
+        ['框架', '标准 npm 包', 'GitHub', 'Gitee', '兼容历史包'],
+        wrapperRows('zh')
+      ),
+      '',
+      `共享 core 当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.flyfish.dev/guide/formats`,
+      publicMarkers.end
+    ].join('\n')
+  }
+
+  return [
+    publicMarkers.start,
+    '## Standard Ecosystem Packages and Public Repositories',
+    '',
+    'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public artifact repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public wrapper repositories from one place.',
+    '',
+    `Core foundation package: \`${core.packageName}\`. Core source is maintained only in the private Gitea repository; public GitHub/Gitee repositories publish wrapper source, minified build artifacts, demos, documentation output, examples, and tarballs.`,
+    '',
+    markdownTable(
+      ['Framework', 'Standard npm package', 'GitHub', 'Gitee', 'Historical aliases'],
+      wrapperRows('en')
+    ),
+    '',
+    `The shared core currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish.dev/guide/formats`,
+    publicMarkers.end
+  ].join('\n')
+}
+
+function syncBlock(text, block, markers = wrapperMarkers) {
+  const { start, end } = markers
   const startIndex = text.indexOf(start)
   const endIndex = text.indexOf(end)
   if (startIndex >= 0 && endIndex > startIndex) {
-    return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n${text.slice(endIndex + end.length)}`
+    const tail = text.slice(endIndex + end.length)
+    if (!tail.trim()) {
+      return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n\n`
+    }
+    return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n${tail.replace(/^\n+/, '\n')}`
   }
   return `${text.trimEnd()}\n\n${block}\n`
 }
@@ -176,8 +229,16 @@ for (const wrapper of wrapperManifest.wrappers) {
   for (const [filename, locale] of [['README.md', 'zh'], ['README.en.md', 'en']]) {
     const readmePath = resolve(sourceRoot, wrapper.packageDir, filename)
     const current = await readFile(readmePath, 'utf8')
-    const next = syncBlock(current, generatedBlock(locale))
+    const next = syncBlock(current, generatedWrapperBlock(locale))
     await writeFile(readmePath, next, 'utf8')
     console.log(`Updated ${wrapper.packageDir}/${filename}`)
   }
+}
+
+for (const [filename, locale] of [['README.md', 'zh'], ['README.en.md', 'en']]) {
+  const readmePath = resolve(sourceRoot, filename)
+  const current = await readFile(readmePath, 'utf8')
+  const next = syncBlock(current, generatedPublicBlock(locale), publicMarkers)
+  await writeFile(readmePath, next, 'utf8')
+  console.log(`Updated ${filename}`)
 }
