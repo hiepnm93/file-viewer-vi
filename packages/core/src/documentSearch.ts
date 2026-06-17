@@ -129,12 +129,12 @@ const walkTextNodes = (root: HTMLElement) => {
 };
 
 const getMutationObserverConstructor = (root: HTMLElement | null | undefined) => {
-  return root?.ownerDocument.defaultView?.MutationObserver ||
+  return root?.ownerDocument?.defaultView?.MutationObserver ||
     (typeof MutationObserver !== 'undefined' ? MutationObserver : undefined);
 };
 
 const getWindowLike = (root: HTMLElement | null | undefined) => {
-  return root?.ownerDocument.defaultView || (typeof window !== 'undefined' ? window : undefined);
+  return root?.ownerDocument?.defaultView || (typeof window !== 'undefined' ? window : undefined);
 };
 
 const isScrollableElement = (element: HTMLElement) => {

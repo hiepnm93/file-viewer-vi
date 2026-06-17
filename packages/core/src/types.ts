@@ -399,4 +399,18 @@ export interface FileViewerInstance {
   getCapabilities(extension?: string): FileViewerOperationAvailability;
   getRenderer(extension?: string): RendererDefinition | undefined;
   getSource(): NormalizedFileViewerSource | null;
+  zoomIn(): Promise<FileViewerZoomState>;
+  zoomOut(): Promise<FileViewerZoomState>;
+  resetZoom(): Promise<FileViewerZoomState>;
+  getZoomState(): FileViewerZoomState;
+  search(query: string): Promise<FileViewerSearchState>;
+  nextSearchResult(): Promise<FileViewerSearchState>;
+  previousSearchResult(): Promise<FileViewerSearchState>;
+  clearSearch(): Promise<FileViewerSearchState>;
+  getSearchState(): FileViewerSearchState;
+  collectDocumentAnchors(): Promise<FileViewerDocumentAnchor[]>;
+  getCurrentDocumentAnchor(): FileViewerDocumentAnchor | null;
+  scrollToDocumentAnchor(anchor: FileViewerDocumentAnchor | string | number | null | undefined): boolean;
+  scrollToLine(line: number): Promise<boolean>;
+  getDocumentTextChunks(options?: boolean | FileViewerAiOptions): FileViewerDocumentChunk[];
 }

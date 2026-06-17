@@ -1,15 +1,37 @@
 import { describe, expect, it } from 'vitest';
+import { parseHTML } from 'linkedom';
 import {
   DEFAULT_RENDERER_DEFINITIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
+  createFileViewerZoomState,
   createRendererRegistry,
   createViewer,
   getExtension,
   normalizeSource,
   readFileViewerBuffer,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider,
+  type FileViewerZoomProvider,
   type RendererDefinition,
   wrapFileViewerFileRef,
 } from '../packages/core/src';
+
+const setRect = (element: Element, rect: Partial<DOMRect>) => {
+  Object.defineProperty(element, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => ({
+      bottom: rect.bottom ?? (rect.top || 0) + (rect.height || 0),
+      height: rect.height ?? 0,
+      left: rect.left ?? 0,
+      right: rect.right ?? (rect.left || 0) + (rect.width || 0),
+      top: rect.top ?? 0,
+      width: rect.width ?? 0,
+      x: rect.x ?? rect.left ?? 0,
+      y: rect.y ?? rect.top ?? 0,
+      toJSON: () => ({}),
+    } as DOMRect),
+  });
+};
 
 describe('@file-viewer/core registry', () => {
   it('keeps the current public format matrix at 194 extensions', () => {
@@ -96,7 +118,8 @@ describe('@file-viewer/core registry', () => {
       ...DEFAULT_RENDERER_DEFINITIONS,
       renderer,
     ]);
-    const container = { dataset: {} } as unknown as HTMLElement;
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
     const viewer = createViewer(container, {
       registry,
       options: {
@@ -131,5 +154,133 @@ describe('@file-viewer/core registry', () => {
       'unload-start:component-unmount',
       'unload-complete:component-unmount',
     ]);
+  });
+
+  it('exposes framework-neutral viewer interaction APIs', async () => {
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
+    const beforeOperations: string[] = [];
+    let scale = 1;
+    let scrolledToLine = 0;
+
+    Object.defineProperty(container, 'clientHeight', { configurable: true, value: 120 });
+    Object.defineProperty(container, 'scrollHeight', { configurable: true, value: 520 });
+    Object.defineProperty(container, 'clientWidth', { configurable: true, value: 320 });
+    Object.defineProperty(container, 'scrollWidth', { configurable: true, value: 320 });
+    Object.defineProperty(container, 'scrollTop', { configurable: true, writable: true, value: 0 });
+    Object.defineProperty(container, 'scrollLeft', { configurable: true, writable: true, value: 0 });
+    container.scrollTo = (options?: ScrollToOptions | number, y?: number) => {
+      if (typeof options === 'number') {
+        container.scrollLeft = options;
+        container.scrollTop = y || 0;
+        return;
+      }
+      container.scrollTop = Number(options?.top || 0);
+      container.scrollLeft = Number(options?.left || 0);
+    };
+    setRect(container, { top: 0, left: 0, width: 320, height: 120 });
+
+    const renderer: RendererDefinition = {
+      id: 'core-api-fixture',
+      label: 'Core API Fixture',
+      category: 'document',
+      extensions: ['coreapi'],
+      capabilities: { download: true, zoom: 'provider', search: true },
+      load: async ({ surface }) => {
+        surface.container.innerHTML = `
+          <section id="zoom-host" data-viewer-zoom-provider="fixture">
+            <article>
+              <h1>Alpha PDF heading</h1>
+              <p>Beta pdf line with enough content for text chunks.</p>
+            </article>
+          </section>
+        `;
+
+        const zoomHost = surface.container.querySelector('#zoom-host') as HTMLElement;
+        const heading = surface.container.querySelector('h1') as HTMLElement;
+        const paragraph = surface.container.querySelector('p') as HTMLElement;
+        const getState = () => createFileViewerZoomState({
+          scale,
+          canZoomIn: scale < 2,
+          canZoomOut: scale > 0.5,
+          canReset: scale !== 1,
+        });
+        const zoomProvider: FileViewerZoomProvider = {
+          zoomIn: () => {
+            scale = 1.25;
+            return getState();
+          },
+          zoomOut: () => {
+            scale = 0.75;
+            return getState();
+          },
+          resetZoom: () => {
+            scale = 1;
+            return getState();
+          },
+          getState,
+        };
+
+        registerFileViewerZoomProvider(zoomHost, zoomProvider);
+        setRect(zoomHost, { top: 0, left: 0, width: 320, height: 160 });
+        setRect(heading, { top: 12, left: 16, width: 260, height: 32 });
+        setRect(paragraph, { top: 68, left: 16, width: 280, height: 24 });
+        heading.scrollIntoView = () => {
+          scrolledToLine = 1;
+        };
+        paragraph.scrollIntoView = () => {
+          scrolledToLine = 2;
+        };
+
+        return {
+          destroy: () => {
+            unregisterFileViewerZoomProvider(zoomHost);
+          },
+          getAvailability: () => ({
+            zoomIn: true,
+            zoomOut: true,
+            zoomReset: true,
+          }),
+        };
+      },
+    };
+    const registry = createRendererRegistry([
+      ...DEFAULT_RENDERER_DEFINITIONS,
+      renderer,
+    ]);
+    const viewer = createViewer(container, {
+      registry,
+      options: {
+        search: { maxMatches: 10 },
+        ai: { chunkSize: 200 },
+        beforeOperation: context => {
+          beforeOperations.push(context.operation);
+          return context.operation !== 'zoom-out';
+        },
+      },
+    });
+
+    await viewer.load({ buffer: new ArrayBuffer(4), filename: 'demo.coreapi' });
+
+    await expect(viewer.zoomIn()).resolves.toMatchObject({ scale: 1.25, label: '125%' });
+    await expect(viewer.zoomOut()).resolves.toMatchObject({ scale: 1.25 });
+    expect(beforeOperations).toEqual(['zoom-in', 'zoom-out']);
+    expect(viewer.getZoomState()).toMatchObject({ scale: 1.25, canReset: true });
+
+    await expect(viewer.search('pdf')).resolves.toMatchObject({ query: 'pdf', total: 2, currentIndex: 0 });
+    await expect(viewer.nextSearchResult()).resolves.toMatchObject({ currentIndex: 1 });
+    expect(viewer.getSearchState().matches.map(match => match.text)).toEqual(['PDF', 'pdf']);
+
+    const anchors = await viewer.collectDocumentAnchors();
+    expect(anchors.map(anchor => anchor.label)).toEqual([
+      'Alpha PDF heading',
+      'Beta pdf line with enough content for text chunks.',
+    ]);
+    expect(viewer.getCurrentDocumentAnchor()?.line).toBe(1);
+    await expect(viewer.scrollToLine(2)).resolves.toBe(true);
+    expect(scrolledToLine).toBe(2);
+    expect(viewer.getDocumentTextChunks()).toHaveLength(2);
+
+    await viewer.destroy();
   });
 });

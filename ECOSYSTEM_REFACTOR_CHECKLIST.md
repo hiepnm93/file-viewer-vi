@@ -62,10 +62,10 @@
   - [x] `viewer.destroy()`
   - [x] `viewer.updateOptions(options)`
   - [x] `viewer.getCapabilities()`
-  - [ ] `viewer.zoomIn()/zoomOut()/resetZoom()`
-  - [ ] `viewer.search()/nextSearchResult()/previousSearchResult()/clearSearch()`
+  - [x] `viewer.zoomIn()/zoomOut()/resetZoom()`
+  - [x] `viewer.search()/nextSearchResult()/previousSearchResult()/clearSearch()`
   - [ ] `viewer.print()/download()/exportHtml()`
-  - [ ] `viewer.collectDocumentAnchors()/getDocumentTextChunks()`
+  - [x] `viewer.collectDocumentAnchors()/getDocumentTextChunks()`
 - [x] 定义 framework-neutral 类型:
   - [x] `FileViewerOptions`
   - [x] `FileViewerSource`

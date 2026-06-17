@@ -28,7 +28,7 @@ export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewer
 });
 
 const getMutationObserverConstructor = (root: HTMLElement | null | undefined) => {
-  return root?.ownerDocument.defaultView?.MutationObserver ||
+  return root?.ownerDocument?.defaultView?.MutationObserver ||
     (typeof MutationObserver !== 'undefined' ? MutationObserver : undefined);
 };
 

@@ -1,10 +1,28 @@
+import {
+  buildFileViewerDocumentTextChunks,
+} from './document';
+import {
+  collectFileViewerDocumentAnchors,
+  getCurrentFileViewerDocumentAnchor,
+  scrollToFileViewerDocumentAnchor,
+} from './documentDom';
+import { createFileViewerDomSearchController, cloneFileViewerSearchState } from './documentSearch';
+import { createFileViewerZoomController } from './documentZoom';
 import { getRendererAvailability, createUnsupportedAvailability } from './capabilities';
-import { buildFileViewerLifecycleContext, runFileViewerLifecycleHook } from './operations';
+import {
+  buildFileViewerLifecycleContext,
+  buildFileViewerOperationContext,
+  runFileViewerBeforeOperation,
+  runFileViewerLifecycleHook,
+} from './operations';
 import { createRendererRegistry } from './registry';
 import { normalizeSource } from './source';
 import type {
+  FileViewerAiOptions,
+  FileViewerDocumentAnchor,
   FileViewerInstance,
   FileViewerLifecycleContext,
+  FileViewerOperationType,
   FileViewerOptions,
   FileViewerSource,
   NormalizedFileViewerSource,
@@ -54,6 +72,43 @@ export const createViewer = (
   let currentSource: NormalizedFileViewerSource | null = null;
   let currentSession: RendererSession | null = null;
   let version = 0;
+  let anchors: FileViewerDocumentAnchor[] = [];
+
+  const buildCurrentLifecycleContext = () => {
+    const source = currentSource || normalizeSource({});
+    return buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      filename: source.filename,
+      source: source.kind,
+      url: source.url,
+      file: typeof File !== 'undefined' && source.file instanceof File ? source.file : undefined,
+      size: source.size,
+      version,
+      timestamp: Date.now(),
+    });
+  };
+
+  const runBeforeViewerOperation = async (operation: FileViewerOperationType) => {
+    const context = buildFileViewerOperationContext(operation, buildCurrentLifecycleContext());
+    return runFileViewerBeforeOperation({
+      context,
+      options,
+      onError(error) {
+        throw error;
+      },
+    });
+  };
+
+  const zoomController = createFileViewerZoomController({
+    root: () => container,
+    beforeZoom: runBeforeViewerOperation,
+  });
+  const searchController = createFileViewerDomSearchController({
+    root: () => container,
+    options: () => options.search,
+  });
+  zoomController.observe();
+  searchController.observe();
 
   const destroyCurrent = async (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     if (!currentSource) {
@@ -65,6 +120,9 @@ export const createViewer = (
     await currentSession?.destroy?.();
     currentSession = null;
     currentSource = null;
+    anchors = [];
+    await searchController.clear();
+    zoomController.clearProvider();
     await emitLifecycle(options, 'unload-complete', source, version, startedAt, reason);
   };
 
@@ -93,11 +151,15 @@ export const createViewer = (
         options,
         signal: createOptions.signal,
       });
+      zoomController.refreshProvider();
+      anchors = collectFileViewerDocumentAnchors(container);
       await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
       return currentSession;
     },
-    destroy(reason = 'component-unmount') {
-      return destroyCurrent(reason);
+    async destroy(reason = 'component-unmount') {
+      await destroyCurrent(reason);
+      searchController.destroy();
+      zoomController.destroy();
     },
     updateOptions(nextOptions: Partial<FileViewerOptions>) {
       options = {
@@ -118,6 +180,52 @@ export const createViewer = (
     },
     getSource() {
       return currentSource;
+    },
+    zoomIn() {
+      return zoomController.zoomIn();
+    },
+    zoomOut() {
+      return zoomController.zoomOut();
+    },
+    resetZoom() {
+      return zoomController.resetZoom();
+    },
+    getZoomState() {
+      return zoomController.getState();
+    },
+    search(query: string) {
+      return searchController.search(query);
+    },
+    nextSearchResult() {
+      return searchController.next();
+    },
+    previousSearchResult() {
+      return searchController.previous();
+    },
+    clearSearch() {
+      return searchController.clear();
+    },
+    getSearchState() {
+      return cloneFileViewerSearchState(searchController.state);
+    },
+    async collectDocumentAnchors() {
+      anchors = collectFileViewerDocumentAnchors(container);
+      return anchors;
+    },
+    getCurrentDocumentAnchor() {
+      return getCurrentFileViewerDocumentAnchor(container, anchors);
+    },
+    scrollToDocumentAnchor(anchor: FileViewerDocumentAnchor | string | number | null | undefined) {
+      return scrollToFileViewerDocumentAnchor(container, anchor);
+    },
+    async scrollToLine(line: number) {
+      if (!anchors.length) {
+        anchors = collectFileViewerDocumentAnchors(container);
+      }
+      return scrollToFileViewerDocumentAnchor(container, line);
+    },
+    getDocumentTextChunks(textOptions?: boolean | FileViewerAiOptions) {
+      return buildFileViewerDocumentTextChunks(anchors, textOptions ?? options.ai);
     },
   };
 };
