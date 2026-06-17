@@ -1,24 +1,18 @@
 <script setup lang='ts'>
-import axios from 'axios'
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
-  FILE_VIEWER_PREVIEW_MESSAGES,
   createFileViewerErrorState,
   createFileViewerRawPostMessagePayload,
   createFileViewerRequestController,
   formatFileViewerErrorMessage,
   getExtension,
-  isFileViewerAbortError,
   normalizeFilename,
   normalizeFileViewerToolbar,
   postFileViewerMessageToParent,
-  readFileViewerBuffer,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
-  resolveVisibleFileViewerToolbar,
-  shouldStreamPdfUrl,
-  wrapFileViewerFileRef
+  resolveVisibleFileViewerToolbar
 } from '@file-viewer/core'
 import type {
   FileRef,
@@ -38,6 +32,7 @@ import { renderSession, type FileViewerVueRenderSession } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
+import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
 import { useViewerZoom } from './hooks/useViewerZoom'
 
@@ -169,19 +164,6 @@ const postViewerZoomState = (state: FileViewerZoomState) => {
   )
 }
 
-// 每次开始新的预览任务时都生成一个版本号。
-// 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
-const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-  const version = requestController.createVersion()
-  clearRenderedContent(reason)
-  currentFile.value = null
-  currentBuffer.value = null
-  currentSourceUrl.value = null
-  progressiveReady.value = false
-  clearError()
-  return version
-}
-
 const isCurrentRequest = (version: number) => {
   return requestController.isCurrent(version)
 }
@@ -229,12 +211,6 @@ const {
     showError(formatErrorMessage('操作前置校验失败', nextError))
   }
 })
-
-const finishLoading = (version: number) => {
-  if (isCurrentRequest(version)) {
-    stopLoading()
-  }
-}
 
 const waitForBrowserPaint = () => {
   return new Promise<void>(resolve => {
@@ -310,6 +286,10 @@ const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
   } catch (nextError) {
     console.warn('预览内容卸载失败', nextError)
   }
+}
+
+const setActiveRenderSession = (session: FileViewerVueRenderSession | null) => {
+  activeRenderSession = session
 }
 
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
@@ -406,195 +386,37 @@ const mountRenderedContent = async (
   }
 }
 
-// 文件读取和渲染拆成一个独立步骤，方便后续给不同来源复用。
-const readAndRenderFile = async (
-  file: File,
-  version: number,
-  sourceUrl?: string,
-  source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
-) => {
-  filename.value = normalizeFilename(file.name || '')
-  const arrayBuffer = await readFileViewerBuffer(file)
-  if (!isCurrentRequest(version)) {
-    return
-  }
-  currentFile.value = file
-  currentBuffer.value = arrayBuffer
-  currentSourceUrl.value = sourceUrl || null
-
-  const session = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
-  if (!isCurrentRequest(version)) {
-    destroyRenderSession(session)
-    return
-  }
-  activeRenderSession = session || null
-  renderedReady.value = true
-  const context = buildLifecycleContext({
-    phase: 'load-complete',
-    version,
-    source,
-    file,
-    sourceUrl
-  })
-  setActiveDocumentContext(context)
-  notifyLifecycle(context)
-  clearLoadStarted(version)
-}
-
-const canStreamRemotePdf = (url: string, nextFilename: string) => {
-  if (typeof window === 'undefined') {
-    return false
-  }
-  return shouldStreamPdfUrl({
-    extension: getExtension(nextFilename),
-    pageHref: window.location.href,
-    streaming: props.options?.pdf?.streaming,
-    url
-  })
-}
-
-const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
-  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)
-
-  try {
-    const placeholderFile = new File([], nextFilename || 'preview.pdf', { type: 'application/pdf' })
-    currentSourceUrl.value = url
-    const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
-    if (!isCurrentRequest(version)) {
-      destroyRenderSession(session)
-      return
-    }
-    activeRenderSession = session || null
-    renderedReady.value = true
-    const context = buildLifecycleContext({
-      phase: 'load-complete',
-      version,
-      source: 'url',
-      sourceUrl: url
-    })
-    setActiveDocumentContext(context)
-    notifyLifecycle(context)
-    clearLoadStarted(version)
-  } catch (nextError) {
-    if (!isCurrentRequest(version)) {
-      return
-    }
-    console.error(nextError)
-    showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
-  } finally {
-    clearLoadStarted(version)
-    finishLoading(version)
-  }
-}
-
-const previewLocalFile = async (source: FileRef, version: number) => {
-  const file = wrapFileViewerFileRef(source, filename.value || 'preview.bin')
-  filename.value = normalizeFilename(file.name || '')
-  markLoadStarted(version)
-  notifyLifecycle(buildLifecycleContext({
-    phase: 'load-start',
-    version,
-    source: 'file',
-    file
-  }))
-  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.reading)
-
-  try {
-    await readAndRenderFile(file, version, undefined, 'file')
-  } catch (nextError) {
-    if (!isCurrentRequest(version)) {
-      return
-    }
-    console.error(nextError)
-    showError(formatErrorMessage('读取文件异常', nextError))
-  } finally {
-    clearLoadStarted(version)
-    finishLoading(version)
-  }
-}
-
-// 远端预览额外管理下载控制器，新的请求进来时可以立即中断旧下载。
-const previewRemoteFile = async (url: string, version: number) => {
-  const nextFilename = normalizeFilename(url)
-  filename.value = nextFilename
-  markLoadStarted(version)
-  notifyLifecycle(buildLifecycleContext({
-    phase: 'load-start',
-    version,
-    source: 'url',
-    sourceUrl: url
-  }))
-  startLoading(FILE_VIEWER_PREVIEW_MESSAGES.downloading)
-
-  if (canStreamRemotePdf(url, nextFilename)) {
-    await previewRemotePdfStream(url, version, nextFilename)
-    return
-  }
-
-  const controller = requestController.createAbortController()
-
-  try {
-    const { data } = await axios({
-      url,
-      method: 'get',
-      responseType: 'blob',
-      signal: controller?.signal
-    })
-
-    if (!isCurrentRequest(version)) {
-      return
-    }
-
-    if (!data) {
-      showError('文件下载失败')
-      return
-    }
-
-    setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)
-    await readAndRenderFile(wrapFileViewerFileRef(data, nextFilename), version, url, 'url')
-  } catch (nextError) {
-    if (!isCurrentRequest(version) || isFileViewerAbortError(nextError)) {
-      return
-    }
-    console.error(nextError)
-    showError(formatErrorMessage('加载文件异常', nextError))
-  } finally {
-    requestController.clearAbortController(controller)
-    clearLoadStarted(version)
-    finishLoading(version)
-  }
-}
-
-// 没有输入源时回到干净初始态，避免保留上一份文档的残留信息。
-const resetViewer = () => {
-  filename.value = ''
-  currentFile.value = null
-  currentBuffer.value = null
-  currentSourceUrl.value = null
-  renderedReady.value = false
-  progressiveReady.value = false
-  clearRenderedContent()
-  resetLoading()
-}
-
-// 统一入口只负责决定“读本地”还是“拉远端”，
-// 具体的下载、读取和挂载细节都下沉到独立 helper。
-const refreshPreview = async () => {
-  const hasSource = !!props.file || !!props.url
-  const version = createRequestVersion(hasSource ? 'replace' : 'reset')
-
-  if (props.file) {
-    await previewLocalFile(props.file, version)
-    return
-  }
-
-  if (props.url) {
-    await previewRemoteFile(props.url, version)
-    return
-  }
-
-  resetViewer()
-}
+const {
+  cancelPreview,
+  refreshPreview
+} = useViewerSourceLoading({
+  getFile: () => props.file,
+  getUrl: () => props.url,
+  getOptions: () => props.options,
+  filename,
+  currentFile,
+  currentBuffer,
+  currentSourceUrl,
+  renderedReady,
+  progressiveReady,
+  requestController,
+  clearRenderedContent,
+  mountRenderedContent,
+  destroyRenderSession,
+  setActiveRenderSession,
+  buildLifecycleContext,
+  notifyLifecycle,
+  setActiveDocumentContext,
+  markLoadStarted,
+  clearLoadStarted,
+  startLoading,
+  setLoadingMessage,
+  stopLoading,
+  showError,
+  clearError,
+  resetLoading,
+  formatErrorMessage
+})
 
 const {
   downloadOriginalFile,
@@ -662,7 +484,7 @@ watch([() => props.file, () => props.url], () => {
 }, { immediate: true })
 
 onBeforeUnmount(() => {
-  createRequestVersion('component-unmount')
+  cancelPreview('component-unmount')
   resetLoading()
   stopZoomObserver()
 })

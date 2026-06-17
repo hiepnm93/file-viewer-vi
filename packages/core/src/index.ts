@@ -172,6 +172,7 @@ export {
   normalizePdfStreamingMode,
   shouldStreamPdfUrl,
 } from './sourceLoading';
+export type { FileViewerRequestController } from './sourceLoading';
 export { createViewer } from './viewer';
 export { WorkerRefImpl, refWorker } from './worker';
 export type {
