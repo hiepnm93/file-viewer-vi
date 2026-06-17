@@ -65,6 +65,9 @@ const requiredTypeExports = [
   'FileViewerComponentEventMap',
   'FileViewerPublicApi',
   'FileViewerFrameComponentProps',
+  'FileViewerFrameContainerComponentProps',
+  'FileViewerFrameHostComponentProps',
+  'FileViewerFrameIframeComponentProps',
   'FileViewerDirectFrameHandle',
   'FileViewerMountedFrameHandle',
   'FileViewerFrameControllerHandle'

@@ -11,6 +11,7 @@ import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
   type ViewerFrameComponentProps,
+  type ViewerFrameIframeComponentProps,
   type ViewerFrameControllerHandle,
   type ViewerFrameController,
   type ViewerFrameOptions,
@@ -24,6 +25,9 @@ export type {
   ViewerCadOptions,
   ViewerDocxOptions,
   ViewerFrameComponentProps,
+  ViewerFrameContainerComponentProps,
+  ViewerFrameHostComponentProps,
+  ViewerFrameIframeComponentProps,
   ViewerFrameControllerHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
@@ -44,20 +48,8 @@ export interface FileViewerLegacyHandle extends ViewerFrameControllerHandle {}
 
 export interface FileViewerLegacyProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
-    ViewerFrameComponentProps {
-  /**
-   * Class name applied to the generated iframe.
-   */
-  iframeClassName?: string
-  /**
-   * Inline style applied to the generated iframe.
-   */
-  iframeStyle?: Partial<CSSStyleDeclaration>
-  /**
-   * Accessible title for the generated iframe.
-   */
-  iframeTitle?: string
-}
+    ViewerFrameComponentProps,
+    ViewerFrameIframeComponentProps {}
 
 const defaultContainerStyle: CSSProperties = {
   width: '100%',

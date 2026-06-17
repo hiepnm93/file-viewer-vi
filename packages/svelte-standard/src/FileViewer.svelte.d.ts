@@ -4,15 +4,13 @@ import type {
   ViewerFrameComponentProps,
   ViewerFrameController,
   ViewerFrameEventPayload,
+  ViewerFrameIframeComponentProps,
   ViewerMountedFrameHandle,
 } from '@file-viewer/web'
 
-export interface FileViewerSvelteProps extends ViewerFrameComponentProps {
+export interface FileViewerSvelteProps extends ViewerFrameComponentProps, ViewerFrameIframeComponentProps {
   className?: string
   containerStyle?: string
-  iframeClassName?: string
-  iframeStyle?: Partial<CSSStyleDeclaration>
-  iframeTitle?: string
 }
 
 export interface FileViewerSvelteEvents {

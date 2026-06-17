@@ -227,6 +227,7 @@
   - [x] 新增 `pnpm verify:wrapper-api`，校验 Vue、React、Pure JS、jQuery、Svelte wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法。
   - [x] 标准 wrapper 的 iframe handle / mounted controller handle / legacy controller handle 类型迁入 core，并经由 `@file-viewer/web` 统一透传。
   - [x] wrapper 共享 `viewerUrl/url/file/name/from/targetOrigin/params/cacheKey/options/onViewerEvent` frame component props 类型，React / Vue / Svelte / 兼容 React 包不再重复声明该参数面。
+  - [x] wrapper 共享 iframe 外观与宿主容器 props 类型，Vue2.6 / Vue2.7 / Vue3 / React legacy / Svelte 不再各自维护 `iframeClassName/iframeStyle/iframeTitle/containerClass/containerStyle` 类型契约。
 
 ## Phase 5: 公开仓库与 README
 

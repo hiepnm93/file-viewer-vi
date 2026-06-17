@@ -3,7 +3,7 @@ import type { CreateElement, PluginObject, VueConstructor, VNode } from 'vue'
 import {
   mountViewerFrame,
   type CreateViewerFrameOptions,
-  type ViewerFrameComponentProps,
+  type ViewerFrameHostComponentProps,
   type ViewerMountedFrameHandle,
   type ViewerFrameController,
   type ViewerFrameEventPayload,
@@ -18,6 +18,9 @@ export type {
   ViewerCadOptions,
   ViewerDocxOptions,
   ViewerFrameComponentProps,
+  ViewerFrameContainerComponentProps,
+  ViewerFrameHostComponentProps,
+  ViewerFrameIframeComponentProps,
   ViewerMountedFrameHandle,
   ViewerFrameController,
   ViewerFrameEventHandler,
@@ -40,13 +43,7 @@ export interface FileViewerVue27PluginOptions {
 
 export interface FileViewerVue27PublicInstance extends Vue, ViewerMountedFrameHandle {}
 
-interface FileViewerVue27Props extends ViewerFrameComponentProps {
-  iframeClassName?: string
-  iframeStyle?: Partial<CSSStyleDeclaration>
-  iframeTitle?: string
-  containerClass?: unknown
-  containerStyle?: unknown
-}
+interface FileViewerVue27Props extends ViewerFrameHostComponentProps {}
 
 type FileViewerVue27Vm = Vue & FileViewerVue27Props & {
   controller: ViewerFrameController | null

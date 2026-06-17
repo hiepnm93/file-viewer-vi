@@ -30,6 +30,13 @@ const sharedControllerMethods = [
   'destroy'
 ]
 
+const sharedFrameComponentTypes = [
+  'ViewerFrameComponentProps',
+  'ViewerFrameContainerComponentProps',
+  'ViewerFrameHostComponentProps',
+  'ViewerFrameIframeComponentProps'
+]
+
 const webHelperExports = [
   'buildViewerSrc',
   'createViewerFrame',
@@ -119,7 +126,7 @@ function verifyWebWrapper(source, label) {
     'DEFAULT_VIEWER_URL',
     'VIEWER_FRAME_CACHE_KEY',
     'ViewerRuntimeOptions',
-    'ViewerFrameComponentProps',
+    ...sharedFrameComponentTypes,
     'ViewerFrameController',
     'ViewerDirectFrameHandle',
     'ViewerMountedFrameHandle',
@@ -144,7 +151,7 @@ function verifyVueWrapper(source, label, version) {
     'viewer-event',
     'viewerEvent',
     'ViewerRuntimeOptions',
-    'ViewerFrameComponentProps',
+    ...sharedFrameComponentTypes,
     'ViewerMountedFrameHandle'
   ], label)
   if (version === 'vue3') {
@@ -172,7 +179,7 @@ function verifyReactWrapper(source, label) {
     'reload',
     'onViewerEvent',
     'ViewerFrameOptions',
-    'ViewerFrameComponentProps',
+    ...sharedFrameComponentTypes,
     'ViewerDirectFrameHandle'
   ], label)
   assert(/export\s+default\s+FileViewer/.test(source), `${label} must default-export FileViewer`)
@@ -196,7 +203,7 @@ function verifyReactLegacyWrapper(source, label) {
     'useImperativeHandle',
     'React.createElement',
     'mountViewerFrame',
-    'ViewerFrameComponentProps',
+    ...sharedFrameComponentTypes,
     'ViewerFrameControllerHandle'
   ], label)
   assert(/export\s+default\s+FileViewerLegacy/.test(source), `${label} must default-export FileViewerLegacy`)
@@ -212,7 +219,8 @@ function verifyJQueryWrapper(source, label) {
     'getFileViewerController',
     'destroyFileViewer',
     'fileViewer',
-    'mountViewerFrame'
+    'mountViewerFrame',
+    ...sharedFrameComponentTypes
   ], label)
   for (const method of ['destroy', 'reload', 'postFile', 'update']) {
     assert(source.includes(`'${method}'`), `${label} must support jQuery method "${method}"`)
@@ -230,7 +238,7 @@ function verifySvelteWrapper(source, label) {
     'update',
     'destroy',
     'replace',
-    'ViewerFrameComponentProps',
+    ...sharedFrameComponentTypes,
     'ViewerMountedFrameHandle'
   ], label)
   assert(/export\s+default\s+fileViewer/.test(source), `${label} must default-export fileViewer action`)

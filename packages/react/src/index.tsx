@@ -18,8 +18,11 @@ import {
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
+  FileViewerFrameContainerComponentProps,
   FileViewerDirectFrameHandle,
   FileViewerFrameComponentProps,
+  FileViewerFrameHostComponentProps,
+  FileViewerFrameIframeComponentProps,
   FileViewerFrameFilePostController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
@@ -34,6 +37,15 @@ import type {
 export type FileRef = FileViewerFileRef
 export type ViewerDirectFrameHandle = FileViewerDirectFrameHandle
 export type ViewerFrameComponentProps = FileViewerFrameComponentProps
+export type ViewerFrameContainerComponentProps<
+  ContainerClass = unknown,
+  ContainerStyle = unknown
+> = FileViewerFrameContainerComponentProps<ContainerClass, ContainerStyle>
+export type ViewerFrameHostComponentProps<
+  ContainerClass = unknown,
+  ContainerStyle = unknown
+> = FileViewerFrameHostComponentProps<ContainerClass, ContainerStyle>
+export type ViewerFrameIframeComponentProps = FileViewerFrameIframeComponentProps
 export type ViewerFrameOptions = FileViewerFrameOptions
 export type ViewerFrameEventType = FileViewerPostMessageType
 export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>

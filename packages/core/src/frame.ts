@@ -67,6 +67,43 @@ export interface FileViewerFrameComponentProps extends Omit<FileViewerFrameOptio
   onViewerEvent?: FileViewerFrameOptions['onEvent'];
 }
 
+export interface FileViewerFrameIframeComponentProps {
+  /**
+   * Class name applied to the iframe created by the wrapper.
+   */
+  iframeClassName?: string;
+  /**
+   * Inline style merged into the iframe created by the wrapper.
+   */
+  iframeStyle?: Partial<CSSStyleDeclaration>;
+  /**
+   * Accessible title applied to the iframe created by the wrapper.
+   */
+  iframeTitle?: string;
+}
+
+export interface FileViewerFrameContainerComponentProps<
+  ContainerClass = unknown,
+  ContainerStyle = unknown
+> {
+  /**
+   * Class value applied to the wrapper's outer container.
+   */
+  containerClass?: ContainerClass;
+  /**
+   * Style value applied to the wrapper's outer container.
+   */
+  containerStyle?: ContainerStyle;
+}
+
+export interface FileViewerFrameHostComponentProps<
+  ContainerClass = unknown,
+  ContainerStyle = unknown
+> extends
+    FileViewerFrameComponentProps,
+    FileViewerFrameIframeComponentProps,
+    FileViewerFrameContainerComponentProps<ContainerClass, ContainerStyle> {}
+
 export interface BuildFileViewerFrameSrcOptions extends FileViewerFrameOptions {
   /**
    * wrapper 包可以用自己的默认入口覆盖 core 默认地址。
