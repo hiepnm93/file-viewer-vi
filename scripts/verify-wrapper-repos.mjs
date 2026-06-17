@@ -82,6 +82,25 @@ function assertNotIncludes(text, forbidden, label) {
   }
 }
 
+const monorepoOnlyForbiddenPatterns = [
+  '../../scripts/',
+  '../..\\scripts\\',
+  'pnpm --dir',
+  'npm --prefix ../..',
+  'yarn --cwd ../..'
+]
+
+const exportedRepoForbiddenPatterns = [
+  ...monorepoOnlyForbiddenPatterns,
+  'workspace:'
+]
+
+function verifyStandalonePortableText(text, label, patterns = monorepoOnlyForbiddenPatterns) {
+  for (const pattern of patterns) {
+    assertNotIncludes(text, pattern, label)
+  }
+}
+
 function dependencyBlocks(packageJson) {
   return [
     packageJson.dependencies,
@@ -197,6 +216,7 @@ async function verifyPackageDir(wrapper) {
   if (packageJson.private === true) {
     throw new Error(`${wrapper.packageDir} must be publishable, but package.json has private=true`)
   }
+  verifyStandalonePortableText(JSON.stringify(packageJson), `${wrapper.packageDir}/package.json`)
   await verifyPackageEntrypointMetadata(packageDir, packageJson, wrapper.packageDir)
 }
 
@@ -275,7 +295,7 @@ async function verifyExportedRepo(wrapper) {
       throw new Error(`${wrapper.repository} exported build/dependency output leaked: ${relativePath}`)
     }
     const content = await readFile(file, 'utf8').catch(() => '')
-    assertNotIncludes(content, 'workspace:', `${wrapper.repository}/${relativePath}`)
+    verifyStandalonePortableText(content, `${wrapper.repository}/${relativePath}`, exportedRepoForbiddenPatterns)
   }
 }
 

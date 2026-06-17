@@ -222,7 +222,7 @@ function syncBlock(text, block, markers = wrapperMarkers) {
   if (startIndex >= 0 && endIndex > startIndex) {
     const tail = text.slice(endIndex + end.length)
     if (!tail.trim()) {
-      return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n\n`
+      return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n`
     }
     return `${text.slice(0, startIndex).trimEnd()}\n\n${block}\n${tail.replace(/^\n+/, '\n')}`
   }
