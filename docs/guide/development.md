@@ -46,6 +46,8 @@ pnpm install
 | `pnpm release:ecosystem:pack` | 构建完整生态并生成可离线安装的 npm tarball |
 | `pnpm release:ecosystem:publish:dry-run` | 对完整生态包执行 npm publish dry-run |
 | `pnpm release:ecosystem:publish` | 正式发布完整生态包；MFA 账号请使用交互式终端确认 |
+| `pnpm wrappers:readme` | 根据 `ecosystem/wrapper-readme-template.json`、wrapper manifest 和 core 格式定义刷新所有 wrapper 中英文 README 与根 README 生态矩阵 |
+| `pnpm wrappers:verify` | 校验 wrapper 包和导出仓库的 README 模板、格式矩阵、仓库元数据、入口、依赖边界和源码边界 |
 | `pnpm wrappers:publish:dry-run` | 导出并校验独立 wrapper 仓库，发布脚本复跑目标仓库预检后预览 GitHub/Gitee 推送动作 |
 | `pnpm wrappers:standalone-smoke` | 构建 core 与 wrapper 包，导出独立 wrapper 仓库，并用 npm 在临时独立仓库中安装、构建验证 |
 | `pnpm wrappers:publish` | 导出、校验，并由发布脚本复跑 freshness / 依赖边界预检后提交推送所有独立 wrapper 仓库到 GitHub 和 Gitee |
@@ -67,6 +69,8 @@ pnpm build:adapter-demo
 pnpm release:ecosystem:list
 pnpm verify:branch-roles
 pnpm verify:ecosystem-versions
+pnpm wrappers:readme
+pnpm wrappers:verify --source-only
 pnpm wrappers:standalone-smoke
 pnpm wrappers:publish:dry-run
 pnpm docker:build
@@ -133,6 +137,7 @@ pnpm release:pack
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
 - `file-viewer-copy-assets` 是否生成 `flyfish-viewer-assets.json`，且 archive / CAD 等 worker/WASM 资源校验为 `valid: true`
 - `.release/wrapper-repos/*` 是否已经通过 `pnpm wrappers:publish:dry-run` 预检，确认 GitHub/Gitee remotes、README、manifest、source HEAD freshness、依赖边界和 npm 入口元数据均来自 `ecosystem/wrappers.json`
+- wrapper README 是否已经通过 `pnpm wrappers:readme` 和 `pnpm wrappers:verify --source-only`，确认中英文模板、生态矩阵、格式矩阵、官方文档和 Demo 链接与 `ecosystem/wrapper-readme-template.json` 一致
 - 独立 wrapper 仓库是否已经通过 `pnpm wrappers:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`

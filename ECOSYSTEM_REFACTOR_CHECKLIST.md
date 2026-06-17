@@ -341,6 +341,9 @@
   - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。
 - [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
 - [ ] 新增 wrapper README 模板，统一中英文结构和格式矩阵。
+  - [x] 新增 `ecosystem/wrapper-readme-template.json`，集中声明 wrapper/public README 生成 marker、中英文标题、矩阵表头、必备官方链接和必备术语。
+  - [x] `scripts/sync-wrapper-readmes.mjs` 改为读取 README 模板规范生成中英文生态矩阵和格式矩阵。
+  - [x] `scripts/verify-wrapper-repos.mjs` / `scripts/verify-public-artifacts.mjs` 按模板规范校验 wrapper 与公开成品 README，确保所有标准包、GitHub/Gitee 仓库、官方文档、Demo、License 和格式数量不漂移。
 - [x] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。
 
 ## 完成审计标准

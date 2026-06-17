@@ -5,6 +5,7 @@ import ts from 'typescript'
 
 const sourceRoot = process.cwd()
 const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
+const readmeTemplate = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'), 'utf8'))
 
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
 const rendererDefinitions = [...formatModule.DEFAULT_RENDERER_DEFINITIONS]
@@ -110,34 +111,36 @@ function markdownTable(headers, rows) {
 }
 
 const wrapperMarkers = {
-  start: '<!-- FILE_VIEWER_GENERATED:START -->',
-  end: '<!-- FILE_VIEWER_GENERATED:END -->'
+  start: readmeTemplate.markers.wrapperGenerated.start,
+  end: readmeTemplate.markers.wrapperGenerated.end
 }
 
 const publicMarkers = {
-  start: '<!-- FILE_VIEWER_PUBLIC_GENERATED:START -->',
-  end: '<!-- FILE_VIEWER_PUBLIC_GENERATED:END -->'
+  start: readmeTemplate.markers.publicGenerated.start,
+  end: readmeTemplate.markers.publicGenerated.end
 }
 
 function generatedWrapperBlock(locale) {
+  const template = readmeTemplate.locales[locale]
+
   if (locale === 'zh') {
     return [
       wrapperMarkers.start,
-      '## 生态包矩阵',
+      `## ${template.wrapperEcosystemHeading}`,
       '',
       '所有 wrapper 都复用同一个 `@file-viewer/core` / `@file-viewer/web` 底座。core 源码保留在私有 Gitea 仓库，wrapper 仓库面向 GitHub/Gitee 公开发布。',
       '',
       markdownTable(
-        ['框架', '标准 npm 包', 'GitHub', 'Gitee', '兼容历史包'],
+        template.wrapperMatrixHeaders,
         wrapperRows('zh')
       ),
       '',
-      '## 格式支持矩阵',
+      `## ${template.wrapperFormatHeading}`,
       '',
       `当前共享底座覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，wrapper 层不重复打包渲染器。`,
       '',
       markdownTable(
-        ['预览链路', '分类', '扩展名', '能力', '加载'],
+        template.formatMatrixHeaders,
         rendererRows('zh')
       ),
       '',
@@ -150,21 +153,21 @@ function generatedWrapperBlock(locale) {
 
   return [
     wrapperMarkers.start,
-    '## Ecosystem Matrix',
+    `## ${template.wrapperEcosystemHeading}`,
     '',
     'Every wrapper reuses the same `@file-viewer/core` / `@file-viewer/web` foundation. Core source stays in the private Gitea repository, while wrappers are prepared for public GitHub/Gitee distribution.',
     '',
     markdownTable(
-      ['Framework', 'Standard npm package', 'GitHub', 'Gitee', 'Historical aliases'],
+      template.wrapperMatrixHeaders,
       wrapperRows('en')
     ),
     '',
-    '## Format Support Matrix',
+    `## ${template.wrapperFormatHeading}`,
     '',
     `The shared runtime currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, so wrapper packages do not duplicate heavy preview logic.`,
     '',
     markdownTable(
-      ['Preview pipeline', 'Category', 'Extensions', 'Capabilities', 'Loading'],
+      template.formatMatrixHeaders,
       rendererRows('en')
     ),
     '',
@@ -177,18 +180,19 @@ function generatedWrapperBlock(locale) {
 
 function generatedPublicBlock(locale) {
   const core = wrapperManifest.corePackage
+  const template = readmeTemplate.locales[locale]
 
   if (locale === 'zh') {
     return [
       publicMarkers.start,
-      '## 标准生态包与公开仓库',
+      `## ${template.publicEcosystemHeading}`,
       '',
       '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开成品仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开 wrapper 仓库。',
       '',
       `核心底座包: \`${core.packageName}\`。core 源码只在私有 Gitea 仓库维护；公开 GitHub/Gitee 只发布 wrapper 源码、压缩构建产物、Demo、文档站、示例文件和 tarball。`,
       '',
       markdownTable(
-        ['框架', '标准 npm 包', 'GitHub', 'Gitee', '兼容历史包'],
+        template.wrapperMatrixHeaders,
         wrapperRows('zh')
       ),
       '',
@@ -199,14 +203,14 @@ function generatedPublicBlock(locale) {
 
   return [
     publicMarkers.start,
-    '## Standard Ecosystem Packages and Public Repositories',
+    `## ${template.publicEcosystemHeading}`,
     '',
     'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public artifact repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public wrapper repositories from one place.',
     '',
     `Core foundation package: \`${core.packageName}\`. Core source is maintained only in the private Gitea repository; public GitHub/Gitee repositories publish wrapper source, minified build artifacts, demos, documentation output, examples, and tarballs.`,
     '',
     markdownTable(
-      ['Framework', 'Standard npm package', 'GitHub', 'Gitee', 'Historical aliases'],
+      template.wrapperMatrixHeaders,
       wrapperRows('en')
     ),
     '',

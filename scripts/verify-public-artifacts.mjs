@@ -26,6 +26,7 @@ const publicRepoDir = resolve(
 )
 const { rootPackage, wrapperManifest, entries: ecosystemPackageEntries } =
   await loadEcosystemReleaseContext(sourceRoot)
+const readmeTemplate = await readJson(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'))
 const version = rootPackage.version
 
 function assert(condition, message) {
@@ -114,10 +115,21 @@ async function assertReleaseManifest(repoDir) {
 async function assertReadmes(repoDir) {
   const readme = await readText(join(repoDir, 'README.md'))
   const readmeEn = await readText(join(repoDir, 'README.en.md'))
-  for (const content of [readme, readmeEn]) {
+  for (const [locale, content] of [['zh', readme], ['en', readmeEn]]) {
+    const template = readmeTemplate.locales[locale]
     assertIncludes(content, wrapperManifest.corePackage.packageName, 'public README')
-    assertIncludes(content, 'https://doc.flyfish.dev', 'public README')
-    assertIncludes(content, 'https://viewer.flyfish.dev', 'public README')
+    assertIncludes(content, readmeTemplate.markers.publicGenerated.start, 'public README')
+    assertIncludes(content, readmeTemplate.markers.publicGenerated.end, 'public README')
+    assertIncludes(content, template.publicEcosystemHeading, 'public README')
+    for (const requiredLink of readmeTemplate.requiredLinks) {
+      assertIncludes(content, requiredLink.replace(/\/$/, ''), 'public README')
+    }
+    for (const requiredTerm of readmeTemplate.requiredTerms) {
+      assertIncludes(content, requiredTerm, 'public README')
+    }
+    for (const header of template.wrapperMatrixHeaders) {
+      assertIncludes(content, header, 'public README')
+    }
     for (const wrapper of wrapperManifest.wrappers) {
       assertIncludes(content, wrapper.packageName, 'public README')
       assertIncludes(content, wrapper.github, 'public README')

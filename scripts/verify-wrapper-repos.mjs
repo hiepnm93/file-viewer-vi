@@ -32,6 +32,7 @@ const selectedIds = new Set(
 )
 
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+const readmeTemplate = await readJson(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'))
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
 const rendererCount = formatModule.DEFAULT_RENDERER_DEFINITIONS.length
 const extensionCount = formatModule.DEFAULT_SUPPORTED_EXTENSIONS.length
@@ -318,6 +319,10 @@ async function verifyExportedWebViewerAssets(repoDir, label) {
 }
 
 async function verifyReadmePair(dir, wrapper, label) {
+  if (readmeTemplate.schemaVersion !== 1) {
+    throw new Error('ecosystem/wrapper-readme-template.json schemaVersion must be 1')
+  }
+
   const zhPath = join(dir, 'README.md')
   const enPath = join(dir, 'README.en.md')
   await assertFile(zhPath, `${label} README.md`)
@@ -326,20 +331,37 @@ async function verifyReadmePair(dir, wrapper, label) {
   const zh = await readFile(zhPath, 'utf8')
   const en = await readFile(enPath, 'utf8')
   for (const [locale, readme] of [['zh', zh], ['en', en]]) {
+    const template = readmeTemplate.locales[locale]
     const readmeLabel = `${label} ${locale} README`
     assertIncludes(readme, wrapper.packageName, readmeLabel)
     assertIncludes(readme, wrapper.github, readmeLabel)
     assertIncludes(readme, wrapper.gitee, readmeLabel)
     assertIncludes(readme, wrapperManifest.corePackage.packageName, readmeLabel)
-    assertIncludes(readme, 'FILE_VIEWER_GENERATED:START', readmeLabel)
-    assertIncludes(readme, 'FILE_VIEWER_GENERATED:END', readmeLabel)
-    assertIncludes(readme, 'https://doc.flyfish.dev/', readmeLabel)
-    assertIncludes(readme, 'https://viewer.flyfish.dev/', readmeLabel)
-    assertIncludes(readme, 'Apache-2.0', readmeLabel)
+    assertIncludes(readme, readmeTemplate.markers.wrapperGenerated.start, readmeLabel)
+    assertIncludes(readme, readmeTemplate.markers.wrapperGenerated.end, readmeLabel)
+    assertIncludes(readme, template.wrapperEcosystemHeading, readmeLabel)
+    assertIncludes(readme, template.wrapperFormatHeading, readmeLabel)
+    for (const header of [
+      ...template.wrapperMatrixHeaders,
+      ...template.formatMatrixHeaders
+    ]) {
+      assertIncludes(readme, header, readmeLabel)
+    }
+    for (const requiredLink of readmeTemplate.requiredLinks) {
+      assertIncludes(readme, requiredLink, readmeLabel)
+    }
+    for (const requiredTerm of readmeTemplate.requiredTerms) {
+      assertIncludes(readme, requiredTerm, readmeLabel)
+    }
     assertIncludes(readme, String(rendererCount), readmeLabel)
     assertIncludes(readme, String(extensionCount), readmeLabel)
     assertNotIncludes(readme, '4.99', readmeLabel)
     assertNotIncludes(readme, '6.22', readmeLabel)
+    for (const ecosystemWrapper of wrapperManifest.wrappers) {
+      assertIncludes(readme, ecosystemWrapper.packageName, readmeLabel)
+      assertIncludes(readme, ecosystemWrapper.github, readmeLabel)
+      assertIncludes(readme, ecosystemWrapper.gitee, readmeLabel)
+    }
     for (const historicalPackage of wrapper.historicalPackages) {
       assertIncludes(readme, historicalPackage, readmeLabel)
     }
