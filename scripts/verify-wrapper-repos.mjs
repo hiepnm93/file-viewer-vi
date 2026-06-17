@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import ts from 'typescript'
@@ -27,6 +28,8 @@ const extensionCount = formatModule.DEFAULT_SUPPORTED_EXTENSIONS.length
 const historicalPackageNames = new Set(
   wrapperManifest.wrappers.flatMap(wrapper => wrapper.historicalPackages)
 )
+const currentSourceBranch = runGit(['branch', '--show-current'])
+const currentSourceCommit = runGit(['rev-parse', '--short', 'HEAD'])
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
@@ -51,6 +54,18 @@ async function loadTypescriptModule(path) {
   }
   vm.runInNewContext(transpiled.outputText, sandbox, { filename: path })
   return module.exports
+}
+
+function runGit(commandArgs) {
+  const result = spawnSync('git', commandArgs, {
+    cwd: sourceRoot,
+    encoding: 'utf8',
+    stdio: 'pipe'
+  })
+  if (result.status !== 0) {
+    throw new Error(`Command failed: git ${commandArgs.join(' ')}\n${result.stderr || result.stdout}`)
+  }
+  return result.stdout.trim()
 }
 
 async function assertDirectory(path, label = path) {
@@ -399,6 +414,8 @@ async function verifyExportedRepo(wrapper) {
 
   const standaloneManifest = await readJson(join(repoDir, 'wrapper-repo-manifest.json'))
   for (const [key, expected] of Object.entries({
+    sourceBranch: currentSourceBranch,
+    sourceCommit: currentSourceCommit,
     organization: wrapperManifest.organization,
     framework: wrapper.framework,
     packageName: wrapper.packageName,
