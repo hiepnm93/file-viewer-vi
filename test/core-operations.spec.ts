@@ -1,14 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
+import { parseHTML } from 'linkedom';
 import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
   createFileViewerPostMessagePayload,
+  executeFileViewerDownloadOperation,
+  executeFileViewerExportHtmlOperation,
+  executeFileViewerPrintOperation,
   normalizeFileViewerToolbar,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
+  type FileViewerOperationType,
 } from '../packages/core/src';
 
 describe('@file-viewer/core operation helpers', () => {
@@ -189,5 +194,123 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledWith(context);
+  });
+
+  it('executes download, export and print through framework-neutral core operations', async () => {
+    const { document } = parseHTML('<main id="root"><article><h1>Preview</h1></article></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+    const originalCreateObjectUrl = URL.createObjectURL;
+    const originalRevokeObjectUrl = URL.revokeObjectURL;
+    const originalCreateElement = document.createElement.bind(document);
+    const beforeOperations: string[] = [];
+    let downloadedName = '';
+    let printed = false;
+    let printHtml = '';
+
+    document.createElement = ((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName.toLowerCase() === 'a') {
+        Object.defineProperty(element, 'click', {
+          configurable: true,
+          value: () => {
+            downloadedName = (element as HTMLAnchorElement).download;
+          },
+        });
+      }
+      return element;
+    }) as Document['createElement'];
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: document });
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        requestAnimationFrame: (callback: () => void) => {
+          callback();
+          return 1;
+        },
+        setTimeout: (callback: () => void) => {
+          callback();
+          return 1;
+        },
+      },
+    });
+    URL.createObjectURL = () => 'blob:viewer-operation-test';
+    URL.revokeObjectURL = () => undefined;
+
+    const beforeOperation = (operation: FileViewerOperationType) => {
+      beforeOperations.push(operation);
+      return true;
+    };
+
+    const printWindow = {
+      document: {
+        readyState: 'complete',
+        images: [],
+        open: () => undefined,
+        write: (nextHtml: string) => {
+          printHtml = nextHtml;
+        },
+        close: () => undefined,
+      },
+      focus: () => undefined,
+      print: () => {
+        printed = true;
+      },
+      requestAnimationFrame: (callback: () => void) => {
+        callback();
+        return 1;
+      },
+      setTimeout: (callback: () => void) => {
+        callback();
+        return 1;
+      },
+    } as unknown as Window;
+
+    try {
+      const html = await executeFileViewerExportHtmlOperation({
+        source: root,
+        adapter: {
+          includeDocumentStyles: false,
+          toHtml: options => `<section data-mode="${options.mode}">${options.title}</section>`,
+        },
+        title: 'demo.viewer',
+        filename: 'demo.viewer',
+        download: false,
+        beforeOperation,
+      });
+      expect(html).toContain('data-mode="export"');
+      expect(html).toContain('demo.viewer');
+
+      await executeFileViewerPrintOperation({
+        source: root,
+        title: 'demo.viewer',
+        printWindow,
+        beforeOperation,
+      });
+      expect(printed).toBe(true);
+      expect(printHtml).toContain('<h1>Preview</h1>');
+
+      await executeFileViewerDownloadOperation({
+        source: {
+          buffer: new Uint8Array([1, 2, 3]).buffer,
+          filename: 'demo.bin',
+        },
+        beforeOperation,
+      });
+      expect(downloadedName).toBe('demo.bin');
+      expect(beforeOperations).toEqual(['export-html', 'print', 'download']);
+
+      await expect(executeFileViewerDownloadOperation({
+        source: {},
+        throwOnMissingSource: false,
+      })).resolves.toBe(false);
+    } finally {
+      document.createElement = originalCreateElement as Document['createElement'];
+      URL.createObjectURL = originalCreateObjectUrl;
+      URL.revokeObjectURL = originalRevokeObjectUrl;
+      Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument });
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
+    }
   });
 });

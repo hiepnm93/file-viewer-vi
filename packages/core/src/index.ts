@@ -67,6 +67,13 @@ export {
   waitForFileViewerPrintWindowReady,
 } from './export';
 export {
+  executeFileViewerDownloadOperation,
+  executeFileViewerExportHtmlOperation,
+  executeFileViewerPrintOperation,
+  hasFileViewerOriginalSource,
+  resolveFileViewerOriginalFilename,
+} from './viewerOperations';
+export {
   applyPrintPageSize,
   buildPrintPageStyle,
   formatCssPixels,
@@ -169,6 +176,13 @@ export type {
   FileViewerLoadingRuntimeState,
   FileViewerLoadingTheme,
 } from './loading';
+export type {
+  ExecuteFileViewerDownloadOperationInput,
+  ExecuteFileViewerExportHtmlOperationInput,
+  ExecuteFileViewerPrintOperationInput,
+  FileViewerOperationExecutorBase,
+  FileViewerOriginalSourceState,
+} from './viewerOperations';
 export type {
   FileViewerSerializableCadOptions,
   FileViewerSerializableOptions,

@@ -107,7 +107,7 @@
     - [x] 页面尺寸、`@page`、打印页样式工具迁入 `@file-viewer/core`。
     - [x] 下载触发、canvas 快照替换、图片等待、打印窗口 ready、渲染 HTML 组装迁入 `@file-viewer/core`。
     - [x] core viewer 默认提供原文件下载、渲染 HTML 导出、打印窗口打开、beforeOperation 编排和高保真 HTML 快照。
-    - [ ] Vue3 `useViewerExport` 仍是组件层门面，后续切换为 core viewer operations + UI error adapter。
+    - [x] Vue3 `useViewerExport` 切换为 core operation executor + UI error adapter，和 core viewer 共享下载/导出/打印执行链路。
 - [x] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。

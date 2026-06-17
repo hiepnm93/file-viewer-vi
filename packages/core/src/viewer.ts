@@ -9,11 +9,10 @@ import {
 import { createFileViewerDomSearchController, cloneFileViewerSearchState } from './documentSearch';
 import { createFileViewerZoomController } from './documentZoom';
 import {
-  buildFileViewerRenderedHtmlDocument,
-  triggerFileViewerBlobDownload,
-  triggerFileViewerUrlDownload,
-  waitForFileViewerPrintWindowReady,
-} from './export';
+  executeFileViewerDownloadOperation,
+  executeFileViewerExportHtmlOperation,
+  executeFileViewerPrintOperation,
+} from './viewerOperations';
 import { getRendererAvailability, createUnsupportedAvailability } from './capabilities';
 import {
   buildFileViewerLifecycleContext,
@@ -120,20 +119,6 @@ export const createViewer = (
     return buildFileViewerWatermarkInlineStyle(options.watermark);
   };
 
-  const buildRenderedHtmlDocument = async (
-    mode: 'export' | 'print',
-    exportOptions: FileViewerExportHtmlOptions | FileViewerPrintOptions = {}
-  ) => {
-    const title = exportOptions.title || getDisplayFilename() || 'file-viewer-preview';
-    return buildFileViewerRenderedHtmlDocument({
-      source: container,
-      mode,
-      title,
-      adapter: activeExportAdapter,
-      watermarkInlineStyle: getWatermarkInlineStyle(exportOptions.watermarkInlineStyle),
-    });
-  };
-
   const getCapabilitiesForExtension = (extension?: string) => {
     const targetExtension = extension || currentSource?.extension || '';
     const renderer = registry.getByExtension(targetExtension);
@@ -231,67 +216,40 @@ export const createViewer = (
       return activeExportAdapter;
     },
     async download(downloadOptions: FileViewerDownloadOptions = {}) {
-      if (!currentSource) {
-        throw new Error('当前没有可下载的源文件');
-      }
-      if (!await runBeforeViewerOperation('download')) {
-        return;
-      }
-      const filename = downloadOptions.filename || getDisplayFilename() || 'preview.bin';
-      if (currentSource.buffer) {
-        triggerFileViewerBlobDownload(
-          new Blob([currentSource.buffer], { type: 'application/octet-stream' }),
-          filename
-        );
-        return;
-      }
-      if (currentSource.file) {
-        const blob = currentSource.file;
-        triggerFileViewerBlobDownload(blob, filename);
-        return;
-      }
-      if (currentSource.url) {
-        triggerFileViewerUrlDownload(currentSource.url, filename);
-        return;
-      }
-      throw new Error('当前没有可下载的源文件');
+      await executeFileViewerDownloadOperation({
+        source: {
+          buffer: currentSource?.buffer,
+          file: currentSource?.file,
+          url: currentSource?.url,
+          filename: getDisplayFilename(),
+        },
+        filename: downloadOptions.filename || getDisplayFilename() || 'preview.bin',
+        beforeOperation: runBeforeViewerOperation,
+      });
     },
     async exportHtml(exportOptions: FileViewerExportHtmlOptions = {}) {
-      if (!await runBeforeViewerOperation('export-html')) {
-        return '';
-      }
-      const html = await buildRenderedHtmlDocument('export', exportOptions);
-      if (exportOptions.download !== false) {
-        const baseName = exportOptions.filename || getDisplayFilename() || 'preview';
-        triggerFileViewerBlobDownload(
-          new Blob([html], { type: 'text/html;charset=utf-8' }),
-          `${baseName}.rendered.html`
-        );
-      }
-      return html;
+      return executeFileViewerExportHtmlOperation({
+        source: container,
+        adapter: activeExportAdapter,
+        download: exportOptions.download,
+        filename: exportOptions.filename || getDisplayFilename() || 'preview',
+        title: exportOptions.title || getDisplayFilename() || 'file-viewer-preview',
+        watermarkInlineStyle: getWatermarkInlineStyle(exportOptions.watermarkInlineStyle),
+        beforeOperation: runBeforeViewerOperation,
+      });
     },
     async print(printOptions: FileViewerPrintOptions = {}) {
-      if (!getCapabilitiesForExtension().print) {
-        throw new Error('当前文件类型不支持完整打印，请下载原文件后在本地应用中打印');
-      }
-      if (!await runBeforeViewerOperation('print')) {
-        return;
-      }
-      const html = await buildRenderedHtmlDocument('print', printOptions);
-      const printWindow = printOptions.printWindow ||
-        printOptions.openWindow?.() ||
-        (typeof window !== 'undefined' ? window.open('', '_blank') : null);
-      if (!printWindow) {
-        throw new Error('浏览器拦截了打印窗口');
-      }
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
-      await waitForFileViewerPrintWindowReady(printWindow);
-      if (printOptions.autoPrint !== false) {
-        printWindow.print();
-      }
+      await executeFileViewerPrintOperation({
+        source: container,
+        adapter: activeExportAdapter,
+        autoPrint: printOptions.autoPrint,
+        openWindow: printOptions.openWindow,
+        printWindow: printOptions.printWindow,
+        title: printOptions.title || getDisplayFilename() || 'file-viewer-preview',
+        watermarkInlineStyle: getWatermarkInlineStyle(printOptions.watermarkInlineStyle),
+        printAvailable: getCapabilitiesForExtension().print,
+        beforeOperation: runBeforeViewerOperation,
+      });
     },
     zoomIn() {
       return zoomController.zoomIn();
