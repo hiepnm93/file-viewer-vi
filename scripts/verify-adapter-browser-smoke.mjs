@@ -110,6 +110,87 @@ const launchChromium = async chromium => {
   }
 }
 
+const assertNoBrowserFailures = (failures, context) => {
+  if (failures.length) {
+    fail([context, ...failures].join('\n'))
+  }
+}
+
+const assertViewerFrameSrc = async (page, selector, expected) => {
+  const frameHandle = await page.waitForSelector(selector, { timeout })
+  const src = await frameHandle.getAttribute('src')
+  if (!src) {
+    fail(`${selector} did not render a viewer iframe src.`)
+  }
+
+  const frameUrl = new URL(src, page.url())
+  if (frameUrl.pathname !== expected.viewerPath) {
+    fail(`${selector} should load ${expected.viewerPath}, got ${frameUrl.pathname}`)
+  }
+  if (frameUrl.searchParams.get('url') !== expected.fileUrl) {
+    fail(`${selector} should preview ${expected.fileUrl}, got ${frameUrl.searchParams.get('url')}`)
+  }
+}
+
+const verifyAdapterIndexDemo = async (page, baseUrl, failures) => {
+  await page.goto(`${baseUrl}/index.html`, {
+    waitUntil: 'domcontentloaded',
+    timeout
+  })
+  await page.waitForFunction(
+    () => document.body.innerText.includes('React') && document.body.innerText.includes('Web'),
+    { timeout }
+  )
+
+  const expected = {
+    viewerPath: '/vendor/file-viewer/index.html',
+    fileUrl: '/example/word.docx'
+  }
+  await assertViewerFrameSrc(page, '[data-testid="react-viewer"]', expected)
+  await assertViewerFrameSrc(page, '[data-testid="web-viewer-host"] iframe', expected)
+  assertNoBrowserFailures(failures, 'Adapter index demo emitted browser errors.')
+  failures.length = 0
+}
+
+const verifyIifeDemo = async (page, baseUrl, failures) => {
+  await page.goto(`${baseUrl}/manual-iife.html`, {
+    waitUntil: 'domcontentloaded',
+    timeout
+  })
+  await page.waitForFunction(
+    () => {
+      const api = window.FlyfishFileViewerWeb
+      const frame = document.querySelector('#viewer iframe')
+      return Boolean(
+        api &&
+        typeof api.mountViewer === 'function' &&
+        typeof api.mountViewerFrame === 'function' &&
+        frame &&
+        frame.getAttribute('src')?.includes('/file-viewer/index.html')
+      )
+    },
+    { timeout }
+  )
+
+  const frame = page.frames().find(item => item.url().includes('/file-viewer/index.html'))
+  if (!frame) {
+    fail('IIFE demo did not create a viewer iframe.')
+  }
+
+  await frame.waitForSelector('body', { timeout })
+  await frame.waitForFunction(
+    () => document.body.innerText.includes('preview.md') || document.body.innerText.includes('Flyfish Viewer 私有化预览'),
+    { timeout }
+  )
+
+  const status = await page.getAttribute('body', 'data-viewer-status')
+  if (status === 'missing-global') {
+    fail('IIFE global API was not available on window.')
+  }
+  assertNoBrowserFailures(failures, 'IIFE script tag demo emitted browser errors.')
+  failures.length = 0
+}
+
 const run = async () => {
   const playwrightRuntime = await importPlaywright()
   const { chromium } = playwrightRuntime.chromium ? playwrightRuntime : playwrightRuntime.default
@@ -130,49 +211,14 @@ const run = async () => {
   })
 
   try {
-    await page.goto(`${serverHandle.url}/manual-iife.html`, {
-      waitUntil: 'domcontentloaded',
-      timeout
-    })
-    await page.waitForFunction(
-      () => {
-        const api = window.FlyfishFileViewerWeb
-        const frame = document.querySelector('#viewer iframe')
-        return Boolean(
-          api &&
-          typeof api.mountViewer === 'function' &&
-          typeof api.mountViewerFrame === 'function' &&
-          frame &&
-          frame.getAttribute('src')?.includes('/file-viewer/index.html')
-        )
-      },
-      { timeout }
-    )
-
-    const frame = page.frames().find(item => item.url().includes('/file-viewer/index.html'))
-    if (!frame) {
-      fail('IIFE demo did not create a viewer iframe.')
-    }
-
-    await frame.waitForSelector('body', { timeout })
-    await frame.waitForFunction(
-      () => document.body.innerText.includes('preview.md') || document.body.innerText.includes('Flyfish Viewer 私有化预览'),
-      { timeout }
-    )
-
-    const status = await page.getAttribute('body', 'data-viewer-status')
-    if (status === 'missing-global') {
-      fail('IIFE global API was not available on window.')
-    }
-    if (failures.length) {
-      fail(failures.join('\n'))
-    }
+    await verifyAdapterIndexDemo(page, serverHandle.url, failures)
+    await verifyIifeDemo(page, serverHandle.url, failures)
   } finally {
     await browser.close()
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[adapter-browser-smoke] Verified script tag IIFE demo at ${serverHandle.url}/manual-iife.html`)
+  console.log(`[adapter-browser-smoke] Verified adapter index and script tag IIFE demos at ${serverHandle.url}`)
 }
 
 run().catch(error => {
