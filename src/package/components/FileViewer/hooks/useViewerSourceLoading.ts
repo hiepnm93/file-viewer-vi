@@ -15,6 +15,7 @@ import {
   resolveFileViewerPreviewRequestReason,
   readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
+  resolveFileViewerRuntimePageHref,
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -258,7 +259,7 @@ export const useViewerSourceLoading = ({
 
   const previewRemoteFile = async (url: string, version: number) => {
     const remoteSource = resolveFileViewerRemoteSourcePlan({
-      pageHref: typeof window === 'undefined' ? undefined : window.location.href,
+      pageHref: resolveFileViewerRuntimePageHref(),
       streaming: getOptions()?.pdf?.streaming,
       url
     })

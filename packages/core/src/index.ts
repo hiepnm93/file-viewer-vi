@@ -252,11 +252,13 @@ export {
   resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
+  resolveFileViewerRuntimePageHref,
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export type {
   CreateFileViewerReadPreviewStateInput,
   FileViewerEmptyPreviewState,
+  FileViewerLocationLike,
   FileViewerFileRefSourcePlan,
   FileViewerPreviewRequestResetState,
   FileViewerRenderReadinessState,

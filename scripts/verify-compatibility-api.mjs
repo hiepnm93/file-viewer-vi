@@ -459,7 +459,8 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerStreamingPdfPlaceholderFile',
     'resolveFileViewerFileRefSourcePlan',
     'resolveFileViewerPreviewRequestReason',
-    'resolveFileViewerRemoteSourcePlan'
+    'resolveFileViewerRemoteSourcePlan',
+    'resolveFileViewerRuntimePageHref'
   ], vueSourceLoadingHookLabel)
   for (const forbiddenToken of [
     'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
@@ -478,6 +479,8 @@ async function verifyVue3ScopedCompatibility() {
     'filename.value = resolveFileViewerSourceFilename',
     'wrapFileViewerFileRef',
     'resolveFileViewerSourceFilename',
+    'typeof window',
+    'window.location.href',
     'currentFile.value = null',
     'currentBuffer.value = null',
     'currentSourceUrl.value = null',

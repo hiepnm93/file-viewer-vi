@@ -325,6 +325,17 @@ export interface FileViewerRemoteSourcePlan {
   readonly streamPdf: boolean;
 }
 
+export interface FileViewerLocationLike {
+  href?: string | null;
+}
+
+export const resolveFileViewerRuntimePageHref = (
+  locationLike: FileViewerLocationLike | undefined =
+    typeof location !== 'undefined' ? location : undefined
+) => {
+  return locationLike?.href || undefined;
+};
+
 export const resolveFileViewerRemoteSourcePlan = ({
   filename,
   fallbackFilename = DEFAULT_FILE_VIEWER_SOURCE_FILENAME,

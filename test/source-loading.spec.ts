@@ -20,6 +20,7 @@ import {
   resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
+  resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
   shouldStreamPdfUrl
 } from '../packages/core/src'
@@ -213,6 +214,9 @@ describe('remote source loading helpers', () => {
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {
+    expect(resolveFileViewerRuntimePageHref({ href: pageHref })).toBe(pageHref)
+    expect(resolveFileViewerRuntimePageHref({ href: '' })).toBeUndefined()
+    expect(resolveFileViewerRuntimePageHref(undefined)).toBeUndefined()
     expect(normalizePdfStreamingMode(undefined)).toBe('same-origin')
     expect(shouldStreamPdfUrl({
       extension: 'pdf',
