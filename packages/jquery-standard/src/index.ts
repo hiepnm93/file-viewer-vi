@@ -164,5 +164,25 @@ declare global {
 installJQueryFileViewer()
 
 export { mountViewerFrame }
-export type { CreateViewerFrameOptions, ViewerFrameController, ViewerFrameOptions }
+export type {
+  CreateViewerFrameOptions,
+  FileRef,
+  ViewerAiOptions,
+  ViewerArchiveOptions,
+  ViewerCadOptions,
+  ViewerDocxOptions,
+  ViewerFrameController,
+  ViewerFrameEventHandler,
+  ViewerFrameEventPayload,
+  ViewerFrameEventType,
+  ViewerFrameOptions,
+  ViewerPdfOptions,
+  ViewerRuntimeOptions,
+  ViewerSearchOptions,
+  ViewerThemeMode,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition,
+  ViewerTypstOptions,
+  ViewerWatermarkOptions
+} from '@file-viewer/web'
 export default installJQueryFileViewer

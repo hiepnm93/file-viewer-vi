@@ -17,6 +17,7 @@ import type {
   FileViewerFileRef,
   FileViewerAiOptions,
   FileViewerArchiveOptions,
+  FileViewerDocxOptions,
   FileViewerFrameController as CoreFileViewerFrameController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
@@ -26,9 +27,11 @@ import type {
   FileViewerPostMessageType,
   FileViewerSearchOptions,
   FileViewerSerializableOptions,
+  FileViewerSerializableCadOptions,
   FileViewerSerializableToolbarOptions,
   FileViewerThemeMode,
   FileViewerToolbarPosition,
+  FileViewerTypstOptions,
   FileViewerWatermarkOptions
 } from '@file-viewer/core'
 
@@ -41,6 +44,9 @@ export type ViewerToolbarPosition = FileViewerToolbarPosition
 export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
 export type ViewerArchiveOptions = FileViewerArchiveOptions
 export type ViewerPdfOptions = FileViewerPdfOptions
+export type ViewerDocxOptions = FileViewerDocxOptions
+export type ViewerTypstOptions = FileViewerTypstOptions
+export type ViewerCadOptions = FileViewerSerializableCadOptions
 export type ViewerSearchOptions = FileViewerSearchOptions
 export type ViewerAiOptions = FileViewerAiOptions
 export type ViewerThemeMode = FileViewerThemeMode

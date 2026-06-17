@@ -11,36 +11,41 @@ import {
   type SyntheticEvent
 } from 'react'
 import {
-  buildFileViewerFrameSrc,
-  createFileViewerFrameFilePostController,
-  isFileViewerFrameEvent
+  createFileViewerFrameFilePostController
 } from '@file-viewer/core'
 import type {
-  FileViewerFileRef,
-  FileViewerFrameFilePostController,
-  FileViewerFrameEventHandler,
-  FileViewerFrameEventPayload,
-  FileViewerFrameOptions,
-  FileViewerPostMessageType,
-  FileViewerSerializableOptions,
-  FileViewerSerializableToolbarOptions,
-  FileViewerThemeMode,
-  FileViewerToolbarPosition
+  FileViewerFrameFilePostController
 } from '@file-viewer/core'
 import {
-  DEFAULT_VIEWER_URL,
-  VIEWER_FRAME_CACHE_KEY
+  buildViewerSrc,
+  isViewerFrameEvent,
+  type FileRef,
+  type ViewerFrameEventHandler,
+  type ViewerFrameEventPayload,
+  type ViewerFrameOptions
 } from '@file-viewer/web'
 
-export type FileRef = FileViewerFileRef
-export type ViewerFrameOptions = FileViewerFrameOptions
-export type ViewerFrameEventType = FileViewerPostMessageType
-export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
-export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
-export type ViewerRuntimeOptions = FileViewerSerializableOptions
-export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
-export type ViewerToolbarPosition = FileViewerToolbarPosition
-export type ViewerThemeMode = FileViewerThemeMode
+export type {
+  CreateViewerFrameOptions,
+  FileRef,
+  ViewerAiOptions,
+  ViewerArchiveOptions,
+  ViewerCadOptions,
+  ViewerDocxOptions,
+  ViewerFrameController,
+  ViewerFrameEventHandler,
+  ViewerFrameEventPayload,
+  ViewerFrameEventType,
+  ViewerFrameOptions,
+  ViewerPdfOptions,
+  ViewerRuntimeOptions,
+  ViewerSearchOptions,
+  ViewerThemeMode,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition,
+  ViewerTypstOptions,
+  ViewerWatermarkOptions
+} from '@file-viewer/web'
 
 export interface FileViewerHandle {
   iframe: HTMLIFrameElement | null
@@ -101,15 +106,11 @@ const defaultStyle: CSSProperties = {
 }
 
 const isReactViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
-  return isFileViewerFrameEvent(value)
+  return isViewerFrameEvent(value)
 }
 
 const buildReactViewerSrc = (options: ViewerFrameOptions) => {
-  return buildFileViewerFrameSrc({
-    ...options,
-    defaultViewerUrl: DEFAULT_VIEWER_URL,
-    defaultCacheKey: VIEWER_FRAME_CACHE_KEY
-  })
+  return buildViewerSrc(options)
 }
 
 export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, forwardedRef) => {

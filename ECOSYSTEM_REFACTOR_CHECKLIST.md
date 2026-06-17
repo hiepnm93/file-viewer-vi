@@ -211,7 +211,10 @@
 - [ ] Svelte wrapper:
   - [x] 支持 Svelte component props/events/actions。
   - [x] 兼容 SvelteKit SSR 边界，浏览器端挂载 `@file-viewer/web` controller。
-- [ ] 所有 wrapper 的 options、hooks、beforeOperation、toolbar、watermark、theme、search、ai、pdf、docx、archive、cad 等参数保持完整一致。
+- [ ] 所有 wrapper 的 options、hooks、beforeOperation、toolbar、watermark、theme、search、ai、pdf、docx、typst、archive、cad 等参数保持完整一致。
+  - [x] `@file-viewer/web` 统一导出 `ViewerRuntimeOptions`、toolbar、watermark、search、AI、PDF、DOCX、Typst、Archive、CAD 等运行时 option 类型别名。
+  - [x] React、Vue 3、Vue 2.7、Vue 2.6、React legacy、jQuery、Svelte 标准 wrapper 统一 re-export `@file-viewer/web` 的完整类型面。
+  - [x] 新增 `pnpm verify:wrapper-options`，阻止标准 wrapper 直接从 core 引入运行时 option 类型或重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等参数字段。
 
 ## Phase 5: 公开仓库与 README
 

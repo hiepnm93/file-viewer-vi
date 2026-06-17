@@ -14,14 +14,23 @@ import {
 export type {
   CreateViewerFrameOptions,
   FileRef,
+  ViewerAiOptions,
+  ViewerArchiveOptions,
+  ViewerCadOptions,
+  ViewerDocxOptions,
   ViewerFrameController,
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
+  ViewerFrameEventType,
   ViewerFrameOptions,
+  ViewerPdfOptions,
   ViewerRuntimeOptions,
+  ViewerSearchOptions,
   ViewerThemeMode,
   ViewerToolbarOptions,
-  ViewerToolbarPosition
+  ViewerToolbarPosition,
+  ViewerTypstOptions,
+  ViewerWatermarkOptions
 } from '@file-viewer/web'
 
 export interface FileViewerVue26PluginOptions {
