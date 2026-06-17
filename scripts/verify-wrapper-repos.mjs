@@ -20,6 +20,16 @@ const outputRoot = resolve(
   readArg('--out-dir', process.env.FILE_VIEWER_WRAPPER_REPO_DIR || '.release/wrapper-repos')
 )
 const sourceOnly = args.includes('--source-only')
+const selectedPackages = new Set(
+  args
+    .filter(arg => arg.startsWith('--package='))
+    .map(arg => arg.slice('--package='.length))
+)
+const selectedIds = new Set(
+  args
+    .filter(arg => arg.startsWith('--id='))
+    .map(arg => arg.slice('--id='.length))
+)
 
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
@@ -448,7 +458,21 @@ async function verifyExportedRepo(wrapper) {
   }
 }
 
-for (const wrapper of wrapperManifest.wrappers) {
+const wrappers = wrapperManifest.wrappers.filter(wrapper => {
+  if (selectedPackages.size && !selectedPackages.has(wrapper.packageName)) {
+    return false
+  }
+  if (selectedIds.size && !selectedIds.has(wrapper.id)) {
+    return false
+  }
+  return true
+})
+
+if (!wrappers.length) {
+  throw new Error('No wrappers selected for verification.')
+}
+
+for (const wrapper of wrappers) {
   await verifyPackageDir(wrapper)
   if (!sourceOnly) {
     await verifyExportedRepo(wrapper)
@@ -457,5 +481,5 @@ for (const wrapper of wrapperManifest.wrappers) {
 }
 
 console.log(
-  `Verified ${wrapperManifest.wrappers.length} wrapper package${wrapperManifest.wrappers.length === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
+  `Verified ${wrappers.length} wrapper package${wrappers.length === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
 )
