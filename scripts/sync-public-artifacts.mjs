@@ -322,6 +322,7 @@ await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
 await assertArtifactOnlyRepo(publicRepoDir)
+run('node', ['scripts/verify-public-artifacts.mjs', '--public-repo-dir', publicRepoDir])
 
 console.log(`Public artifacts prepared in ${publicRepoDir}`)
 console.log('Review with:')

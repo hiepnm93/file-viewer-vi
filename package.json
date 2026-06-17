@@ -57,6 +57,7 @@
     "verify:smoke-matrix": "node scripts/verify-smoke-matrix.mjs",
     "verify:ecosystem-tarballs": "node scripts/verify-ecosystem-tarballs.mjs",
     "verify:ecosystem-versions": "node scripts/verify-ecosystem-versions.mjs",
+    "verify:public-artifacts": "node scripts/verify-public-artifacts.mjs",
     "verify:production-entrypoints": "node scripts/verify-production-entrypoints.mjs",
     "verify:migration-gates": "pnpm type-check && pnpm build-only && pnpm docs:build && pnpm verify:smoke-matrix && pnpm wrappers:verify --source-only && pnpm verify:ecosystem-versions && pnpm verify:ecosystem-tarballs && pnpm release:ecosystem:list",
     "deploy:cloudflare": "pnpm build-only && pnpm verify:demo-output && node scripts/deploy-cloudflare-pages.mjs",

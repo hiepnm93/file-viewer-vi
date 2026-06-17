@@ -28,6 +28,7 @@ pnpm install
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、标准 wrapper 不依赖历史包名 |
+| `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、smoke 矩阵、wrapper 源包、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
@@ -132,6 +133,7 @@ Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查
 - 独立 wrapper 仓库是否已经通过 `pnpm wrappers:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`
+- 公开成品仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-artifacts`，确认 `artifacts/release-manifest.json`、tarball、README 和 wrapper 仓库索引均与当前生态清单一致
 - 混淆后的 `dist/index.mjs`、`dist/index.umd.js` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 成品仓库、源码自助开通和 Apache-2.0 许可证说明
 

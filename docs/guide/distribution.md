@@ -187,6 +187,20 @@ pnpm release:ecosystem:publish
 
 `release:ecosystem:pack` 会先构建 core、Vue3 基线 viewer、历史兼容包和标准 wrapper，再统一打包 13 个 npm 目标。发布前请确认 tarball 中包含必要的 `viewer/index.html`、`viewer/assets/*`、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
+公开成品仓库使用当前 `v3` 分支生成，发布前执行:
+
+```bash
+pnpm release:public
+```
+
+该命令会同步 Demo、adapter demo、文档静态产物、示例文件、混淆后的 `dist/` 和生态 tarball，并在写入后自动执行 `pnpm verify:public-artifacts`。如果只想检查已经生成的公开仓库内容，可以执行:
+
+```bash
+pnpm verify:public-artifacts
+```
+
+校验会反查 `artifacts/release-manifest.json`、所有应公开 tarball、README / README.en.md、wrapper GitHub / Gitee 索引和顶层目录边界，避免误上传源码或发布过期产物。
+
 ## Docker 镜像发布
 
 Docker 镜像用于一键部署主 Demo 和文档比对页。发布前先确保 Docker Hub 已登录，并且当前账号对 `flyfishdev/file-viewer` 有推送权限:
