@@ -608,8 +608,10 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
     'applyFileViewerRenderReadinessState',
+    'applyFileViewerRenderSurfaceState',
     'clearFileViewerRenderSurface',
     'createFileViewerRenderTarget',
+    'disposeActiveFileViewerRendererSession',
     'disposeFileViewerRendererSession',
     'removeFileViewerRenderTarget',
     'waitForFileViewerNextPaint'
@@ -625,6 +627,10 @@ async function verifyVue3ScopedCompatibility() {
     'out.removeChild',
     "document.createElement('div')",
     "child.className = 'file-render'",
+    'activeRenderSession = session',
+    'activeRenderSession = null',
+    'activeExportAdapter.value = null',
+    'activeExportAdapter.value = adapter',
     'renderedReady.value = false',
     'progressiveReady.value = false',
     'progressiveReady.value = true'

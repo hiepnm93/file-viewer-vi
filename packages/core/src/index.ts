@@ -187,16 +187,23 @@ export {
 } from './rendererDispatcher';
 export {
   buildFileRenderContextFromLoadContext,
+  applyFileViewerRenderSurfaceState,
   clearFileViewerRenderSurface,
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderSurfaceState,
   createFileViewerRenderTarget,
   DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
+  disposeActiveFileViewerRendererSession,
   disposeFileViewerRendered,
   disposeFileViewerRendererSession,
   removeFileViewerRenderTarget,
   renderFileViewerHandler,
+} from './rendererHandler';
+export type {
+  FileViewerRenderSurfaceState,
+  MutableFileViewerRenderSurfaceState,
 } from './rendererHandler';
 export {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,

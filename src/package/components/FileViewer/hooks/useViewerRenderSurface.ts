@@ -1,8 +1,10 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
   applyFileViewerRenderReadinessState,
+  applyFileViewerRenderSurfaceState,
   clearFileViewerRenderSurface,
   createFileViewerRenderTarget,
+  disposeActiveFileViewerRendererSession,
   disposeFileViewerRendererSession,
   getExtension,
   removeFileViewerRenderTarget,
@@ -73,6 +75,20 @@ export const useViewerRenderSurface = ({
     }
   }
   let activeRenderSession: FileViewerVueRenderSession | null = null
+  const renderSurfaceStateTarget = {
+    get session(): FileViewerVueRenderSession | null {
+      return activeRenderSession
+    },
+    set session(value: FileViewerVueRenderSession | null) {
+      activeRenderSession = value
+    },
+    get exportAdapter(): FileRenderExportAdapter | null {
+      return activeExportAdapter.value
+    },
+    set exportAdapter(value: FileRenderExportAdapter | null) {
+      activeExportAdapter.value = value
+    }
+  }
 
   const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
     disposeFileViewerRendererSession(session, {
@@ -83,18 +99,21 @@ export const useViewerRenderSurface = ({
   }
 
   const setActiveRenderSession = (session: FileViewerVueRenderSession | null) => {
-    activeRenderSession = session
+    applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { session })
   }
 
   const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     const context = notifyActiveUnloadStart(reason)
 
     try {
-      destroyRenderSession(activeRenderSession)
+      disposeActiveFileViewerRendererSession(renderSurfaceStateTarget, {
+        onError: nextError => {
+          console.warn('预览内容卸载失败', nextError)
+        }
+      })
     } finally {
-      activeRenderSession = null
       clearActiveDocumentContext()
-      activeExportAdapter.value = null
+      applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { exportAdapter: null })
       applyFileViewerRenderReadinessState(renderReadinessTarget, {
         renderedReady: false,
         progressiveReady: false
@@ -111,7 +130,7 @@ export const useViewerRenderSurface = ({
   }
 
   const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
-    activeExportAdapter.value = adapter
+    applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { exportAdapter: adapter })
   }
 
   const mountRenderedContent = async (

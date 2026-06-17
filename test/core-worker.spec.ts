@@ -3,12 +3,15 @@ import { parseHTML } from 'linkedom';
 import {
   DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
   WorkerRefImpl,
+  applyFileViewerRenderSurfaceState,
   clearFileViewerRenderSurface,
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderSurfaceState,
   createFileViewerRenderTarget,
   createFileViewerRendererDispatcher,
+  disposeActiveFileViewerRendererSession,
   disposeFileViewerRendered,
   disposeFileViewerRendererSession,
   normalizeSource,
@@ -180,6 +183,32 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(root.childElementCount).toBe(2);
     expect(removeFileViewerRenderTarget(root, customTarget)).toBe(true);
     expect(removeFileViewerRenderTarget(root, customTarget)).toBe(false);
+  });
+
+  it('applies framework-neutral render surface state and disposes the active session', () => {
+    const onError = vi.fn();
+    const destroy = vi.fn();
+    const session = { destroy };
+    const adapter = { print: true };
+    const state = createFileViewerRenderSurfaceState<typeof session>();
+
+    expect(state.session).toBeNull();
+    expect(state.exportAdapter).toBeNull();
+    expect(applyFileViewerRenderSurfaceState(state, {
+      session,
+      exportAdapter: adapter,
+    })).toBe(state);
+    expect(state.session).toBe(session);
+    expect(state.exportAdapter).toBe(adapter);
+
+    expect(disposeActiveFileViewerRendererSession(state, { onError })).toBe(session);
+    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(onError).not.toHaveBeenCalled();
+    expect(state.session).toBeNull();
+    expect(state.exportAdapter).toBe(adapter);
+
+    applyFileViewerRenderSurfaceState(state, { exportAdapter: null });
+    expect(state.exportAdapter).toBeNull();
   });
 
   it('safely disposes renderer sessions and reports teardown errors', async () => {

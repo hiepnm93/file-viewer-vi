@@ -4,6 +4,7 @@ import type { FileViewerRendererDispatcher } from './rendererDispatcher';
 import { createRendererRegistry } from './registry';
 import { normalizeFileExtension } from './source';
 import type {
+  FileRenderExportAdapter,
   FileRenderContext,
   FileRenderHandler,
   RendererDefinition,
@@ -42,6 +43,17 @@ export interface FileRenderHandlerRendererSession<Rendered = unknown> extends Re
 export interface DisposeFileViewerRendererSessionOptions {
   onError?: (error: unknown) => void;
 }
+
+export interface FileViewerRenderSurfaceState<
+  Session extends RendererSession = RendererSession,
+> {
+  session: Session | null;
+  exportAdapter: FileRenderExportAdapter | null;
+}
+
+export type MutableFileViewerRenderSurfaceState<
+  Session extends RendererSession = RendererSession,
+> = FileViewerRenderSurfaceState<Session>;
 
 export interface CreateFileViewerRenderTargetOptions {
   className?: string;
@@ -85,6 +97,30 @@ export const removeFileViewerRenderTarget = (
 
   container.removeChild(target);
   return true;
+};
+
+export const createFileViewerRenderSurfaceState = <
+  Session extends RendererSession = RendererSession,
+>(): FileViewerRenderSurfaceState<Session> => ({
+  session: null,
+  exportAdapter: null,
+});
+
+export const applyFileViewerRenderSurfaceState = <
+  Session extends RendererSession,
+  Target extends MutableFileViewerRenderSurfaceState<Session>,
+>(
+  target: Target,
+  state: Partial<FileViewerRenderSurfaceState<Session>>
+) => {
+  if ('session' in state) {
+    target.session = state.session ?? null;
+  }
+  if ('exportAdapter' in state) {
+    target.exportAdapter = state.exportAdapter ?? null;
+  }
+
+  return target;
 };
 
 export const createFileRenderHandlerRendererSession = <Rendered = unknown>(
@@ -162,6 +198,24 @@ export const disposeFileViewerRendererSession = (
   } catch (error) {
     handleError(error);
   }
+};
+
+export const disposeActiveFileViewerRendererSession = <
+  Session extends RendererSession,
+  Target extends MutableFileViewerRenderSurfaceState<Session>,
+>(
+  target: Target,
+  options: DisposeFileViewerRendererSessionOptions = {}
+) => {
+  const session = target.session;
+
+  try {
+    disposeFileViewerRendererSession(session, options);
+  } finally {
+    target.session = null;
+  }
+
+  return session;
 };
 
 export const buildFileRenderContextFromLoadContext = ({
