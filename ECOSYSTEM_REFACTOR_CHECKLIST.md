@@ -37,7 +37,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | 待定 | Gitea 私有当前仓库 `main` | 不公开源码，仅公开包和产物 | 不公开源码，仅公开包和产物 | [ ] 待建 |
 | Vue 3 wrapper | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue3` | `gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
-| Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [ ] 待建 |
+| Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [ ] 待建 |
 | React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
@@ -181,8 +181,8 @@
   - [ ] 兼容当前 `<file-viewer :url :file :options />` 体验。
   - [x] `@file-viewer/vue3` 标准包名作为兼容别名接入当前 Vue3 基线包，保留 plugin install、组件导出和 CSS 入口。
 - [ ] Vue 2.7 wrapper:
-  - [ ] 支持 `Vue.use(FileViewer)`。
-  - [ ] 保持现有 `@flyfish-group/file-viewer` API 行为。
+  - [x] 支持 `Vue.use(FileViewerPlugin)`，并允许自定义全局组件名。
+  - [x] 提供 Vue 2.7 Options API 组件、事件和实例方法，复用 `@file-viewer/web` controller 保持当前 iframe 体验。
 - [ ] Vue 2.6 wrapper:
   - [ ] 不依赖 Vue 2.7 composition API。
   - [ ] 提供 Options API 组件和插件安装。
