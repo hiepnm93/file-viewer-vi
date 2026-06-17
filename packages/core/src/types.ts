@@ -2,6 +2,8 @@ export type FileViewerSourceKind = 'file' | 'url' | 'buffer' | 'empty';
 
 export type FileViewerThemeMode = 'light' | 'dark' | 'system';
 
+export type FileViewerFileRef = File | Blob | ArrayBuffer;
+
 export type FileViewerToolbarPosition = 'auto' | 'top' | 'bottom-right';
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';

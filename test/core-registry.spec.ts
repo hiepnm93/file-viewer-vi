@@ -6,7 +6,9 @@ import {
   createViewer,
   getExtension,
   normalizeSource,
+  readFileViewerBuffer,
   type RendererDefinition,
+  wrapFileViewerFileRef,
 } from '../packages/core/src';
 
 describe('@file-viewer/core registry', () => {
@@ -37,6 +39,17 @@ describe('@file-viewer/core registry', () => {
       extension: 'ofd',
       size: 8,
     });
+  });
+
+  it('wraps browser file inputs and reads ArrayBuffer data in core', async () => {
+    const file = wrapFileViewerFileRef(new Blob(['hello'], { type: 'text/plain' }), '/tmp/%E6%96%87%E6%A1%A3.txt?download=1');
+    expect(file.name).toBe('文档.txt');
+    expect(file.type).toBe('text/plain');
+    expect(await readFileViewerBuffer(file)).toEqual(new TextEncoder().encode('hello').buffer);
+
+    const rawFile = wrapFileViewerFileRef(new Uint8Array([1, 2, 3]).buffer, 'raw.bin');
+    expect(rawFile.name).toBe('raw.bin');
+    expect(await readFileViewerBuffer(rawFile)).toEqual(new Uint8Array([1, 2, 3]).buffer);
   });
 
   it('resolves renderers by extension and rejects duplicate extension ownership', () => {

@@ -1,4 +1,5 @@
 import { getRendererAvailability, createUnsupportedAvailability } from './capabilities';
+import { buildFileViewerLifecycleContext, runFileViewerLifecycleHook } from './operations';
 import { createRendererRegistry } from './registry';
 import { normalizeSource } from './source';
 import type {
@@ -25,29 +26,23 @@ const emitLifecycle = async (
   startedAt: number,
   reason?: FileViewerLifecycleContext['reason']
 ) => {
-  const context: FileViewerLifecycleContext = {
+  const now = Date.now();
+  const context = buildFileViewerLifecycleContext({
     phase,
-    type: source.extension,
     filename: source.filename,
     source: source.kind,
     url: source.url,
     file: typeof File !== 'undefined' && source.file instanceof File ? source.file : undefined,
     size: source.size,
     version,
-    timestamp: Date.now(),
-    duration: phase.endsWith('complete') ? Date.now() - startedAt : undefined,
+    timestamp: now,
+    duration: phase.endsWith('complete') ? now - startedAt : undefined,
     reason,
-  };
+  });
 
-  if (phase === 'load-start') {
-    await options.hooks?.onLoadStart?.(context);
-  } else if (phase === 'load-complete') {
-    await options.hooks?.onLoadComplete?.(context);
-  } else if (phase === 'unload-start') {
-    await options.hooks?.onUnloadStart?.(context);
-  } else {
-    await options.hooks?.onUnloadComplete?.(context);
-  }
+  await runFileViewerLifecycleHook(context, options.hooks, error => {
+    throw error;
+  });
 };
 
 export const createViewer = (

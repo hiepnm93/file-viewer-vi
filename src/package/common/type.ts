@@ -1,4 +1,5 @@
 import type { App } from 'vue'
+import type { FileViewerFileRef } from '@file-viewer/core'
 
 /**
  * 渲染器返回的 Vue 包装实例。
@@ -24,7 +25,7 @@ export type Rendered = App | AppWrapper;
  * `Blob` 或 `ArrayBuffer`，请先包装成 `new File([...], 'demo.pdf')`，
  * 这样渲染器才能通过扩展名选择正确的预览链路。
  */
-export type FileRef = File | Blob | ArrayBuffer;
+export type FileRef = FileViewerFileRef;
 
 /**
  * 水印配置。
@@ -372,7 +373,7 @@ export interface FileViewerAiOptions {
  */
 export type FileViewerThemeMode = 'light' | 'dark' | 'system';
 
-export type FileViewerSourceType = 'file' | 'url' | 'empty';
+export type FileViewerSourceType = 'file' | 'url' | 'buffer' | 'empty';
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
 

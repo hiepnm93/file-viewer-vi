@@ -2,13 +2,26 @@
 import axios from 'axios'
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
-import { getExtension, normalizeFilename, resolvePrintAvailability, shouldStreamPdfUrl } from '@file-viewer/core'
-import { readBuffer } from '../../common/util'
+import {
+  buildFileViewerLifecycleContext,
+  buildFileViewerOperationContext,
+  createFileViewerPostMessagePayload,
+  getExtension,
+  normalizeFilename,
+  normalizeFileViewerToolbar,
+  readFileViewerBuffer,
+  resolveFileViewerOperationAvailability,
+  resolveFileViewerToolbarPosition,
+  resolveVisibleFileViewerToolbar,
+  runFileViewerBeforeOperation,
+  runFileViewerLifecycleHook,
+  shouldStreamPdfUrl,
+  wrapFileViewerFileRef
+} from '@file-viewer/core'
 import type {
   FileRef,
   FileViewerDocumentAnchor,
   FileRenderExportAdapter,
-  FileViewerBeforeOperation,
   FileViewerLifecycleContext,
   FileViewerLifecyclePhase,
   FileViewerOperationAvailability,
@@ -101,29 +114,7 @@ const currentExtend = computed(() => {
 })
 
 const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
-  const toolbar = props.options?.toolbar
-  if (toolbar === false) {
-    return {
-      download: false,
-      print: false,
-      exportHtml: false,
-      zoom: false
-    }
-  }
-  if (toolbar && typeof toolbar === 'object') {
-    return {
-      download: toolbar.download !== false,
-      print: toolbar.print !== false,
-      exportHtml: toolbar.exportHtml !== false,
-      zoom: toolbar.zoom !== false
-    }
-  }
-  return {
-    download: true,
-    print: true,
-    exportHtml: true,
-    zoom: true
-  }
+  return normalizeFileViewerToolbar(props.options)
 })
 
 const viewerTheme = computed(() => {
@@ -160,22 +151,6 @@ let renderVersion = 0
 let pendingDownloadController: AbortController | null = null
 const loadStartedAt = new Map<number, number>()
 
-const lifecycleHookName: Record<FileViewerLifecyclePhase, keyof NonNullable<FileViewerOptions['hooks']>> = {
-  'load-start': 'onLoadStart',
-  'load-complete': 'onLoadComplete',
-  'unload-start': 'onUnloadStart',
-  'unload-complete': 'onUnloadComplete'
-}
-
-const operationLabels: Record<FileViewerOperationType, string> = {
-  download: '下载原始文件',
-  print: '打印完整渲染内容',
-  'export-html': '导出渲染 HTML',
-  'zoom-in': '放大预览',
-  'zoom-out': '缩小预览',
-  'zoom-reset': '还原预览比例'
-}
-
 const getSourceFilename = () => {
   if (filename.value) {
     return filename.value
@@ -189,16 +164,6 @@ const getSourceFilename = () => {
   return ''
 }
 
-const toSerializableContext = (
-  context: FileViewerLifecycleContext | FileViewerOperationContext
-) => {
-  const { file: _file, ...serializable } = context
-  return {
-    ...serializable,
-    hasFile: !!context.file
-  }
-}
-
 const postViewerEvent = (
   type: 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation',
   event: string,
@@ -207,11 +172,7 @@ const postViewerEvent = (
   if (typeof window === 'undefined' || window.parent === window) {
     return
   }
-  window.parent.postMessage({
-    type,
-    event,
-    payload: toSerializableContext(context)
-  }, '*')
+  window.parent.postMessage(createFileViewerPostMessagePayload(type, event, context), '*')
 }
 
 const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
@@ -251,22 +212,17 @@ const buildLifecycleContext = ({
   sourceUrl?: string;
   reason?: FileViewerLifecycleContext['reason'];
 }): FileViewerLifecycleContext => {
-  const name = normalizeFilename(file?.name || filename.value || sourceUrl || '')
-  const startedAt = loadStartedAt.get(version)
-  const now = Date.now()
-  return {
+  return buildFileViewerLifecycleContext({
     phase,
-    type: getExtension(name),
-    filename: name,
     source,
-    url: sourceUrl,
-    file: file || undefined,
-    size: file?.size ?? currentBuffer.value?.byteLength,
     version,
-    timestamp: now,
-    duration: phase === 'load-complete' && startedAt ? now - startedAt : undefined,
+    file,
+    filename: filename.value,
+    url: sourceUrl,
+    bufferSize: currentBuffer.value?.byteLength,
+    startedAt: loadStartedAt.get(version),
     reason
-  }
+  })
 }
 
 const notifyLifecycle = (context: FileViewerLifecycleContext) => {
@@ -279,12 +235,9 @@ const notifyLifecycle = (context: FileViewerLifecycleContext) => {
   } else {
     emit('unload-complete', context)
   }
-  const hook = props.options?.hooks?.[lifecycleHookName[context.phase]]
-  if (hook) {
-    void Promise.resolve(hook(context)).catch(error => {
+  void runFileViewerLifecycleHook(context, props.options?.hooks, error => {
       console.error(`FileViewer ${context.phase} hook failed`, error)
-    })
-  }
+  })
   postViewerEvent('flyfish-viewer:lifecycle', context.phase, context)
 }
 
@@ -296,61 +249,27 @@ const buildOperationContext = (operation: FileViewerOperationType): FileViewerOp
     file: currentFile.value,
     sourceUrl: props.url
   })
-  const { phase: _phase, ...context } = base
-  return {
-    ...context,
-    operation,
-    label: operationLabels[operation],
-    timestamp: Date.now()
-  }
-}
-
-const getToolbarBeforeOperation = (operation: FileViewerOperationType): Array<FileViewerBeforeOperation | undefined> => {
-  const toolbar = props.options?.toolbar
-  if (!toolbar || typeof toolbar !== 'object') {
-    return []
-  }
-  const specificHook = operation === 'download'
-    ? toolbar.beforeDownload
-    : operation === 'print'
-      ? toolbar.beforePrint
-      : operation === 'export-html'
-        ? toolbar.beforeExportHtml
-        : undefined
-  return [toolbar.beforeOperation, specificHook]
+  return buildFileViewerOperationContext(operation, base)
 }
 
 const runBeforeOperation = async (operation: FileViewerOperationType) => {
   const context = buildOperationContext(operation)
-  emit('operation-before', context)
-  postViewerEvent('flyfish-viewer:operation', 'operation-before', context)
-
-  const hooks = [
-    props.options?.beforeOperation,
-    ...getToolbarBeforeOperation(operation)
-  ]
-
-  try {
-    for (const hook of hooks) {
-      if (!hook) {
-        continue
-      }
-      const result = await hook(context)
-      if (result === false) {
-        emit('operation-cancel', context)
-        postViewerEvent('flyfish-viewer:operation', 'operation-cancel', context)
-        return false
-      }
+  return runFileViewerBeforeOperation({
+    context,
+    options: props.options,
+    onBefore: nextContext => {
+      emit('operation-before', nextContext)
+      postViewerEvent('flyfish-viewer:operation', 'operation-before', nextContext)
+    },
+    onCancel: nextContext => {
+      emit('operation-cancel', nextContext)
+      postViewerEvent('flyfish-viewer:operation', 'operation-cancel', nextContext)
+    },
+    onError: nextError => {
+      console.error(nextError)
+      showError(formatErrorMessage('操作前置校验失败', nextError))
     }
-  } catch (nextError) {
-    console.error(nextError)
-    showError(formatErrorMessage('操作前置校验失败', nextError))
-    emit('operation-cancel', context)
-    postViewerEvent('flyfish-viewer:operation', 'operation-cancel', context)
-    return false
-  }
-
-  return true
+  })
 }
 
 // 每次开始新的预览任务时都生成一个版本号。
@@ -428,31 +347,18 @@ const {
 })
 
 const operationAvailability = computed<FileViewerOperationAvailability>(() => {
-  const hasOriginalSource = !!currentBuffer.value || !!currentSourceUrl.value
-  const hasRenderableOutput = renderedReady.value && !error.value
-  const adapter = activeExportAdapter.value
-  const zoomEnabled = hasRenderableOutput && (zoomState.canZoomIn || zoomState.canZoomOut || zoomState.canReset)
-
-  return {
-    download: hasOriginalSource,
-    print: hasRenderableOutput && resolvePrintAvailability(currentExtend.value, adapter, renderedReady.value),
-    exportHtml: hasRenderableOutput && adapter?.exportHtml !== false,
-    zoom: zoomEnabled,
-    zoomIn: zoomEnabled && zoomState.canZoomIn,
-    zoomOut: zoomEnabled && zoomState.canZoomOut,
-    zoomReset: zoomEnabled && zoomState.canReset
-  }
+  return resolveFileViewerOperationAvailability({
+    extension: currentExtend.value,
+    hasOriginalSource: !!currentBuffer.value || !!currentSourceUrl.value,
+    renderedReady: renderedReady.value,
+    hasError: !!error.value,
+    adapter: activeExportAdapter.value,
+    zoomState
+  })
 })
 
 const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
-  const toolbar = normalizedToolbar.value
-  const availability = operationAvailability.value
-  return {
-    download: toolbar.download && availability.download,
-    print: toolbar.print && availability.print,
-    exportHtml: toolbar.exportHtml && availability.exportHtml,
-    zoom: toolbar.zoom && availability.zoom
-  }
+  return resolveVisibleFileViewerToolbar(normalizedToolbar.value, operationAvailability.value)
 })
 
 const showToolbar = computed(() => {
@@ -461,38 +367,13 @@ const showToolbar = computed(() => {
 })
 
 const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
-  const toolbar = props.options?.toolbar
-  const position = toolbar && typeof toolbar === 'object' ? toolbar.position : 'auto'
-  if (position === 'top' || position === 'bottom-right') {
-    return position
-  }
-  return currentExtend.value === 'pdf' ? 'bottom-right' : 'top'
+  return resolveFileViewerToolbarPosition(props.options, currentExtend.value)
 })
 
 const toolbarDisabled = computed(() => loading.value || !!error.value)
 
 const zoomButtonDisabled = (action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>) => {
   return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
-}
-
-// 统一把 File、Blob、ArrayBuffer 收敛为 File，
-// 后续读取和扩展名识别都只面对一种输入类型。
-const wrapFileRef = (data: FileRef, nextFilename?: string) => {
-  if (data instanceof File) {
-    return data
-  }
-
-  const safeFilename = normalizeFilename(nextFilename || filename.value || 'preview.bin')
-
-  if (data instanceof Blob) {
-    return new File([data], safeFilename, { type: data.type })
-  }
-
-  if (data instanceof ArrayBuffer) {
-    return new File([data], safeFilename, {})
-  }
-
-  throw new Error('不支持的文件类型格式！')
 }
 
 const disposeRendered = (rendered?: Rendered) => {
@@ -626,8 +507,8 @@ const readAndRenderFile = async (
   source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
 ) => {
   filename.value = normalizeFilename(file.name || '')
-  const arrayBuffer = await readBuffer(file)
-  if (!(arrayBuffer instanceof ArrayBuffer) || !isCurrentRequest(version)) {
+  const arrayBuffer = await readFileViewerBuffer(file)
+  if (!isCurrentRequest(version)) {
     return
   }
   currentFile.value = file
@@ -700,7 +581,7 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
 }
 
 const previewLocalFile = async (source: FileRef, version: number) => {
-  const file = wrapFileRef(source)
+  const file = wrapFileViewerFileRef(source, filename.value || 'preview.bin')
   filename.value = normalizeFilename(file.name || '')
   loadStartedAt.set(version, Date.now())
   notifyLifecycle(buildLifecycleContext({
@@ -764,7 +645,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     }
 
     setLoadingMessage(PREVIEW_MESSAGE.reading)
-    await readAndRenderFile(wrapFileRef(data, nextFilename), version, url, 'url')
+    await readAndRenderFile(wrapFileViewerFileRef(data, nextFilename), version, url, 'url')
   } catch (nextError) {
     if (!isCurrentRequest(version) || isAbortError(nextError)) {
       return

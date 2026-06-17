@@ -19,7 +19,31 @@ export {
   NON_PRINTABLE_EXTENSIONS,
   resolvePrintAvailability,
 } from './capabilities';
-export { decodeFilename, getExtension, normalizeFileExtension, normalizeFilename, normalizeSource } from './source';
+export {
+  FILE_VIEWER_LIFECYCLE_HOOKS,
+  FILE_VIEWER_OPERATION_LABELS,
+  buildFileViewerLifecycleContext,
+  buildFileViewerOperationContext,
+  createFileViewerPostMessagePayload,
+  getFileViewerBeforeOperationHooks,
+  getFileViewerLifecycleHookName,
+  normalizeFileViewerToolbar,
+  resolveFileViewerOperationAvailability,
+  resolveFileViewerToolbarPosition,
+  resolveVisibleFileViewerToolbar,
+  runFileViewerBeforeOperation,
+  runFileViewerLifecycleHook,
+  serializeFileViewerContext,
+} from './operations';
+export {
+  decodeFilename,
+  getExtension,
+  normalizeFileExtension,
+  normalizeFilename,
+  normalizeSource,
+  readFileViewerBuffer,
+  wrapFileViewerFileRef,
+} from './source';
 export {
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   isSameOriginUrl,
@@ -27,6 +51,15 @@ export {
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export { createViewer } from './viewer';
+export type {
+  BuildFileViewerLifecycleContextInput,
+  BuiltFileViewerLifecycleContext,
+  BuiltFileViewerOperationContext,
+  FileViewerPostMessagePayload,
+  ResolveFileViewerOperationAvailabilityInput,
+  RunFileViewerBeforeOperationInput,
+  SerializedFileViewerContext,
+} from './operations';
 export type { CreateViewerOptions } from './viewer';
 export type {
   FileViewerAiOptions,
@@ -38,6 +71,7 @@ export type {
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk,
   FileViewerDocxOptions,
+  FileViewerFileRef,
   FileRenderExportAdapter,
   FileRenderExportMode,
   FileRenderExportOptions,

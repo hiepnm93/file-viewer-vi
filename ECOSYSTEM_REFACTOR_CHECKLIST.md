@@ -85,9 +85,13 @@
 - [ ] 从 `src/package/common` 抽出 source loading、类型识别、能力判断、打印导出、worker ref、生命周期事件。
   - [x] source loading 的 PDF 流式策略迁入 `@file-viewer/core`。
   - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。
+  - [x] `File | Blob | ArrayBuffer` 输入包装和 ArrayBuffer 读取迁入 `@file-viewer/core`。
   - [x] 打印能力矩阵和 `resolvePrintAvailability` 迁入 `@file-viewer/core`。
+  - [x] 生命周期上下文构建、生命周期 hook 分发、iframe 安全序列化迁入 `@file-viewer/core`。
+  - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。
+  - [x] toolbar 默认值、可见性、PDF 默认悬浮位置和 operation availability 迁入 `@file-viewer/core`。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
-  - [ ] worker ref 和生命周期事件迁入 `@file-viewer/core`。
+  - [ ] worker ref 迁入 `@file-viewer/core`。
 - [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
 - [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
@@ -218,7 +222,7 @@
   - [x] 类型识别
   - [x] source loading
   - [x] lifecycle hooks
-  - [ ] beforeOperation
+  - [x] beforeOperation
   - [x] renderer registry
   - [x] capability state
   - [ ] search/location/zoom provider
@@ -241,9 +245,11 @@
 - [x] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
 - [ ] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
   - [x] `FileViewerOptions`、source、生命周期、操作、导出适配、渲染器 registry 等 framework-neutral 类型已进入 core。
+  - [x] Vue3 公共 source 类型补齐 `buffer`，避免 wrapper hook 类型与 core 漂移。
   - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 相关 `Rendered` 类型，需要继续拆薄。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
+  - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。
 - [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
 - [ ] 新增 wrapper README 模板，统一中英文结构和格式矩阵。
 - [ ] 先把 `packages/web` 和 `packages/react` 版本从 1.0.25 对齐到当前 1.0.26，再作为后续标准包名迁移基线。

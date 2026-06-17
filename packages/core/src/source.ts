@@ -1,4 +1,9 @@
-import type { FileViewerSource, FileViewerSourceKind, NormalizedFileViewerSource } from './types';
+import type {
+  FileViewerFileRef,
+  FileViewerSource,
+  FileViewerSourceKind,
+  NormalizedFileViewerSource,
+} from './types';
 
 export const normalizeFileExtension = (extension: string) => {
   return extension.trim().replace(/^\./, '').toLowerCase();
@@ -69,4 +74,45 @@ export const normalizeSource = (source: FileViewerSource): NormalizedFileViewerS
     buffer: source.buffer,
     size: sourceSize,
   };
+};
+
+export const wrapFileViewerFileRef = (
+  data: FileViewerFileRef,
+  filename = 'preview.bin'
+): File => {
+  if (typeof File !== 'undefined' && data instanceof File) {
+    return data;
+  }
+
+  const safeFilename = normalizeFilename(filename || 'preview.bin');
+
+  if (typeof Blob !== 'undefined' && data instanceof Blob) {
+    return new File([data], safeFilename, { type: data.type });
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return new File([data], safeFilename, {});
+  }
+
+  throw new Error('Unsupported file source input.');
+};
+
+export const readFileViewerBuffer = async (file: Blob): Promise<ArrayBuffer> => {
+  if (typeof file.arrayBuffer === 'function') {
+    return file.arrayBuffer();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => {
+      const result = event.target?.result;
+      if (result instanceof ArrayBuffer) {
+        resolve(result);
+        return;
+      }
+      reject(new Error('Failed to read file as ArrayBuffer.'));
+    };
+    reader.onerror = error => reject(error);
+    reader.readAsArrayBuffer(file);
+  });
 };
