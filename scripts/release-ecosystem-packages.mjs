@@ -145,6 +145,7 @@ if (mode === 'pack') {
     `${JSON.stringify(manifest, null, 2)}\n`,
     'utf8'
   )
+  run('node', ['scripts/verify-ecosystem-tarballs.mjs', '--pack-dir', packDir])
   console.log(`Packed ${entries.length} ecosystem packages into ${packDir}`)
 }
 

@@ -1,0 +1,1 @@
+var e=`glb.gltf.obj.stl.ply.fbx.dae.3ds.3mf.amf.usd.usda.usdc.usdz.kmz.step.stp.iges.igs.ifc.3dm.pcd.wrl.vrml.xyz.vtk.vtp`.split(`.`);export{e as t};

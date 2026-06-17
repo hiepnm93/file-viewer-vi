@@ -299,7 +299,9 @@
 - [x] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
 - [ ] 生产构建验证每个 wrapper 的 ESM/CJS/UMD/script tag 入口。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
-- [ ] 发布前检查 npm tarball 内容，不泄露私有源码。
+- [x] 发布前检查 npm tarball 内容，不泄露私有源码。
+  - [x] 新增 `pnpm verify:ecosystem-tarballs`，使用 npm dry-run 检查所有 core、标准 wrapper 和历史兼容包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本。
+  - [x] `scripts/release-ecosystem-packages.mjs --pack` 生成正式 `.tgz` 后会再次校验实际 tarball，并确认入口文件存在且打包后的 `package.json` 不再包含 `workspace:` 依赖。
 
 ## 第一批可立即执行的代码任务
 
