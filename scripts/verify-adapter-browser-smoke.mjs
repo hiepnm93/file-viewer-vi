@@ -209,6 +209,46 @@ const verifyIifeDemo = async (page, baseUrl, failures) => {
   failures.length = 0
 }
 
+const verifyManualJsDemo = async (page, baseUrl, failures) => {
+  await page.goto(`${baseUrl}/manual-js.html`, {
+    waitUntil: 'domcontentloaded',
+    timeout
+  })
+  const frameHandle = await page.waitForSelector('#viewer', { timeout })
+  const src = await frameHandle.getAttribute('src')
+  if (!src) {
+    fail('Manual JS demo did not assign a viewer iframe src.')
+  }
+
+  const frameUrl = new URL(src, page.url())
+  if (frameUrl.pathname !== '/vendor/file-viewer/index.html') {
+    fail(`Manual JS demo should load /vendor/file-viewer/index.html, got ${frameUrl.pathname}`)
+  }
+  if (frameUrl.searchParams.get('name') !== 'word.docx') {
+    fail(`Manual JS demo should pass word.docx as the file name, got ${frameUrl.searchParams.get('name')}`)
+  }
+  if (frameUrl.searchParams.get('from') !== new URL(baseUrl).origin) {
+    fail(`Manual JS demo should pass the host origin, got ${frameUrl.searchParams.get('from')}`)
+  }
+
+  await page.waitForFunction(
+    () => {
+      const status = document.querySelector('#status')?.textContent?.trim()
+      return Boolean(status && status !== 'loading' && status !== 'iframe ready')
+    },
+    { timeout }
+  )
+
+  const frame = page.frames().find(item => item.url().includes('/vendor/file-viewer/index.html'))
+  if (!frame) {
+    fail('Manual JS demo did not create a viewer iframe.')
+  }
+  await frame.waitForSelector('body', { timeout })
+
+  assertNoBrowserFailures(failures, 'Manual JS iframe demo emitted browser errors.')
+  failures.length = 0
+}
+
 const run = async () => {
   const playwrightRuntime = await importPlaywright()
   const { chromium } = playwrightRuntime.chromium ? playwrightRuntime : playwrightRuntime.default
@@ -225,6 +265,12 @@ const run = async () => {
   page.on('console', message => {
     if (message.type() === 'error') {
       failures.push(`console.error: ${message.text()}`)
+    }
+  })
+  page.on('response', response => {
+    const responseUrl = new URL(response.url())
+    if (responseUrl.origin === serverHandle.url && response.status() >= 400) {
+      failures.push(`HTTP ${response.status()}: ${response.url()}`)
     }
   })
 
@@ -248,13 +294,14 @@ const run = async () => {
       label: 'Svelte action adapter',
       path: 'svelte-action.html'
     }, failures)
+    await verifyManualJsDemo(page, serverHandle.url, failures)
     await verifyIifeDemo(page, serverHandle.url, failures)
   } finally {
     await browser.close()
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[adapter-browser-smoke] Verified React, Web, Vue 3, jQuery, Svelte action, and script tag IIFE demos at ${serverHandle.url}`)
+  console.log(`[adapter-browser-smoke] Verified React, Web, Vue 3, jQuery, Svelte action, manual JS iframe, and script tag IIFE demos at ${serverHandle.url}`)
 }
 
 run().catch(error => {

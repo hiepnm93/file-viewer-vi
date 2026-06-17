@@ -55,6 +55,7 @@
     "verify:demo-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs",
     "verify:adapter-demo-output": "node scripts/verify-adapter-demo-output.mjs",
     "verify:adapter-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-adapter-browser-smoke.mjs",
+    "verify:browser-smoke": "pnpm build:adapter-demo && pnpm verify:demo-browser-smoke && pnpm verify:adapter-browser-smoke",
     "verify:branch-roles": "node scripts/verify-branch-roles.mjs",
     "verify:core-api": "node scripts/verify-core-api.mjs",
     "verify:format-support": "node scripts/verify-format-support.mjs",

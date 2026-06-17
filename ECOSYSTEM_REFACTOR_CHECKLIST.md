@@ -212,7 +212,7 @@
     - [x] `@flyfish-group/file-viewer-web` 和 `@file-viewer/web` 构建 `dist/flyfish-file-viewer-web.iife.js`，暴露 `window.FlyfishFileViewerWeb`。
     - [x] 生产入口校验会执行 IIFE bundle，并断言 `mountViewerFrame`、`mountViewer`、`buildViewerSrc` 全局 API 存在。
     - [x] Adapter demo 输出 `/manual-iife.html`，使用普通 `<script>` 加载 IIFE 全局包，并由 `pnpm verify:adapter-demo-output` 校验页面和 helper 产物完整。
-    - [x] 新增 `pnpm verify:adapter-browser-smoke`，可在 Playwright 环境下启动 adapter demo dist 并真实打开 demo 首页、`/vue3.html`、`/jquery.html`、`/svelte-action.html` 和 `/manual-iife.html`，验证 React/Pure Web/Vue3/jQuery/Svelte action wrapper iframe 挂载以及 IIFE 全局 API。
+    - [x] 新增 `pnpm verify:adapter-browser-smoke`，可在 Playwright 环境下启动 adapter demo dist 并真实打开 demo 首页、`/vue3.html`、`/jquery.html`、`/svelte-action.html`、`/manual-js.html` 和 `/manual-iife.html`，验证 React/Pure Web/Vue3/jQuery/Svelte action wrapper iframe、手写 iframe + Blob postMessage 以及 IIFE 全局 API。
   - [x] `@file-viewer/web` 标准包名已改为自包含纯 Web wrapper，直接复用 `@file-viewer/core` iframe 协议，并随包携带 viewer 静态产物、复制 CLI、ESM API 和 IIFE 全局脚本。
 - [ ] jQuery wrapper:
   - [x] 支持 `$(el).fileViewer(options)`。
@@ -327,10 +327,11 @@
   - [x] `pnpm release:ecosystem:build` 已在构建 core、viewer、标准 wrapper、历史兼容包、混淆产物和 wrapper 仓库导出后自动执行生产入口校验。
   - [x] 纯 Web IIFE script tag bundle 已纳入生产入口校验和 tarball 校验。
   - [x] Adapter demo 构建会输出并校验 `/manual-js.html` 与 `/manual-iife.html`，覆盖手写 iframe 和普通 script 标签接入的静态产物完整性。
-  - [x] 新增可复现的 Playwright 浏览器 smoke 脚本，覆盖 adapter demo 首页的 React/Pure Web wrapper iframe、Vue3 wrapper 页面、jQuery wrapper 页面、Svelte action 页面和 script tag IIFE 页面。
+  - [x] 新增可复现的 Playwright 浏览器 smoke 脚本，覆盖 adapter demo 首页的 React/Pure Web wrapper iframe、Vue3 wrapper 页面、jQuery wrapper 页面、Svelte action 页面、手写 iframe + Blob postMessage 页面和 script tag IIFE 页面。
   - [ ] 独立 CJS / UMD / script tag 浏览器烟测仍需继续补齐到完整自动化。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
   - [x] 新增 `pnpm verify:demo-browser-smoke`，在构建后的 `dist/` 上真实打开主 Demo 和 `/compare.html`，验证轻量文档渲染、文档比对双栏组件挂载和快捷键搜索浮层。
+  - [x] 新增 `pnpm verify:browser-smoke`，构建主 Demo 与 adapter Demo 后统一跑主 Demo、文档比对、React/Web/Vue3/jQuery/Svelte、手写 iframe 和 script tag IIFE 浏览器 smoke。
 - [x] 发布前检查 npm tarball 内容，不泄露私有源码。
   - [x] 新增 `pnpm verify:ecosystem-tarballs`，使用 npm dry-run 检查所有 core、标准 wrapper 和历史兼容包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本。
   - [x] `scripts/release-ecosystem-packages.mjs --pack` 生成正式 `.tgz` 后会再次校验实际 tarball，并确认入口文件存在且打包后的 `package.json` 不再包含 `workspace:` 依赖。
