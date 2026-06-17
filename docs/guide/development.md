@@ -25,6 +25,7 @@ pnpm install
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
 | `pnpm build:adapters` | 构建 Vue3 基线 viewer、历史兼容包和所有标准 wrapper 包 |
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
+| `pnpm verify:demo-browser-smoke` | 使用 Playwright 打开构建后的主 Demo 和文档比对页，验证轻量样例渲染、双栏组件挂载和比对页快捷键搜索 |
 | `pnpm verify:branch-roles` | 校验 `origin` 私有 Gitea 源码边界、main/v2/v3 分支职责、core 私有策略、wrapper 公开仓库和公开成品仓库策略 |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
@@ -65,6 +66,7 @@ pnpm type-check:adapters
 pnpm build
 pnpm build-lib
 pnpm obfuscate
+pnpm verify:demo-browser-smoke
 pnpm build:adapter-demo
 pnpm release:ecosystem:list
 pnpm verify:branch-roles
@@ -133,6 +135,7 @@ pnpm release:pack
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入
 - 本地构建和文档构建是否全部通过
+- 主 Demo 和文档比对页是否已经通过 `pnpm verify:demo-browser-smoke`，确认轻量文档实际渲染、左右比对组件挂载和 `Ctrl/Command+F` 搜索浮层行为正常
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
 - `file-viewer-copy-assets` 是否生成 `flyfish-viewer-assets.json`，且 archive / CAD 等 worker/WASM 资源校验为 `valid: true`

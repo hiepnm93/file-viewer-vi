@@ -323,6 +323,7 @@
   - [x] 新增可复现的 Playwright 浏览器 smoke 脚本，覆盖 adapter demo 首页的 React/Pure Web wrapper iframe、Vue3 wrapper 页面、jQuery wrapper 页面、Svelte action 页面和 script tag IIFE 页面。
   - [ ] 独立 CJS / UMD / script tag 浏览器烟测仍需继续补齐到完整自动化。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
+  - [x] 新增 `pnpm verify:demo-browser-smoke`，在构建后的 `dist/` 上真实打开主 Demo 和 `/compare.html`，验证轻量文档渲染、文档比对双栏组件挂载和快捷键搜索浮层。
 - [x] 发布前检查 npm tarball 内容，不泄露私有源码。
   - [x] 新增 `pnpm verify:ecosystem-tarballs`，使用 npm dry-run 检查所有 core、标准 wrapper 和历史兼容包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本。
   - [x] `scripts/release-ecosystem-packages.mjs --pack` 生成正式 `.tgz` 后会再次校验实际 tarball，并确认入口文件存在且打包后的 `package.json` 不再包含 `workspace:` 依赖。

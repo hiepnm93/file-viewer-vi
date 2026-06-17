@@ -52,6 +52,7 @@
     "build:adapter-packages": "pnpm --filter @flyfish-group/file-viewer-web build && pnpm --filter @flyfish-group/file-viewer-react build && pnpm --filter file-viewer3 build && pnpm --filter @file-viewer/web build && pnpm --filter @file-viewer/react build && pnpm --filter @file-viewer/react-legacy build && pnpm --filter @file-viewer/vue3 build && pnpm --filter @file-viewer/vue2.7 build && pnpm --filter @file-viewer/vue2.6 build && pnpm --filter @file-viewer/jquery build && pnpm --filter @file-viewer/svelte build",
     "build:adapters": "pnpm build:viewer-assets && pnpm build:adapter-packages",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",
+    "verify:demo-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs",
     "verify:adapter-demo-output": "node scripts/verify-adapter-demo-output.mjs",
     "verify:adapter-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-adapter-browser-smoke.mjs",
     "verify:branch-roles": "node scripts/verify-branch-roles.mjs",
