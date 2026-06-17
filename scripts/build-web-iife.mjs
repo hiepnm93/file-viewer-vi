@@ -1,0 +1,47 @@
+import { existsSync } from 'node:fs'
+import { mkdir } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { build } from 'vite'
+
+const scriptDir = dirname(fileURLToPath(import.meta.url))
+const sourceRoot = resolve(scriptDir, '..')
+const packageDir = resolve(sourceRoot, process.argv[2] || 'packages/web')
+const entry = join(sourceRoot, 'packages', 'web', 'src', 'global.ts')
+const outDir = join(packageDir, 'dist')
+const fileName = 'flyfish-file-viewer-web.iife.js'
+
+if (!existsSync(entry)) {
+  throw new Error(`Missing web global entry: ${entry}`)
+}
+
+await mkdir(outDir, { recursive: true })
+
+await build({
+  configFile: false,
+  publicDir: false,
+  logLevel: 'warn',
+  resolve: {
+    dedupe: ['@file-viewer/core']
+  },
+  build: {
+    emptyOutDir: false,
+    minify: 'esbuild',
+    sourcemap: false,
+    target: 'es2019',
+    lib: {
+      entry,
+      name: 'FlyfishFileViewerWeb',
+      formats: ['iife'],
+      fileName: () => fileName
+    },
+    rollupOptions: {
+      output: {
+        exports: 'named',
+        extend: true
+      }
+    }
+  }
+})
+
+console.log(`[web-iife] Built ${join(outDir, fileName)}`)

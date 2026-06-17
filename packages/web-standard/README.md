@@ -24,6 +24,19 @@ const controller = mountViewerFrame(document.getElementById('viewer')!, {
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
+无构建工具或传统后台页面可以复制 `dist/flyfish-file-viewer-web.iife.js` 并直接用普通 `<script>` 引入:
+
+```html
+<script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
+<script>
+  window.FlyfishFileViewerWeb.mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf',
+    options: { theme: 'light' }
+  })
+</script>
+```
+
 历史包名 `@flyfish-group/file-viewer-web` 会继续同步维护；新项目建议优先使用 `@file-viewer/web`。English README: [README.en.md](./README.en.md)。
 
 ## 能力范围

@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
-import { stat } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { dirname, extname, join, resolve } from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
+import vm from 'node:vm'
 import {
   collectExportEntrypoints,
   collectPackageEntrypoints,
@@ -13,6 +14,11 @@ const sourceRoot = resolve(scriptDir, '..')
 const { entries } = await loadEcosystemReleaseContext(sourceRoot)
 
 const importableExtensions = new Set(['.js', '.mjs'])
+const webGlobalPackages = new Set([
+  '@flyfish-group/file-viewer-web',
+  '@file-viewer/web'
+])
+const webGlobalBundle = 'dist/flyfish-file-viewer-web.iife.js'
 
 async function assertFile(path, label = path) {
   if (!existsSync(path)) {
@@ -89,6 +95,25 @@ async function assertViewerStaticEntrypoints(entry) {
   await assertDirectory(join(viewerDir, 'wasm'), `${entry.packageName} viewer/wasm/`)
 }
 
+async function assertWebGlobalEntrypoint(entry) {
+  if (!webGlobalPackages.has(entry.packageName)) {
+    return false
+  }
+  const bundlePath = join(entry.absoluteDir, webGlobalBundle)
+  await assertFile(bundlePath, `${entry.packageName} ${webGlobalBundle}`)
+  const context = { window: {} }
+  vm.runInNewContext(await readFile(bundlePath, 'utf8'), context, {
+    filename: `${entry.packageName}/${webGlobalBundle}`
+  })
+  const globalApi = context.window.FlyfishFileViewerWeb || context.FlyfishFileViewerWeb
+  for (const exportName of ['mountViewerFrame', 'mountViewer', 'buildViewerSrc']) {
+    if (typeof globalApi?.[exportName] !== 'function') {
+      throw new Error(`${entry.packageName} browser global bundle is missing ${exportName}`)
+    }
+  }
+  return true
+}
+
 async function assertRootVue3StaticEntrypoints(entry) {
   if (entry.packageDir !== '.') {
     return
@@ -99,6 +124,7 @@ async function assertRootVue3StaticEntrypoints(entry) {
 
 let checkedEntrypointCount = 0
 let importedEntrypointCount = 0
+let checkedGlobalBundleCount = 0
 
 for (const entry of entries) {
   await assertPackageEntrypoints(entry)
@@ -111,9 +137,12 @@ for (const entry of entries) {
   if (entry.packageName === '@flyfish-group/file-viewer-web') {
     await assertViewerStaticEntrypoints(entry)
   }
+  if (await assertWebGlobalEntrypoint(entry)) {
+    checkedGlobalBundleCount += 1
+  }
   await assertRootVue3StaticEntrypoints(entry)
 }
 
 console.log(
-  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, and ${importedEntrypointCount} importable ESM production entrypoints.`
+  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, ${importedEntrypointCount} importable ESM production entrypoints, and ${checkedGlobalBundleCount} browser global bundles.`
 )

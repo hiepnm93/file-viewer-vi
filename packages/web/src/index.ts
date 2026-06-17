@@ -119,3 +119,5 @@ export const mountViewerFrame = (
 ): ViewerFrameController => {
   return mountCoreFileViewerFrame(container, withViewerFrameDefaults(initialOptions))
 }
+
+export const mountViewer = mountViewerFrame

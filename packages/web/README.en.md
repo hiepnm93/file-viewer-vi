@@ -30,6 +30,27 @@ mountViewerFrame(document.getElementById('viewer')!, {
 })
 ```
 
+No-build or legacy admin pages can self-host the helper files and load the browser global bundle:
+
+```bash
+mkdir -p ./public/vendor/file-viewer-web
+cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
+cp ./node_modules/@flyfish-group/file-viewer-web/dist/flyfish-file-viewer-web.iife.js ./public/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js
+```
+
+```html
+<script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
+<script>
+  window.FlyfishFileViewerWeb.mountViewer(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf',
+    options: { theme: 'light' }
+  })
+</script>
+```
+
+`mountViewer(container, options)` is the standardized pure web alias of `mountViewerFrame(container, options)`. Existing integrations can keep using `mountViewerFrame`.
+
 For authenticated files, download the file in your host application first and pass a `Blob` plus a filename:
 
 ```ts

@@ -24,6 +24,19 @@ The wrapper loads `/file-viewer/index.html` by default. Copy the complete privat
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
+No-build or legacy admin pages can copy `dist/flyfish-file-viewer-web.iife.js` and load it through a plain script tag:
+
+```html
+<script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
+<script>
+  window.FlyfishFileViewerWeb.mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf',
+    options: { theme: 'light' }
+  })
+</script>
+```
+
 The historical package `@flyfish-group/file-viewer-web` remains supported for compatibility. New integrations should prefer `@file-viewer/web`.
 
 ## Capabilities

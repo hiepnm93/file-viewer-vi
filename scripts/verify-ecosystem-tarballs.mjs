@@ -20,6 +20,11 @@ const packDirArg = readArg('--pack-dir', null)
 const packDir = packDirArg ? resolve(sourceRoot, packDirArg) : null
 const mode = packDir ? 'tarball' : 'dry-run'
 const { entries } = await loadEcosystemReleaseContext(sourceRoot)
+const webGlobalPackages = new Set([
+  '@flyfish-group/file-viewer-web',
+  '@file-viewer/web'
+])
+const webGlobalBundle = 'dist/flyfish-file-viewer-web.iife.js'
 
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
@@ -156,6 +161,15 @@ function assertEntrypointsPacked(entry, files) {
   }
 }
 
+function assertWebGlobalBundlePacked(entry, files) {
+  if (!webGlobalPackages.has(entry.packageName)) {
+    return
+  }
+  if (!new Set(files).has(webGlobalBundle)) {
+    throw new Error(`${entry.packageName} tarball is missing browser global bundle ${webGlobalBundle}`)
+  }
+}
+
 function assertRequiredDocs(entry, files) {
   const packedFiles = new Set(files)
   for (const requiredFile of ['package.json', 'README.md']) {
@@ -171,6 +185,7 @@ function assertRequiredDocs(entry, files) {
 function verifyPack(entry, pack) {
   assertRequiredDocs(entry, pack.files)
   assertNoForbiddenPackFiles(entry, pack.files)
+  assertWebGlobalBundlePacked(entry, pack.files)
   if (mode === 'tarball') {
     assertEntrypointsPacked(entry, pack.files)
     if (hasWorkspaceDependency(pack.packageJson)) {
