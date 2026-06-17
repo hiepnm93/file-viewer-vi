@@ -108,9 +108,10 @@
     - [x] 下载触发、canvas 快照替换、图片等待、打印窗口 ready、渲染 HTML 组装迁入 `@file-viewer/core`。
     - [x] core viewer 默认提供原文件下载、渲染 HTML 导出、打印窗口打开、beforeOperation 编排和高保真 HTML 快照。
     - [ ] Vue3 `useViewerExport` 仍是组件层门面，后续切换为 core viewer operations + UI error adapter。
-- [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
+- [x] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
+  - [x] loading 主题矩阵、运行态状态机和错误/消息切换迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [x] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。

@@ -102,6 +102,15 @@ export {
   serializeFileViewerContext,
 } from './operations';
 export {
+  FALLBACK_FILE_VIEWER_LOADING_THEME,
+  FILE_VIEWER_LOADING_THEME_MAP,
+  cloneFileViewerLoadingRuntimeState,
+  createFileViewerLoadingController,
+  createFileViewerLoadingRuntimeState,
+  createFileViewerLoadingStyleVars,
+  resolveFileViewerLoadingTheme,
+} from './loading';
+export {
   getFileViewerOptionsSearchParam,
   parseFileViewerOptions,
   sanitizeFileViewerOptions,
@@ -156,6 +165,10 @@ export type {
   RunFileViewerBeforeOperationInput,
   SerializedFileViewerContext,
 } from './operations';
+export type {
+  FileViewerLoadingRuntimeState,
+  FileViewerLoadingTheme,
+} from './loading';
 export type {
   FileViewerSerializableCadOptions,
   FileViewerSerializableOptions,
