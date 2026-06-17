@@ -8,9 +8,9 @@ import {
   type FileViewerStateTheme
 } from '@file-viewer/core'
 import type {
-  FileRef,
+  FileViewerFileRef as FileRef,
   FileViewerOptions
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 interface UseViewerPresentationOptions {
   filename: Ref<string>;

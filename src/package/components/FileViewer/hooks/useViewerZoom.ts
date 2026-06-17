@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import type { FileViewerOperationType, FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerOperationType, FileViewerZoomState } from '@file-viewer/core'
 import { useViewerZoom as useBaseViewerZoom } from '@/package/use/viewerZoom'
 
 interface UseFileViewerZoomOptions {

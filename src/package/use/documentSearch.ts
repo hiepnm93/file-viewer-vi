@@ -12,7 +12,7 @@ import type {
   FileViewerDocumentAnchor,
   FileViewerSearchOptions,
   FileViewerSearchState
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 const applySearchState = (
   target: FileViewerSearchState,

@@ -9,7 +9,7 @@ export {
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider
 } from '@file-viewer/core'
-import type { FileViewerOperationType, FileViewerZoomProvider, FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerOperationType, FileViewerZoomProvider, FileViewerZoomState } from '@file-viewer/core'
 
 export const createZoomChangeEmitter = () => {
   const listeners = new Set<() => void>()

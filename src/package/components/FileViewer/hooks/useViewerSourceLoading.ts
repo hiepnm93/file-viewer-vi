@@ -11,10 +11,10 @@ import {
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
-  FileRef,
+  FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
   FileViewerOptions
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import type { FileViewerVueRenderSession } from '../util'
 
 interface UseViewerSourceLoadingOptions {

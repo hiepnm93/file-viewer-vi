@@ -7,7 +7,7 @@ import type {
   FileRenderExportAdapter,
   FileViewerLifecycleContext,
   FileViewerOptions
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import { renderSession, type FileViewerVueRenderSession } from '../util'
 
 interface UseViewerRenderSurfaceOptions {

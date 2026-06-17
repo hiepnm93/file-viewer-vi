@@ -4,13 +4,13 @@ import { ChevronDown, ChevronUp, RotateCcw, X, ZoomIn, ZoomOut } from '@lucide/v
 import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
 import { listenForFile } from '@/components/utils'
 import type {
-  FileRef,
-  FileViewerExpose,
+  FileViewerFileRef as FileRef,
   FileViewerOperationAvailability,
   FileViewerOptions,
+  FileViewerPublicApi as FileViewerExpose,
   FileViewerSearchState,
   FileViewerZoomState
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import brandLogo from '@/assets/logo.png'
 
 const hidden = ref(false)

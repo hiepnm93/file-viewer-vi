@@ -2,12 +2,10 @@
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
-  createFileViewerRequestController
+  createFileViewerRequestController,
+  type FileViewerComponentEmits as FileViewerEmits,
+  type FileViewerComponentProps as FileViewerProps
 } from '@file-viewer/core'
-import type {
-  FileViewerEmits,
-  FileViewerProps
-} from '@/package/common/type'
 import { useLoading } from '@/package/use'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'

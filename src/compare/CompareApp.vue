@@ -4,12 +4,12 @@ import type { ComponentPublicInstance } from 'vue'
 import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { FileViewer } from '@/package'
 import type {
-  FileRef,
-  FileViewerExpose,
+  FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
   FileViewerOptions,
+  FileViewerPublicApi as FileViewerExpose,
   FileViewerSearchState
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import brandLogo from '@/assets/logo.png'
 import { useSynchronizedScroll } from './useSynchronizedScroll'
 

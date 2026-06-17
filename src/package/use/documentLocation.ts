@@ -10,7 +10,7 @@ import type {
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 export const collectDocumentAnchors = collectFileViewerDocumentAnchors
 export const findAnchorForElement = findFileViewerAnchorForElement

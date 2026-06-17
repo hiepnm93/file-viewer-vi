@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { FileViewerWatermarkOptions } from '@/package/common/type'
+import type { FileViewerWatermarkOptions } from '@file-viewer/core'
 import {
   buildFileViewerWatermarkBackgroundImage,
   buildFileViewerWatermarkInlineStyle,

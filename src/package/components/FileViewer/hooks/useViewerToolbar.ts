@@ -13,7 +13,7 @@ import type {
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
   FileViewerZoomState
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 interface UseViewerToolbarOptions {
   activeExportAdapter: ShallowRef<FileRenderExportAdapter | null>;

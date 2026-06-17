@@ -4,7 +4,7 @@ import type {
   FileViewerDocumentChunk,
   FileViewerOptions,
   FileViewerSearchState
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import {
   createFileViewerRawPostMessagePayload,
   postFileViewerMessageToParent

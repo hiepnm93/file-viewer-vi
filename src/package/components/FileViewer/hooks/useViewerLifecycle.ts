@@ -12,7 +12,7 @@ import type {
   FileViewerOperationContext,
   FileViewerOperationType,
   FileViewerOptions
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 interface BuildViewerLifecycleContextInput {
   phase: FileViewerLifecyclePhase;

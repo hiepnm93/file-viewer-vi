@@ -3,7 +3,7 @@ import type {
   FileRenderExportAdapter,
   FileViewerOperationAvailability,
   FileViewerOperationType
-} from '@/package/common/type'
+} from '@file-viewer/core'
 import {
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,

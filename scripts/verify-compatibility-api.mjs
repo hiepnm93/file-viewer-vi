@@ -180,7 +180,7 @@ const vue3ScopedRuntimeFacadeNames = [
 const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
   `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
 )
-const vue3ScopedVendorCommonTypeImportPattern = /from\s+['"][^'"]*common\/type(?:\.ts)?['"]/
+const vue3ScopedCommonTypeImportPattern = /from\s+['"][^'"]*common\/type(?:\.ts)?['"]/
 const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs'])
 
 function assert(condition, message) {
@@ -431,8 +431,14 @@ async function verifyVue3ScopedCompatibility() {
       !runtimeFacadeImport,
       `${entry.packageName} ${relativePath} must import runtime helpers from @file-viewer/core instead of ${runtimeFacadeImport?.[0]}`
     )
+    const internalCommonTypeImport = vue3ScopedCommonTypeImportPattern.exec(source)
+    const isPublicTypeEntry = relativePath === 'src/package/index.ts' || relativePath === 'src/package/common/type.ts'
+    assert(
+      isPublicTypeEntry || !internalCommonTypeImport,
+      `${entry.packageName} ${relativePath} must import implementation types from @file-viewer/core; common/type is only a public compatibility facade`
+    )
     if (relativePath.startsWith('src/package/vendors/')) {
-      const vendorCommonTypeImport = vue3ScopedVendorCommonTypeImportPattern.exec(source)
+      const vendorCommonTypeImport = vue3ScopedCommonTypeImportPattern.exec(source)
       assert(
         !vendorCommonTypeImport,
         `${entry.packageName} ${relativePath} must import renderer contracts directly from @file-viewer/core instead of ${vendorCommonTypeImport?.[0]}`

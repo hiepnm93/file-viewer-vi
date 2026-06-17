@@ -3,9 +3,10 @@ import {
   normalizeSource,
   renderFileViewerHandler,
   type FileRenderHandlerRendererSession,
+  type FileRenderContext,
+  type FileViewerRenderedInstance as Rendered,
 } from '@file-viewer/core'
 import { vueRendererDispatcher, vueRendererRegistry } from '@/package/vendors/renders'
-import type { FileRenderContext, Rendered } from '@/package/common/type'
 
 export type FileViewerVueRenderSession = FileRenderHandlerRendererSession<Rendered | undefined>
 

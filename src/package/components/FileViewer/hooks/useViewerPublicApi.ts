@@ -1,8 +1,8 @@
 import type { ComputedRef } from 'vue'
 import type {
-  FileViewerExpose,
+  FileViewerPublicApi as FileViewerExpose,
   FileViewerOperationAvailability
-} from '@/package/common/type'
+} from '@file-viewer/core'
 
 interface UseViewerPublicApiOptions extends Omit<FileViewerExpose, 'getOperationAvailability'> {
   operationAvailability: ComputedRef<FileViewerOperationAvailability>;

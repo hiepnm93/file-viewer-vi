@@ -1,6 +1,6 @@
 import { parse } from 'qs'
 import { parseFileViewerOptions } from '@file-viewer/core'
-import type { FileViewerOptions } from '@/package/common/type'
+import type { FileViewerOptions } from '@file-viewer/core'
 
 type ListenCallback = (file?: File, url?: string, options?: FileViewerOptions) => void;
 
