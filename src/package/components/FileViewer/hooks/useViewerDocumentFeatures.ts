@@ -7,6 +7,7 @@ import type {
 } from '@file-viewer/core'
 import {
   buildFileViewerDocumentTextChunks,
+  cloneFileViewerSearchState,
   createFileViewerRawPostMessagePayload,
   getCurrentFileViewerDocumentAnchor,
   postFileViewerMessageToParent,
@@ -30,14 +31,6 @@ const postViewerPayload = (
   postFileViewerMessageToParent(createFileViewerRawPostMessagePayload(type, event, payload))
 }
 
-const cloneSearchState = (state: FileViewerSearchState): FileViewerSearchState => ({
-  query: state.query,
-  total: state.total,
-  currentIndex: state.currentIndex,
-  current: state.current ? { ...state.current } : null,
-  matches: state.matches.map(match => ({ ...match }))
-})
-
 /**
  * FileViewer 的文档交互门面。
  *
@@ -60,7 +53,7 @@ export const useViewerDocumentFeatures = ({
     getScrollContainer
   )
 
-  const getSearchState = () => cloneSearchState(documentSearch.state)
+  const getSearchState = () => cloneFileViewerSearchState(documentSearch.state)
 
   const notifySearchChange = () => {
     const state = getSearchState()

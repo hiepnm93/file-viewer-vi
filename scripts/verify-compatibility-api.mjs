@@ -475,9 +475,12 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueDocumentFeaturesHookSource, '@file-viewer/core', vueDocumentFeaturesHookLabel)
   assertTokens(vueDocumentFeaturesHookSource, [
     'resolveFileViewerScrollContainer',
+    'cloneFileViewerSearchState',
     'buildFileViewerDocumentTextChunks'
   ], vueDocumentFeaturesHookLabel)
   for (const forbiddenToken of [
+    'const cloneSearchState',
+    'matches.map(match => ({ ...match }))',
     'const getScrollableRange',
     'const isScrollableElement',
     'getComputedStyle(element)',

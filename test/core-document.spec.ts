@@ -3,6 +3,7 @@ import { parseHTML } from 'linkedom';
 import {
   buildFileViewerDocumentTextChunks,
   collectFileViewerDocumentAnchors,
+  cloneFileViewerSearchState,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
   createFileViewerZoomController,
@@ -97,6 +98,30 @@ describe('@file-viewer/core document helpers', () => {
 
     expect(normalizeFileViewerAiOptions(false)).toEqual({ enabled: false, collectText: false });
     expect(normalizeFileViewerAiOptions({ chunkSize: 256 })).toEqual({ chunkSize: 256 });
+  });
+
+  it('clones search state snapshots without sharing match or anchor references', () => {
+    const source = createEmptyFileViewerSearchState('pdf');
+    source.total = 1;
+    source.currentIndex = 0;
+    source.current = {
+      id: 'match-1',
+      index: 0,
+      text: 'PDF',
+      anchor: anchor('intro', 'PDF intro'),
+      line: 1,
+      page: 2,
+    };
+    source.matches = [source.current];
+
+    const cloned = cloneFileViewerSearchState(source);
+
+    expect(cloned).toEqual(source);
+    expect(cloned).not.toBe(source);
+    expect(cloned.current).not.toBe(source.current);
+    expect(cloned.current?.anchor).not.toBe(source.current.anchor);
+    expect(cloned.matches[0]).not.toBe(source.matches[0]);
+    expect(cloned.matches[0].anchor).not.toBe(source.matches[0].anchor);
   });
 
   it('builds AI-friendly document text chunks with overlap and limits', () => {
