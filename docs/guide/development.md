@@ -25,6 +25,8 @@ pnpm install
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
 | `pnpm build:adapters` | 构建 Vue3 基线 viewer、历史兼容包和所有标准 wrapper 包 |
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
+| `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
+| `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、smoke 矩阵、wrapper 源包和生态 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
 | `pnpm docker:build` | 使用 Dockerfile 构建本机架构镜像 |
@@ -109,7 +111,8 @@ Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查
 - README 和文档站是否同时写清 Vue3 / Vue2 / React / 纯 JS 包名、版本和接入方式
 - 文档站中的支持格式、iframe 协议和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
-- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、wrapper 源包校验和生态 npm manifest 列表校验
+- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、smoke 矩阵、wrapper 源包校验和生态 npm manifest 列表校验
+- 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 本地构建和文档构建是否全部通过
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步

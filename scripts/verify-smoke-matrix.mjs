@@ -1,0 +1,181 @@
+import { existsSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
+import { extname, join } from 'node:path'
+
+const sourceRoot = process.cwd()
+const matrixPath = join(sourceRoot, 'ecosystem', 'smoke-matrix.json')
+const wrapperManifestPath = join(sourceRoot, 'ecosystem', 'wrappers.json')
+const formatSourcePath = join(sourceRoot, 'packages', 'core', 'src', 'formats.ts')
+const examplesRoot = join(sourceRoot, 'public', 'example')
+
+function fail(message) {
+  throw new Error(`[smoke-matrix] ${message}`)
+}
+
+async function readJson(path) {
+  return JSON.parse(await readFile(path, 'utf8'))
+}
+
+function quotedValues(text) {
+  return [...text.matchAll(/'([^']+)'/g)].map(match => match[1])
+}
+
+async function readRendererDefinitions() {
+  const source = await readFile(formatSourcePath, 'utf8')
+  const constants = new Map()
+  const constantPattern = /export const ([A-Z0-9_]+) = \[([\s\S]*?)\] as const;/g
+  for (const match of source.matchAll(constantPattern)) {
+    constants.set(match[1], quotedValues(match[2]))
+  }
+
+  const renderers = new Map()
+  const rendererPattern = /\{\s*id:\s*'([^']+)'([\s\S]*?)capabilities:/g
+  for (const match of source.matchAll(rendererPattern)) {
+    const id = match[1]
+    const body = match[2]
+    const extensionMatch = body.match(/extensions:\s*(\[[\s\S]*?\]|[A-Z0-9_]+)/)
+    if (!extensionMatch) {
+      fail(`Renderer ${id} does not declare extensions`)
+    }
+    const expression = extensionMatch[1].trim()
+    const extensions = expression.startsWith('[')
+      ? quotedValues(expression)
+      : constants.get(expression)
+    if (!extensions?.length) {
+      fail(`Renderer ${id} references unknown extension list ${expression}`)
+    }
+    renderers.set(id, {
+      id,
+      extensions: new Set(extensions)
+    })
+  }
+
+  if (!renderers.size) {
+    fail('No renderer definitions were detected')
+  }
+  return renderers
+}
+
+function assertUnique(items, label, selectId = item => item.id) {
+  const seen = new Set()
+  for (const item of items) {
+    const id = selectId(item)
+    if (!id) {
+      fail(`${label} contains an item without id`)
+    }
+    if (seen.has(id)) {
+      fail(`${label} contains duplicate id ${id}`)
+    }
+    seen.add(id)
+  }
+}
+
+function assertSampleExists(sample, label) {
+  const samplePath = join(examplesRoot, sample)
+  if (!existsSync(samplePath)) {
+    fail(`${label} sample does not exist: public/example/${sample}`)
+  }
+}
+
+function sampleExtension(sample, explicitExtension) {
+  if (explicitExtension) {
+    return explicitExtension.toLowerCase()
+  }
+  return extname(sample).replace(/^\./, '').toLowerCase()
+}
+
+const [matrix, wrapperManifest, renderers] = await Promise.all([
+  readJson(matrixPath),
+  readJson(wrapperManifestPath),
+  readRendererDefinitions()
+])
+
+if (matrix.schemaVersion !== 1) {
+  fail(`Unsupported schemaVersion ${matrix.schemaVersion}`)
+}
+
+const surfaces = new Set(matrix.surfaces || [])
+for (const surface of ['main-demo', 'compare-page', 'iframe', 'script-tag']) {
+  if (!surfaces.has(surface)) {
+    fail(`Missing required smoke surface ${surface}`)
+  }
+}
+
+assertUnique(matrix.wrappers || [], 'wrappers')
+const matrixWrappers = new Map((matrix.wrappers || []).map(wrapper => [wrapper.id, wrapper]))
+for (const wrapper of wrapperManifest.wrappers) {
+  const matrixWrapper = matrixWrappers.get(wrapper.id)
+  if (!matrixWrapper) {
+    fail(`Smoke matrix is missing wrapper ${wrapper.id}`)
+  }
+  if (matrixWrapper.packageName !== wrapper.packageName) {
+    fail(`Wrapper ${wrapper.id} package mismatch: ${matrixWrapper.packageName} !== ${wrapper.packageName}`)
+  }
+  if (!surfaces.has(matrixWrapper.surface)) {
+    fail(`Wrapper ${wrapper.id} references unknown surface ${matrixWrapper.surface}`)
+  }
+}
+
+assertUnique(matrix.cases || [], 'cases')
+const coveredRendererIds = new Set()
+const coveredFamilies = new Set()
+for (const smokeCase of matrix.cases || []) {
+  const renderer = renderers.get(smokeCase.rendererId)
+  if (!renderer) {
+    fail(`Case ${smokeCase.id} references unknown renderer ${smokeCase.rendererId}`)
+  }
+  const extension = sampleExtension(smokeCase.sample, smokeCase.extension)
+  if (!renderer.extensions.has(extension)) {
+    fail(`Case ${smokeCase.id} extension ${extension} is not supported by renderer ${smokeCase.rendererId}`)
+  }
+  assertSampleExists(smokeCase.sample, `Case ${smokeCase.id}`)
+  if (!Array.isArray(smokeCase.surfaces) || !smokeCase.surfaces.length) {
+    fail(`Case ${smokeCase.id} must declare at least one surface`)
+  }
+  for (const surface of smokeCase.surfaces) {
+    if (!surfaces.has(surface)) {
+      fail(`Case ${smokeCase.id} references unknown surface ${surface}`)
+    }
+  }
+  if (!Array.isArray(smokeCase.assertions) || !smokeCase.assertions.length) {
+    fail(`Case ${smokeCase.id} must declare at least one assertion`)
+  }
+  coveredRendererIds.add(smokeCase.rendererId)
+  coveredFamilies.add(smokeCase.family)
+}
+
+if (matrix.coverage?.requireAllRendererIds) {
+  for (const rendererId of renderers.keys()) {
+    if (!coveredRendererIds.has(rendererId)) {
+      fail(`Smoke matrix does not cover renderer ${rendererId}`)
+    }
+  }
+}
+
+for (const family of matrix.coverage?.requiredFormatFamilies || []) {
+  if (!coveredFamilies.has(family)) {
+    fail(`Smoke matrix does not cover required family ${family}`)
+  }
+}
+
+assertUnique(matrix.wrapperCases || [], 'wrapperCases')
+const wrapperCaseIds = new Set()
+for (const wrapperCase of matrix.wrapperCases || []) {
+  if (!matrixWrappers.has(wrapperCase.wrapperId)) {
+    fail(`Wrapper case ${wrapperCase.id} references unknown wrapper ${wrapperCase.wrapperId}`)
+  }
+  if (!surfaces.has(wrapperCase.surface)) {
+    fail(`Wrapper case ${wrapperCase.id} references unknown surface ${wrapperCase.surface}`)
+  }
+  assertSampleExists(wrapperCase.sample, `Wrapper case ${wrapperCase.id}`)
+  wrapperCaseIds.add(wrapperCase.wrapperId)
+}
+for (const wrapper of wrapperManifest.wrappers) {
+  if (!wrapperCaseIds.has(wrapper.id)) {
+    fail(`Smoke matrix does not include a wrapper case for ${wrapper.id}`)
+  }
+}
+
+console.log(
+  `[smoke-matrix] Verified ${matrix.cases.length} format cases, ${matrix.wrapperCases.length} wrapper cases, ${renderers.size} renderer pipelines.`
+)

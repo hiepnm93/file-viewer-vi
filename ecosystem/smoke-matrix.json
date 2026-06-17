@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "description": "Migration smoke coverage matrix for preserving the Vue 3 baseline experience while moving renderer logic into the shared TypeScript core.",
+  "coverage": {
+    "requireAllRendererIds": true,
+    "requiredFormatFamilies": [
+      "pdf",
+      "docx",
+      "xlsx",
+      "pptx",
+      "ofd",
+      "cad",
+      "dwf",
+      "dwfx",
+      "epub",
+      "archive",
+      "email",
+      "markdown",
+      "code",
+      "image",
+      "audio",
+      "video",
+      "geo",
+      "data-asset"
+    ]
+  },
+  "surfaces": [
+    "main-demo",
+    "compare-page",
+    "iframe",
+    "script-tag",
+    "vue3",
+    "vue2.7",
+    "vue2.6",
+    "react",
+    "react-legacy",
+    "web",
+    "jquery",
+    "svelte"
+  ],
+  "wrappers": [
+    {
+      "id": "vue3",
+      "packageName": "@file-viewer/vue3",
+      "surface": "vue3"
+    },
+    {
+      "id": "vue2.7",
+      "packageName": "@file-viewer/vue2.7",
+      "surface": "vue2.7"
+    },
+    {
+      "id": "vue2.6",
+      "packageName": "@file-viewer/vue2.6",
+      "surface": "vue2.6"
+    },
+    {
+      "id": "react",
+      "packageName": "@file-viewer/react",
+      "surface": "react"
+    },
+    {
+      "id": "react-legacy",
+      "packageName": "@file-viewer/react-legacy",
+      "surface": "react-legacy"
+    },
+    {
+      "id": "web",
+      "packageName": "@file-viewer/web",
+      "surface": "script-tag"
+    },
+    {
+      "id": "jquery",
+      "packageName": "@file-viewer/jquery",
+      "surface": "jquery"
+    },
+    {
+      "id": "svelte",
+      "packageName": "@file-viewer/svelte",
+      "surface": "svelte"
+    }
+  ],
+  "cases": [
+    {
+      "id": "word-openxml-docx",
+      "family": "docx",
+      "rendererId": "office-word-openxml",
+      "extension": "docx",
+      "sample": "word.docx",
+      "surfaces": ["main-demo", "iframe"],
+      "assertions": ["load-complete", "paper-layout", "search", "zoom", "print-capability", "export-html"]
+    },
+    {
+      "id": "word-binary-doc",
+      "family": "doc",
+      "rendererId": "office-word-binary",
+      "extension": "doc",
+      "sample": "test.doc",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "fallback-content", "download"]
+    },
+    {
+      "id": "presentation-pptx",
+      "family": "pptx",
+      "rendererId": "office-presentation",
+      "extension": "pptx",
+      "sample": "ppt.pptx",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "slide-count", "print-capability", "zoom"]
+    },
+    {
+      "id": "open-document-odt",
+      "family": "open-document",
+      "rendererId": "open-document",
+      "extension": "odt",
+      "sample": "document.odt",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "document-flow", "export-html"]
+    },
+    {
+      "id": "spreadsheet-xlsx",
+      "family": "xlsx",
+      "rendererId": "spreadsheet-openxml",
+      "extension": "xlsx",
+      "sample": "excel.xlsx",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "sheet-tabs", "search", "zoom"]
+    },
+    {
+      "id": "pdf-document",
+      "family": "pdf",
+      "rendererId": "pdf",
+      "extension": "pdf",
+      "sample": "pdf.pdf",
+      "surfaces": ["main-demo", "compare-page", "iframe"],
+      "assertions": ["load-complete", "page-navigation", "outline-or-thumbnails", "search", "zoom", "print-capability"]
+    },
+    {
+      "id": "ofd-document",
+      "family": "ofd",
+      "rendererId": "ofd",
+      "extension": "ofd",
+      "sample": "ofd.ofd",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "page-layout", "zoom", "print-capability"]
+    },
+    {
+      "id": "typst-source",
+      "family": "typst",
+      "rendererId": "typst",
+      "extension": "typ",
+      "sample": "report.typ",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "compile-source", "page-layout", "export-html"]
+    },
+    {
+      "id": "archive-zip",
+      "family": "archive",
+      "rendererId": "archive",
+      "extension": "zip",
+      "sample": "archive.zip",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "entry-tree", "nested-preview", "loading-state"]
+    },
+    {
+      "id": "email-msg",
+      "family": "email",
+      "rendererId": "email",
+      "extension": "msg",
+      "sample": "sample.msg",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "headers", "attachments", "export-html"]
+    },
+    {
+      "id": "eda-olb",
+      "family": "eda",
+      "rendererId": "eda",
+      "extension": "olb",
+      "sample": "sample.olb",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "structure-tree", "scrollable-tree"]
+    },
+    {
+      "id": "cad-dwg",
+      "family": "cad",
+      "rendererId": "cad",
+      "extension": "dwg",
+      "sample": "sample.dwg",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "fit-to-view", "pan", "zoom"]
+    },
+    {
+      "id": "cad-dwf",
+      "family": "dwf",
+      "rendererId": "cad",
+      "extension": "dwf",
+      "sample": "samples/apache/blocks_and_tables.dwf",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "fit-to-view", "zoom"]
+    },
+    {
+      "id": "cad-dwfx",
+      "family": "dwfx",
+      "rendererId": "cad",
+      "extension": "dwfx",
+      "sample": "samples/autodesk/house.dwfx",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "fit-to-view", "zoom"]
+    },
+    {
+      "id": "model-gltf",
+      "family": "model",
+      "rendererId": "model",
+      "extension": "gltf",
+      "sample": "model.gltf",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "camera-controls", "zoom"]
+    },
+    {
+      "id": "geo-geojson",
+      "family": "geo",
+      "rendererId": "geo",
+      "extension": "geojson",
+      "sample": "map.geojson",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "map-fit", "zoom"]
+    },
+    {
+      "id": "drawing-excalidraw",
+      "family": "drawing",
+      "rendererId": "drawing",
+      "extension": "excalidraw",
+      "sample": "flow.excalidraw",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "svg-output", "zoom"]
+    },
+    {
+      "id": "ebook-epub",
+      "family": "epub",
+      "rendererId": "epub",
+      "extension": "epub",
+      "sample": "book.epub",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "toc", "chapter-content", "search"]
+    },
+    {
+      "id": "ebook-umd",
+      "family": "umd",
+      "rendererId": "umd",
+      "extension": "umd",
+      "sample": "book.umd",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "toc", "chapter-content"]
+    },
+    {
+      "id": "image-png",
+      "family": "image",
+      "rendererId": "image",
+      "extension": "png",
+      "sample": "pic.png",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "fit-to-view", "zoom", "print-capability"]
+    },
+    {
+      "id": "markdown-md",
+      "family": "markdown",
+      "rendererId": "markdown",
+      "extension": "md",
+      "sample": "markdown.md",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "dark-mode-readable", "search", "print-capability"]
+    },
+    {
+      "id": "code-typescript",
+      "family": "code",
+      "rendererId": "code",
+      "extension": "ts",
+      "sample": "code.ts",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "syntax-highlight", "search", "long-content-scroll"]
+    },
+    {
+      "id": "video-mp4",
+      "family": "video",
+      "rendererId": "video",
+      "extension": "mp4",
+      "sample": "video.mp4",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "media-controls"]
+    },
+    {
+      "id": "audio-mp3",
+      "family": "audio",
+      "rendererId": "audio",
+      "extension": "mp3",
+      "sample": "audio.mp3",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "media-controls"]
+    },
+    {
+      "id": "data-sqlite",
+      "family": "data-asset",
+      "rendererId": "data-asset",
+      "extension": "sqlite",
+      "sample": "sample.sqlite",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "metadata", "export-html"]
+    }
+  ],
+  "wrapperCases": [
+    {
+      "id": "vue3-pdf",
+      "wrapperId": "vue3",
+      "sample": "pdf.pdf",
+      "surface": "vue3"
+    },
+    {
+      "id": "vue27-pdf",
+      "wrapperId": "vue2.7",
+      "sample": "pdf.pdf",
+      "surface": "vue2.7"
+    },
+    {
+      "id": "vue26-pdf",
+      "wrapperId": "vue2.6",
+      "sample": "pdf.pdf",
+      "surface": "vue2.6"
+    },
+    {
+      "id": "react-pdf",
+      "wrapperId": "react",
+      "sample": "pdf.pdf",
+      "surface": "react"
+    },
+    {
+      "id": "react-legacy-pdf",
+      "wrapperId": "react-legacy",
+      "sample": "pdf.pdf",
+      "surface": "react-legacy"
+    },
+    {
+      "id": "web-script-pdf",
+      "wrapperId": "web",
+      "sample": "pdf.pdf",
+      "surface": "script-tag"
+    },
+    {
+      "id": "jquery-pdf",
+      "wrapperId": "jquery",
+      "sample": "pdf.pdf",
+      "surface": "jquery"
+    },
+    {
+      "id": "svelte-pdf",
+      "wrapperId": "svelte",
+      "sample": "pdf.pdf",
+      "surface": "svelte"
+    }
+  ]
+}
