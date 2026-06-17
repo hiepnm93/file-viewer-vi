@@ -396,6 +396,10 @@ describe('@file-viewer/core registry', () => {
       });
 
       await viewer.load({ buffer: new Uint8Array([1, 2, 3]).buffer, filename: 'demo.coreops' });
+      expect(viewer.getExportAdapter()).toMatchObject({
+        exportHtml: true,
+        print: true,
+      });
 
       const html = await viewer.exportHtml({ download: false });
       expect(html).toContain('data-mode="export"');
@@ -436,6 +440,9 @@ describe('@file-viewer/core registry', () => {
       expect(downloadedName).toBe('demo.coreops');
       expect(revokedUrl).toBe('blob:viewer-test');
       expect(beforeOperations).toEqual(['export-html', 'print', 'download']);
+
+      await viewer.destroy();
+      expect(viewer.getExportAdapter()).toBeNull();
     } finally {
       document.createElement = originalCreateElement as Document['createElement'];
       URL.createObjectURL = originalCreateObjectUrl;

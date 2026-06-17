@@ -26,6 +26,10 @@ import {
   runFileViewerLifecycleHook,
 } from './operations';
 import { createRendererRegistry } from './registry';
+import {
+  applyFileViewerRenderSurfaceState,
+  createFileViewerRenderSurfaceState,
+} from './rendererHandler';
 import { normalizeSource } from './source';
 import { buildFileViewerWatermarkInlineStyle } from './watermark';
 import type {
@@ -85,8 +89,7 @@ export const createViewer = (
   const registry = createOptions.registry || createRendererRegistry();
   let options = createOptions.options || {};
   let currentSource: NormalizedFileViewerSource | null = null;
-  let currentSession: RendererSession | null = null;
-  let activeExportAdapter: FileRenderExportAdapter | null = null;
+  const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
   let version = 0;
   let anchors: FileViewerDocumentAnchor[] = [];
 
@@ -130,7 +133,7 @@ export const createViewer = (
     if (!renderer) {
       return createUnsupportedAvailability(targetExtension);
     }
-    return getRendererAvailability(renderer, currentSession);
+    return getRendererAvailability(renderer, renderSurfaceState.session);
   };
 
   const zoomController = createFileViewerZoomController({
@@ -151,10 +154,12 @@ export const createViewer = (
     const source = currentSource;
     const startedAt = Date.now();
     await emitLifecycle(options, 'unload-start', source, version, startedAt, reason);
-    await currentSession?.destroy?.();
-    currentSession = null;
+    await renderSurfaceState.session?.destroy?.();
     currentSource = null;
-    activeExportAdapter = null;
+    applyFileViewerRenderSurfaceState(renderSurfaceState, {
+      session: null,
+      exportAdapter: null,
+    });
     anchors = [];
     await searchController.clear();
     zoomController.clearProvider();
@@ -175,24 +180,25 @@ export const createViewer = (
       await emitLifecycle(options, 'load-start', normalized, version, startedAt);
 
       if (!renderer?.load) {
-        currentSession = null;
+        applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
         await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
         return null;
       }
 
-      currentSession = await renderer.load({
+      const session = await renderer.load({
         source: normalized,
         surface: { container },
         options,
         signal: createOptions.signal,
         registerExportAdapter: adapter => {
-          activeExportAdapter = adapter;
+          applyFileViewerRenderSurfaceState(renderSurfaceState, { exportAdapter: adapter });
         },
       });
+      applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       zoomController.refreshProvider();
       anchors = collectFileViewerDocumentAnchors(container);
       await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
-      return currentSession;
+      return session;
     },
     async destroy(reason = 'component-unmount') {
       await destroyCurrent(reason);
@@ -215,10 +221,10 @@ export const createViewer = (
       return currentSource;
     },
     registerExportAdapter(adapter: FileRenderExportAdapter | null) {
-      activeExportAdapter = adapter;
+      applyFileViewerRenderSurfaceState(renderSurfaceState, { exportAdapter: adapter });
     },
     getExportAdapter() {
-      return activeExportAdapter;
+      return renderSurfaceState.exportAdapter;
     },
     async download(downloadOptions: FileViewerDownloadOptions = {}) {
       const source = createFileViewerOriginalSourceState({
@@ -239,7 +245,7 @@ export const createViewer = (
     async exportHtml(exportOptions: FileViewerExportHtmlOptions = {}) {
       return executeFileViewerExportHtmlOperation({
         source: container,
-        adapter: activeExportAdapter,
+        adapter: renderSurfaceState.exportAdapter,
         download: exportOptions.download,
         filename: exportOptions.filename || resolveFileViewerOperationFilename({
           filename: getDisplayFilename(),
@@ -256,7 +262,7 @@ export const createViewer = (
     async print(printOptions: FileViewerPrintOptions = {}) {
       await executeFileViewerPrintOperation({
         source: container,
-        adapter: activeExportAdapter,
+        adapter: renderSurfaceState.exportAdapter,
         autoPrint: printOptions.autoPrint,
         openWindow: printOptions.openWindow,
         printWindow: printOptions.printWindow,

@@ -262,6 +262,32 @@ function assertCoreInstanceContract(typesSource) {
   }
 }
 
+function assertCoreViewerSurfaceState(viewerSource) {
+  for (const token of [
+    'createFileViewerRenderSurfaceState',
+    'applyFileViewerRenderSurfaceState',
+    'renderSurfaceState.session',
+    'renderSurfaceState.exportAdapter'
+  ]) {
+    assert(
+      viewerSource.includes(token),
+      `createViewer must reuse core render surface state via ${token}`
+    )
+  }
+
+  for (const forbiddenToken of [
+    'let currentSession',
+    'let activeExportAdapter',
+    'currentSession =',
+    'activeExportAdapter ='
+  ]) {
+    assert(
+      !viewerSource.includes(forbiddenToken),
+      `createViewer must not keep duplicate render surface state: ${forbiddenToken}`
+    )
+  }
+}
+
 function collectBareImportSpecifiers(source) {
   const imports = new Set()
   const patterns = [
@@ -310,6 +336,7 @@ const packageJson = await readJson(join(coreDir, 'package.json'))
 const tsconfig = await readJson(join(coreDir, 'tsconfig.json'))
 const indexSource = await readFile(join(coreSrcDir, 'index.ts'), 'utf8')
 const typesSource = await readFile(join(coreSrcDir, 'types.ts'), 'utf8')
+const viewerSource = await readFile(join(coreSrcDir, 'viewer.ts'), 'utf8')
 const sourceFiles = await readAllSourceFiles(coreSrcDir)
 
 await stat(join(coreSrcDir, 'viewer.ts'))
@@ -318,6 +345,7 @@ assertCorePackageMetadata(packageJson)
 assertCoreTsConfig(tsconfig)
 assertCoreEntrypoint(indexSource)
 assertCoreInstanceContract(typesSource)
+assertCoreViewerSurfaceState(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(
