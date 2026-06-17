@@ -75,6 +75,7 @@
     "wrappers:readme": "node scripts/sync-wrapper-readmes.mjs",
     "wrappers:verify": "node scripts/verify-wrapper-repos.mjs",
     "wrappers:export": "pnpm wrappers:readme && node scripts/sync-wrapper-repos.mjs && pnpm wrappers:verify",
+    "wrappers:standalone-smoke": "pnpm --filter @file-viewer/core build && pnpm build:adapter-packages && pnpm wrappers:export && node scripts/verify-wrapper-standalone-builds.mjs",
     "wrappers:publish:dry-run": "pnpm wrappers:export && node scripts/publish-wrapper-repos.mjs --dry-run",
     "wrappers:publish": "pnpm wrappers:export && node scripts/publish-wrapper-repos.mjs --push",
     "obfuscate": "node scripts/obfuscate-dist.mjs",
