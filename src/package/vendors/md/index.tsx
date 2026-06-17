@@ -1,4 +1,4 @@
-import { readText } from '@/package/common/util'
+import { readFileViewerText as readText } from '@file-viewer/core'
 import { createApp, defineAsyncComponent } from 'vue'
 
 const MarkdownViewer = defineAsyncComponent(() => import('./MarkdownViewer.vue'))

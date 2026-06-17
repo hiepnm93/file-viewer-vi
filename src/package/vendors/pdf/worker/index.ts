@@ -1,4 +1,4 @@
-import { refWorker } from '@/package/common/worker-ref'
+import { refWorker } from '@file-viewer/core'
 import PdfWorker from './pdf.worker.ts?worker&inline'
 
 export default {

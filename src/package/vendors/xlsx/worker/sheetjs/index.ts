@@ -1,4 +1,4 @@
-import { refWorker } from '@/package/common/worker-ref'
+import { refWorker } from '@file-viewer/core'
 import SheetWorker from './sheet.worker.ts?worker&inline'
 
 export default {

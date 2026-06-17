@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { readdir, readFile } from 'node:fs/promises'
+import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext } from './lib/ecosystem-packages.mjs'
 
@@ -169,6 +169,19 @@ const forbiddenVue3ScopedRuntimeFacadeTokens = [
   'return '
 ]
 
+const vue3ScopedRuntimeFacadeNames = [
+  'printCapability',
+  'printLayout',
+  'sourceLoading',
+  'util',
+  'worker-ref'
+]
+
+const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
+  `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
+)
+const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs'])
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
@@ -218,6 +231,22 @@ function collectExportedTypeAliases(source) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+async function readAllSourceFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true })
+  const files = []
+  for (const entry of entries) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...await readAllSourceFiles(path))
+      continue
+    }
+    if (entry.isFile() && sourceFileExtensions.has(extname(entry.name))) {
+      files.push(path)
+    }
+  }
+  return files
 }
 
 function collectTypeReExports(source, specifier) {
@@ -387,6 +416,20 @@ async function verifyVue3ScopedCompatibility() {
         `${label} must remain a pure @file-viewer/core re-export facade and must not contain ${forbiddenToken.trim()}`
       )
     }
+  }
+
+  const sourceFiles = await readAllSourceFiles(join(entry.absoluteDir, 'src'))
+  for (const file of sourceFiles) {
+    const relativePath = relative(entry.absoluteDir, file)
+    if (vue3ScopedRuntimeFacades.has(relativePath)) {
+      continue
+    }
+    const source = await readFile(file, 'utf8')
+    const runtimeFacadeImport = vue3ScopedRuntimeFacadeImportPattern.exec(source)
+    assert(
+      !runtimeFacadeImport,
+      `${entry.packageName} ${relativePath} must import runtime helpers from @file-viewer/core instead of ${runtimeFacadeImport?.[0]}`
+    )
   }
 }
 

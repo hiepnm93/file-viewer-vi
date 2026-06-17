@@ -1,5 +1,5 @@
 import { createApp, defineAsyncComponent } from 'vue'
-import { readText } from '@/package/common/util'
+import { readFileViewerText as readText } from '@file-viewer/core'
 
 const GeoViewer = defineAsyncComponent(() => import('./GeoViewer.vue'))
 
