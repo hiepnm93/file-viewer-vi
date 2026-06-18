@@ -155,6 +155,32 @@ export interface RunFileViewerBeforeOperationInput<
   onError?: (error: unknown, context: Context) => void;
 }
 
+export interface CreateFileViewerLifecycleActionsInput<
+  OperationContext extends FileViewerOperationContext = FileViewerOperationContext,
+> {
+  lifecycleState: FileViewerLifecycleStateController;
+  getOptions?: () => FileViewerOptions | undefined;
+  onLifecycleChange?: (event: FileViewerLifecyclePhase, context: FileViewerLifecycleContext) => void;
+  onLifecycleError?: (error: unknown, context: FileViewerLifecycleContext) => void;
+  onOperationBefore?: (context: OperationContext) => void;
+  onOperationCancel?: (context: OperationContext) => void;
+  onOperationError?: (error: unknown, context: OperationContext) => void;
+  targetOrigin?: string;
+  targetWindow?: Window;
+}
+
+export interface FileViewerLifecycleActions<
+  OperationContext extends FileViewerOperationContext = FileViewerOperationContext,
+> {
+  notifyLifecycle(context: FileViewerLifecycleContext): boolean;
+  notifyActiveUnloadStart(reason?: FileViewerLifecycleContext['reason']): FileViewerLifecycleContext | null;
+  notifyActiveUnloadComplete(
+    context: FileViewerLifecycleContext | null,
+    reason?: FileViewerLifecycleContext['reason']
+  ): FileViewerActiveUnloadState;
+  runBeforeOperation(context: OperationContext): Promise<boolean>;
+}
+
 export interface DispatchFileViewerLifecycleEventInput<
   Context extends FileViewerLifecycleContext = FileViewerLifecycleContext,
 > {
@@ -625,6 +651,75 @@ export const dispatchFileViewerOperationContextEvent = <
 }: DispatchFileViewerOperationContextEventInput<Context>) => {
   onChange?.(context);
   return postFileViewerOperationContextEvent(event, context, targetOrigin, targetWindow);
+};
+
+export const createFileViewerLifecycleActions = <
+  OperationContext extends FileViewerOperationContext = FileViewerOperationContext,
+>({
+  lifecycleState,
+  getOptions = () => undefined,
+  onLifecycleChange,
+  onLifecycleError,
+  onOperationBefore,
+  onOperationCancel,
+  onOperationError,
+  targetOrigin,
+  targetWindow,
+}: CreateFileViewerLifecycleActionsInput<OperationContext>): FileViewerLifecycleActions<OperationContext> => {
+  const notifyLifecycle = (context: FileViewerLifecycleContext) => {
+    return dispatchFileViewerLifecycleEvent({
+      context,
+      hooks: getOptions()?.hooks,
+      onChange: onLifecycleChange,
+      onError: onLifecycleError,
+      targetOrigin,
+      targetWindow,
+    });
+  };
+
+  return {
+    notifyLifecycle,
+    notifyActiveUnloadStart(reason = 'replace') {
+      return runFileViewerActiveUnloadStart({
+        lifecycleState,
+        reason,
+        onLifecycle: notifyLifecycle,
+      }).context;
+    },
+    notifyActiveUnloadComplete(context, reason = 'replace') {
+      return runFileViewerActiveUnloadComplete({
+        lifecycleState,
+        context,
+        reason,
+        onLifecycle: notifyLifecycle,
+      });
+    },
+    runBeforeOperation(context) {
+      return runFileViewerBeforeOperation({
+        context,
+        options: getOptions(),
+        onBefore: nextContext => {
+          dispatchFileViewerOperationContextEvent({
+            event: 'operation-before',
+            context: nextContext,
+            onChange: onOperationBefore,
+            targetOrigin,
+            targetWindow,
+          });
+        },
+        onCancel: nextContext => {
+          dispatchFileViewerOperationContextEvent({
+            event: 'operation-cancel',
+            context: nextContext,
+            onChange: onOperationCancel,
+            targetOrigin,
+            targetWindow,
+          });
+        },
+        onError: onOperationError,
+      });
+    },
+  };
 };
 
 export const postFileViewerOperationAvailabilityChange = (

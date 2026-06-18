@@ -9,6 +9,7 @@ import {
   buildFileViewerOperationContext,
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
+  createFileViewerLifecycleActions,
   createFileViewerOperationActionHandlers,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
@@ -464,6 +465,78 @@ describe('@file-viewer/core operation helpers', () => {
         hasFile: false,
       },
     }, 'https://host.example');
+  });
+
+  it('creates lifecycle actions that reuse dispatch, unload and operation guards', async () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const lifecycleState = createFileViewerLifecycleStateController();
+    const context = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'file',
+      filename: 'actions.pdf',
+      version: 8,
+      timestamp: 400,
+    });
+    lifecycleState.setActiveDocumentContext(context);
+    const actions = createFileViewerLifecycleActions({
+      lifecycleState,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      getOptions: () => ({
+        hooks: {
+          onUnloadStart: nextContext => {
+            events.push(`hook:${nextContext.phase}`);
+          },
+        },
+        beforeOperation: nextContext => {
+          events.push(`guard:${nextContext.operation}`);
+          return false;
+        },
+      }),
+      onLifecycleChange: (event, nextContext) => {
+        events.push(`emit:${event}:${nextContext.filename}`);
+      },
+      onOperationBefore: nextContext => {
+        events.push(`before:${nextContext.operation}`);
+      },
+      onOperationCancel: nextContext => {
+        events.push(`cancel:${nextContext.operation}`);
+      },
+    });
+
+    const unloadStartContext = actions.notifyActiveUnloadStart('replace');
+    expect(unloadStartContext).toMatchObject({
+      phase: 'load-complete',
+      reason: undefined,
+      filename: 'actions.pdf',
+    });
+
+    actions.notifyActiveUnloadComplete(unloadStartContext, 'replace');
+    await expect(actions.runBeforeOperation(
+      buildFileViewerOperationContext('download', context, 430)
+    )).resolves.toBe(false);
+
+    expect(events).toEqual([
+      'emit:unload-start:actions.pdf',
+      'hook:unload-start',
+      'post:unload-start',
+      'emit:unload-complete:actions.pdf',
+      'post:unload-complete',
+      'before:download',
+      'post:operation-before',
+      'guard:download',
+      'cancel:download',
+      'post:operation-cancel',
+    ]);
+    expect(parent.postMessage).toHaveBeenCalledTimes(4);
   });
 
   it('posts operation, search and location changes through named core helpers', () => {

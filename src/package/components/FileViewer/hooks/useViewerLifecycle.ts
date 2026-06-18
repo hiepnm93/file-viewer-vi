@@ -1,13 +1,9 @@
 import {
   buildFileViewerOperationContextFromLifecycleState,
+  createFileViewerLifecycleActions,
   createFileViewerLifecycleStateController,
   createFileViewerLoadStartState,
   createFileViewerRenderCompleteState,
-  dispatchFileViewerLifecycleEvent,
-  dispatchFileViewerOperationContextEvent,
-  runFileViewerActiveUnloadComplete,
-  runFileViewerActiveUnloadStart,
-  runFileViewerBeforeOperation,
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
@@ -74,34 +70,15 @@ export const useViewerLifecycle = ({
   const markLoadStarted = lifecycleState.markLoadStarted
   const clearLoadStarted = lifecycleState.clearLoadStarted
 
-  const notifyLifecycle = (context: FileViewerLifecycleContext) => {
-    dispatchFileViewerLifecycleEvent({
-      context,
-      hooks: getOptions()?.hooks,
-      onChange: emitLifecycle,
-      onError: handleLifecycleError
-    })
-  }
-
-  const notifyActiveUnloadStart = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    return runFileViewerActiveUnloadStart({
-      lifecycleState,
-      reason,
-      onLifecycle: notifyLifecycle
-    }).context
-  }
-
-  const notifyActiveUnloadComplete = (
-    context: FileViewerLifecycleContext | null,
-    reason: FileViewerLifecycleContext['reason'] = 'replace'
-  ) => {
-    runFileViewerActiveUnloadComplete({
-      lifecycleState,
-      context,
-      reason,
-      onLifecycle: notifyLifecycle
-    })
-  }
+  const lifecycleActions = createFileViewerLifecycleActions({
+    lifecycleState,
+    getOptions,
+    onLifecycleChange: emitLifecycle,
+    onLifecycleError: handleLifecycleError,
+    onOperationBefore: emitOperationBefore,
+    onOperationCancel: emitOperationCancel,
+    onOperationError: handleOperationError
+  })
 
   const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
     return buildFileViewerOperationContextFromLifecycleState({
@@ -151,33 +128,15 @@ export const useViewerLifecycle = ({
 
   const runBeforeOperation = async (operation: FileViewerOperationType) => {
     const context = buildOperationContext(operation)
-    return runFileViewerBeforeOperation({
-      context,
-      options: getOptions(),
-      onBefore: nextContext => {
-        dispatchFileViewerOperationContextEvent({
-          event: 'operation-before',
-          context: nextContext,
-          onChange: emitOperationBefore
-        })
-      },
-      onCancel: nextContext => {
-        dispatchFileViewerOperationContextEvent({
-          event: 'operation-cancel',
-          context: nextContext,
-          onChange: emitOperationCancel
-        })
-      },
-      onError: handleOperationError
-    })
+    return lifecycleActions.runBeforeOperation(context)
   }
 
   return {
     markLoadStarted,
     clearLoadStarted,
-    notifyLifecycle,
-    notifyActiveUnloadStart,
-    notifyActiveUnloadComplete,
+    notifyLifecycle: lifecycleActions.notifyLifecycle,
+    notifyActiveUnloadStart: lifecycleActions.notifyActiveUnloadStart,
+    notifyActiveUnloadComplete: lifecycleActions.notifyActiveUnloadComplete,
     setActiveDocumentContext: lifecycleState.setActiveDocumentContext,
     clearActiveDocumentContext: lifecycleState.clearActiveDocumentContext,
     buildOperationContext,

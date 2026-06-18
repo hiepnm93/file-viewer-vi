@@ -197,6 +197,7 @@ export {
   buildFileViewerOperationContext,
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
+  createFileViewerLifecycleActions,
   createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
@@ -230,11 +231,13 @@ export {
 } from './operations';
 export type {
   BuildFileViewerOperationContextFromLifecycleStateInput,
+  CreateFileViewerLifecycleActionsInput,
   DispatchFileViewerLifecycleEventInput,
   DispatchFileViewerOperationContextEventInput,
   DispatchFileViewerOperationAvailabilityChangeInput,
   DispatchFileViewerZoomChangeInput,
   FileViewerActiveUnloadState,
+  FileViewerLifecycleActions,
   FileViewerToolbarState,
   BuildFileViewerLifecycleContextFromNormalizedSourceInput,
   ResolveFileViewerToolbarStateInput,
