@@ -131,4 +131,40 @@ describe('Vue FileViewer render surface hook', () => {
     expect(session.destroy).toHaveBeenCalledTimes(1)
     expect(root.innerHTML).not.toContain('file-render')
   })
+
+  it('routes render session dispose warnings through the core message resolver', () => {
+    const root = installDom()
+    const output = ref<HTMLDivElement | null>(root)
+    const error = new Error('dispose failed')
+    const session = {
+      destroy: vi.fn(() => {
+        throw error
+      })
+    }
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const surface = useViewerRenderSurface({
+      output,
+      getOptions: () => undefined,
+      isCurrentRequest: version => version === 1,
+      notifyActiveUnloadStart: vi.fn(() => null),
+      notifyActiveUnloadComplete: vi.fn(),
+      clearActiveDocumentContext: vi.fn(),
+      clearDocumentState: vi.fn(),
+      refreshDocumentIndex: vi.fn(),
+      startZoomObserver: vi.fn(),
+      stopZoomObserver: vi.fn(),
+      clearZoomProvider: vi.fn(),
+      refreshZoomProvider: vi.fn()
+    })
+
+    try {
+      surface.destroyRenderSession(session)
+
+      expect(session.destroy).toHaveBeenCalledTimes(1)
+      expect(warn).toHaveBeenCalledWith('预览内容卸载失败', error)
+    } finally {
+      warn.mockRestore()
+    }
+  })
 })

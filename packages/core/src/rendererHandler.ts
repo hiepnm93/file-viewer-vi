@@ -21,6 +21,12 @@ import type {
   RendererSession,
 } from './types';
 
+export const FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE = '预览内容卸载失败';
+
+export interface ResolveFileViewerRenderSessionDisposeErrorMessageInput {
+  message?: string;
+}
+
 export interface RenderFileViewerHandlerInput<
   Rendered = unknown,
   Target extends HTMLElement = HTMLElement,
@@ -315,6 +321,10 @@ export const disposeFileViewerRendered = (rendered?: unknown) => {
     return disposable.destroy();
   }
 };
+
+export const resolveFileViewerRenderSessionDisposeErrorMessage = ({
+  message = FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE,
+}: ResolveFileViewerRenderSessionDisposeErrorMessageInput = {}) => message;
 
 export const disposeFileViewerRendererSession = (
   session?: RendererSession | null,

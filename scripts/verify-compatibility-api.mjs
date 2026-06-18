@@ -788,6 +788,7 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerRenderReadinessTarget',
     'createFileViewerRenderSurfaceStateTarget',
     'disposeFileViewerRendererSession',
+    'resolveFileViewerRenderSessionDisposeErrorMessage',
     'runFileViewerRenderSurfaceClear',
     'runFileViewerRenderSurfaceMount'
   ], vueRenderSurfaceHookLabel)
@@ -827,7 +828,8 @@ async function verifyVue3ScopedCompatibility() {
     'progressiveReady.value = false',
     'progressiveReady.value = true',
     'refreshZoomProvider()',
-    'void refreshDocumentIndex()'
+    'void refreshDocumentIndex()',
+    '预览内容卸载失败'
   ]) {
     assert(
       !vueRenderSurfaceHookSource.includes(forbiddenToken),

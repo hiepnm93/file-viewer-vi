@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
   DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
+  FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE,
   WorkerRefImpl,
   applyFileViewerRenderSurfaceState,
   clearFileViewerRenderSurface,
@@ -22,6 +23,7 @@ import {
   renderFileViewerHandler,
   runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount,
+  resolveFileViewerRenderSessionDisposeErrorMessage,
   refWorker,
   type FileRenderContext,
   type FileRenderHandler,
@@ -479,6 +481,9 @@ describe('@file-viewer/core worker and render contracts', () => {
     disposeFileViewerRendererSession(null, { onError });
     await Promise.resolve();
 
+    expect(FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE).toBe('预览内容卸载失败');
+    expect(resolveFileViewerRenderSessionDisposeErrorMessage()).toBe('预览内容卸载失败');
+    expect(resolveFileViewerRenderSessionDisposeErrorMessage({ message: '自定义卸载失败' })).toBe('自定义卸载失败');
     expect(syncDestroy).toHaveBeenCalledTimes(1);
     expect(asyncDestroy).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledWith(syncError);

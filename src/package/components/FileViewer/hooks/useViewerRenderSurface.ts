@@ -4,6 +4,7 @@ import {
   createFileViewerRenderReadinessTarget,
   createFileViewerRenderSurfaceStateTarget,
   disposeFileViewerRendererSession,
+  resolveFileViewerRenderSessionDisposeErrorMessage,
   runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount
 } from '@file-viewer/core'
@@ -90,7 +91,7 @@ export const useViewerRenderSurface = ({
   const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
     disposeFileViewerRendererSession(session, {
       onError: nextError => {
-        console.warn('预览内容卸载失败', nextError)
+        console.warn(resolveFileViewerRenderSessionDisposeErrorMessage(), nextError)
       }
     })
   }
@@ -107,7 +108,7 @@ export const useViewerRenderSurface = ({
       container: output.value,
       disposeOptions: {
         onError: nextError => {
-          console.warn('预览内容卸载失败', nextError)
+          console.warn(resolveFileViewerRenderSessionDisposeErrorMessage(), nextError)
         }
       },
       onUnloadStart: notifyActiveUnloadStart,
