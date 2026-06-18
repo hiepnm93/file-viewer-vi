@@ -428,6 +428,7 @@ export {
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
   createFileViewerPreviewStateTarget,
+  createFileViewerSourceLoadingActionHandlers,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRenderCompleteState,
@@ -459,6 +460,7 @@ export {
 } from './sourceLoading';
 export type {
   CreateFileViewerPreviewStateTargetInput,
+  CreateFileViewerSourceLoadingActionHandlersInput,
   CreateFileViewerLoadStartStateInput,
   CreateFileViewerReadPreviewStateInput,
   CreateFileViewerRenderCompleteStateInput,
@@ -479,6 +481,7 @@ export type {
   FileViewerPreviewLoadErrorLogger,
   FileViewerPreviewComponentUnmountState,
   FileViewerPreviewRequestResetState,
+  FileViewerSourceLoadingActionHandlers,
   FileViewerReadAndRenderFileState,
   FileViewerRenderCompleteState,
   FileViewerRenderReadinessState,

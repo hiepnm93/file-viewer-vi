@@ -554,16 +554,17 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueSourceLoadingHookSource, [
     'buildLoadStartState',
     'buildRenderCompleteState',
+    'createFileViewerPreviewStateTarget',
+    'createFileViewerSourceLoadingActionHandlers'
+  ], vueSourceLoadingHookLabel)
+  for (const forbiddenToken of [
     'cancelFileViewerPreviewRequest',
     'commitFileViewerEmptyPreviewResetState',
-    'createFileViewerPreviewStateTarget',
     'reportFileViewerMissingRemoteData',
     'reportFileViewerPreviewLoadError',
     'runFileViewerLocalFilePreview',
     'runFileViewerPreviewRequest',
-    'runFileViewerRemoteFilePreview'
-  ], vueSourceLoadingHookLabel)
-  for (const forbiddenToken of [
+    'runFileViewerRemoteFilePreview',
     'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
     'const canStreamRemotePdf',
     'shouldStreamPdfUrl',

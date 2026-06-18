@@ -558,6 +558,69 @@ export interface FileViewerPreviewComponentUnmountState {
   reason: FileViewerLifecycleContext['reason'];
 }
 
+export interface FileViewerSourceLoadingActionHandlers<Session = unknown> {
+  isCurrentRequest: (version: number) => boolean;
+  previewLocalFile: (
+    source: FileViewerFileRef,
+    version: number
+  ) => Promise<FileViewerLocalFilePreviewState<Session>>;
+  previewRemoteFile: (
+    url: string,
+    version: number
+  ) => Promise<FileViewerRemoteFilePreviewState<Session>>;
+  resetViewer: (
+    reason?: FileViewerLifecycleContext['reason']
+  ) => MutableFileViewerPreviewState;
+  refreshPreview: () => Promise<FileViewerPreviewRequestRunState<
+    FileViewerLocalFilePreviewState<Session>,
+    FileViewerRemoteFilePreviewState<Session>
+  >>;
+  cancelPreview: (reason?: FileViewerLifecycleContext['reason']) => number;
+}
+
+export interface CreateFileViewerSourceLoadingActionHandlersInput<Session = unknown> {
+  getFile: () => FileViewerFileRef | null | undefined;
+  getUrl: () => string | null | undefined;
+  getCurrentFilename?: () => string | undefined;
+  getPdfStreaming?: () => FileViewerPdfOptions['streaming'] | undefined;
+  previewTarget: MutableFileViewerPreviewState;
+  requestController: FileViewerRequestController;
+  downloadFile: (input: FileViewerRemoteFileDownloadInput) => Promise<FileViewerFileRef | null | undefined>;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string,
+    streamUrl?: string
+  ) => Promise<Session | undefined>;
+  destroyRenderSession?: (session?: Session | null) => void;
+  buildLoadStartState: (input: {
+    version: number;
+    source: FileViewerLifecycleContext['source'];
+    file?: File | null;
+    sourceUrl?: string | null;
+  }) => FileViewerLoadStartState;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: FileViewerLifecycleContext['source'];
+    file?: File | null;
+    sourceUrl?: string | null;
+  }) => FileViewerRenderCompleteState;
+  formatErrorMessage: FileViewerErrorMessageFormatter;
+  onMarkLoadStarted?: (version: number) => void;
+  onClearLoadStarted?: (version: number) => void;
+  onStartLoading?: (message: string) => void;
+  onSetLoadingMessage?: (message: string) => void;
+  onStopLoading?: () => void;
+  onShowError?: (message: string) => void;
+  onClearError?: () => void;
+  onResetLoading?: () => void;
+  onClearRenderedContent?: (reason?: FileViewerLifecycleContext['reason']) => void;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+}
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -1389,6 +1452,166 @@ export const runFileViewerRemoteFilePreview = async <Session = unknown>({
       onStopLoading,
     });
   }
+};
+
+export const createFileViewerSourceLoadingActionHandlers = <Session = unknown>({
+  getFile,
+  getUrl,
+  getCurrentFilename,
+  getPdfStreaming,
+  previewTarget,
+  requestController,
+  downloadFile,
+  mountRenderedContent,
+  destroyRenderSession,
+  buildLoadStartState,
+  buildRenderCompleteState,
+  formatErrorMessage,
+  onMarkLoadStarted,
+  onClearLoadStarted,
+  onStartLoading,
+  onSetLoadingMessage,
+  onStopLoading,
+  onShowError,
+  onClearError,
+  onResetLoading,
+  onClearRenderedContent,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+}: CreateFileViewerSourceLoadingActionHandlersInput<Session>): FileViewerSourceLoadingActionHandlers<Session> => {
+  const isCurrentRequest = (version: number) => requestController.isCurrent(version);
+
+  const previewLocalFile = async (
+    source: FileViewerFileRef,
+    version: number
+  ) => {
+    return await runFileViewerLocalFilePreview<Session>({
+      source,
+      version,
+      currentFilename: getCurrentFilename?.() ?? previewTarget.filename,
+      previewTarget,
+      isCurrent: isCurrentRequest,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildLoadStartState: input => buildLoadStartState({
+        version: input.version,
+        source: 'file',
+        file: input.file,
+      }),
+      buildRenderCompleteState: input => buildRenderCompleteState({
+        version: input.version,
+        source: 'file',
+        file: input.file,
+      }),
+      onMarkLoadStarted,
+      onStartLoading,
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+      onStopLoading,
+      onError: error => {
+        reportFileViewerPreviewLoadError({
+          kind: 'local',
+          error,
+          formatErrorMessage,
+          onErrorMessage: onShowError,
+        });
+      },
+    });
+  };
+
+  const previewRemoteFile = async (
+    url: string,
+    version: number
+  ) => {
+    return await runFileViewerRemoteFilePreview<Session>({
+      url,
+      version,
+      streaming: getPdfStreaming?.(),
+      previewTarget,
+      requestController,
+      isCurrent: isCurrentRequest,
+      downloadFile,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildLoadStartState: input => buildLoadStartState({
+        version: input.version,
+        source: 'url',
+        sourceUrl: input.sourceUrl,
+      }),
+      buildRenderCompleteState: input => buildRenderCompleteState({
+        version: input.version,
+        source: 'url',
+        file: input.file,
+        sourceUrl: input.sourceUrl,
+      }),
+      onMarkLoadStarted,
+      onStartLoading,
+      onSetLoadingMessage,
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+      onStopLoading,
+      onMissingData: () => {
+        reportFileViewerMissingRemoteData({
+          onErrorMessage: onShowError,
+        });
+      },
+      onError: (error, kind) => {
+        reportFileViewerPreviewLoadError({
+          kind,
+          error,
+          formatErrorMessage,
+          onErrorMessage: onShowError,
+        });
+      },
+    });
+  };
+
+  const resetViewer = (reason?: FileViewerLifecycleContext['reason']) => {
+    return commitFileViewerEmptyPreviewResetState({
+      previewTarget,
+      reason,
+      onClearRenderedContent,
+      onResetLoading,
+    });
+  };
+
+  const refreshPreview = async () => {
+    return await runFileViewerPreviewRequest({
+      file: getFile(),
+      url: getUrl(),
+      requestController,
+      previewTarget,
+      onPreviewLocalFile: previewLocalFile,
+      onPreviewRemoteFile: previewRemoteFile,
+      onClearRenderedContent,
+      onClearError,
+      onResetLoading,
+    });
+  };
+
+  const cancelPreview = (reason: FileViewerLifecycleContext['reason'] = 'component-unmount') => {
+    return cancelFileViewerPreviewRequest({
+      reason,
+      requestController,
+      previewTarget,
+      onClearRenderedContent,
+      onClearError,
+    });
+  };
+
+  return {
+    isCurrentRequest,
+    previewLocalFile,
+    previewRemoteFile,
+    resetViewer,
+    refreshPreview,
+    cancelPreview,
+  };
 };
 
 export const finalizeFileViewerPreviewLoadState = ({

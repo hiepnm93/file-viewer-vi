@@ -1,14 +1,8 @@
 import axios from 'axios'
 import type { Ref } from 'vue'
 import {
-  cancelFileViewerPreviewRequest,
-  commitFileViewerEmptyPreviewResetState,
   createFileViewerPreviewStateTarget,
-  reportFileViewerMissingRemoteData,
-  reportFileViewerPreviewLoadError,
-  runFileViewerLocalFilePreview,
-  runFileViewerPreviewRequest,
-  runFileViewerRemoteFilePreview,
+  createFileViewerSourceLoadingActionHandlers,
 } from '@file-viewer/core'
 import type { FileViewerErrorMessageFormatter, FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -140,120 +134,51 @@ export const useViewerSourceLoading = ({
     }
   })
 
-  const isCurrentRequest = (version: number) => {
-    return requestController.isCurrent(version)
-  }
-
-  const previewLocalFile = async (source: FileRef, version: number) => {
-    await runFileViewerLocalFilePreview({
-      source,
-      version,
-      currentFilename: filename.value,
-      previewTarget: previewStateTarget,
-      isCurrent: isCurrentRequest,
-      mountRenderedContent,
-      destroyRenderSession,
-      buildLoadStartState,
-      buildRenderCompleteState,
-      onMarkLoadStarted: markLoadStarted,
-      onStartLoading: startLoading,
-      onSession: setActiveRenderSession,
-      onActiveDocumentContext: setActiveDocumentContext,
-      onLifecycle: notifyLifecycle,
-      onClearLoadStarted: clearLoadStarted,
-      onStopLoading: stopLoading,
-      onError: nextError => {
-        reportFileViewerPreviewLoadError({
-          kind: 'local',
-          error: nextError,
-          formatErrorMessage,
-          onErrorMessage: showError
-        })
-      }
-    })
-  }
-
-  const previewRemoteFile = async (url: string, version: number) => {
-    await runFileViewerRemoteFilePreview({
-      url,
-      version,
-      streaming: getOptions()?.pdf?.streaming,
-      previewTarget: previewStateTarget,
-      requestController,
-      isCurrent: isCurrentRequest,
-      downloadFile: async ({ url: downloadUrl, signal }) => {
-        const { data } = await axios({
-          url: downloadUrl,
-          method: 'get',
-          responseType: 'blob',
-          signal
-        })
-        return data
-      },
-      mountRenderedContent,
-      destroyRenderSession,
-      buildLoadStartState,
-      buildRenderCompleteState,
-      onMarkLoadStarted: markLoadStarted,
-      onStartLoading: startLoading,
-      onSetLoadingMessage: setLoadingMessage,
-      onSession: setActiveRenderSession,
-      onActiveDocumentContext: setActiveDocumentContext,
-      onLifecycle: notifyLifecycle,
-      onClearLoadStarted: clearLoadStarted,
-      onStopLoading: stopLoading,
-      onMissingData: () => {
-        reportFileViewerMissingRemoteData({
-          onErrorMessage: showError
-        })
-      },
-      onError: (nextError, kind) => {
-        reportFileViewerPreviewLoadError({
-          kind,
-          error: nextError,
-          formatErrorMessage,
-          onErrorMessage: showError
-        })
-      }
-    })
-  }
-
-  const resetViewer = () => {
-    commitFileViewerEmptyPreviewResetState({
-      previewTarget: previewStateTarget,
-      onClearRenderedContent: clearRenderedContent,
-      onResetLoading: resetLoading
-    })
-  }
-
-  const refreshPreview = async () => {
-    await runFileViewerPreviewRequest({
-      file: getFile(),
-      url: getUrl(),
-      requestController,
-      previewTarget: previewStateTarget,
-      onPreviewLocalFile: previewLocalFile,
-      onPreviewRemoteFile: previewRemoteFile,
-      onClearRenderedContent: clearRenderedContent,
-      onClearError: clearError,
-      onResetLoading: resetLoading
-    })
-  }
-
-  const cancelPreview = (reason: FileViewerLifecycleContext['reason'] = 'component-unmount') => {
-    cancelFileViewerPreviewRequest({
-      reason,
-      requestController,
-      previewTarget: previewStateTarget,
-      onClearRenderedContent: clearRenderedContent,
-      onClearError: clearError
-    })
-  }
+  const actions = createFileViewerSourceLoadingActionHandlers<FileViewerVueRenderSession>({
+    getFile,
+    getUrl,
+    getCurrentFilename: () => filename.value,
+    getPdfStreaming: () => getOptions()?.pdf?.streaming,
+    previewTarget: previewStateTarget,
+    requestController,
+    downloadFile: async ({ url: downloadUrl, signal }) => {
+      const { data } = await axios({
+        url: downloadUrl,
+        method: 'get',
+        responseType: 'blob',
+        signal
+      })
+      return data
+    },
+    mountRenderedContent,
+    destroyRenderSession,
+    buildLoadStartState,
+    buildRenderCompleteState,
+    onMarkLoadStarted: markLoadStarted,
+    onClearLoadStarted: clearLoadStarted,
+    onStartLoading: startLoading,
+    onSetLoadingMessage: setLoadingMessage,
+    onStopLoading: stopLoading,
+    onShowError: showError,
+    onClearError: clearError,
+    onResetLoading: resetLoading,
+    onClearRenderedContent: clearRenderedContent,
+    onSession: setActiveRenderSession,
+    onActiveDocumentContext: setActiveDocumentContext,
+    onLifecycle: notifyLifecycle,
+    formatErrorMessage
+  })
 
   return {
-    cancelPreview,
-    isCurrentRequest,
-    refreshPreview,
-    resetViewer
+    ...actions,
+    cancelPreview: (reason: FileViewerLifecycleContext['reason'] = 'component-unmount') => {
+      actions.cancelPreview(reason)
+    },
+    refreshPreview: async () => {
+      await actions.refreshPreview()
+    },
+    resetViewer: (reason?: FileViewerLifecycleContext['reason']) => {
+      actions.resetViewer(reason)
+    }
   }
 }

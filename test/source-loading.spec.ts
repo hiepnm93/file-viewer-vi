@@ -23,6 +23,7 @@ import {
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRenderCompleteState,
+  createFileViewerSourceLoadingActionHandlers,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
   finalizeFileViewerPreviewLoadState,
@@ -411,6 +412,167 @@ describe('remote source loading helpers', () => {
       'error:reset',
       'remote:/example/route.pdf:2:reset'
     ])
+  })
+
+  it('creates reusable source loading action handlers for framework wrappers', async () => {
+    const controller = createFileViewerRequestController()
+    const localFile = new File(['local facade'], 'facade.txt', { type: 'text/plain' })
+    const session = { id: 'source-loading-session' }
+    let nextFile: File | undefined = localFile
+    let nextUrl: string | undefined
+    const target = {
+      filename: 'old.txt',
+      file: new File(['old'], 'old.txt'),
+      buffer: new ArrayBuffer(3),
+      sourceUrl: '/example/old.txt',
+      renderedReady: true,
+      progressiveReady: true
+    }
+    const events: string[] = []
+    const errors: string[] = []
+
+    const actions = createFileViewerSourceLoadingActionHandlers({
+      getFile: () => nextFile,
+      getUrl: () => nextUrl,
+      getCurrentFilename: () => target.filename,
+      getPdfStreaming: () => false,
+      previewTarget: target,
+      requestController: controller,
+      downloadFile: async ({ url, signal }) => {
+        events.push(`download:${url}:${signal ? 'signal' : 'none'}`)
+        if (url.includes('missing')) {
+          return null
+        }
+        return new Blob(['remote facade'], { type: 'text/plain' })
+      },
+      mountRenderedContent: async (buffer, file, version, sourceUrl, streamUrl) => {
+        events.push(`mount:${file.name}:${buffer.byteLength}:${version}:${sourceUrl ?? 'none'}:${streamUrl ?? 'none'}`)
+        return session
+      },
+      destroyRenderSession: () => {
+        events.push('destroy')
+      },
+      buildLoadStartState: input => {
+        events.push(`build-start:${input.source}:${input.file?.name ?? input.sourceUrl}`)
+        return createFileViewerLoadStartState({
+          ...input,
+          filename: target.filename,
+          bufferSize: target.buffer?.byteLength,
+          timestamp: 500
+        })
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build-complete:${input.source}:${input.file?.name ?? input.sourceUrl}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          filename: target.filename,
+          bufferSize: target.buffer?.byteLength,
+          timestamp: 540
+        })
+      },
+      onMarkLoadStarted: version => {
+        events.push(`mark:${version}:${target.filename}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear-load:${version}`)
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onSetLoadingMessage: message => {
+        events.push(`message:${message}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      },
+      onShowError: message => {
+        errors.push(message)
+      },
+      onClearError: () => {
+        events.push(`clear-error:${target.file ? 'dirty' : 'reset'}`)
+      },
+      onResetLoading: () => {
+        events.push('reset-loading')
+      },
+      onClearRenderedContent: reason => {
+        events.push(`clear-render:${reason}:${target.filename}`)
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}:${context.filename}`)
+      },
+      formatErrorMessage: (prefix, error) => `${prefix}: ${error instanceof Error ? error.message : String(error)}`
+    })
+
+    const localResult = await actions.refreshPreview()
+
+    expect(localResult.status).toBe('file')
+    expect(actions.isCurrentRequest(localResult.version)).toBe(true)
+    expect(target).toMatchObject({
+      filename: 'facade.txt',
+      file: localFile,
+      sourceUrl: null,
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(events).toContain('clear-render:replace:old.txt')
+    expect(events).toContain(`loading:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`)
+    expect(events).toContain('mount:facade.txt:12:1:none:none')
+    expect(events).toContain('session:set')
+
+    events.length = 0
+    nextFile = undefined
+    nextUrl = '/example/remote.docx'
+
+    const remoteResult = await actions.refreshPreview()
+
+    expect(remoteResult.status).toBe('url')
+    expect(remoteResult.result.status).toBe('ready')
+    expect(target).toMatchObject({
+      filename: 'remote.docx',
+      sourceUrl: '/example/remote.docx',
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(events).toContain('download:/example/remote.docx:signal')
+    expect(events).toContain(`message:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`)
+    expect(events.some(item => item.startsWith('mount:remote.docx:'))).toBe(true)
+
+    events.length = 0
+    nextUrl = '/example/missing.docx'
+
+    const missingResult = await actions.refreshPreview()
+
+    expect(missingResult.status).toBe('url')
+    expect(missingResult.result.status).toBe('missing')
+    expect(errors).toEqual([FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE])
+    expect(events).toContain('download:/example/missing.docx:signal')
+
+    const canceledVersion = actions.cancelPreview('component-unmount')
+
+    expect(canceledVersion).toBe(controller.version)
+    expect(target.file).toBeNull()
+    expect(target.buffer).toBeNull()
+    expect(target.sourceUrl).toBeNull()
+    expect(target.progressiveReady).toBe(false)
+    expect(events).toContain('clear-render:component-unmount:missing.docx')
+
+    const reset = actions.resetViewer()
+
+    expect(reset).toBe(target)
+    expect(target).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
   })
 
   it('routes empty preview refreshes through request reset then empty reset', async () => {
