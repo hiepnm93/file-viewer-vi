@@ -2,13 +2,11 @@ import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import type {
   FileRenderExportAdapter,
   FileViewerOperationAvailability,
+  FileViewerOperationActionErrorContext,
   FileViewerOperationType
 } from '@file-viewer/core'
 import {
-  createFileViewerOriginalSourceState,
-  executeFileViewerDownloadOperation,
-  executeFileViewerExportHtmlOperation,
-  executeFileViewerPrintOperation
+  createFileViewerOperationActionHandlers
 } from '@file-viewer/core'
 
 interface UseViewerExportOptions {
@@ -38,53 +36,38 @@ export const useViewerExport = ({
   showError,
   watermarkInlineStyle
 }: UseViewerExportOptions) => {
-  const downloadOriginalFile = async () => {
-    try {
-      const source = createFileViewerOriginalSourceState({
-        buffer: currentBuffer.value,
-        file: currentFile.value,
-        url: currentSourceUrl.value,
-        filename: displayFilename.value,
-        mimeType: currentFile.value?.type
-      })
-      await executeFileViewerDownloadOperation({
-        source,
-        beforeOperation: runBeforeOperation,
-        throwOnMissingSource: false
-      })
-    } catch (nextError) {
-      showError(formatErrorMessage('下载失败', nextError))
+  const operationErrorPrefixes: Record<FileViewerOperationActionErrorContext['operation'], string> = {
+    download: '下载失败',
+    print: '打印失败',
+    'export-html': '导出 HTML 失败'
+  }
+
+  const actions = createFileViewerOperationActionHandlers({
+    getBuffer: () => currentBuffer.value,
+    getFile: () => currentFile.value,
+    getUrl: () => currentSourceUrl.value,
+    getFilename: () => displayFilename.value,
+    getMimeType: () => currentFile.value?.type,
+    getRenderedSource: () => output.value,
+    getAdapter: () => activeExportAdapter.value,
+    getWatermarkInlineStyle: () => watermarkInlineStyle.value,
+    getPrintAvailable: () => operationAvailability.value.print,
+    beforeOperation: runBeforeOperation,
+    onError: ({ operation, error: nextError }) => {
+      showError(formatErrorMessage(operationErrorPrefixes[operation], nextError))
     }
+  })
+
+  const downloadOriginalFile = async () => {
+    await actions.downloadOriginalFile()
   }
 
   const exportRenderedHtml = async () => {
-    try {
-      await executeFileViewerExportHtmlOperation({
-        source: output.value,
-        adapter: activeExportAdapter.value,
-        filename: displayFilename.value,
-        title: displayFilename.value,
-        watermarkInlineStyle: watermarkInlineStyle.value,
-        beforeOperation: runBeforeOperation
-      })
-    } catch (nextError) {
-      showError(formatErrorMessage('导出 HTML 失败', nextError))
-    }
+    await actions.exportRenderedHtml()
   }
 
   const printRenderedHtml = async () => {
-    try {
-      await executeFileViewerPrintOperation({
-        source: output.value,
-        adapter: activeExportAdapter.value,
-        title: displayFilename.value,
-        watermarkInlineStyle: watermarkInlineStyle.value,
-        printAvailable: operationAvailability.value.print,
-        beforeOperation: runBeforeOperation
-      })
-    } catch (nextError) {
-      showError(formatErrorMessage('打印失败', nextError))
-    }
+    await actions.printRenderedHtml()
   }
 
   return {

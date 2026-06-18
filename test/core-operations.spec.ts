@@ -9,6 +9,7 @@ import {
   buildFileViewerOperationContext,
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
+  createFileViewerOperationActionHandlers,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
@@ -1069,6 +1070,125 @@ describe('@file-viewer/core operation helpers', () => {
         source: {},
         throwOnMissingSource: false,
       })).resolves.toBe(false);
+    } finally {
+      document.createElement = originalCreateElement as Document['createElement'];
+      URL.createObjectURL = originalCreateObjectUrl;
+      URL.revokeObjectURL = originalRevokeObjectUrl;
+      Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument });
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
+    }
+  });
+
+  it('creates framework-neutral file operation actions for wrappers', async () => {
+    const { document } = parseHTML('<main id="root"><article><h1>Action facade</h1></article></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+    const originalCreateObjectUrl = URL.createObjectURL;
+    const originalRevokeObjectUrl = URL.revokeObjectURL;
+    const originalCreateElement = document.createElement.bind(document);
+    const beforeOperations: string[] = [];
+    const errors: Array<{ operation: string; error: unknown }> = [];
+    let downloadedName = '';
+    let printHtml = '';
+    let printed = false;
+    let printAvailable = false;
+
+    document.createElement = ((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName.toLowerCase() === 'a') {
+        Object.defineProperty(element, 'click', {
+          configurable: true,
+          value: () => {
+            downloadedName = (element as HTMLAnchorElement).download;
+          },
+        });
+      }
+      return element;
+    }) as Document['createElement'];
+
+    const printWindow = {
+      document: {
+        readyState: 'complete',
+        images: [],
+        open: () => undefined,
+        write: (nextHtml: string) => {
+          printHtml = nextHtml;
+        },
+        close: () => undefined,
+      },
+      focus: () => undefined,
+      print: () => {
+        printed = true;
+      },
+      requestAnimationFrame: (callback: () => void) => {
+        callback();
+        return 1;
+      },
+      setTimeout: (callback: () => void) => {
+        callback();
+        return 1;
+      },
+    } as unknown as Window;
+
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: document });
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        open: () => printWindow,
+        requestAnimationFrame: (callback: () => void) => {
+          callback();
+          return 1;
+        },
+        setTimeout: (callback: () => void) => {
+          callback();
+          return 1;
+        },
+      },
+    });
+    URL.createObjectURL = () => 'blob:viewer-action-test';
+    URL.revokeObjectURL = () => undefined;
+
+    const actions = createFileViewerOperationActionHandlers({
+      getBuffer: () => new Uint8Array([4, 5, 6]).buffer,
+      getFile: () => null,
+      getUrl: () => null,
+      getFilename: () => 'suite.viewer',
+      getMimeType: () => 'application/octet-stream',
+      getRenderedSource: () => root,
+      getAdapter: () => ({
+        includeDocumentStyles: false,
+        toHtml: options => `<section data-mode="${options.mode}">${options.title}</section>`,
+      }),
+      getWatermarkInlineStyle: () => '--viewer-watermark: demo;',
+      getPrintAvailable: () => printAvailable,
+      beforeOperation: operation => {
+        beforeOperations.push(operation);
+        return true;
+      },
+      onError: context => {
+        errors.push(context);
+      },
+    });
+
+    try {
+      const html = await actions.exportRenderedHtml();
+      expect(html).toContain('data-mode="export"');
+      expect(downloadedName).toBe('suite.viewer.rendered.html');
+
+      await expect(actions.downloadOriginalFile()).resolves.toBe(true);
+      expect(downloadedName).toBe('suite.viewer');
+
+      await expect(actions.printRenderedHtml()).resolves.toBeUndefined();
+      expect(errors).toHaveLength(1);
+      expect(errors[0].operation).toBe('print');
+      expect(printed).toBe(false);
+
+      printAvailable = true;
+      await expect(actions.printRenderedHtml()).resolves.toBe(true);
+      expect(printed).toBe(true);
+      expect(printHtml).toContain('data-mode="print"');
+      expect(beforeOperations).toEqual(['export-html', 'download', 'print']);
     } finally {
       document.createElement = originalCreateElement as Document['createElement'];
       URL.createObjectURL = originalCreateObjectUrl;

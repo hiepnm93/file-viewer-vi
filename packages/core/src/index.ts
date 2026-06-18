@@ -149,6 +149,7 @@ export {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+  createFileViewerOperationActionHandlers,
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
   executeFileViewerDownloadOperation,
@@ -158,6 +159,12 @@ export {
   resolveFileViewerDisplayFilename,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
+} from './viewerOperations';
+export type {
+  CreateFileViewerOperationActionHandlersInput,
+  FileViewerFileOperationType,
+  FileViewerOperationActionErrorContext,
+  FileViewerOperationActionHandlers,
 } from './viewerOperations';
 export {
   applyPrintPageSize,

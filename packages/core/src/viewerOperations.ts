@@ -60,6 +60,32 @@ export interface ExecuteFileViewerPrintOperationInput
   printAvailable?: boolean;
 }
 
+export type FileViewerFileOperationType = Extract<FileViewerOperationType, 'download' | 'export-html' | 'print'>;
+
+export interface FileViewerOperationActionErrorContext {
+  operation: FileViewerFileOperationType;
+  error: unknown;
+}
+
+export interface CreateFileViewerOperationActionHandlersInput extends FileViewerOperationExecutorBase {
+  getBuffer?: () => ArrayBuffer | null | undefined;
+  getFile?: () => File | Blob | null | undefined;
+  getUrl?: () => string | null | undefined;
+  getFilename: () => string | null | undefined;
+  getMimeType?: () => string | null | undefined;
+  getRenderedSource: () => HTMLElement | null | undefined;
+  getAdapter?: () => FileRenderExportAdapter | null | undefined;
+  getWatermarkInlineStyle?: () => string | null | undefined;
+  getPrintAvailable?: () => boolean | undefined;
+  onError?: (context: FileViewerOperationActionErrorContext) => void;
+}
+
+export interface FileViewerOperationActionHandlers {
+  downloadOriginalFile(): Promise<boolean | undefined>;
+  exportRenderedHtml(): Promise<string | undefined>;
+  printRenderedHtml(): Promise<boolean | undefined>;
+}
+
 interface BuildRenderedHtmlDocumentFromOperationInput {
   source: HTMLElement | null | undefined;
   title?: string;
@@ -272,4 +298,83 @@ export const executeFileViewerPrintOperation = async ({
   }
 
   return true;
+};
+
+const handleFileViewerOperationActionError = (
+  operation: FileViewerFileOperationType,
+  error: unknown,
+  onError?: (context: FileViewerOperationActionErrorContext) => void
+) => {
+  onError?.({ operation, error });
+};
+
+export const createFileViewerOperationActionHandlers = ({
+  getBuffer,
+  getFile,
+  getUrl,
+  getFilename,
+  getMimeType,
+  getRenderedSource,
+  getAdapter,
+  getWatermarkInlineStyle,
+  getPrintAvailable,
+  beforeOperation,
+  onError,
+}: CreateFileViewerOperationActionHandlersInput): FileViewerOperationActionHandlers => {
+  const getOriginalSource = () => {
+    const file = getFile?.() ?? null;
+    return createFileViewerOriginalSourceState({
+      buffer: getBuffer?.() ?? null,
+      file,
+      url: getUrl?.() ?? null,
+      filename: getFilename(),
+      mimeType: getMimeType?.() ?? getBlobMimeType(file),
+    });
+  };
+
+  const getRenderedOperationInput = () => {
+    const filename = getFilename() || undefined;
+    return {
+      source: getRenderedSource(),
+      adapter: getAdapter?.() ?? null,
+      title: filename,
+      filename,
+      watermarkInlineStyle: getWatermarkInlineStyle?.() ?? undefined,
+      beforeOperation,
+    };
+  };
+
+  return {
+    async downloadOriginalFile() {
+      try {
+        return await executeFileViewerDownloadOperation({
+          source: getOriginalSource(),
+          beforeOperation,
+          throwOnMissingSource: false,
+        });
+      } catch (error) {
+        handleFileViewerOperationActionError('download', error, onError);
+        return undefined;
+      }
+    },
+    async exportRenderedHtml() {
+      try {
+        return await executeFileViewerExportHtmlOperation(getRenderedOperationInput());
+      } catch (error) {
+        handleFileViewerOperationActionError('export-html', error, onError);
+        return undefined;
+      }
+    },
+    async printRenderedHtml() {
+      try {
+        return await executeFileViewerPrintOperation({
+          ...getRenderedOperationInput(),
+          printAvailable: getPrintAvailable?.() ?? true,
+        });
+      } catch (error) {
+        handleFileViewerOperationActionError('print', error, onError);
+        return undefined;
+      }
+    },
+  };
 };
