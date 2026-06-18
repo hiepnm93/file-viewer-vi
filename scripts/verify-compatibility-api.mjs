@@ -743,9 +743,15 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueExportHookSource, '@file-viewer/core', vueExportHookLabel)
   assertTokens(vueExportHookSource, [
     'createFileViewerOperationActionHandlers',
-    'FileViewerOperationActionErrorContext'
+    'formatErrorMessage',
+    'onErrorMessage'
   ], vueExportHookLabel)
   for (const forbiddenToken of [
+    'FileViewerOperationActionErrorContext',
+    'operationErrorPrefixes',
+    '下载失败',
+    '打印失败',
+    '导出 HTML 失败',
     'createFileViewerOriginalSourceState',
     'executeFileViewerDownloadOperation',
     'executeFileViewerExportHtmlOperation',

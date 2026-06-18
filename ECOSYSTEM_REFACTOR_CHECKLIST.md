@@ -144,6 +144,7 @@
   - [x] 打印能力矩阵和 `resolvePrintAvailability` 迁入 `@file-viewer/core`。
   - [x] 生命周期上下文构建、生命周期 hook 分发、iframe 安全序列化迁入 `@file-viewer/core`。
   - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。
+  - [x] 下载 / 打印 / 导出 HTML 的默认错误前缀与错误消息格式化协议迁入 `@file-viewer/core`，Vue export hook 不再维护本地文案表。
   - [x] Vue3 生命周期与 beforeOperation 门面拆到组件 hooks，复用 core context / hook / postMessage 协议，继续降低主入口职责。
   - [x] 生命周期与 operation-before / operation-cancel 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue lifecycle hook 不再拼接 payload。
   - [x] 生命周期与 operation-before / operation-cancel 的 emit / hook / postMessage 编排迁入 `@file-viewer/core`，Vue lifecycle hook 不再直接发送 frame 事件。

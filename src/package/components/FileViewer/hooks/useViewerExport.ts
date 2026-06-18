@@ -2,7 +2,6 @@ import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import type {
   FileRenderExportAdapter,
   FileViewerOperationAvailability,
-  FileViewerOperationActionErrorContext,
   FileViewerOperationType
 } from '@file-viewer/core'
 import {
@@ -36,12 +35,6 @@ export const useViewerExport = ({
   showError,
   watermarkInlineStyle
 }: UseViewerExportOptions) => {
-  const operationErrorPrefixes: Record<FileViewerOperationActionErrorContext['operation'], string> = {
-    download: '下载失败',
-    print: '打印失败',
-    'export-html': '导出 HTML 失败'
-  }
-
   const actions = createFileViewerOperationActionHandlers({
     getBuffer: () => currentBuffer.value,
     getFile: () => currentFile.value,
@@ -53,9 +46,8 @@ export const useViewerExport = ({
     getWatermarkInlineStyle: () => watermarkInlineStyle.value,
     getPrintAvailable: () => operationAvailability.value.print,
     beforeOperation: runBeforeOperation,
-    onError: ({ operation, error: nextError }) => {
-      showError(formatErrorMessage(operationErrorPrefixes[operation], nextError))
-    }
+    formatErrorMessage,
+    onErrorMessage: showError
   })
 
   const downloadOriginalFile = async () => {

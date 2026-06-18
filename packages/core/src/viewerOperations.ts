@@ -67,6 +67,22 @@ export interface FileViewerOperationActionErrorContext {
   error: unknown;
 }
 
+export type FileViewerOperationActionErrorFormatter = (prefix: string, error: unknown) => string;
+
+export type FileViewerOperationActionErrorPrefixes = Partial<Record<FileViewerFileOperationType, string>>;
+
+export const FILE_VIEWER_OPERATION_ACTION_ERROR_PREFIXES = {
+  download: '下载失败',
+  print: '打印失败',
+  'export-html': '导出 HTML 失败',
+} as const satisfies Record<FileViewerFileOperationType, string>;
+
+export interface ResolveFileViewerOperationActionErrorMessageInput {
+  context: FileViewerOperationActionErrorContext;
+  formatErrorMessage: FileViewerOperationActionErrorFormatter;
+  prefixes?: FileViewerOperationActionErrorPrefixes;
+}
+
 export interface CreateFileViewerOperationActionHandlersInput extends FileViewerOperationExecutorBase {
   getBuffer?: () => ArrayBuffer | null | undefined;
   getFile?: () => File | Blob | null | undefined;
@@ -78,6 +94,9 @@ export interface CreateFileViewerOperationActionHandlersInput extends FileViewer
   getWatermarkInlineStyle?: () => string | null | undefined;
   getPrintAvailable?: () => boolean | undefined;
   onError?: (context: FileViewerOperationActionErrorContext) => void;
+  formatErrorMessage?: FileViewerOperationActionErrorFormatter;
+  errorPrefixes?: FileViewerOperationActionErrorPrefixes;
+  onErrorMessage?: (message: string, context: FileViewerOperationActionErrorContext) => void;
 }
 
 export interface FileViewerOperationActionHandlers {
@@ -151,6 +170,17 @@ export const resolveFileViewerOperationFilename = ({
   fallback = DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
 }: ResolveFileViewerOperationFilenameInput) => {
   return filename || (source ? resolveFileViewerOriginalFilename(source, '') : '') || fallback;
+};
+
+export const resolveFileViewerOperationActionErrorMessage = ({
+  context,
+  formatErrorMessage,
+  prefixes,
+}: ResolveFileViewerOperationActionErrorMessageInput) => {
+  return formatErrorMessage(
+    prefixes?.[context.operation] ?? FILE_VIEWER_OPERATION_ACTION_ERROR_PREFIXES[context.operation],
+    context.error
+  );
 };
 
 export const hasFileViewerOriginalSource = (source: FileViewerOriginalSourceState) => {
@@ -303,9 +333,25 @@ export const executeFileViewerPrintOperation = async ({
 const handleFileViewerOperationActionError = (
   operation: FileViewerFileOperationType,
   error: unknown,
-  onError?: (context: FileViewerOperationActionErrorContext) => void
+  {
+    errorPrefixes,
+    formatErrorMessage,
+    onError,
+    onErrorMessage,
+  }: Pick<
+    CreateFileViewerOperationActionHandlersInput,
+    'errorPrefixes' | 'formatErrorMessage' | 'onError' | 'onErrorMessage'
+  >
 ) => {
-  onError?.({ operation, error });
+  const context = { operation, error };
+  onError?.(context);
+  if (formatErrorMessage && onErrorMessage) {
+    onErrorMessage(resolveFileViewerOperationActionErrorMessage({
+      context,
+      formatErrorMessage,
+      prefixes: errorPrefixes,
+    }), context);
+  }
 };
 
 export const createFileViewerOperationActionHandlers = ({
@@ -319,7 +365,10 @@ export const createFileViewerOperationActionHandlers = ({
   getWatermarkInlineStyle,
   getPrintAvailable,
   beforeOperation,
+  errorPrefixes,
+  formatErrorMessage,
   onError,
+  onErrorMessage,
 }: CreateFileViewerOperationActionHandlersInput): FileViewerOperationActionHandlers => {
   const getOriginalSource = () => {
     const file = getFile?.() ?? null;
@@ -353,7 +402,12 @@ export const createFileViewerOperationActionHandlers = ({
           throwOnMissingSource: false,
         });
       } catch (error) {
-        handleFileViewerOperationActionError('download', error, onError);
+        handleFileViewerOperationActionError('download', error, {
+          errorPrefixes,
+          formatErrorMessage,
+          onError,
+          onErrorMessage,
+        });
         return undefined;
       }
     },
@@ -361,7 +415,12 @@ export const createFileViewerOperationActionHandlers = ({
       try {
         return await executeFileViewerExportHtmlOperation(getRenderedOperationInput());
       } catch (error) {
-        handleFileViewerOperationActionError('export-html', error, onError);
+        handleFileViewerOperationActionError('export-html', error, {
+          errorPrefixes,
+          formatErrorMessage,
+          onError,
+          onErrorMessage,
+        });
         return undefined;
       }
     },
@@ -372,7 +431,12 @@ export const createFileViewerOperationActionHandlers = ({
           printAvailable: getPrintAvailable?.() ?? true,
         });
       } catch (error) {
-        handleFileViewerOperationActionError('print', error, onError);
+        handleFileViewerOperationActionError('print', error, {
+          errorPrefixes,
+          formatErrorMessage,
+          onError,
+          onErrorMessage,
+        });
         return undefined;
       }
     },

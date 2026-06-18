@@ -153,6 +153,7 @@ export {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
+  FILE_VIEWER_OPERATION_ACTION_ERROR_PREFIXES,
   createFileViewerOperationActionHandlers,
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
@@ -161,14 +162,18 @@ export {
   executeFileViewerPrintOperation,
   hasFileViewerOriginalSource,
   resolveFileViewerDisplayFilename,
+  resolveFileViewerOperationActionErrorMessage,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
 } from './viewerOperations';
 export type {
   CreateFileViewerOperationActionHandlersInput,
+  FileViewerOperationActionErrorFormatter,
   FileViewerFileOperationType,
   FileViewerOperationActionErrorContext,
+  FileViewerOperationActionErrorPrefixes,
   FileViewerOperationActionHandlers,
+  ResolveFileViewerOperationActionErrorMessageInput,
 } from './viewerOperations';
 export {
   applyPrintPageSize,

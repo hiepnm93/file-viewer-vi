@@ -36,6 +36,7 @@ import {
   postFileViewerSearchChange,
   postFileViewerZoomChange,
   resolveFileViewerLifecycleFallbackSource,
+  resolveFileViewerOperationActionErrorMessage,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
   resolveFileViewerOperationAvailability,
@@ -1221,6 +1222,7 @@ describe('@file-viewer/core operation helpers', () => {
     const originalCreateElement = document.createElement.bind(document);
     const beforeOperations: string[] = [];
     const errors: Array<{ operation: string; error: unknown }> = [];
+    const errorMessages: string[] = [];
     let downloadedName = '';
     let printHtml = '';
     let printed = false;
@@ -1301,6 +1303,10 @@ describe('@file-viewer/core operation helpers', () => {
       onError: context => {
         errors.push(context);
       },
+      formatErrorMessage: (prefix, error) => `${prefix}:${error instanceof Error ? error.message : String(error)}`,
+      onErrorMessage: message => {
+        errorMessages.push(message);
+      },
     });
 
     try {
@@ -1314,6 +1320,7 @@ describe('@file-viewer/core operation helpers', () => {
       await expect(actions.printRenderedHtml()).resolves.toBeUndefined();
       expect(errors).toHaveLength(1);
       expect(errors[0].operation).toBe('print');
+      expect(errorMessages[0]).toContain('打印失败:当前文件类型不支持完整打印');
       expect(printed).toBe(false);
 
       printAvailable = true;
@@ -1328,6 +1335,29 @@ describe('@file-viewer/core operation helpers', () => {
       Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument });
       Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
     }
+  });
+
+  it('formats operation action errors through core defaults', () => {
+    const message = resolveFileViewerOperationActionErrorMessage({
+      context: {
+        operation: 'export-html',
+        error: new Error('missing DOM'),
+      },
+      formatErrorMessage: (prefix, error) => `${prefix}:${error instanceof Error ? error.message : String(error)}`,
+    });
+    const customMessage = resolveFileViewerOperationActionErrorMessage({
+      context: {
+        operation: 'download',
+        error: 'offline',
+      },
+      prefixes: {
+        download: '保存失败',
+      },
+      formatErrorMessage: (prefix, error) => `${prefix}:${String(error)}`,
+    });
+
+    expect(message).toBe('导出 HTML 失败:missing DOM');
+    expect(customMessage).toBe('保存失败:offline');
   });
 
   it('normalizes original source state in core', () => {
