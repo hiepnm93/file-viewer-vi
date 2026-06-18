@@ -1,12 +1,8 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
-  applyFileViewerRenderSurfaceState,
   createFileViewerRenderReadinessTarget,
+  createFileViewerRenderSurfaceActionHandlers,
   createFileViewerRenderSurfaceStateTarget,
-  disposeFileViewerRendererSession,
-  reportFileViewerRenderSessionDisposeError,
-  runFileViewerRenderSurfaceClear,
-  runFileViewerRenderSurfaceMount
 } from '@file-viewer/core'
 import type {
   FileRenderExportAdapter,
@@ -88,92 +84,48 @@ export const useViewerRenderSurface = ({
     }
   })
 
-  const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
-    disposeFileViewerRendererSession(session, {
-      onError: nextError => {
-        reportFileViewerRenderSessionDisposeError({ error: nextError })
-      }
-    })
-  }
-
-  const setActiveRenderSession = (session: FileViewerVueRenderSession | null) => {
-    applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { session })
-  }
-
-  const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    runFileViewerRenderSurfaceClear({
-      reason,
-      surfaceState: renderSurfaceStateTarget,
-      readinessState: renderReadinessTarget,
-      container: output.value,
-      disposeOptions: {
-        onError: nextError => {
-          reportFileViewerRenderSessionDisposeError({ error: nextError })
-        }
-      },
-      onUnloadStart: notifyActiveUnloadStart,
-      onUnloadComplete: (context, nextReason) => {
-        notifyActiveUnloadComplete(context ?? null, nextReason)
-      },
-      onClearActiveDocumentContext: clearActiveDocumentContext,
-      onClearDocumentState: clearDocumentState,
-      onStopZoomObserver: stopZoomObserver,
-      onClearZoomProvider: clearZoomProvider
-    })
-  }
-
-  const mountRenderedContent = async (
-    buffer: ArrayBuffer,
-    file: File,
-    version: number,
-    sourceUrl?: string,
-    streamUrl?: string
-  ) => {
-    return await runFileViewerRenderSurfaceMount({
-      buffer,
-      file,
-      version,
-      sourceUrl,
-      streamUrl,
-      getContainer: () => output.value,
-      surfaceState: renderSurfaceStateTarget,
-      readinessState: renderReadinessTarget,
-      isCurrent: isCurrentRequest,
-      clearRenderedContent,
-      waitForContainer: nextTick,
-      disposeSession: destroyRenderSession,
-      onStartZoomObserver: startZoomObserver,
-      onRefreshDocumentIndex: refreshDocumentIndex,
-      onRefreshZoomProvider: refreshZoomProvider,
-      render: async ({
-        buffer: nextBuffer,
-        type,
-        target,
+  const actions = createFileViewerRenderSurfaceActionHandlers<FileViewerVueRenderSession>({
+    getContainer: () => output.value,
+    surfaceState: renderSurfaceStateTarget,
+    readinessState: renderReadinessTarget,
+    isCurrent: isCurrentRequest,
+    waitForContainer: nextTick,
+    onUnloadStart: notifyActiveUnloadStart,
+    onUnloadComplete: (context, nextReason) => {
+      notifyActiveUnloadComplete(context ?? null, nextReason)
+    },
+    onClearActiveDocumentContext: clearActiveDocumentContext,
+    onClearDocumentState: clearDocumentState,
+    onStartZoomObserver: startZoomObserver,
+    onStopZoomObserver: stopZoomObserver,
+    onClearZoomProvider: clearZoomProvider,
+    onRefreshDocumentIndex: refreshDocumentIndex,
+    onRefreshZoomProvider: refreshZoomProvider,
+    render: async ({
+      buffer: nextBuffer,
+      type,
+      target,
+      filename,
+      sourceUrl: nextSourceUrl,
+      streamUrl: nextStreamUrl,
+      registerExportAdapter,
+      onProgressiveRender
+    }) => {
+      return await createVueRenderSession(nextBuffer, type, target as HTMLDivElement, {
         filename,
-        sourceUrl: nextSourceUrl,
+        url: nextSourceUrl,
         streamUrl: nextStreamUrl,
+        options: getOptions(),
         registerExportAdapter,
         onProgressiveRender
-      }) => {
-        return await createVueRenderSession(nextBuffer, type, target as HTMLDivElement, {
-          filename,
-          url: nextSourceUrl,
-          streamUrl: nextStreamUrl,
-          options: getOptions(),
-          registerExportAdapter,
-          onProgressiveRender
-        })
-      }
-    })
-  }
+      })
+    }
+  })
 
   return {
     activeExportAdapter,
     renderedReady,
     progressiveReady,
-    clearRenderedContent,
-    destroyRenderSession,
-    mountRenderedContent,
-    setActiveRenderSession
+    ...actions
   }
 }

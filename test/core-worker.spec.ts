@@ -9,6 +9,7 @@ import {
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderSurfaceActionHandlers,
   createFileViewerRenderReadinessTarget,
   createFileViewerRenderSurfaceState,
   createFileViewerRenderSurfaceStateTarget,
@@ -433,6 +434,125 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(readiness.progressiveReady).toBe(true);
     expect(refreshDocumentIndex).toHaveBeenCalledTimes(1);
     expect(refreshZoomProvider).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates reusable render surface action handlers for framework wrappers', async () => {
+    const { document } = parseHTML('<main id="root"><span>old</span></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const staleSession = { destroy: vi.fn() };
+    const session = { destroy: vi.fn() };
+    const adapter = { exportHtml: true };
+    const state = createFileViewerRenderSurfaceState<typeof session>();
+    const readiness = {
+      renderedReady: true,
+      progressiveReady: true,
+    };
+    const waitForContainer = vi.fn();
+    const waitForPaint = vi.fn();
+    const startZoomObserver = vi.fn();
+    const stopZoomObserver = vi.fn();
+    const clearZoomProvider = vi.fn();
+    const refreshDocumentIndex = vi.fn();
+    const refreshZoomProvider = vi.fn();
+    const events: string[] = [];
+    const unloadContext = { phase: 'facade-unload' as const };
+    const render = vi.fn(async context => {
+      expect(context.type).toBe('pdf');
+      expect(context.filename).toBe('facade.pdf');
+      context.registerExportAdapter(adapter);
+      context.onProgressiveRender();
+      context.target.appendChild(document.createElement('strong'));
+      return session;
+    });
+    const actions = createFileViewerRenderSurfaceActionHandlers({
+      getContainer: () => root,
+      surfaceState: state,
+      readinessState: readiness,
+      isCurrent: version => version === 1,
+      waitForContainer,
+      waitForPaint,
+      onUnloadStart: reason => {
+        events.push(`start:${reason}`);
+        return unloadContext;
+      },
+      onUnloadComplete: (context, reason) => {
+        events.push(`complete:${reason}:${context === unloadContext}`);
+      },
+      onClearActiveDocumentContext: () => events.push('clear-active'),
+      onClearDocumentState: () => events.push('clear-doc'),
+      onStartZoomObserver: startZoomObserver,
+      onStopZoomObserver: stopZoomObserver,
+      onClearZoomProvider: clearZoomProvider,
+      onRefreshDocumentIndex: refreshDocumentIndex,
+      onRefreshZoomProvider: refreshZoomProvider,
+      render,
+    });
+
+    expect(actions.setActiveRenderSession(staleSession)).toBe(state);
+    expect(state.session).toBe(staleSession);
+
+    const clearResult = actions.clearRenderedContent('replace');
+
+    expect(clearResult).toEqual({
+      reason: 'replace',
+      unloadContext,
+      session: staleSession,
+    });
+    expect(staleSession.destroy).toHaveBeenCalledTimes(1);
+    expect(state.session).toBeNull();
+    expect(state.exportAdapter).toBeNull();
+    expect(readiness).toEqual({
+      renderedReady: false,
+      progressiveReady: false,
+    });
+    expect(root.childElementCount).toBe(0);
+
+    root.appendChild(document.createElement('em'));
+    const result = await actions.mountRenderedContent(
+      new ArrayBuffer(4),
+      new File(['demo'], 'facade.pdf'),
+      1,
+      '/example/facade.pdf',
+      '/stream/facade.pdf'
+    );
+
+    expect(result).toBe(session);
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(root.innerHTML).not.toContain('em');
+    expect(root.innerHTML).toContain('file-render');
+    expect(root.innerHTML).toContain('strong');
+    expect(state.exportAdapter).toBe(adapter);
+    expect(readiness.progressiveReady).toBe(true);
+    expect(waitForContainer).toHaveBeenCalledTimes(1);
+    expect(waitForPaint).toHaveBeenCalledTimes(1);
+    expect(startZoomObserver).toHaveBeenCalledTimes(1);
+    expect(stopZoomObserver).toHaveBeenCalledTimes(2);
+    expect(clearZoomProvider).toHaveBeenCalledTimes(2);
+    expect(refreshDocumentIndex).toHaveBeenCalledTimes(1);
+    expect(refreshZoomProvider).toHaveBeenCalledTimes(1);
+    expect(events).toEqual([
+      'start:replace',
+      'clear-active',
+      'clear-doc',
+      'complete:replace:true',
+      'start:replace',
+      'clear-active',
+      'clear-doc',
+      'complete:replace:true',
+    ]);
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const error = new Error('facade dispose failed');
+    try {
+      actions.destroyRenderSession({
+        destroy: () => {
+          throw error;
+        },
+      });
+      expect(warn).toHaveBeenCalledWith('预览内容卸载失败', error);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('removes stale render targets and disposes stale sessions during surface mount', async () => {

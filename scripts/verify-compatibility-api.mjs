@@ -869,19 +869,20 @@ async function verifyVue3ScopedCompatibility() {
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
-    'applyFileViewerRenderSurfaceState',
     'createFileViewerRenderReadinessTarget',
+    'createFileViewerRenderSurfaceActionHandlers',
     'createFileViewerRenderSurfaceStateTarget',
-    'disposeFileViewerRendererSession',
-    'reportFileViewerRenderSessionDisposeError',
-    'runFileViewerRenderSurfaceClear',
-    'runFileViewerRenderSurfaceMount'
   ], vueRenderSurfaceHookLabel)
   for (const forbiddenToken of [
+    'applyFileViewerRenderSurfaceState',
     'applyFileViewerRenderReadinessState',
     'createFileViewerRenderTarget',
+    'disposeFileViewerRendererSession',
     'removeFileViewerRenderTarget',
+    'reportFileViewerRenderSessionDisposeError',
     'resetFileViewerRenderSurface',
+    'runFileViewerRenderSurfaceClear',
+    'runFileViewerRenderSurfaceMount',
     'get renderedReady(): boolean',
     'set renderedReady(value: boolean)',
     'get progressiveReady(): boolean',

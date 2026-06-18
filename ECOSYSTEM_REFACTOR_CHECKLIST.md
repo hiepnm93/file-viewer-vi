@@ -93,6 +93,7 @@
   - [x] React wrapper 运行逻辑直接依赖 core iframe 协议，`packages/web` 仅作为 viewer 静态产物兼容分发通道。
   - [x] iframe 本地文件 postMessage 重试、生命周期确认和定时器清理迁入 core，`packages/web` / React wrapper 复用同一控制器。
   - [x] 纯 Web iframe create/sync/mount 控制器迁入 core，`packages/web` 仅注入默认入口、缓存 key 和历史 API 名称。
+  - [x] 渲染 surface 的销毁、清空、挂载和导出适配器 action 编排迁入 core，Vue hook 只保留 ref target 和 Vue renderer bridge。
 - [x] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
   - [x] `@file-viewer/core` 提供 `FileViewerStateDescriptor` / `FileViewerStateTheme`，覆盖 loading、ready、empty、unsupported、error。
   - [x] 下载、流式 PDF、常规解析的默认进度文案迁入 core，Vue3 入口复用同一常量。

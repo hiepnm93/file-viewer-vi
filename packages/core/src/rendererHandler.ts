@@ -169,6 +169,52 @@ export interface FileViewerRenderSurfaceClearState<
   session: Session | null | undefined;
 }
 
+export interface FileViewerRenderSurfaceActionHandlers<
+  Session extends RendererSession = RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+> {
+  destroyRenderSession: (session?: Session | null) => void;
+  setActiveRenderSession: (
+    session: Session | null
+  ) => MutableFileViewerRenderSurfaceState<Session>;
+  clearRenderedContent: (
+    reason?: FileViewerLifecycleContext['reason']
+  ) => FileViewerRenderSurfaceClearState<Session, UnloadContext>;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string,
+    streamUrl?: string
+  ) => Promise<Session | undefined>;
+}
+
+export interface CreateFileViewerRenderSurfaceActionHandlersInput<
+  Session extends RendererSession = RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+> {
+  getContainer: () => HTMLElement | null | undefined;
+  surfaceState: MutableFileViewerRenderSurfaceState<Session>;
+  readinessState: MutableFileViewerRenderReadinessState;
+  isCurrent: (version: number) => boolean;
+  render: (context: FileViewerRenderSurfaceMountContext<Session>) => Promise<Session | undefined>;
+  waitForContainer?: () => Promise<unknown> | unknown;
+  waitForPaint?: () => Promise<unknown> | unknown;
+  disposeOptions?: DisposeFileViewerRendererSessionOptions;
+  onUnloadStart?: (reason: FileViewerLifecycleContext['reason']) => UnloadContext;
+  onUnloadComplete?: (
+    context: UnloadContext | undefined,
+    reason: FileViewerLifecycleContext['reason']
+  ) => void;
+  onClearActiveDocumentContext?: () => void;
+  onClearDocumentState?: () => void;
+  onStartZoomObserver?: () => void;
+  onStopZoomObserver?: () => void;
+  onClearZoomProvider?: () => void;
+  onRefreshDocumentIndex?: () => Promise<unknown> | unknown;
+  onRefreshZoomProvider?: () => void;
+}
+
 export const DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS = 'file-render';
 
 const isPromiseLike = (value: unknown): value is PromiseLike<unknown> => {
@@ -534,6 +580,101 @@ export const runFileViewerRenderSurfaceMount = async <
     removeFileViewerRenderTarget(container, target);
     throw error;
   }
+};
+
+export const createFileViewerRenderSurfaceActionHandlers = <
+  Session extends RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+>({
+  getContainer,
+  surfaceState,
+  readinessState,
+  isCurrent,
+  render,
+  waitForContainer,
+  waitForPaint,
+  disposeOptions,
+  onUnloadStart,
+  onUnloadComplete,
+  onClearActiveDocumentContext,
+  onClearDocumentState,
+  onStartZoomObserver,
+  onStopZoomObserver,
+  onClearZoomProvider,
+  onRefreshDocumentIndex,
+  onRefreshZoomProvider,
+}: CreateFileViewerRenderSurfaceActionHandlersInput<Session, UnloadContext>): FileViewerRenderSurfaceActionHandlers<Session, UnloadContext> => {
+  const handleDisposeError = (error: unknown) => {
+    if (disposeOptions?.onError) {
+      disposeOptions.onError(error);
+      return;
+    }
+    reportFileViewerRenderSessionDisposeError({ error });
+  };
+
+  const mergedDisposeOptions: DisposeFileViewerRendererSessionOptions = {
+    ...disposeOptions,
+    onError: handleDisposeError,
+  };
+
+  const destroyRenderSession = (session?: Session | null) => {
+    disposeFileViewerRendererSession(session, mergedDisposeOptions);
+  };
+
+  const setActiveRenderSession = (session: Session | null) => {
+    return applyFileViewerRenderSurfaceState(surfaceState, { session });
+  };
+
+  const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
+    return runFileViewerRenderSurfaceClear<Session, UnloadContext>({
+      reason,
+      surfaceState,
+      readinessState,
+      container: getContainer(),
+      disposeOptions: mergedDisposeOptions,
+      onUnloadStart,
+      onUnloadComplete,
+      onClearActiveDocumentContext,
+      onClearDocumentState,
+      onStopZoomObserver,
+      onClearZoomProvider,
+    });
+  };
+
+  const mountRenderedContent = async (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string,
+    streamUrl?: string
+  ) => {
+    return await runFileViewerRenderSurfaceMount<Session>({
+      buffer,
+      file,
+      version,
+      sourceUrl,
+      streamUrl,
+      getContainer,
+      surfaceState,
+      readinessState,
+      isCurrent,
+      clearRenderedContent,
+      render,
+      waitForContainer,
+      waitForPaint,
+      disposeSession: destroyRenderSession,
+      onStartZoomObserver,
+      onRefreshDocumentIndex,
+      onRefreshZoomProvider,
+    });
+  };
+
+  return {
+    destroyRenderSession,
+    setActiveRenderSession,
+    clearRenderedContent,
+    mountRenderedContent,
+  };
 };
 
 export const buildFileRenderContextFromLoadContext = ({
