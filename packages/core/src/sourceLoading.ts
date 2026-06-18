@@ -44,6 +44,17 @@ export interface ResolveFileViewerMissingRemoteDataErrorMessageInput {
   message?: string;
 }
 
+export type FileViewerPreviewLoadErrorLogger = (error: unknown) => void;
+
+export interface ReportFileViewerPreviewLoadErrorInput extends ResolveFileViewerPreviewLoadErrorMessageInput {
+  onLogError?: FileViewerPreviewLoadErrorLogger | null;
+  onErrorMessage?: (message: string) => void;
+}
+
+export interface ReportFileViewerMissingRemoteDataInput extends ResolveFileViewerMissingRemoteDataErrorMessageInput {
+  onErrorMessage?: (message: string) => void;
+}
+
 export interface FileViewerRequestController {
   readonly version: number;
   createVersion(): number;
@@ -376,6 +387,32 @@ export const resolveFileViewerPreviewLoadErrorMessage = ({
 export const resolveFileViewerMissingRemoteDataErrorMessage = ({
   message = FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE,
 }: ResolveFileViewerMissingRemoteDataErrorMessageInput = {}) => message;
+
+export const DEFAULT_FILE_VIEWER_PREVIEW_LOAD_ERROR_LOGGER: FileViewerPreviewLoadErrorLogger = error => {
+  if (typeof console !== 'undefined' && typeof console.error === 'function') {
+    console.error(error);
+  }
+};
+
+export const reportFileViewerPreviewLoadError = ({
+  onLogError = DEFAULT_FILE_VIEWER_PREVIEW_LOAD_ERROR_LOGGER,
+  onErrorMessage,
+  ...messageInput
+}: ReportFileViewerPreviewLoadErrorInput) => {
+  onLogError?.(messageInput.error);
+  const message = resolveFileViewerPreviewLoadErrorMessage(messageInput);
+  onErrorMessage?.(message);
+  return message;
+};
+
+export const reportFileViewerMissingRemoteData = ({
+  onErrorMessage,
+  ...messageInput
+}: ReportFileViewerMissingRemoteDataInput = {}) => {
+  const message = resolveFileViewerMissingRemoteDataErrorMessage(messageInput);
+  onErrorMessage?.(message);
+  return message;
+};
 
 export interface RunFileViewerRemoteFilePreviewInput<Session = unknown> {
   url: string;

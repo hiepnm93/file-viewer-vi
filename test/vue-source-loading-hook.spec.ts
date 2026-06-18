@@ -100,4 +100,65 @@ describe('Vue FileViewer source loading hook', () => {
       size: file.size
     })
   })
+
+  it('delegates local preview load errors to the core reporting helper', async () => {
+    const file = new File(['broken file viewer'], 'broken.txt', { type: 'text/plain' })
+    const filename = ref('')
+    const currentFile = ref<File | null>(null)
+    const currentBuffer = ref<ArrayBuffer | null>(null)
+    const currentSourceUrl = ref<string | null>(null)
+    const renderedReady = ref(false)
+    const progressiveReady = ref(false)
+    const renderError = new Error('render failed')
+    const showError = vi.fn()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    const sourceLoading = useViewerSourceLoading({
+      getFile: () => file,
+      getUrl: () => undefined,
+      getOptions: () => undefined,
+      filename,
+      currentFile,
+      currentBuffer,
+      currentSourceUrl,
+      renderedReady,
+      progressiveReady,
+      requestController: createFileViewerRequestController(),
+      clearRenderedContent: vi.fn(),
+      mountRenderedContent: vi.fn(async () => {
+        throw renderError
+      }),
+      destroyRenderSession: vi.fn(),
+      setActiveRenderSession: vi.fn(),
+      buildLoadStartState: input => createFileViewerLoadStartState({
+        ...input,
+        filename: filename.value,
+        loadingMessage: FILE_VIEWER_PREVIEW_MESSAGES.reading
+      }),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState({
+        ...input,
+        filename: filename.value
+      }),
+      notifyLifecycle: vi.fn(),
+      setActiveDocumentContext: vi.fn(),
+      markLoadStarted: vi.fn(),
+      clearLoadStarted: vi.fn(),
+      startLoading: vi.fn(),
+      setLoadingMessage: vi.fn(),
+      stopLoading: vi.fn(),
+      showError,
+      clearError: vi.fn(),
+      resetLoading: vi.fn(),
+      formatErrorMessage: (prefix, nextError) => `${prefix}: ${nextError instanceof Error ? nextError.message : String(nextError)}`
+    })
+
+    try {
+      await sourceLoading.refreshPreview()
+
+      expect(consoleError).toHaveBeenCalledWith(renderError)
+      expect(showError).toHaveBeenCalledWith('读取文件异常: render failed')
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
 })

@@ -38,6 +38,8 @@ import {
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
+  reportFileViewerMissingRemoteData,
+  reportFileViewerPreviewLoadError,
   runFileViewerLocalFilePreview,
   runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
@@ -624,6 +626,32 @@ describe('remote source loading helpers', () => {
     })).toBe('远程加载失败:offline')
     expect(resolveFileViewerMissingRemoteDataErrorMessage()).toBe('文件下载失败')
     expect(resolveFileViewerMissingRemoteDataErrorMessage({ message: '没有拿到文件内容' })).toBe('没有拿到文件内容')
+
+    const loggedErrors: unknown[] = []
+    const shownMessages: string[] = []
+    const reportError = new Error('report failed')
+
+    expect(reportFileViewerPreviewLoadError({
+      kind: 'load',
+      error: reportError,
+      formatErrorMessage,
+      onLogError: error => {
+        loggedErrors.push(error)
+      },
+      onErrorMessage: message => {
+        shownMessages.push(message)
+      }
+    })).toBe('加载文件异常:report failed')
+    expect(loggedErrors).toEqual([reportError])
+    expect(shownMessages).toEqual(['加载文件异常:report failed'])
+
+    expect(reportFileViewerMissingRemoteData({
+      message: '远程文件为空',
+      onErrorMessage: message => {
+        shownMessages.push(message)
+      }
+    })).toBe('远程文件为空')
+    expect(shownMessages).toEqual(['加载文件异常:report failed', '远程文件为空'])
   })
 
   it('commits load-start state in the shared core order', () => {

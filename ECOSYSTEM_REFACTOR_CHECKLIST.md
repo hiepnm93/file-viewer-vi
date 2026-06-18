@@ -121,6 +121,7 @@
   - [x] source loading 的 mutable preview target getter/setter 适配迁入 `@file-viewer/core`，Vue hook 只传响应式字段 accessor。
   - [x] source loading 的 load-start lifecycle context 与默认 loading 文案迁入 `@file-viewer/core`，Vue hook 不再手写开始加载上下文。
   - [x] source loading 的本地读取、远程加载、PDF 流式加载和缺失下载数据错误消息协议迁入 `@file-viewer/core`，Vue hook 不再硬编码加载错误文案。
+  - [x] source loading 的错误日志记录、错误文案解析和 showError 分发编排迁入 `@file-viewer/core`，Vue hook 不再维护本地错误展示顺序。
   - [x] source loading 的文件名写入、load-start 标记、lifecycle emit 与 loading 启动编排迁入 `@file-viewer/core`。
   - [x] source loading 的 load-start 清理与只停止当前请求 loading 的收尾编排迁入 `@file-viewer/core`。
   - [x] 本地文件预览的 FileRef 解析、load-start、读取渲染、错误回调和收尾清理编排迁入 `@file-viewer/core`。

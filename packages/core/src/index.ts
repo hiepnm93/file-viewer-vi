@@ -368,6 +368,7 @@ export type {
 export {
   cancelFileViewerPreviewRequest,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  DEFAULT_FILE_VIEWER_PREVIEW_LOAD_ERROR_LOGGER,
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   FILE_VIEWER_PREVIEW_LOAD_ERROR_PREFIXES,
   FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE,
@@ -403,6 +404,8 @@ export {
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
+  reportFileViewerMissingRemoteData,
+  reportFileViewerPreviewLoadError,
   runFileViewerLocalFilePreview,
   runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
@@ -429,6 +432,7 @@ export type {
   FileViewerLoadStartState,
   FileViewerPreviewLoadErrorKind,
   FileViewerPreviewLoadErrorPrefixes,
+  FileViewerPreviewLoadErrorLogger,
   FileViewerPreviewRequestResetState,
   FileViewerReadAndRenderFileState,
   FileViewerRenderCompleteState,
@@ -458,6 +462,8 @@ export type {
   ResolveFileViewerMissingRemoteDataErrorMessageInput,
   ResolveFileViewerPreviewLoadErrorMessageInput,
   ResolveFileViewerPreviewRequestReasonInput,
+  ReportFileViewerMissingRemoteDataInput,
+  ReportFileViewerPreviewLoadErrorInput,
 } from './sourceLoading';
 export { createViewer } from './viewer';
 export {

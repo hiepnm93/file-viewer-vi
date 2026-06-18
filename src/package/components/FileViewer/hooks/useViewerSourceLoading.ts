@@ -4,8 +4,8 @@ import {
   cancelFileViewerPreviewRequest,
   commitFileViewerEmptyPreviewResetState,
   createFileViewerPreviewStateTarget,
-  resolveFileViewerMissingRemoteDataErrorMessage,
-  resolveFileViewerPreviewLoadErrorMessage,
+  reportFileViewerMissingRemoteData,
+  reportFileViewerPreviewLoadError,
   runFileViewerLocalFilePreview,
   runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
@@ -163,12 +163,12 @@ export const useViewerSourceLoading = ({
       onClearLoadStarted: clearLoadStarted,
       onStopLoading: stopLoading,
       onError: nextError => {
-        console.error(nextError)
-        showError(resolveFileViewerPreviewLoadErrorMessage({
+        reportFileViewerPreviewLoadError({
           kind: 'local',
           error: nextError,
-          formatErrorMessage
-        }))
+          formatErrorMessage,
+          onErrorMessage: showError
+        })
       }
     })
   }
@@ -202,14 +202,18 @@ export const useViewerSourceLoading = ({
       onLifecycle: notifyLifecycle,
       onClearLoadStarted: clearLoadStarted,
       onStopLoading: stopLoading,
-      onMissingData: () => showError(resolveFileViewerMissingRemoteDataErrorMessage()),
+      onMissingData: () => {
+        reportFileViewerMissingRemoteData({
+          onErrorMessage: showError
+        })
+      },
       onError: (nextError, kind) => {
-        console.error(nextError)
-        showError(resolveFileViewerPreviewLoadErrorMessage({
+        reportFileViewerPreviewLoadError({
           kind,
           error: nextError,
-          formatErrorMessage
-        }))
+          formatErrorMessage,
+          onErrorMessage: showError
+        })
       }
     })
   }
