@@ -19,6 +19,7 @@ import {
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
   createFileViewerPostMessagePayload,
+  createFileViewerPublicOperationActionHandlers,
   createFileViewerRawPostMessagePayload,
   dispatchFileViewerLifecycleEvent,
   dispatchFileViewerOperationContextEvent,
@@ -1550,6 +1551,29 @@ describe('@file-viewer/core operation helpers', () => {
       Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument });
       Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
     }
+  });
+
+  it('creates public operation action facades that preserve the void component contract', async () => {
+    const { document } = parseHTML('<main id="root"><article>Document</article></main>');
+    const root = document.querySelector('#root') as HTMLElement;
+    const beforeOperations: FileViewerOperationType[] = [];
+    const actions = createFileViewerPublicOperationActionHandlers({
+      getBuffer: () => null,
+      getFile: () => null,
+      getUrl: () => '/example/report.pdf',
+      getFilename: () => 'report.pdf',
+      getRenderedSource: () => root,
+      getPrintAvailable: () => true,
+      beforeOperation: operation => {
+        beforeOperations.push(operation);
+        return false;
+      },
+    });
+
+    await expect(actions.downloadOriginalFile()).resolves.toBeUndefined();
+    await expect(actions.exportRenderedHtml()).resolves.toBeUndefined();
+    await expect(actions.printRenderedHtml()).resolves.toBeUndefined();
+    expect(beforeOperations).toEqual(['download', 'export-html', 'print']);
   });
 
   it('formats operation action errors through core defaults', () => {

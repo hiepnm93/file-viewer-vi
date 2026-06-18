@@ -5,7 +5,7 @@ import type {
   FileViewerOperationType
 } from '@file-viewer/core'
 import {
-  createFileViewerOperationActionHandlers
+  createFileViewerPublicOperationActionHandlers
 } from '@file-viewer/core'
 
 interface UseViewerExportOptions {
@@ -35,7 +35,7 @@ export const useViewerExport = ({
   showError,
   watermarkInlineStyle
 }: UseViewerExportOptions) => {
-  const actions = createFileViewerOperationActionHandlers({
+  return createFileViewerPublicOperationActionHandlers({
     getBuffer: () => currentBuffer.value,
     getFile: () => currentFile.value,
     getUrl: () => currentSourceUrl.value,
@@ -49,22 +49,4 @@ export const useViewerExport = ({
     formatErrorMessage,
     onErrorMessage: showError
   })
-
-  const downloadOriginalFile = async () => {
-    await actions.downloadOriginalFile()
-  }
-
-  const exportRenderedHtml = async () => {
-    await actions.exportRenderedHtml()
-  }
-
-  const printRenderedHtml = async () => {
-    await actions.printRenderedHtml()
-  }
-
-  return {
-    downloadOriginalFile,
-    exportRenderedHtml,
-    printRenderedHtml
-  }
 }

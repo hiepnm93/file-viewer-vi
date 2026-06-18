@@ -809,11 +809,20 @@ async function verifyVue3ScopedCompatibility() {
   const vueExportHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerExport.ts`
   assertImportsFrom(vueExportHookSource, '@file-viewer/core', vueExportHookLabel)
   assertTokens(vueExportHookSource, [
-    'createFileViewerOperationActionHandlers',
+    'createFileViewerPublicOperationActionHandlers',
+    'return createFileViewerPublicOperationActionHandlers',
     'formatErrorMessage',
     'onErrorMessage'
   ], vueExportHookLabel)
   for (const forbiddenToken of [
+    'createFileViewerOperationActionHandlers',
+    'const actions = createFileViewerOperationActionHandlers',
+    'const downloadOriginalFile = async',
+    'const exportRenderedHtml = async',
+    'const printRenderedHtml = async',
+    'await actions.downloadOriginalFile()',
+    'await actions.exportRenderedHtml()',
+    'await actions.printRenderedHtml()',
     'FileViewerOperationActionErrorContext',
     'operationErrorPrefixes',
     '下载失败',

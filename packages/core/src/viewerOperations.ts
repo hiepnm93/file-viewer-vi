@@ -106,6 +106,12 @@ export interface FileViewerOperationActionHandlers {
   printRenderedHtml(): Promise<boolean | undefined>;
 }
 
+export interface FileViewerPublicOperationActionHandlers {
+  downloadOriginalFile(): Promise<void>;
+  exportRenderedHtml(): Promise<void>;
+  printRenderedHtml(): Promise<void>;
+}
+
 interface BuildRenderedHtmlDocumentFromOperationInput {
   source: HTMLElement | null | undefined;
   title?: string;
@@ -440,6 +446,24 @@ export const createFileViewerOperationActionHandlers = ({
         });
         return undefined;
       }
+    },
+  };
+};
+
+export const createFileViewerPublicOperationActionHandlers = (
+  input: CreateFileViewerOperationActionHandlersInput
+): FileViewerPublicOperationActionHandlers => {
+  const actions = createFileViewerOperationActionHandlers(input);
+
+  return {
+    async downloadOriginalFile() {
+      await actions.downloadOriginalFile();
+    },
+    async exportRenderedHtml() {
+      await actions.exportRenderedHtml();
+    },
+    async printRenderedHtml() {
+      await actions.printRenderedHtml();
     },
   };
 };

@@ -157,6 +157,7 @@ export {
   createFileViewerOperationActionHandlers,
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
+  createFileViewerPublicOperationActionHandlers,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
@@ -173,6 +174,7 @@ export type {
   FileViewerOperationActionErrorContext,
   FileViewerOperationActionErrorPrefixes,
   FileViewerOperationActionHandlers,
+  FileViewerPublicOperationActionHandlers,
   ResolveFileViewerOperationActionErrorMessageInput,
 } from './viewerOperations';
 export {
