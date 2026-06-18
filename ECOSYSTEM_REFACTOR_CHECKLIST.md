@@ -118,6 +118,7 @@
   - [x] source loading 的请求开始版本创建、旧内容清理、预览重置、错误清理和空预览 reset 编排迁入 `@file-viewer/core`。
   - [x] source loading 的 refresh file/url/reset 路由和 cancel 请求状态提交迁入 `@file-viewer/core`。
   - [x] source loading 的已读取文件状态和流式 sourceUrl 状态应用迁入 `@file-viewer/core`，Vue hook 不再手写 source 字段归一化。
+  - [x] source loading 的 mutable preview target getter/setter 适配迁入 `@file-viewer/core`，Vue hook 只传响应式字段 accessor。
   - [x] source loading 的 load-start lifecycle context 与默认 loading 文案迁入 `@file-viewer/core`，Vue hook 不再手写开始加载上下文。
   - [x] source loading 的文件名写入、load-start 标记、lifecycle emit 与 loading 启动编排迁入 `@file-viewer/core`。
   - [x] source loading 的 load-start 清理与只停止当前请求 loading 的收尾编排迁入 `@file-viewer/core`。

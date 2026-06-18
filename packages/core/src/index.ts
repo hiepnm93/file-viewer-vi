@@ -355,6 +355,7 @@ export {
   commitFileViewerRemoteDownloadState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
+  createFileViewerPreviewStateTarget,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRenderCompleteState,
@@ -379,6 +380,7 @@ export {
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export type {
+  CreateFileViewerPreviewStateTargetInput,
   CreateFileViewerLoadStartStateInput,
   CreateFileViewerReadPreviewStateInput,
   CreateFileViewerRenderCompleteStateInput,
@@ -389,6 +391,7 @@ export type {
   CommitFileViewerRenderCompleteStateInput,
   CommitFileViewerRemoteDownloadStateInput,
   FileViewerEmptyPreviewState,
+  FileViewerMutableAccessor,
   FileViewerLocationLike,
   FileViewerFileRefSourcePlan,
   FileViewerLocalFilePreviewState,

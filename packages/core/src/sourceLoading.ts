@@ -68,6 +68,20 @@ export interface MutableFileViewerPreviewState extends MutableFileViewerPreviewR
   renderedReady: boolean;
 }
 
+export interface FileViewerMutableAccessor<Value> {
+  get(): Value;
+  set(value: Value): void;
+}
+
+export interface CreateFileViewerPreviewStateTargetInput {
+  filename: FileViewerMutableAccessor<string>;
+  file: FileViewerMutableAccessor<File | null>;
+  buffer: FileViewerMutableAccessor<ArrayBuffer | null>;
+  sourceUrl: FileViewerMutableAccessor<string | null>;
+  renderedReady: FileViewerMutableAccessor<boolean>;
+  progressiveReady: FileViewerMutableAccessor<boolean>;
+}
+
 export interface CommitFileViewerEmptyPreviewResetStateInput {
   previewTarget: MutableFileViewerPreviewState;
   state?: FileViewerEmptyPreviewState;
@@ -551,6 +565,54 @@ export const createFileViewerPreviewRequestResetState = (): FileViewerPreviewReq
     buffer: null,
     sourceUrl: null,
     progressiveReady: false,
+  };
+};
+
+export const createFileViewerPreviewStateTarget = ({
+  filename,
+  file,
+  buffer,
+  sourceUrl,
+  renderedReady,
+  progressiveReady,
+}: CreateFileViewerPreviewStateTargetInput): MutableFileViewerPreviewState => {
+  return {
+    get filename() {
+      return filename.get();
+    },
+    set filename(value) {
+      filename.set(value);
+    },
+    get file() {
+      return file.get();
+    },
+    set file(value) {
+      file.set(value);
+    },
+    get buffer() {
+      return buffer.get();
+    },
+    set buffer(value) {
+      buffer.set(value);
+    },
+    get sourceUrl() {
+      return sourceUrl.get();
+    },
+    set sourceUrl(value) {
+      sourceUrl.set(value);
+    },
+    get renderedReady() {
+      return renderedReady.get();
+    },
+    set renderedReady(value) {
+      renderedReady.set(value);
+    },
+    get progressiveReady() {
+      return progressiveReady.get();
+    },
+    set progressiveReady(value) {
+      progressiveReady.set(value);
+    },
   };
 };
 

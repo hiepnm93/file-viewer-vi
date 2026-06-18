@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import {
   cancelFileViewerPreviewRequest,
   commitFileViewerEmptyPreviewResetState,
+  createFileViewerPreviewStateTarget,
   runFileViewerLocalFilePreview,
   runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
@@ -98,44 +99,44 @@ export const useViewerSourceLoading = ({
   resetLoading,
   formatErrorMessage
 }: UseViewerSourceLoadingOptions) => {
-  const previewStateTarget = {
-    get filename(): string {
-      return filename.value
+  const previewStateTarget = createFileViewerPreviewStateTarget({
+    filename: {
+      get: () => filename.value,
+      set: value => {
+        filename.value = value
+      }
     },
-    set filename(value: string) {
-      filename.value = value
+    file: {
+      get: () => currentFile.value,
+      set: value => {
+        currentFile.value = value
+      }
     },
-    get file(): File | null {
-      return currentFile.value
+    buffer: {
+      get: () => currentBuffer.value,
+      set: value => {
+        currentBuffer.value = value
+      }
     },
-    set file(value: File | null) {
-      currentFile.value = value
+    sourceUrl: {
+      get: () => currentSourceUrl.value,
+      set: value => {
+        currentSourceUrl.value = value
+      }
     },
-    get buffer(): ArrayBuffer | null {
-      return currentBuffer.value
+    renderedReady: {
+      get: () => renderedReady.value,
+      set: value => {
+        renderedReady.value = value
+      }
     },
-    set buffer(value: ArrayBuffer | null) {
-      currentBuffer.value = value
-    },
-    get sourceUrl(): string | null {
-      return currentSourceUrl.value
-    },
-    set sourceUrl(value: string | null) {
-      currentSourceUrl.value = value
-    },
-    get renderedReady(): boolean {
-      return renderedReady.value
-    },
-    set renderedReady(value: boolean) {
-      renderedReady.value = value
-    },
-    get progressiveReady(): boolean {
-      return progressiveReady.value
-    },
-    set progressiveReady(value: boolean) {
-      progressiveReady.value = value
+    progressiveReady: {
+      get: () => progressiveReady.value,
+      set: value => {
+        progressiveReady.value = value
+      }
     }
-  }
+  })
 
   const isCurrentRequest = (version: number) => {
     return requestController.isCurrent(version)

@@ -17,6 +17,7 @@ import {
   commitFileViewerRemoteDownloadState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
+  createFileViewerPreviewStateTarget,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRenderCompleteState,
@@ -142,6 +143,74 @@ describe('remote source loading helpers', () => {
 
     expect(applyFileViewerEmptyPreviewState(previewTarget)).toBe(previewTarget)
     expect(previewTarget).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
+  })
+
+  it('creates mutable preview state targets from framework accessors', () => {
+    const backing: {
+      filename: string
+      file: File | null
+      buffer: ArrayBuffer | null
+      sourceUrl: string | null
+      renderedReady: boolean
+      progressiveReady: boolean
+    } = {
+      filename: 'old.pdf',
+      file: new File(['old'], 'old.pdf'),
+      buffer: new ArrayBuffer(8),
+      sourceUrl: '/old.pdf',
+      renderedReady: true,
+      progressiveReady: true
+    }
+
+    const target = createFileViewerPreviewStateTarget({
+      filename: {
+        get: () => backing.filename,
+        set: value => {
+          backing.filename = value
+        }
+      },
+      file: {
+        get: () => backing.file,
+        set: value => {
+          backing.file = value
+        }
+      },
+      buffer: {
+        get: () => backing.buffer,
+        set: value => {
+          backing.buffer = value
+        }
+      },
+      sourceUrl: {
+        get: () => backing.sourceUrl,
+        set: value => {
+          backing.sourceUrl = value
+        }
+      },
+      renderedReady: {
+        get: () => backing.renderedReady,
+        set: value => {
+          backing.renderedReady = value
+        }
+      },
+      progressiveReady: {
+        get: () => backing.progressiveReady,
+        set: value => {
+          backing.progressiveReady = value
+        }
+      }
+    })
+
+    expect(target.filename).toBe('old.pdf')
+    expect(applyFileViewerEmptyPreviewState(target)).toBe(target)
+    expect(backing).toEqual({
       filename: '',
       file: null,
       buffer: null,
