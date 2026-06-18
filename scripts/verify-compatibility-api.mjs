@@ -485,10 +485,10 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueSourceLoadingHookSource, [
     'buildLoadStartState',
     'buildRenderCompleteState',
+    'cancelFileViewerPreviewRequest',
     'commitFileViewerEmptyPreviewResetState',
-    'commitFileViewerPreviewRequestStartState',
-    'resolveFileViewerPreviewRequestReason',
     'runFileViewerLocalFilePreview',
+    'runFileViewerPreviewRequest',
     'runFileViewerRemoteFilePreview'
   ], vueSourceLoadingHookLabel)
   for (const forbiddenToken of [
@@ -514,6 +514,8 @@ async function verifyVue3ScopedCompatibility() {
     'commitFileViewerRemoteDownloadState',
     'finalizeFileViewerPreviewLoadState',
     'isFileViewerAbortError',
+    'commitFileViewerPreviewRequestStartState',
+    'resolveFileViewerPreviewRequestReason',
     'requestController.createVersion()',
     'requestController.createAbortController()',
     'requestController.clearAbortController',

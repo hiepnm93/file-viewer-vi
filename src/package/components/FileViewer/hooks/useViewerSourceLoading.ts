@@ -1,10 +1,10 @@
 import axios from 'axios'
 import type { Ref } from 'vue'
 import {
+  cancelFileViewerPreviewRequest,
   commitFileViewerEmptyPreviewResetState,
-  commitFileViewerPreviewRequestStartState,
-  resolveFileViewerPreviewRequestReason,
   runFileViewerLocalFilePreview,
+  runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
@@ -137,16 +137,6 @@ export const useViewerSourceLoading = ({
     }
   }
 
-  const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    return commitFileViewerPreviewRequestStartState({
-      reason,
-      requestController,
-      previewTarget: previewStateTarget,
-      onClearRenderedContent: clearRenderedContent,
-      onClearError: clearError
-    })
-  }
-
   const isCurrentRequest = (version: number) => {
     return requestController.isCurrent(version)
   }
@@ -225,25 +215,27 @@ export const useViewerSourceLoading = ({
   }
 
   const refreshPreview = async () => {
-    const file = getFile()
-    const url = getUrl()
-    const version = createRequestVersion(resolveFileViewerPreviewRequestReason({ file, url }))
-
-    if (file) {
-      await previewLocalFile(file, version)
-      return
-    }
-
-    if (url) {
-      await previewRemoteFile(url, version)
-      return
-    }
-
-    resetViewer()
+    await runFileViewerPreviewRequest({
+      file: getFile(),
+      url: getUrl(),
+      requestController,
+      previewTarget: previewStateTarget,
+      onPreviewLocalFile: previewLocalFile,
+      onPreviewRemoteFile: previewRemoteFile,
+      onClearRenderedContent: clearRenderedContent,
+      onClearError: clearError,
+      onResetLoading: resetLoading
+    })
   }
 
   const cancelPreview = (reason: FileViewerLifecycleContext['reason'] = 'component-unmount') => {
-    createRequestVersion(reason)
+    cancelFileViewerPreviewRequest({
+      reason,
+      requestController,
+      previewTarget: previewStateTarget,
+      onClearRenderedContent: clearRenderedContent,
+      onClearError: clearError
+    })
   }
 
   return {

@@ -4,6 +4,7 @@ import {
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
+  cancelFileViewerPreviewRequest,
   applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
@@ -33,6 +34,7 @@ import {
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
   runFileViewerLocalFilePreview,
+  runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
   runFileViewerReadAndRenderFile,
   runFileViewerStreamingPdfPreview,
@@ -181,6 +183,184 @@ describe('remote source loading helpers', () => {
       file: null,
       buffer: null,
       sourceUrl: null,
+      progressiveReady: false
+    })
+  })
+
+  it('cancels preview requests through the shared core request state', () => {
+    const controller = createFileViewerRequestController()
+    const file = new File(['demo'], 'cancel.txt')
+    const target = {
+      file,
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/cancel.txt',
+      progressiveReady: true
+    }
+    const events: string[] = []
+
+    const version = cancelFileViewerPreviewRequest({
+      requestController: controller,
+      previewTarget: target,
+      onClearRenderedContent: reason => {
+        events.push(`clear:${reason}:${target.file?.name ?? 'none'}`)
+      },
+      onClearError: () => {
+        events.push(`error:${target.file ? 'dirty' : 'reset'}`)
+      }
+    })
+
+    expect(version).toBe(1)
+    expect(events).toEqual([
+      'clear:component-unmount:cancel.txt',
+      'error:reset'
+    ])
+    expect(target).toEqual({
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      progressiveReady: false
+    })
+  })
+
+  it('routes preview refresh requests through shared core request orchestration', async () => {
+    const controller = createFileViewerRequestController()
+    const file = new File(['demo'], 'route.txt')
+    const target = {
+      filename: 'old.txt',
+      file: new File(['old'], 'old.txt'),
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/old.txt',
+      renderedReady: true,
+      progressiveReady: true
+    }
+    const events: string[] = []
+
+    const fileResult = await runFileViewerPreviewRequest({
+      file,
+      requestController: controller,
+      previewTarget: target,
+      onPreviewLocalFile: async (source, version) => {
+        events.push(`local:${source instanceof File ? source.name : 'blob'}:${version}:${target.file ? 'dirty' : 'reset'}`)
+        return 'local-result'
+      },
+      onPreviewRemoteFile: async url => {
+        events.push(`remote:${url}`)
+        return 'remote-result'
+      },
+      onClearRenderedContent: reason => {
+        events.push(`clear:${reason}:${target.file?.name ?? 'none'}`)
+      },
+      onClearError: () => {
+        events.push(`error:${target.file ? 'dirty' : 'reset'}`)
+      },
+      onResetLoading: () => {
+        events.push('reset-loading')
+      }
+    })
+
+    expect(fileResult).toEqual({
+      status: 'file',
+      version: 1,
+      reason: 'replace',
+      file,
+      url: null,
+      result: 'local-result'
+    })
+    expect(events).toEqual([
+      'clear:replace:old.txt',
+      'error:reset',
+      'local:route.txt:1:reset'
+    ])
+
+    const urlResult = await runFileViewerPreviewRequest({
+      url: '/example/route.pdf',
+      requestController: controller,
+      previewTarget: target,
+      onPreviewLocalFile: async () => {
+        events.push('local:unexpected')
+        return 'local-result'
+      },
+      onPreviewRemoteFile: async (url, version) => {
+        events.push(`remote:${url}:${version}:${target.file ? 'dirty' : 'reset'}`)
+        return 'remote-result'
+      },
+      onClearRenderedContent: reason => {
+        events.push(`clear:${reason}:${target.file?.name ?? 'none'}`)
+      },
+      onClearError: () => {
+        events.push(`error:${target.file ? 'dirty' : 'reset'}`)
+      }
+    })
+
+    expect(urlResult).toEqual({
+      status: 'url',
+      version: 2,
+      reason: 'replace',
+      file: null,
+      url: '/example/route.pdf',
+      result: 'remote-result'
+    })
+    expect(events.slice(3)).toEqual([
+      'clear:replace:none',
+      'error:reset',
+      'remote:/example/route.pdf:2:reset'
+    ])
+  })
+
+  it('routes empty preview refreshes through request reset then empty reset', async () => {
+    const controller = createFileViewerRequestController()
+    const target = {
+      filename: 'old.txt',
+      file: new File(['old'], 'old.txt'),
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/old.txt',
+      renderedReady: true,
+      progressiveReady: true
+    }
+    const events: string[] = []
+
+    const result = await runFileViewerPreviewRequest({
+      requestController: controller,
+      previewTarget: target,
+      onPreviewLocalFile: async () => {
+        events.push('local')
+        return null
+      },
+      onPreviewRemoteFile: async () => {
+        events.push('remote')
+        return null
+      },
+      onClearRenderedContent: reason => {
+        events.push(`clear:${reason ?? 'none'}:${target.filename}:${target.renderedReady}`)
+      },
+      onClearError: () => {
+        events.push(`error:${target.file ? 'dirty' : 'reset'}`)
+      },
+      onResetLoading: () => {
+        events.push(`reset-loading:${target.file ? 'dirty' : 'reset'}`)
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'reset',
+      version: 1,
+      reason: 'reset',
+      file: null,
+      url: null
+    })
+    expect(result.result).toBe(target)
+    expect(events).toEqual([
+      'clear:reset:old.txt:true',
+      'error:reset',
+      'clear:none::false',
+      'reset-loading:reset'
+    ])
+    expect(target).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
       progressiveReady: false
     })
   })

@@ -31,6 +31,7 @@ const requiredValueExports = [
   'createFileViewerFrameControllerHandle',
   'mountFileViewerFrame',
   'resolveFileViewerPresentationState',
+  'cancelFileViewerPreviewRequest',
   'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
   'DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME',
   'createFileViewerEmptyPreviewState',
@@ -58,6 +59,7 @@ const requiredValueExports = [
   'resolveFileViewerRuntimePageHref',
   'resolveFileViewerPreviewRequestReason',
   'runFileViewerLocalFilePreview',
+  'runFileViewerPreviewRequest',
   'runFileViewerRemoteFilePreview',
   'runFileViewerReadAndRenderFile',
   'runFileViewerStreamingPdfPreview',
@@ -136,6 +138,7 @@ const requiredValueExports = [
 ]
 
 const requiredTypeExports = [
+  'CancelFileViewerPreviewRequestInput',
   'FileViewerOptions',
   'FileViewerReadResult',
   'FileViewerSource',
@@ -150,6 +153,7 @@ const requiredTypeExports = [
   'FileViewerOperationContext',
   'FileViewerBeforeOperation',
   'FileViewerPreviewRequestResetState',
+  'FileViewerPreviewRequestRunState',
   'FileViewerReadAndRenderFileState',
   'FileViewerReadPreviewState',
   'FileViewerRenderReadinessState',
@@ -163,6 +167,7 @@ const requiredTypeExports = [
   'FileViewerRenderSurfaceState',
   'FinalizeFileViewerPreviewLoadStateInput',
   'RunFileViewerLocalFilePreviewInput',
+  'RunFileViewerPreviewRequestInput',
   'RunFileViewerRemoteFilePreviewInput',
   'RunFileViewerReadAndRenderFileInput',
   'RunFileViewerStreamingPdfPreviewInput',

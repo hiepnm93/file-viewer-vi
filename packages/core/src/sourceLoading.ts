@@ -408,6 +408,53 @@ export type FileViewerRemoteFilePreviewState<Session = unknown> =
     readonly error: unknown;
   };
 
+export interface RunFileViewerPreviewRequestInput<LocalResult = unknown, RemoteResult = unknown> {
+  file?: FileViewerFileRef | null;
+  url?: string | null;
+  reason?: FileViewerLifecycleContext['reason'];
+  requestController: Pick<FileViewerRequestController, 'createVersion'>;
+  previewTarget: MutableFileViewerPreviewState;
+  onPreviewLocalFile: (source: FileViewerFileRef, version: number) => Promise<LocalResult>;
+  onPreviewRemoteFile: (url: string, version: number) => Promise<RemoteResult>;
+  onClearRenderedContent?: (reason?: FileViewerLifecycleContext['reason']) => void;
+  onClearError?: () => void;
+  onResetLoading?: () => void;
+}
+
+export type FileViewerPreviewRequestRunState<LocalResult = unknown, RemoteResult = unknown> =
+  | {
+    readonly status: 'file';
+    readonly version: number;
+    readonly reason: FileViewerLifecycleContext['reason'];
+    readonly file: FileViewerFileRef;
+    readonly url: null;
+    readonly result: LocalResult;
+  }
+  | {
+    readonly status: 'url';
+    readonly version: number;
+    readonly reason: FileViewerLifecycleContext['reason'];
+    readonly file: null;
+    readonly url: string;
+    readonly result: RemoteResult;
+  }
+  | {
+    readonly status: 'reset';
+    readonly version: number;
+    readonly reason: FileViewerLifecycleContext['reason'];
+    readonly file: null;
+    readonly url: null;
+    readonly result: MutableFileViewerPreviewState;
+  };
+
+export interface CancelFileViewerPreviewRequestInput {
+  reason?: FileViewerLifecycleContext['reason'];
+  requestController: Pick<FileViewerRequestController, 'createVersion'>;
+  previewTarget: MutableFileViewerPreviewRequestState;
+  onClearRenderedContent?: (reason?: FileViewerLifecycleContext['reason']) => void;
+  onClearError?: () => void;
+}
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -532,6 +579,22 @@ export const commitFileViewerPreviewRequestStartState = ({
   return version;
 };
 
+export const cancelFileViewerPreviewRequest = ({
+  reason = 'component-unmount',
+  requestController,
+  previewTarget,
+  onClearRenderedContent,
+  onClearError,
+}: CancelFileViewerPreviewRequestInput) => {
+  return commitFileViewerPreviewRequestStartState({
+    reason,
+    requestController,
+    previewTarget,
+    onClearRenderedContent,
+    onClearError,
+  });
+};
+
 export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewerPreviewState>(
   target: Target,
   state: FileViewerEmptyPreviewState = createFileViewerEmptyPreviewState()
@@ -553,6 +616,66 @@ export const commitFileViewerEmptyPreviewResetState = ({
   onClearRenderedContent?.(reason);
   onResetLoading?.();
   return previewTarget;
+};
+
+export const runFileViewerPreviewRequest = async <LocalResult = unknown, RemoteResult = unknown>({
+  file,
+  url,
+  reason = resolveFileViewerPreviewRequestReason({ file, url }),
+  requestController,
+  previewTarget,
+  onPreviewLocalFile,
+  onPreviewRemoteFile,
+  onClearRenderedContent,
+  onClearError,
+  onResetLoading,
+}: RunFileViewerPreviewRequestInput<LocalResult, RemoteResult>): Promise<FileViewerPreviewRequestRunState<LocalResult, RemoteResult>> => {
+  const version = commitFileViewerPreviewRequestStartState({
+    reason,
+    requestController,
+    previewTarget,
+    onClearRenderedContent,
+    onClearError,
+  });
+
+  if (file) {
+    const result = await onPreviewLocalFile(file, version);
+    return {
+      status: 'file',
+      version,
+      reason,
+      file,
+      url: null,
+      result,
+    };
+  }
+
+  if (url) {
+    const result = await onPreviewRemoteFile(url, version);
+    return {
+      status: 'url',
+      version,
+      reason,
+      file: null,
+      url,
+      result,
+    };
+  }
+
+  const result = commitFileViewerEmptyPreviewResetState({
+    previewTarget,
+    onClearRenderedContent,
+    onResetLoading,
+  });
+
+  return {
+    status: 'reset',
+    version,
+    reason,
+    file: null,
+    url: null,
+    result,
+  };
 };
 
 export const createFileViewerReadPreviewState = ({
