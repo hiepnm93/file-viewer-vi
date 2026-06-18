@@ -46,6 +46,16 @@ export type {
   MutableFileViewerSearchState,
 } from './documentSearch';
 export {
+  createFileViewerDocumentChangeSnapshot,
+  createFileViewerSearchChangeState,
+  resolveFileViewerLocationChangeAnchor,
+} from './documentEvents';
+export type {
+  CreateFileViewerDocumentChangeSnapshotInput,
+  FileViewerDocumentChangeSnapshot,
+  ResolveFileViewerLocationChangeAnchorInput,
+} from './documentEvents';
+export {
   applyFileViewerZoomState,
   createFileViewerZoomChangeEmitter,
   cloneFileViewerZoomState,

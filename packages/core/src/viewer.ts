@@ -3,10 +3,13 @@ import {
 } from './document';
 import {
   collectFileViewerDocumentAnchors,
-  getCurrentFileViewerDocumentAnchor,
   scrollToFileViewerDocumentAnchor,
 } from './documentDom';
-import { createFileViewerDomSearchController, cloneFileViewerSearchState } from './documentSearch';
+import { createFileViewerDomSearchController } from './documentSearch';
+import {
+  createFileViewerSearchChangeState,
+  resolveFileViewerLocationChangeAnchor,
+} from './documentEvents';
 import { createFileViewerZoomController } from './documentZoom';
 import {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
@@ -286,14 +289,14 @@ export const createViewer = (
       return searchController.clear();
     },
     getSearchState() {
-      return cloneFileViewerSearchState(searchController.state);
+      return createFileViewerSearchChangeState(searchController.state);
     },
     async collectDocumentAnchors() {
       anchors = collectFileViewerDocumentAnchors(container);
       return anchors;
     },
     getCurrentDocumentAnchor() {
-      return getCurrentFileViewerDocumentAnchor(container, anchors);
+      return resolveFileViewerLocationChangeAnchor({ root: container, anchors });
     },
     scrollToDocumentAnchor(anchor: FileViewerDocumentAnchor | string | number | null | undefined) {
       return scrollToFileViewerDocumentAnchor(container, anchor);

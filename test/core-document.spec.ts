@@ -6,8 +6,10 @@ import {
   buildFileViewerDocumentTextChunks,
   collectFileViewerDocumentAnchors,
   cloneFileViewerSearchState,
+  createFileViewerDocumentChangeSnapshot,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
+  createFileViewerSearchChangeState,
   createFileViewerZoomController,
   createFileViewerZoomState,
   findFileViewerSearchProvider,
@@ -19,6 +21,7 @@ import {
   normalizeFileViewerSearchOptions,
   registerFileViewerSearchProvider,
   registerFileViewerZoomProvider,
+  resolveFileViewerLocationChangeAnchor,
   resolveFileViewerScrollContainer,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
@@ -117,6 +120,7 @@ describe('@file-viewer/core document helpers', () => {
     source.matches = [source.current];
 
     const cloned = cloneFileViewerSearchState(source);
+    const eventState = createFileViewerSearchChangeState(source);
 
     expect(cloned).toEqual(source);
     expect(cloned).not.toBe(source);
@@ -124,6 +128,9 @@ describe('@file-viewer/core document helpers', () => {
     expect(cloned.current?.anchor).not.toBe(source.current.anchor);
     expect(cloned.matches[0]).not.toBe(source.matches[0]);
     expect(cloned.matches[0].anchor).not.toBe(source.matches[0].anchor);
+    expect(eventState).toEqual(source);
+    expect(eventState).not.toBe(source);
+    expect(eventState.current).not.toBe(source.current);
 
     const target = createEmptyFileViewerSearchState('old');
     expect(applyFileViewerSearchState(target, source)).toBe(target);
@@ -211,6 +218,15 @@ describe('@file-viewer/core document helpers', () => {
     ]);
     expect(ignored.dataset.viewerAnchorId).toBeUndefined();
     expect(getCurrentFileViewerDocumentAnchor(root, anchors)?.line).toBe(1);
+    expect(resolveFileViewerLocationChangeAnchor({ root, anchors })?.line).toBe(1);
+    expect(createFileViewerDocumentChangeSnapshot({
+      root,
+      anchors,
+      searchState: createEmptyFileViewerSearchState('PDF'),
+    })).toMatchObject({
+      searchState: { query: 'PDF', total: 0, currentIndex: -1 },
+      locationAnchor: { line: 1 },
+    });
   });
 
   it('resolves the best document scroll container with framework-neutral DOM rules', () => {

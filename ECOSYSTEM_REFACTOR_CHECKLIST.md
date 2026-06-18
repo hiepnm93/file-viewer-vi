@@ -183,6 +183,7 @@
     - [x] DOM 锚点采集、当前定位和锚点滚动迁入 `@file-viewer/core`，Vue 旧路径保留 re-export/门面。
     - [x] 文档滚动容器解析（显式容器、PDF wrapper、最大可滚动子元素）迁入 `@file-viewer/core`，Vue document features hook 只调用 core resolver。
     - [x] 搜索状态快照克隆迁入 `@file-viewer/core`，Vue document features hook 不再手写 matches/current 拷贝。
+    - [x] 搜索/定位 change 事件快照构建迁入 `@file-viewer/core`，Vue document features hook 不再直接调用底层克隆或当前锚点解析函数。
     - [x] 搜索/定位 postMessage 事件投递 helper 迁入 `@file-viewer/core`，Vue document features hook 不再拼接 raw payload。
     - [x] 搜索/缩放 provider 注册表和查找协议迁入 `@file-viewer/core`，vendor 和组件 hooks 均直接依赖 core。
     - [x] DOM 搜索高亮、命中滚动和 MutationObserver 调度迁入 pure TS controller，Vue hook 仅负责响应式状态同步。

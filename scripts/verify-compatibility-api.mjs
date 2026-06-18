@@ -560,7 +560,8 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueDocumentFeaturesHookSource, '@file-viewer/core', vueDocumentFeaturesHookLabel)
   assertTokens(vueDocumentFeaturesHookSource, [
     'resolveFileViewerScrollContainer',
-    'cloneFileViewerSearchState',
+    'createFileViewerSearchChangeState',
+    'resolveFileViewerLocationChangeAnchor',
     'postFileViewerSearchChange',
     'postFileViewerLocationChange',
     'buildFileViewerDocumentTextChunks'
@@ -570,6 +571,8 @@ async function verifyVue3ScopedCompatibility() {
     'postFileViewerMessageToParent',
     'const postViewerPayload',
     'const cloneSearchState',
+    'cloneFileViewerSearchState',
+    'getCurrentFileViewerDocumentAnchor',
     'matches.map(match => ({ ...match }))',
     'const getScrollableRange',
     'const isScrollableElement',

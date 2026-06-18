@@ -7,10 +7,10 @@ import type {
 } from '@file-viewer/core'
 import {
   buildFileViewerDocumentTextChunks,
-  cloneFileViewerSearchState,
-  getCurrentFileViewerDocumentAnchor,
+  createFileViewerSearchChangeState,
   postFileViewerLocationChange,
   postFileViewerSearchChange,
+  resolveFileViewerLocationChangeAnchor,
   resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor
 } from '@file-viewer/core'
@@ -45,7 +45,7 @@ export const useViewerDocumentFeatures = ({
     getScrollContainer
   )
 
-  const getSearchState = () => cloneFileViewerSearchState(documentSearch.state)
+  const getSearchState = () => createFileViewerSearchChangeState(documentSearch.state)
 
   const notifySearchChange = () => {
     const state = getSearchState()
@@ -55,7 +55,10 @@ export const useViewerDocumentFeatures = ({
   }
 
   const notifyLocationChange = () => {
-    const anchor = getCurrentFileViewerDocumentAnchor(output.value, documentSearch.anchors.value)
+    const anchor = resolveFileViewerLocationChangeAnchor({
+      root: output.value,
+      anchors: documentSearch.anchors.value
+    })
     emitLocationChange(anchor)
     postFileViewerLocationChange(anchor)
     return anchor
