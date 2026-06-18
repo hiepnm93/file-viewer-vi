@@ -490,10 +490,10 @@ async function verifyVue3ScopedCompatibility() {
     'commitFileViewerPreviewRequestStartState',
     'commitFileViewerRemoteDownloadState',
     'finalizeFileViewerPreviewLoadState',
-    'resolveFileViewerFileRefSourcePlan',
     'resolveFileViewerPreviewRequestReason',
     'resolveFileViewerRemoteSourcePlan',
     'resolveFileViewerRuntimePageHref',
+    'runFileViewerLocalFilePreview',
     'runFileViewerReadAndRenderFile',
     'runFileViewerStreamingPdfPreview'
   ], vueSourceLoadingHookLabel)
@@ -511,6 +511,7 @@ async function verifyVue3ScopedCompatibility() {
     'sourceUrl || null',
     'applyFileViewerEmptyPreviewState',
     'applyFileViewerPreviewRequestResetState',
+    'resolveFileViewerFileRefSourcePlan',
     'requestController.createVersion()',
     "filename.value = ''",
     'filename.value = nextFilename',

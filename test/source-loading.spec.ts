@@ -32,6 +32,7 @@ import {
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
+  runFileViewerLocalFilePreview,
   runFileViewerReadAndRenderFile,
   runFileViewerStreamingPdfPreview,
   shouldStreamPdfUrl
@@ -485,6 +486,219 @@ describe('remote source loading helpers', () => {
       source: 'file',
       version: 12
     })
+  })
+
+  it('runs local file preview through shared core orchestration', async () => {
+    const events: string[] = []
+    const file = new File(['demo'], 'local.docx')
+    const session = { id: 'local-session' }
+    const target = {
+      filename: 'old.bin',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerLocalFilePreview({
+      source: file,
+      version: 13,
+      currentFilename: 'old.bin',
+      previewTarget: target,
+      isCurrent: version => version === 13,
+      mountRenderedContent: async (buffer, nextFile, version, sourceUrl) => {
+        events.push(`mount:${nextFile.name}:${buffer.byteLength}:${version}:${sourceUrl ?? 'none'}`)
+        return session
+      },
+      destroyRenderSession: () => {
+        events.push('destroy')
+      },
+      buildLoadStartState: input => {
+        events.push(`build-start:${input.source}:${input.file.name}`)
+        return createFileViewerLoadStartState({
+          ...input,
+          timestamp: 300
+        })
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build-complete:${input.source}:${input.file.name}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          timestamp: 340
+        })
+      },
+      onMarkLoadStarted: version => {
+        events.push(`mark:${version}:${target.filename}`)
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}:${context.filename}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      },
+      onError: () => {
+        events.push('error')
+      }
+    })
+
+    if (result.status !== 'ready') {
+      throw new Error(`Expected ready local preview state, got ${result.status}`)
+    }
+    expect(result.source.file).toBe(file)
+    expect(result.read.session).toBe(session)
+    expect(target).toMatchObject({
+      filename: 'local.docx',
+      file,
+      sourceUrl: null,
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(target.buffer?.byteLength).toBe(4)
+    expect(events).toEqual([
+      'mark:13:local.docx',
+      'build-start:file:local.docx',
+      'lifecycle:load-start:local.docx',
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`,
+      'mount:local.docx:4:13:none',
+      'session:set',
+      'build-complete:file:local.docx',
+      'active:load-complete:local.docx',
+      'lifecycle:load-complete:local.docx',
+      'clear:13',
+      'clear:13',
+      'stop'
+    ])
+  })
+
+  it('returns stale local file preview state without mounting stale files', async () => {
+    const events: string[] = []
+    const file = new File(['demo'], 'stale-local.docx')
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerLocalFilePreview({
+      source: file,
+      version: 14,
+      previewTarget: target,
+      isCurrent: () => false,
+      mountRenderedContent: async () => {
+        events.push('mount')
+        return undefined
+      },
+      buildLoadStartState: input => createFileViewerLoadStartState(input),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'stale',
+      error: null
+    })
+    expect(result.read).toMatchObject({
+      stale: true,
+      complete: null
+    })
+    expect(target).toEqual({
+      filename: 'stale-local.docx',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: true
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`,
+      'clear:14'
+    ])
+  })
+
+  it('reports current local file preview mount errors through shared core flow', async () => {
+    const events: string[] = []
+    const error = new Error('local mount failed')
+    const file = new File(['demo'], 'broken.docx')
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: false
+    }
+
+    const result = await runFileViewerLocalFilePreview({
+      source: file,
+      version: 15,
+      previewTarget: target,
+      isCurrent: version => version === 15,
+      mountRenderedContent: async () => {
+        throw error
+      },
+      buildLoadStartState: input => createFileViewerLoadStartState(input),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onError: nextError => {
+        events.push(nextError === error ? 'error:reported' : 'error:miss')
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'error',
+      source: {
+        file,
+        filename: 'broken.docx'
+      },
+      read: null,
+      error
+    })
+    expect(target).toMatchObject({
+      filename: 'broken.docx',
+      file,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
+    expect(target.buffer?.byteLength).toBe(4)
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`,
+      'error:reported',
+      'clear:15',
+      'stop'
+    ])
   })
 
   it('runs read and render flow through shared core orchestration', async () => {

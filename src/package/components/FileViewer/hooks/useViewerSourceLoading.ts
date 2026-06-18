@@ -7,10 +7,10 @@ import {
   commitFileViewerRemoteDownloadState,
   finalizeFileViewerPreviewLoadState,
   isFileViewerAbortError,
-  resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
+  runFileViewerLocalFilePreview,
   runFileViewerReadAndRenderFile,
   runFileViewerStreamingPdfPreview,
 } from '@file-viewer/core'
@@ -205,41 +205,28 @@ export const useViewerSourceLoading = ({
   }
 
   const previewLocalFile = async (source: FileRef, version: number) => {
-    const localSource = resolveFileViewerFileRefSourcePlan({
+    await runFileViewerLocalFilePreview({
       source,
-      currentFilename: filename.value
-    })
-    const { file } = localSource
-    commitFileViewerLoadStartState({
       version,
-      filename: localSource.filename,
-      filenameTarget: previewStateTarget,
-      buildState: () => buildLoadStartState({
-        version,
-        source: 'file',
-        file
-      }),
+      currentFilename: filename.value,
+      previewTarget: previewStateTarget,
+      isCurrent: isCurrentRequest,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildLoadStartState,
+      buildRenderCompleteState,
       onMarkLoadStarted: markLoadStarted,
+      onStartLoading: startLoading,
+      onSession: setActiveRenderSession,
+      onActiveDocumentContext: setActiveDocumentContext,
       onLifecycle: notifyLifecycle,
-      onStartLoading: startLoading
-    })
-
-    try {
-      await readAndRenderFile(file, version, undefined, 'file')
-    } catch (nextError) {
-      if (!isCurrentRequest(version)) {
-        return
+      onClearLoadStarted: clearLoadStarted,
+      onStopLoading: stopLoading,
+      onError: nextError => {
+        console.error(nextError)
+        showError(formatErrorMessage('读取文件异常', nextError))
       }
-      console.error(nextError)
-      showError(formatErrorMessage('读取文件异常', nextError))
-    } finally {
-      finalizeFileViewerPreviewLoadState({
-        version,
-        isCurrent: isCurrentRequest,
-        onClearLoadStarted: clearLoadStarted,
-        onStopLoading: stopLoading
-      })
-    }
+    })
   }
 
   const previewRemoteFile = async (url: string, version: number) => {

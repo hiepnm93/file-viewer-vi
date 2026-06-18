@@ -265,6 +265,60 @@ export type FileViewerStreamingPdfPreviewState<Session = unknown> =
     readonly error: unknown;
   };
 
+export interface RunFileViewerLocalFilePreviewInput<Session = unknown> {
+  source: FileViewerFileRef;
+  version: number;
+  currentFilename?: string;
+  fallbackFilename?: string;
+  previewTarget: MutableFileViewerPreviewState;
+  isCurrent: (version: number) => boolean;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string
+  ) => Promise<Session | undefined>;
+  destroyRenderSession?: (session?: Session | null) => void;
+  buildLoadStartState: (input: {
+    version: number;
+    source: 'file';
+    file: File;
+  }) => FileViewerLoadStartState;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: 'file';
+    file: File;
+  }) => FileViewerRenderCompleteState;
+  onMarkLoadStarted?: (version: number) => void;
+  onStartLoading?: (message: string) => void;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onClearLoadStarted?: (version: number) => void;
+  onStopLoading?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+export type FileViewerLocalFilePreviewState<Session = unknown> =
+  | {
+    readonly status: 'ready';
+    readonly source: FileViewerFileRefSourcePlan;
+    readonly read: Extract<FileViewerReadAndRenderFileState<Session>, { stale: false }>;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'stale';
+    readonly source: FileViewerFileRefSourcePlan | null;
+    readonly read: FileViewerReadAndRenderFileState<Session> | null;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'error';
+    readonly source: FileViewerFileRefSourcePlan;
+    readonly read: null;
+    readonly error: unknown;
+  };
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -629,6 +683,109 @@ export const runFileViewerStreamingPdfPreview = async <Session = unknown>({
       placeholderFile,
       session: null,
       complete: null,
+      error,
+    };
+  } finally {
+    finalizeFileViewerPreviewLoadState({
+      version,
+      isCurrent,
+      onClearLoadStarted,
+      onStopLoading,
+    });
+  }
+};
+
+export const runFileViewerLocalFilePreview = async <Session = unknown>({
+  source,
+  version,
+  currentFilename,
+  fallbackFilename,
+  previewTarget,
+  isCurrent,
+  mountRenderedContent,
+  destroyRenderSession,
+  buildLoadStartState,
+  buildRenderCompleteState,
+  onMarkLoadStarted,
+  onStartLoading,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+  onClearLoadStarted,
+  onStopLoading,
+  onError,
+}: RunFileViewerLocalFilePreviewInput<Session>): Promise<FileViewerLocalFilePreviewState<Session>> => {
+  const localSource = resolveFileViewerFileRefSourcePlan({
+    source,
+    currentFilename,
+    fallbackFilename,
+  });
+  const { file } = localSource;
+
+  commitFileViewerLoadStartState({
+    version,
+    filename: localSource.filename,
+    filenameTarget: previewTarget,
+    buildState: () => buildLoadStartState({
+      version,
+      source: 'file',
+      file,
+    }),
+    onMarkLoadStarted,
+    onLifecycle,
+    onStartLoading,
+  });
+
+  try {
+    const read = await runFileViewerReadAndRenderFile({
+      file,
+      version,
+      source: 'file',
+      previewTarget,
+      isCurrent,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildRenderCompleteState: input => buildRenderCompleteState({
+        version: input.version,
+        source: 'file',
+        file,
+      }),
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+    });
+
+    if (read.stale) {
+      return {
+        status: 'stale',
+        source: localSource,
+        read,
+        error: null,
+      };
+    }
+
+    return {
+      status: 'ready',
+      source: localSource,
+      read,
+      error: null,
+    };
+  } catch (error) {
+    if (!isCurrent(version)) {
+      return {
+        status: 'stale',
+        source: localSource,
+        read: null,
+        error: null,
+      };
+    }
+
+    onError?.(error);
+    return {
+      status: 'error',
+      source: localSource,
+      read: null,
       error,
     };
   } finally {
