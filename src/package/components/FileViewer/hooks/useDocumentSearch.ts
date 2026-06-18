@@ -1,8 +1,10 @@
 import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
-  applyFileViewerSearchState,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
+  destroyFileViewerDomSearchController,
+  observeFileViewerDomSearchController,
+  runFileViewerDomSearchControllerAction,
   type FileViewerDocumentAnchor,
   type FileViewerSearchOptions,
   type FileViewerSearchState
@@ -27,47 +29,35 @@ export const useDocumentSearch = (
     waitForDomUpdate: () => nextTick(),
     preferredScrollContainer: scrollContainerSource
   })
-
-  const syncFromController = () => {
-    anchors.value = controller.anchors
-    applyFileViewerSearchState(state, controller.state)
-    return state
-  }
+  const target = { anchors, state }
 
   const observe = () => {
-    controller.observe()
-    syncFromController()
+    observeFileViewerDomSearchController(target, controller)
   }
 
   const refreshAnchors = async () => {
-    await controller.refreshAnchors()
-    syncFromController()
+    await runFileViewerDomSearchControllerAction(target, controller, () => controller.refreshAnchors())
     return anchors.value
   }
 
   const search = async (query: string) => {
-    await controller.search(query)
-    return syncFromController()
+    return runFileViewerDomSearchControllerAction(target, controller, () => controller.search(query))
   }
 
   const next = async () => {
-    await controller.next()
-    return syncFromController()
+    return runFileViewerDomSearchControllerAction(target, controller, () => controller.next())
   }
 
   const previous = async () => {
-    await controller.previous()
-    return syncFromController()
+    return runFileViewerDomSearchControllerAction(target, controller, () => controller.previous())
   }
 
   const clear = async () => {
-    await controller.clear()
-    return syncFromController()
+    return runFileViewerDomSearchControllerAction(target, controller, () => controller.clear())
   }
 
   onBeforeUnmount(() => {
-    controller.destroy()
-    syncFromController()
+    destroyFileViewerDomSearchController(target, controller)
   })
 
   return {

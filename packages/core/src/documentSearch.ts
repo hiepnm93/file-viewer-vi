@@ -26,6 +26,28 @@ export interface FileViewerInternalSearchMatch extends FileViewerSearchMatch {
   element: HTMLElement;
 }
 
+export interface FileViewerDomSearchController {
+  readonly anchors: FileViewerDocumentAnchor[];
+  readonly state: FileViewerSearchState;
+  getInternalMatches(): FileViewerInternalSearchMatch[];
+  observe(): void;
+  refreshAnchors(): Promise<FileViewerDocumentAnchor[]>;
+  search(query: string): Promise<FileViewerSearchState>;
+  next(): Promise<FileViewerSearchState>;
+  previous(): Promise<FileViewerSearchState>;
+  clear(): Promise<FileViewerSearchState>;
+  destroy(): void;
+}
+
+export interface FileViewerDocumentAnchorsTarget {
+  value: FileViewerDocumentAnchor[];
+}
+
+export interface FileViewerDomSearchControllerStateTarget {
+  anchors: FileViewerDocumentAnchorsTarget;
+  state: MutableFileViewerSearchState;
+}
+
 export const DEFAULT_FILE_VIEWER_SEARCH_MATCH_CLASS = 'flyfish-search-match';
 export const DEFAULT_FILE_VIEWER_SEARCH_ACTIVE_CLASS = 'flyfish-search-match--active';
 export const DEFAULT_FILE_VIEWER_SEARCH_MAX_MATCHES = 1000;
@@ -80,6 +102,49 @@ export const applyFileViewerSearchState = <Target extends MutableFileViewerSearc
   target.matches = nextState.matches;
 
   return target;
+};
+
+export const syncFileViewerDomSearchControllerState = <
+  Target extends FileViewerDomSearchControllerStateTarget,
+>(
+  target: Target,
+  controller: Pick<FileViewerDomSearchController, 'anchors' | 'state'>
+) => {
+  target.anchors.value = controller.anchors;
+  applyFileViewerSearchState(target.state, controller.state);
+  return target.state;
+};
+
+export const observeFileViewerDomSearchController = <
+  Target extends FileViewerDomSearchControllerStateTarget,
+>(
+  target: Target,
+  controller: Pick<FileViewerDomSearchController, 'observe' | 'anchors' | 'state'>
+) => {
+  controller.observe();
+  return syncFileViewerDomSearchControllerState(target, controller);
+};
+
+export const runFileViewerDomSearchControllerAction = async <
+  Target extends FileViewerDomSearchControllerStateTarget,
+  Result,
+>(
+  target: Target,
+  controller: Pick<FileViewerDomSearchController, 'anchors' | 'state'>,
+  action: () => Result | Promise<Result>
+) => {
+  await action();
+  return syncFileViewerDomSearchControllerState(target, controller);
+};
+
+export const destroyFileViewerDomSearchController = <
+  Target extends FileViewerDomSearchControllerStateTarget,
+>(
+  target: Target,
+  controller: Pick<FileViewerDomSearchController, 'destroy' | 'anchors' | 'state'>
+) => {
+  controller.destroy();
+  return syncFileViewerDomSearchControllerState(target, controller);
 };
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -173,7 +238,7 @@ export const createFileViewerDomSearchController = ({
   options,
   waitForDomUpdate,
   preferredScrollContainer,
-}: CreateFileViewerDomSearchControllerOptions) => {
+}: CreateFileViewerDomSearchControllerOptions): FileViewerDomSearchController => {
   let anchors: FileViewerDocumentAnchor[] = [];
   let internalMatches: FileViewerInternalSearchMatch[] = [];
   const marks = new Set<HTMLElement>();

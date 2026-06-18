@@ -41,8 +41,15 @@ export {
   applyFileViewerSearchState,
   cloneFileViewerSearchState,
   createFileViewerDomSearchController,
+  destroyFileViewerDomSearchController,
+  observeFileViewerDomSearchController,
+  runFileViewerDomSearchControllerAction,
+  syncFileViewerDomSearchControllerState,
 } from './documentSearch';
 export type {
+  FileViewerDocumentAnchorsTarget,
+  FileViewerDomSearchController,
+  FileViewerDomSearchControllerStateTarget,
   MutableFileViewerSearchState,
 } from './documentSearch';
 export {

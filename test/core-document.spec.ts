@@ -14,6 +14,7 @@ import {
   createFileViewerSearchChangeState,
   createFileViewerZoomController,
   createFileViewerZoomState,
+  destroyFileViewerDomSearchController,
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
   getCurrentFileViewerDocumentAnchor,
@@ -21,13 +22,16 @@ import {
   isFileViewerScrollableElement,
   normalizeFileViewerAiOptions,
   normalizeFileViewerSearchOptions,
+  observeFileViewerDomSearchController,
   observeFileViewerZoomController,
   registerFileViewerSearchProvider,
   registerFileViewerZoomProvider,
   refreshFileViewerZoomControllerProvider,
   resolveFileViewerLocationChangeAnchor,
   resolveFileViewerScrollContainer,
+  runFileViewerDomSearchControllerAction,
   runFileViewerZoomControllerAction,
+  syncFileViewerDomSearchControllerState,
   syncFileViewerZoomControllerState,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
@@ -334,30 +338,43 @@ describe('@file-viewer/core document helpers', () => {
       waitForDomUpdate: () => Promise.resolve(),
       preferredScrollContainer: () => root,
     });
+    const target = {
+      anchors: { value: [] as FileViewerDocumentAnchor[] },
+      state: createEmptyFileViewerSearchState(),
+    };
 
-    await controller.search('pdf');
+    await runFileViewerDomSearchControllerAction(target, controller, () => controller.search('pdf'));
 
     expect(controller.state).toMatchObject({
       query: 'pdf',
       total: 2,
       currentIndex: 0,
     });
+    expect(target.state).toMatchObject({ query: 'pdf', total: 2, currentIndex: 0 });
+    expect(target.anchors.value).toBe(controller.anchors);
     expect(Array.from(root.querySelectorAll('mark')).map(mark => mark.textContent)).toEqual(['PDF', 'pdf']);
     expect(root.querySelectorAll('.flyfish-search-match--active')).toHaveLength(1);
     expect(root.scrollLeft).toBe(18);
 
-    await controller.next();
+    await runFileViewerDomSearchControllerAction(target, controller, () => controller.next());
     expect(controller.state.currentIndex).toBe(1);
+    expect(target.state.currentIndex).toBe(1);
 
-    await controller.clear();
+    expect(observeFileViewerDomSearchController(target, controller)).toBe(target.state);
+    expect(syncFileViewerDomSearchControllerState(target, controller)).toBe(target.state);
+
+    await runFileViewerDomSearchControllerAction(target, controller, () => controller.clear());
     expect(controller.state).toMatchObject({
       query: '',
       total: 0,
       currentIndex: -1,
       current: null,
     });
+    expect(target.state).toMatchObject({ query: '', total: 0, currentIndex: -1 });
     expect(root.querySelectorAll('mark')).toHaveLength(0);
     expect(paragraph.textContent).toBe('Alpha PDF beta pdf.');
+
+    destroyFileViewerDomSearchController(target, controller);
   });
 
   it('runs the zoom controller without framework state', async () => {

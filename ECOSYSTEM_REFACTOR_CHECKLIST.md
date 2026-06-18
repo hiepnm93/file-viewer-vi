@@ -180,6 +180,7 @@
   - [x] 删除旧 `src/package/use` 源码层，FileViewer loading/search/zoom 与 XLSX worker 生命周期门面均移动到拥有者同级目录。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
   - [x] 搜索 runtime state 应用迁入 `@file-viewer/core`，core search controller 与 Vue search hook 共用同一套快照复制语义。
+  - [x] 搜索 controller 的 observe / search / next / previous / clear / destroy 后响应式状态同步迁入 `@file-viewer/core`，Vue search hook 不再直接同步锚点和搜索状态。
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [x] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。
     - [x] DOM 锚点采集、当前定位和锚点滚动迁入 `@file-viewer/core`，Vue 旧路径保留 re-export/门面。

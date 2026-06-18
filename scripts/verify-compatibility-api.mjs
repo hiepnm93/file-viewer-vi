@@ -543,11 +543,16 @@ async function verifyVue3ScopedCompatibility() {
   const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
   assertImportsFrom(vueDocumentSearchHookSource, '@file-viewer/core', vueDocumentSearchHookLabel)
   assertTokens(vueDocumentSearchHookSource, [
-    'applyFileViewerSearchState',
     'createFileViewerDomSearchController',
-    'controller.destroy()'
+    'observeFileViewerDomSearchController',
+    'runFileViewerDomSearchControllerAction',
+    'destroyFileViewerDomSearchController'
   ], vueDocumentSearchHookLabel)
   for (const forbiddenToken of [
+    'applyFileViewerSearchState',
+    'const syncFromController',
+    'anchors.value = controller.anchors',
+    'controller.destroy()',
     'const applySearchState',
     'target.query = nextState.query',
     'target.matches = nextState.matches'
