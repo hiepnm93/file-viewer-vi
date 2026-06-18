@@ -1,13 +1,11 @@
 import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import {
+  cloneFileViewerOperationAvailability,
   createFileViewerOriginalSourceState,
-  hasVisibleFileViewerToolbarActions,
   isFileViewerZoomButtonDisabled,
   postFileViewerOperationAvailabilityChange,
   postFileViewerZoomChange,
-  resolveFileViewerOperationAvailability,
-  resolveFileViewerToolbarPosition,
-  resolveVisibleFileViewerToolbar
+  resolveFileViewerToolbarState
 } from '@file-viewer/core'
 import type {
   FileRenderExportAdapter,
@@ -57,8 +55,8 @@ export const useViewerToolbar = ({
   emitOperationAvailabilityChange,
   emitZoomChange
 }: UseViewerToolbarOptions) => {
-  const operationAvailability = computed<FileViewerOperationAvailability>(() => {
-    return resolveFileViewerOperationAvailability({
+  const toolbarState = computed(() => {
+    return resolveFileViewerToolbarState({
       extension: currentExtend.value,
       source: createFileViewerOriginalSourceState({
         buffer: currentBuffer.value,
@@ -68,23 +66,18 @@ export const useViewerToolbar = ({
       renderedReady: renderedReady.value,
       hasError: !!error.value,
       adapter: activeExportAdapter.value,
-      zoomState
+      zoomState,
+      toolbar: normalizedToolbar.value,
+      options: getOptions(),
+      loading: loading.value
     })
   })
 
-  const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
-    return resolveVisibleFileViewerToolbar(normalizedToolbar.value, operationAvailability.value)
-  })
-
-  const showToolbar = computed(() => {
-    return hasVisibleFileViewerToolbarActions(visibleToolbar.value)
-  })
-
-  const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
-    return resolveFileViewerToolbarPosition(getOptions(), currentExtend.value)
-  })
-
-  const toolbarDisabled = computed(() => loading.value || !!error.value)
+  const operationAvailability = computed<FileViewerOperationAvailability>(() => toolbarState.value.operationAvailability)
+  const visibleToolbar = computed<FileViewerToolbarOptions>(() => toolbarState.value.visibleToolbar)
+  const showToolbar = computed(() => toolbarState.value.showToolbar)
+  const toolbarPosition = computed<FileViewerToolbarPosition>(() => toolbarState.value.toolbarPosition)
+  const toolbarDisabled = computed(() => toolbarState.value.toolbarDisabled)
 
   const zoomButtonDisabled = (
     action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>
@@ -98,7 +91,7 @@ export const useViewerToolbar = ({
   }
 
   watch(operationAvailability, availability => {
-    const payload = { ...availability }
+    const payload = cloneFileViewerOperationAvailability(availability)
     emitOperationAvailabilityChange(payload)
     postFileViewerOperationAvailabilityChange(payload)
   }, { immediate: true })

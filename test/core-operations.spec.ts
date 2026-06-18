@@ -29,6 +29,7 @@ import {
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
   resolveFileViewerOperationAvailability,
+  resolveFileViewerToolbarState,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
   runFileViewerBeforeOperation,
@@ -486,6 +487,42 @@ describe('@file-viewer/core operation helpers', () => {
         canReset: false,
       },
     })).toBe(true);
+    expect(resolveFileViewerToolbarState({
+      extension: 'pdf',
+      hasOriginalSource: true,
+      renderedReady: true,
+      adapter: { toHtml: () => '<main>pdf</main>' },
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      },
+      toolbar: {
+        download: true,
+        print: false,
+        exportHtml: true,
+        zoom: true,
+      },
+      loading: true,
+    })).toMatchObject({
+      operationAvailability: {
+        download: true,
+        print: true,
+        exportHtml: true,
+        zoom: true,
+      },
+      visibleToolbar: {
+        download: true,
+        print: false,
+        exportHtml: true,
+        zoom: true,
+      },
+      showToolbar: true,
+      toolbarPosition: 'bottom-right',
+      toolbarDisabled: true,
+    });
     expect(resolveFileViewerOperationAvailability({
       extension: 'docx',
       source: {

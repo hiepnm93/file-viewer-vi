@@ -121,6 +121,20 @@ export interface ResolveFileViewerOperationAvailabilityInput {
   zoomState: FileViewerZoomState;
 }
 
+export interface ResolveFileViewerToolbarStateInput extends ResolveFileViewerOperationAvailabilityInput {
+  toolbar: FileViewerToolbarOptions;
+  options?: Pick<FileViewerOptions, 'toolbar'>;
+  loading?: boolean;
+}
+
+export interface FileViewerToolbarState {
+  operationAvailability: FileViewerOperationAvailability;
+  visibleToolbar: FileViewerToolbarOptions;
+  showToolbar: boolean;
+  toolbarPosition: FileViewerToolbarPosition;
+  toolbarDisabled: boolean;
+}
+
 export interface RunFileViewerBeforeOperationInput<
   Context extends FileViewerOperationContext = FileViewerOperationContext,
 > {
@@ -541,7 +555,7 @@ export const resolveVisibleFileViewerToolbar = (
 };
 
 export const hasVisibleFileViewerToolbarActions = (toolbar: FileViewerToolbarOptions) => {
-  return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom;
+  return !!(toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom);
 };
 
 export const isFileViewerZoomButtonDisabled = ({
@@ -556,6 +570,37 @@ export const isFileViewerZoomButtonDisabled = ({
   action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>;
 }) => {
   return toolbarDisabled || !availability.zoom || !zoomState[action];
+};
+
+export const isFileViewerToolbarDisabled = ({
+  loading = false,
+  hasError = false,
+}: {
+  loading?: boolean;
+  hasError?: boolean;
+}) => {
+  return !!(loading || hasError);
+};
+
+export const resolveFileViewerToolbarState = ({
+  toolbar,
+  options,
+  loading = false,
+  ...availabilityInput
+}: ResolveFileViewerToolbarStateInput): FileViewerToolbarState => {
+  const operationAvailability = resolveFileViewerOperationAvailability(availabilityInput);
+  const visibleToolbar = resolveVisibleFileViewerToolbar(toolbar, operationAvailability);
+
+  return {
+    operationAvailability,
+    visibleToolbar,
+    showToolbar: hasVisibleFileViewerToolbarActions(visibleToolbar),
+    toolbarPosition: resolveFileViewerToolbarPosition(options, availabilityInput.extension),
+    toolbarDisabled: isFileViewerToolbarDisabled({
+      loading,
+      hasError: availabilityInput.hasError,
+    }),
+  };
 };
 
 export const resolveFileViewerToolbarPosition = (

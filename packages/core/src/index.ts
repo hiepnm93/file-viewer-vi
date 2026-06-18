@@ -169,11 +169,16 @@ export {
   postFileViewerZoomChange,
   resolveFileViewerLifecycleFallbackSource,
   resolveFileViewerOperationAvailability,
+  resolveFileViewerToolbarState,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
   serializeFileViewerContext,
+} from './operations';
+export type {
+  FileViewerToolbarState,
+  ResolveFileViewerToolbarStateInput,
 } from './operations';
 export {
   FALLBACK_FILE_VIEWER_LOADING_THEME,
