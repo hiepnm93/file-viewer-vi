@@ -24,6 +24,17 @@ export interface FileViewerLoadingController {
   getState(): FileViewerLoadingRuntimeState;
 }
 
+export interface FileViewerLoadingControllerActionHandlers {
+  setExtension(nextExtend?: string): FileViewerLoadingRuntimeState;
+  startLoading(nextMessage: string): FileViewerLoadingRuntimeState;
+  setLoadingMessage(nextMessage: string): FileViewerLoadingRuntimeState;
+  stopLoading(): FileViewerLoadingRuntimeState;
+  showError(nextMessage: string): FileViewerLoadingRuntimeState;
+  clearError(): FileViewerLoadingRuntimeState;
+  resetLoading(): FileViewerLoadingRuntimeState;
+  syncLoadingState(): FileViewerLoadingRuntimeState;
+}
+
 export interface RunFileViewerLoadingExtensionSyncInput<
   Target extends MutableFileViewerLoadingRuntimeState = MutableFileViewerLoadingRuntimeState,
 > {
@@ -462,6 +473,44 @@ export const runFileViewerLoadingExtensionSync = <Target extends MutableFileView
   extension,
 }: RunFileViewerLoadingExtensionSyncInput<Target>) => {
   return runFileViewerLoadingControllerAction(target, () => controller.setExtension(extension));
+};
+
+export const createFileViewerLoadingControllerActionHandlers = <
+  Target extends MutableFileViewerLoadingRuntimeState,
+>(
+  target: Target,
+  controller: FileViewerLoadingController
+): FileViewerLoadingControllerActionHandlers => {
+  return {
+    setExtension(nextExtend?: string) {
+      return runFileViewerLoadingExtensionSync({
+        target,
+        controller,
+        extension: nextExtend,
+      });
+    },
+    startLoading(nextMessage: string) {
+      return runFileViewerLoadingControllerAction(target, () => controller.startLoading(nextMessage));
+    },
+    setLoadingMessage(nextMessage: string) {
+      return runFileViewerLoadingControllerAction(target, () => controller.setLoadingMessage(nextMessage));
+    },
+    stopLoading() {
+      return runFileViewerLoadingControllerAction(target, () => controller.stopLoading());
+    },
+    showError(nextMessage: string) {
+      return runFileViewerLoadingControllerAction(target, () => controller.showError(nextMessage));
+    },
+    clearError() {
+      return runFileViewerLoadingControllerAction(target, () => controller.clearError());
+    },
+    resetLoading() {
+      return runFileViewerLoadingControllerAction(target, () => controller.resetLoading());
+    },
+    syncLoadingState() {
+      return syncFileViewerLoadingControllerState(target, controller);
+    },
+  };
 };
 
 /**

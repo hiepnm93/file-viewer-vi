@@ -5,6 +5,7 @@ import {
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerLoadingRuntimeState,
   createFileViewerLoadingController,
+  createFileViewerLoadingControllerActionHandlers,
   createFileViewerEmptyState,
   createFileViewerErrorState,
   createFileViewerLoadingRuntimeState,
@@ -173,5 +174,46 @@ describe('@file-viewer/core render state helpers', () => {
     })
     expect(target.theme).not.toBe(source.theme)
     expect(target.styleVars).not.toBe(source.styleVars)
+  })
+
+  it('creates loading controller action facades for wrapper runtime targets', () => {
+    const controller = createFileViewerLoadingController('pdf')
+    const target = createFileViewerLoadingRuntimeState('docx')
+    const actions = createFileViewerLoadingControllerActionHandlers(target, controller)
+
+    expect(actions.syncLoadingState()).toBe(target)
+    expect(target).toMatchObject({
+      loading: false,
+      theme: {
+        badge: 'PDF',
+        label: 'PDF 文档'
+      }
+    })
+
+    expect(actions.startLoading('读取中')).toBe(target)
+    expect(target).toMatchObject({ loading: true, message: '读取中', error: '' })
+
+    expect(actions.setLoadingMessage('渲染中')).toBe(target)
+    expect(target.message).toBe('渲染中')
+
+    expect(actions.showError('失败')).toBe(target)
+    expect(target).toMatchObject({ loading: false, message: '', error: '失败' })
+
+    expect(actions.clearError()).toBe(target)
+    expect(target.error).toBe('')
+
+    expect(actions.setExtension('dwg')).toBe(target)
+    expect(target).toMatchObject({
+      theme: {
+        badge: 'CAD',
+        label: 'CAD 图纸'
+      }
+    })
+
+    expect(actions.stopLoading()).toBe(target)
+    expect(target).toMatchObject({ loading: false, message: '' })
+
+    expect(actions.resetLoading()).toBe(target)
+    expect(target).toMatchObject({ loading: false, message: '', error: '' })
   })
 })

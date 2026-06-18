@@ -476,18 +476,27 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueLoadingHookSource, '@file-viewer/core', vueLoadingHookLabel)
   assertTokens(vueLoadingHookSource, [
     'createFileViewerLoadingController',
+    'createFileViewerLoadingControllerActionHandlers',
     'resolveFileViewerLoadingTheme',
-    'runFileViewerLoadingControllerAction',
-    'runFileViewerLoadingExtensionSync',
-    'syncFileViewerLoadingControllerState'
+    'actions.setExtension(nextExtend)',
+    'syncLoadingState: actions.syncLoadingState'
   ], vueLoadingHookLabel)
   for (const forbiddenToken of [
+    'runFileViewerLoadingControllerAction',
+    'runFileViewerLoadingExtensionSync',
+    'syncFileViewerLoadingControllerState',
+    'controller.startLoading',
+    'controller.setLoadingMessage',
+    'controller.stopLoading',
+    'controller.showError',
+    'controller.clearError',
+    'controller.resetLoading',
+    'controller.setExtension',
     'applyFileViewerLoadingRuntimeState',
     'const syncFromController',
     'const applyLoadingState',
     'target.loading = source.loading',
-    'target.styleVars = source.styleVars',
-    'controller.setExtension'
+    'target.styleVars = source.styleVars'
   ]) {
     assert(
       !vueLoadingHookSource.includes(forbiddenToken),

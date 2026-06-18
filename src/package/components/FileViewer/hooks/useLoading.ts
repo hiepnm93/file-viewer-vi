@@ -1,10 +1,8 @@
 import { computed, reactive, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import {
   createFileViewerLoadingController,
-  runFileViewerLoadingControllerAction,
-  runFileViewerLoadingExtensionSync,
+  createFileViewerLoadingControllerActionHandlers,
   resolveFileViewerLoadingTheme,
-  syncFileViewerLoadingControllerState,
   type FileViewerLoadingRuntimeState,
   type FileViewerStateTheme
 } from '@file-viewer/core'
@@ -22,15 +20,12 @@ export const resolveLoadingTheme = resolveFileViewerLoadingTheme
 export const useLoading = (extendSource: MaybeRefOrGetter<string>) => {
   const controller = createFileViewerLoadingController(toValue(extendSource))
   const state = reactive<FileViewerLoadingRuntimeState>(controller.getState())
+  const actions = createFileViewerLoadingControllerActionHandlers(state, controller)
 
   watch(
     () => toValue(extendSource),
     nextExtend => {
-      runFileViewerLoadingExtensionSync({
-        target: state,
-        controller,
-        extension: nextExtend
-      })
+      actions.setExtension(nextExtend)
     }
   )
 
@@ -40,21 +35,12 @@ export const useLoading = (extendSource: MaybeRefOrGetter<string>) => {
     message: computed(() => state.message),
     theme: computed(() => state.theme),
     styleVars: computed(() => state.styleVars),
-    startLoading: (nextMessage: string) => runFileViewerLoadingControllerAction(
-      state,
-      () => controller.startLoading(nextMessage)
-    ),
-    setLoadingMessage: (nextMessage: string) => runFileViewerLoadingControllerAction(
-      state,
-      () => controller.setLoadingMessage(nextMessage)
-    ),
-    stopLoading: () => runFileViewerLoadingControllerAction(state, () => controller.stopLoading()),
-    showError: (nextMessage: string) => runFileViewerLoadingControllerAction(
-      state,
-      () => controller.showError(nextMessage)
-    ),
-    clearError: () => runFileViewerLoadingControllerAction(state, () => controller.clearError()),
-    resetLoading: () => runFileViewerLoadingControllerAction(state, () => controller.resetLoading()),
-    syncLoadingState: () => syncFileViewerLoadingControllerState(state, controller)
+    startLoading: actions.startLoading,
+    setLoadingMessage: actions.setLoadingMessage,
+    stopLoading: actions.stopLoading,
+    showError: actions.showError,
+    clearError: actions.clearError,
+    resetLoading: actions.resetLoading,
+    syncLoadingState: actions.syncLoadingState
   }
 }

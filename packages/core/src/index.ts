@@ -284,6 +284,7 @@ export {
   applyFileViewerLoadingRuntimeState,
   cloneFileViewerLoadingRuntimeState,
   createFileViewerLoadingController,
+  createFileViewerLoadingControllerActionHandlers,
   createFileViewerLoadingRuntimeState,
   createFileViewerLoadingStyleVars,
   runFileViewerLoadingControllerAction,
@@ -293,6 +294,7 @@ export {
 } from './loading';
 export type {
   FileViewerLoadingController,
+  FileViewerLoadingControllerActionHandlers,
   RunFileViewerLoadingExtensionSyncInput,
 } from './loading';
 export {
