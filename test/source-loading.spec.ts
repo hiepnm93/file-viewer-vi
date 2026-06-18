@@ -32,6 +32,7 @@ import {
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
+  runFileViewerReadAndRenderFile,
   shouldStreamPdfUrl
 } from '../packages/core/src'
 
@@ -483,6 +484,116 @@ describe('remote source loading helpers', () => {
       source: 'file',
       version: 12
     })
+  })
+
+  it('runs read and render flow through shared core orchestration', async () => {
+    const events: string[] = []
+    const file = new File(['demo'], 'render.pdf')
+    const session = { id: 'session-1' }
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerReadAndRenderFile({
+      file,
+      version: 14,
+      sourceUrl: '/example/render.pdf',
+      previewTarget: target,
+      isCurrent: version => version === 14,
+      mountRenderedContent: async (buffer, nextFile, version, sourceUrl) => {
+        events.push(`mount:${nextFile.name}:${buffer.byteLength}:${version}:${sourceUrl}`)
+        return session
+      },
+      destroyRenderSession: () => {
+        events.push('destroy')
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build:${input.source}:${input.file?.name}:${input.sourceUrl}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          timestamp: 320
+        })
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      }
+    })
+
+    expect(result.stale).toBe(false)
+    expect(result.session).toBe(session)
+    expect(result.complete?.lifecycleContext).toMatchObject({
+      phase: 'load-complete',
+      filename: 'render.pdf',
+      source: 'url'
+    })
+    expect(target).toMatchObject({
+      filename: 'render.pdf',
+      file,
+      sourceUrl: '/example/render.pdf',
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(target.buffer?.byteLength).toBe(4)
+    expect(events).toEqual([
+      'mount:render.pdf:4:14:/example/render.pdf',
+      'session:set',
+      'build:url:render.pdf:/example/render.pdf',
+      'active:load-complete:render.pdf',
+      'lifecycle:load-complete',
+      'clear:14'
+    ])
+  })
+
+  it('destroys stale render sessions from shared read and render flow', async () => {
+    const events: string[] = []
+    const file = new File(['demo'], 'stale.pdf')
+    const session = { id: 'stale-session' }
+    let checks = 0
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: false
+    }
+
+    const result = await runFileViewerReadAndRenderFile({
+      file,
+      version: 15,
+      previewTarget: target,
+      isCurrent: () => {
+        checks += 1
+        return checks === 1
+      },
+      mountRenderedContent: async () => session,
+      destroyRenderSession: nextSession => {
+        events.push(nextSession === session ? 'destroy:session' : 'destroy:miss')
+      },
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input)
+    })
+
+    expect(result).toMatchObject({
+      stale: true,
+      session,
+      complete: null
+    })
+    expect(events).toEqual(['destroy:session'])
+    expect(target.renderedReady).toBe(false)
   })
 
   it('finalizes preview load state without stopping newer requests', () => {

@@ -12,6 +12,7 @@ import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
   normalizeFilename,
+  readFileViewerBuffer,
   resolveFileViewerSourceFilename,
   wrapFileViewerFileRef,
 } from './source';
@@ -170,6 +171,47 @@ export interface CommitFileViewerRenderCompleteStateInput<Session = unknown> {
   onLifecycle?: (context: FileViewerLifecycleContext) => void;
   onClearLoadStarted?: (version: number) => void;
 }
+
+export interface RunFileViewerReadAndRenderFileInput<Session = unknown> {
+  file: File;
+  version: number;
+  source?: FileViewerLifecycleContext['source'];
+  sourceUrl?: string;
+  fallbackFilename?: string;
+  previewTarget: MutableFileViewerReadPreviewState & MutableFileViewerRenderReadinessState;
+  isCurrent: (version: number) => boolean;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string
+  ) => Promise<Session | undefined>;
+  destroyRenderSession?: (session?: Session | null) => void;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: FileViewerLifecycleContext['source'];
+    file?: File | null;
+    sourceUrl?: string | null;
+  }) => FileViewerRenderCompleteState;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onClearLoadStarted?: (version: number) => void;
+}
+
+export type FileViewerReadAndRenderFileState<Session = unknown> =
+  | {
+    readonly stale: true;
+    readonly buffer: ArrayBuffer | null;
+    readonly session: Session | null | undefined;
+    readonly complete: null;
+  }
+  | {
+    readonly stale: false;
+    readonly buffer: ArrayBuffer;
+    readonly session: Session | undefined;
+    readonly complete: FileViewerRenderCompleteState;
+  };
 
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
@@ -388,6 +430,74 @@ export const commitFileViewerRenderCompleteState = <Session = unknown>({
   onLifecycle?.(completeState.lifecycleContext);
   onClearLoadStarted?.(version);
   return completeState;
+};
+
+export const runFileViewerReadAndRenderFile = async <Session = unknown>({
+  file,
+  version,
+  sourceUrl,
+  source = sourceUrl ? 'url' : 'file',
+  fallbackFilename = '',
+  previewTarget,
+  isCurrent,
+  mountRenderedContent,
+  destroyRenderSession,
+  buildRenderCompleteState,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+  onClearLoadStarted,
+}: RunFileViewerReadAndRenderFileInput<Session>): Promise<FileViewerReadAndRenderFileState<Session>> => {
+  const buffer = await readFileViewerBuffer(file);
+  if (!isCurrent(version)) {
+    return {
+      stale: true,
+      buffer,
+      session: null,
+      complete: null,
+    };
+  }
+
+  applyFileViewerReadPreviewState(previewTarget, createFileViewerReadPreviewState({
+    file,
+    buffer,
+    sourceUrl,
+    fallbackFilename,
+  }));
+
+  const session = await mountRenderedContent(buffer, file, version, sourceUrl);
+  if (!isCurrent(version)) {
+    destroyRenderSession?.(session);
+    return {
+      stale: true,
+      buffer,
+      session,
+      complete: null,
+    };
+  }
+
+  const complete = commitFileViewerRenderCompleteState({
+    version,
+    session,
+    readinessTarget: previewTarget,
+    buildState: () => buildRenderCompleteState({
+      version,
+      source,
+      file,
+      sourceUrl,
+    }),
+    onSession,
+    onActiveDocumentContext,
+    onLifecycle,
+    onClearLoadStarted,
+  });
+
+  return {
+    stale: false,
+    buffer,
+    session,
+    complete,
+  };
 };
 
 export const finalizeFileViewerPreviewLoadState = ({

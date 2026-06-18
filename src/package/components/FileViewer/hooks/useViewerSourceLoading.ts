@@ -3,21 +3,19 @@ import type { Ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerPreviewSourceUrlState,
-  applyFileViewerReadPreviewState,
   commitFileViewerEmptyPreviewResetState,
   commitFileViewerLoadStartState,
   commitFileViewerPreviewRequestStartState,
   commitFileViewerRenderCompleteState,
   commitFileViewerRemoteDownloadState,
-  createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   finalizeFileViewerPreviewLoadState,
   isFileViewerAbortError,
   resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
-  readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
+  runFileViewerReadAndRenderFile,
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -169,32 +167,16 @@ export const useViewerSourceLoading = ({
     sourceUrl?: string,
     source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
   ) => {
-    const arrayBuffer = await readFileViewerBuffer(file)
-    if (!isCurrentRequest(version)) {
-      return
-    }
-    applyFileViewerReadPreviewState(previewStateTarget, createFileViewerReadPreviewState({
+    await runFileViewerReadAndRenderFile({
       file,
-      buffer: arrayBuffer,
-      sourceUrl,
-      fallbackFilename: ''
-    }))
-
-    const session = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
-    if (!isCurrentRequest(version)) {
-      destroyRenderSession(session)
-      return
-    }
-    commitFileViewerRenderCompleteState({
       version,
-      session,
-      readinessTarget: previewStateTarget,
-      buildState: () => buildRenderCompleteState({
-        version,
-        source,
-        file,
-        sourceUrl
-      }),
+      source,
+      sourceUrl,
+      previewTarget: previewStateTarget,
+      isCurrent: isCurrentRequest,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildRenderCompleteState,
       onSession: setActiveRenderSession,
       onActiveDocumentContext: setActiveDocumentContext,
       onLifecycle: notifyLifecycle,

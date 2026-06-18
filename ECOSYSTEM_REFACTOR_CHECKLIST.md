@@ -122,6 +122,7 @@
   - [x] source loading 的 load-start 清理与只停止当前请求 loading 的收尾编排迁入 `@file-viewer/core`。
   - [x] 渲染完成与渐进渲染 readiness 状态应用迁入 `@file-viewer/core`，source loading / render surface hook 只做响应式映射。
   - [x] 渲染完成后的 readiness 与 load-complete lifecycle context 构建迁入 `@file-viewer/core`，Vue source loading hook 只写回状态并触发 emit。
+  - [x] 读取文件 buffer、写入 read preview state、挂载渲染、过期 session 清理和 render-complete 提交的主链路迁入 `@file-viewer/core`。
   - [x] 渲染完成后的 session 提交、readiness 写入、active document context、lifecycle emit 与 load-start 清理编排迁入 `@file-viewer/core`。
   - [x] render surface 的 active session / export adapter 状态应用与 active session 销毁迁入 `@file-viewer/core`，Vue hook 只保留响应式字段映射。
   - [x] render surface 的 active session 销毁、export adapter 清空、readiness reset 与 DOM surface 清理组合迁入 `@file-viewer/core`。
