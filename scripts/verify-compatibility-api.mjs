@@ -509,6 +509,8 @@ async function verifyVue3ScopedCompatibility() {
     'cancelFileViewerPreviewRequest',
     'commitFileViewerEmptyPreviewResetState',
     'createFileViewerPreviewStateTarget',
+    'resolveFileViewerMissingRemoteDataErrorMessage',
+    'resolveFileViewerPreviewLoadErrorMessage',
     'runFileViewerLocalFilePreview',
     'runFileViewerPreviewRequest',
     'runFileViewerRemoteFilePreview'
@@ -595,7 +597,12 @@ async function verifyVue3ScopedCompatibility() {
     'const finishLoading',
     "phase: 'load-start'",
     "phase: 'load-complete'",
-    'renderedReady: true'
+    'renderedReady: true',
+    '读取文件异常',
+    '文件下载失败',
+    '加载 PDF 流式预览异常',
+    '加载文件异常',
+    "kind === 'stream'"
   ]) {
     assert(
       !vueSourceLoadingHookSource.includes(forbiddenToken),

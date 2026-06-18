@@ -4,11 +4,13 @@ import {
   cancelFileViewerPreviewRequest,
   commitFileViewerEmptyPreviewResetState,
   createFileViewerPreviewStateTarget,
+  resolveFileViewerMissingRemoteDataErrorMessage,
+  resolveFileViewerPreviewLoadErrorMessage,
   runFileViewerLocalFilePreview,
   runFileViewerPreviewRequest,
   runFileViewerRemoteFilePreview,
 } from '@file-viewer/core'
-import type { FileViewerRequestController } from '@file-viewer/core'
+import type { FileViewerErrorMessageFormatter, FileViewerRequestController } from '@file-viewer/core'
 import type {
   FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
@@ -61,7 +63,7 @@ interface UseViewerSourceLoadingOptions {
   showError: (message: string) => void;
   clearError: () => void;
   resetLoading: () => void;
-  formatErrorMessage: (prefix: string, nextError: unknown) => string;
+  formatErrorMessage: FileViewerErrorMessageFormatter;
 }
 
 /**
@@ -162,7 +164,11 @@ export const useViewerSourceLoading = ({
       onStopLoading: stopLoading,
       onError: nextError => {
         console.error(nextError)
-        showError(formatErrorMessage('读取文件异常', nextError))
+        showError(resolveFileViewerPreviewLoadErrorMessage({
+          kind: 'local',
+          error: nextError,
+          formatErrorMessage
+        }))
       }
     })
   }
@@ -196,13 +202,14 @@ export const useViewerSourceLoading = ({
       onLifecycle: notifyLifecycle,
       onClearLoadStarted: clearLoadStarted,
       onStopLoading: stopLoading,
-      onMissingData: () => showError('文件下载失败'),
+      onMissingData: () => showError(resolveFileViewerMissingRemoteDataErrorMessage()),
       onError: (nextError, kind) => {
         console.error(nextError)
-        showError(formatErrorMessage(
-          kind === 'stream' ? '加载 PDF 流式预览异常' : '加载文件异常',
-          nextError
-        ))
+        showError(resolveFileViewerPreviewLoadErrorMessage({
+          kind,
+          error: nextError,
+          formatErrorMessage
+        }))
       }
     })
   }

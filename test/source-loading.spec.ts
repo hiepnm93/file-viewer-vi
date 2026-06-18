@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  FILE_VIEWER_PREVIEW_LOAD_ERROR_PREFIXES,
+  FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE,
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
   cancelFileViewerPreviewRequest,
@@ -30,6 +32,8 @@ import {
   normalizePdfStreamingMode,
   resolveFileViewerFileRefSourcePlan,
   resolveFileViewerLoadStartMessage,
+  resolveFileViewerMissingRemoteDataErrorMessage,
+  resolveFileViewerPreviewLoadErrorMessage,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
@@ -591,6 +595,35 @@ describe('remote source loading helpers', () => {
         timestamp: 140
       }
     })
+  })
+
+  it('formats preview load errors through core defaults', () => {
+    const formatErrorMessage = (prefix: string, error: unknown) => {
+      return `${prefix}:${error instanceof Error ? error.message : String(error)}`
+    }
+
+    expect(FILE_VIEWER_PREVIEW_LOAD_ERROR_PREFIXES.local).toBe('读取文件异常')
+    expect(FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE).toBe('文件下载失败')
+    expect(resolveFileViewerPreviewLoadErrorMessage({
+      kind: 'local',
+      error: new Error('bad file'),
+      formatErrorMessage
+    })).toBe('读取文件异常:bad file')
+    expect(resolveFileViewerPreviewLoadErrorMessage({
+      kind: 'stream',
+      error: 'range failed',
+      formatErrorMessage
+    })).toBe('加载 PDF 流式预览异常:range failed')
+    expect(resolveFileViewerPreviewLoadErrorMessage({
+      kind: 'load',
+      error: 'offline',
+      prefixes: {
+        load: '远程加载失败'
+      },
+      formatErrorMessage
+    })).toBe('远程加载失败:offline')
+    expect(resolveFileViewerMissingRemoteDataErrorMessage()).toBe('文件下载失败')
+    expect(resolveFileViewerMissingRemoteDataErrorMessage({ message: '没有拿到文件内容' })).toBe('没有拿到文件内容')
   })
 
   it('commits load-start state in the shared core order', () => {

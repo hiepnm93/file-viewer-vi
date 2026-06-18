@@ -7,7 +7,10 @@ import {
   buildFileViewerLifecycleContext,
   type FileViewerLifecycleStateController,
 } from './operations';
-import { FILE_VIEWER_PREVIEW_MESSAGES } from './state';
+import {
+  FILE_VIEWER_PREVIEW_MESSAGES,
+  type FileViewerErrorMessageFormatter,
+} from './state';
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
@@ -19,6 +22,27 @@ import {
 
 export const DEFAULT_PDF_RANGE_CHUNK_SIZE = 64 * 1024;
 export const DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME = 'preview.pdf';
+export const FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE = '文件下载失败';
+export const FILE_VIEWER_PREVIEW_LOAD_ERROR_PREFIXES = {
+  local: '读取文件异常',
+  load: '加载文件异常',
+  stream: '加载 PDF 流式预览异常',
+} as const satisfies Record<FileViewerPreviewLoadErrorKind, string>;
+
+export type FileViewerPreviewLoadErrorKind = 'local' | FileViewerRemoteFilePreviewErrorKind;
+
+export type FileViewerPreviewLoadErrorPrefixes = Partial<Record<FileViewerPreviewLoadErrorKind, string>>;
+
+export interface ResolveFileViewerPreviewLoadErrorMessageInput {
+  kind: FileViewerPreviewLoadErrorKind;
+  error: unknown;
+  formatErrorMessage: FileViewerErrorMessageFormatter;
+  prefixes?: FileViewerPreviewLoadErrorPrefixes;
+}
+
+export interface ResolveFileViewerMissingRemoteDataErrorMessageInput {
+  message?: string;
+}
 
 export interface FileViewerRequestController {
   readonly version: number;
@@ -339,6 +363,19 @@ export interface FileViewerRemoteFileDownloadInput {
 }
 
 export type FileViewerRemoteFilePreviewErrorKind = 'stream' | 'load';
+
+export const resolveFileViewerPreviewLoadErrorMessage = ({
+  kind,
+  error,
+  formatErrorMessage,
+  prefixes,
+}: ResolveFileViewerPreviewLoadErrorMessageInput) => {
+  return formatErrorMessage(prefixes?.[kind] ?? FILE_VIEWER_PREVIEW_LOAD_ERROR_PREFIXES[kind], error);
+};
+
+export const resolveFileViewerMissingRemoteDataErrorMessage = ({
+  message = FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE,
+}: ResolveFileViewerMissingRemoteDataErrorMessageInput = {}) => message;
 
 export interface RunFileViewerRemoteFilePreviewInput<Session = unknown> {
   url: string;
