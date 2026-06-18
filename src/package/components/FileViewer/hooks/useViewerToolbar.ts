@@ -1,10 +1,9 @@
 import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import {
-  cloneFileViewerOperationAvailability,
   createFileViewerOriginalSourceState,
+  dispatchFileViewerOperationAvailabilityChange,
+  dispatchFileViewerZoomChange,
   isFileViewerZoomButtonDisabled,
-  postFileViewerOperationAvailabilityChange,
-  postFileViewerZoomChange,
   resolveFileViewerToolbarState
 } from '@file-viewer/core'
 import type {
@@ -91,9 +90,10 @@ export const useViewerToolbar = ({
   }
 
   watch(operationAvailability, availability => {
-    const payload = cloneFileViewerOperationAvailability(availability)
-    emitOperationAvailabilityChange(payload)
-    postFileViewerOperationAvailabilityChange(payload)
+    dispatchFileViewerOperationAvailabilityChange({
+      availability,
+      onChange: emitOperationAvailabilityChange
+    })
   }, { immediate: true })
 
   watch(
@@ -105,9 +105,10 @@ export const useViewerToolbar = ({
       zoomState.canReset
     ] as const,
     () => {
-      const state = getZoomState()
-      emitZoomChange(state)
-      postFileViewerZoomChange(state)
+      dispatchFileViewerZoomChange({
+        state: getZoomState(),
+        onChange: emitZoomChange
+      })
     },
     { immediate: true }
   )

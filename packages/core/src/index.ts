@@ -183,6 +183,8 @@ export {
   createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
+  dispatchFileViewerOperationAvailabilityChange,
+  dispatchFileViewerZoomChange,
   getFileViewerBeforeOperationHooks,
   getFileViewerLifecycleHookName,
   hasVisibleFileViewerToolbarActions,
@@ -207,6 +209,8 @@ export {
 } from './operations';
 export type {
   BuildFileViewerOperationContextFromLifecycleStateInput,
+  DispatchFileViewerOperationAvailabilityChangeInput,
+  DispatchFileViewerZoomChangeInput,
   FileViewerToolbarState,
   BuildFileViewerLifecycleContextFromNormalizedSourceInput,
   ResolveFileViewerToolbarStateInput,

@@ -14,6 +14,8 @@ import {
   createFileViewerOriginalSourceStateFromNormalizedSource,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
+  dispatchFileViewerOperationAvailabilityChange,
+  dispatchFileViewerZoomChange,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
@@ -420,6 +422,83 @@ describe('@file-viewer/core operation helpers', () => {
         width: 120,
         height: 18,
       },
+    }, 'https://host.example');
+  });
+
+  it('dispatches toolbar change notifications in wrapper event order', () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const availability = {
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: false,
+      zoomReset: false,
+    };
+    const zoomState = {
+      scale: 1.5,
+      label: '150%',
+      canZoomIn: true,
+      canZoomOut: true,
+      canReset: true,
+    };
+    let emittedAvailability: typeof availability | null = null;
+    let emittedZoomState: typeof zoomState | null = null;
+
+    expect(dispatchFileViewerOperationAvailabilityChange({
+      availability,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      onChange: payload => {
+        events.push('emit:operation-availability-change');
+        emittedAvailability = payload;
+        payload.download = false;
+      },
+    })).toBe(true);
+    expect(dispatchFileViewerZoomChange({
+      state: zoomState,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      onChange: payload => {
+        events.push('emit:zoom-change');
+        emittedZoomState = payload;
+      },
+    })).toBe(true);
+
+    expect(events).toEqual([
+      'emit:operation-availability-change',
+      'post:operation-availability-change',
+      'emit:zoom-change',
+      'post:zoom-change',
+    ]);
+    expect(emittedAvailability).toEqual({
+      ...availability,
+      download: false,
+    });
+    expect(emittedAvailability).not.toBe(availability);
+    expect(availability.download).toBe(true);
+    expect(emittedZoomState).toBe(zoomState);
+    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'flyfish-viewer:operation',
+      event: 'operation-availability-change',
+      payload: {
+        ...availability,
+        download: false,
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'flyfish-viewer:operation',
+      event: 'zoom-change',
+      payload: zoomState,
     }, 'https://host.example');
   });
 

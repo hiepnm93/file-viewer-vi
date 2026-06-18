@@ -624,10 +624,9 @@ async function verifyVue3ScopedCompatibility() {
   const vueToolbarHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerToolbar.ts`
   assertImportsFrom(vueToolbarHookSource, '@file-viewer/core', vueToolbarHookLabel)
   assertTokens(vueToolbarHookSource, [
-    'cloneFileViewerOperationAvailability',
     'createFileViewerOriginalSourceState',
-    'postFileViewerOperationAvailabilityChange',
-    'postFileViewerZoomChange',
+    'dispatchFileViewerOperationAvailabilityChange',
+    'dispatchFileViewerZoomChange',
     'resolveFileViewerToolbarState',
     'isFileViewerZoomButtonDisabled'
   ], vueToolbarHookLabel)
@@ -644,7 +643,13 @@ async function verifyVue3ScopedCompatibility() {
     '!!currentBuffer.value || !!currentSourceUrl.value',
     'source: {',
     'toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom',
-    'toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]'
+    'toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]',
+    'cloneFileViewerOperationAvailability',
+    'postFileViewerOperationAvailabilityChange',
+    'postFileViewerZoomChange',
+    'emitOperationAvailabilityChange(payload)',
+    'postFileViewerOperationAvailabilityChange(payload)',
+    'postFileViewerZoomChange(state)'
   ]) {
     assert(
       !vueToolbarHookSource.includes(forbiddenToken),
