@@ -95,6 +95,7 @@
   - [x] 纯 Web iframe create/sync/mount 控制器迁入 core，`packages/web` 仅注入默认入口、缓存 key 和历史 API 名称。
   - [x] 渲染 surface 的销毁、清空、挂载和导出适配器 action 编排迁入 core，Vue hook 只保留 ref target 和 Vue renderer bridge。
   - [x] 来源加载的本地/远程预览、刷新、取消、reset 和错误上报 action 编排迁入 core，Vue hook 只保留 ref target、axios 下载适配和生命周期回调注入。
+  - [x] 请求版本 scope facade 迁入 core，Vue3 入口直接使用 `createFileViewerRequestScope`，旧 `useViewerRequestScope` hook 被删除并由兼容性守卫禁止回流。
   - [x] 工具栏 source/能力矩阵/浮动位置/事件同步/缩放按钮 guard 迁入 core controller action handlers，Vue hook 只保留 computed/watch 响应式桥接。
   - [x] 文档搜索 controller 与搜索/定位/AI 文本切片 actions 的组合关系迁入 core，Vue hook 只保留 ref target、`nextTick` 和事件回调注入。
   - [x] 删除 Vue3 旧 `useDocumentSearch` 运行门面，兼容性守卫改为禁止恢复该门面，文档搜索状态只能经由 core controller 组合进入 FileViewer hook。
@@ -166,7 +167,7 @@
   - [x] 操作上下文的 active lifecycle 优先与 fallback source 组合迁入 `@file-viewer/core`，Vue lifecycle hook 不再拼接 operation base context。
   - [x] Vue lifecycle hook 移除泛化 lifecycle context builder，只保留 load-start / render-complete / operation / unload 的明确 core 状态门面。
   - [x] Vue3 来源 watch 与组件卸载清理拆到 `useViewerPreviewLifecycle`，入口组件只组合 source getter 和各 hook 清理动作。
-  - [x] Vue3 请求版本作用域拆到 `useViewerRequestScope`，入口组件不再直接创建 core request controller。
+  - [x] Vue3 请求版本作用域迁入 core `createFileViewerRequestScope`，入口组件不再直接创建 core request controller。
   - [x] toolbar 默认值、可见性、PDF 默认悬浮位置和 operation availability 迁入 `@file-viewer/core`。
   - [x] Vue3 工具栏与能力状态门面拆到组件 hooks，复用 core operation availability / toolbar position / postMessage 协议。
   - [x] 工具栏 operation availability 与 zoom-change 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue hook 不再拼接 operation payload。

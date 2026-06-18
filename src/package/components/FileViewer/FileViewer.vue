@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
+  createFileViewerRequestScope,
   reportFileViewerLifecycleHookError,
   reportFileViewerOperationError
 } from '@file-viewer/core'
@@ -17,7 +18,6 @@ import { useViewerErrorState, useViewerPresentation } from './hooks/useViewerPre
 import { useViewerPreviewLifecycle } from './hooks/useViewerPreviewLifecycle'
 import { useViewerPublicApi } from './hooks/useViewerPublicApi'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
-import { useViewerRequestScope } from './hooks/useViewerRequestScope'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
@@ -94,7 +94,7 @@ const {
   requestController,
   getCurrentVersion,
   isCurrentRequest
-} = useViewerRequestScope()
+} = createFileViewerRequestScope()
 
 const {
   markLoadStarted,

@@ -64,6 +64,12 @@ export interface FileViewerRequestController {
   abort(): void;
 }
 
+export interface FileViewerRequestScope {
+  requestController: FileViewerRequestController;
+  getCurrentVersion(): number;
+  isCurrentRequest(version: number): boolean;
+}
+
 export interface ResolveFileViewerPreviewRequestReasonInput {
   file?: FileViewerFileRef | null;
   url?: string | null;
@@ -660,6 +666,16 @@ export const createFileViewerRequestController = (): FileViewerRequestController
       activeAbortController?.abort();
       activeAbortController = null;
     },
+  };
+};
+
+export const createFileViewerRequestScope = (
+  requestController = createFileViewerRequestController()
+): FileViewerRequestScope => {
+  return {
+    requestController,
+    getCurrentVersion: () => requestController.version,
+    isCurrentRequest: version => requestController.isCurrent(version),
   };
 };
 

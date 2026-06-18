@@ -378,7 +378,7 @@ async function verifyVue3ScopedCompatibility() {
   const vueFileViewerLabel = `${entry.packageName} src/package/components/FileViewer/FileViewer.vue`
   assertTokens(vueFileViewerSource, [
     'useViewerPreviewLifecycle',
-    'useViewerRequestScope',
+    'createFileViewerRequestScope',
     'reportFileViewerLifecycleHookError',
     'reportFileViewerOperationError',
     'emitLifecycle: emit',
@@ -403,9 +403,10 @@ async function verifyVue3ScopedCompatibility() {
   }
   assert(
     !vueFileViewerSource.includes('createFileViewerRequestController'),
-    `${vueFileViewerLabel} must delegate request version scope to useViewerRequestScope instead of creating a core request controller directly`
+    `${vueFileViewerLabel} must delegate request version scope to createFileViewerRequestScope instead of creating a core request controller directly`
   )
   const allowedVueFileViewerRuntimeCoreImport = `import {
+  createFileViewerRequestScope,
   reportFileViewerLifecycleHookError,
   reportFileViewerOperationError
 } from '@file-viewer/core'`
@@ -439,14 +440,10 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
-  const vueRequestScopeHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRequestScope.ts')
-  const vueRequestScopeHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRequestScope.ts`
-  assertImportsFrom(vueRequestScopeHookSource, '@file-viewer/core', vueRequestScopeHookLabel)
-  assertTokens(vueRequestScopeHookSource, [
-    'createFileViewerRequestController',
-    'getCurrentVersion',
-    'isCurrentRequest'
-  ], vueRequestScopeHookLabel)
+  assert(
+    !existsSync(join(entry.absoluteDir, 'src/package/components/FileViewer/hooks/useViewerRequestScope.ts')),
+    `${entry.packageName} must keep request version scope in @file-viewer/core instead of restoring useViewerRequestScope`
+  )
   assert(
     !existsSync(join(entry.absoluteDir, 'src/package/components/FileViewer/util.ts')),
     `${entry.packageName} must keep FileViewer renderer bridging in rendererBridge.ts instead of reintroducing a catch-all FileViewer util.ts`
