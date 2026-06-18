@@ -11,6 +11,7 @@ import {
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleActions,
+  createFileViewerPublicApi,
   createFileViewerToolbarActions,
   createFileViewerToolbarZoomSyncSnapshot,
   createFileViewerOperationActionHandlers,
@@ -1183,6 +1184,103 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(availability.download).toBe(true);
     expect(availability.zoomReset).toBe(true);
+  });
+
+  it('creates public api facades with cloned operation availability snapshots', async () => {
+    const availability = {
+      download: true,
+      print: true,
+      exportHtml: false,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: false,
+      zoomReset: true,
+    };
+    const calls: string[] = [];
+    const api = createFileViewerPublicApi({
+      getOperationAvailability: () => availability,
+      downloadOriginalFile: async () => { calls.push('download'); },
+      printRenderedHtml: async () => { calls.push('print'); },
+      exportRenderedHtml: async () => { calls.push('export-html'); },
+      zoomIn: async () => ({
+        scale: 1.25,
+        label: '125%',
+        canZoomIn: true,
+        canZoomOut: true,
+        canReset: true,
+      }),
+      zoomOut: async () => ({
+        scale: 0.75,
+        label: '75%',
+        canZoomIn: true,
+        canZoomOut: true,
+        canReset: true,
+      }),
+      resetZoom: async () => ({
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      }),
+      getZoomState: () => ({
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      }),
+      getScrollContainer: () => null,
+      searchDocument: async query => ({
+        query,
+        total: 0,
+        currentIndex: -1,
+        current: null,
+        matches: [],
+      }),
+      clearDocumentSearch: async () => ({
+        query: '',
+        total: 0,
+        currentIndex: -1,
+        current: null,
+        matches: [],
+      }),
+      nextSearchResult: async () => ({
+        query: '',
+        total: 0,
+        currentIndex: -1,
+        current: null,
+        matches: [],
+      }),
+      previousSearchResult: async () => ({
+        query: '',
+        total: 0,
+        currentIndex: -1,
+        current: null,
+        matches: [],
+      }),
+      getSearchState: () => ({
+        query: '',
+        total: 0,
+        currentIndex: -1,
+        current: null,
+        matches: [],
+      }),
+      collectDocumentAnchors: async () => [],
+      scrollToAnchor: async () => true,
+      scrollToLine: async () => true,
+      getDocumentTextChunks: () => [],
+    });
+
+    const snapshot = api.getOperationAvailability();
+    snapshot.download = false;
+    expect(api.getOperationAvailability().download).toBe(true);
+
+    await api.downloadOriginalFile();
+    await api.printRenderedHtml();
+    await api.exportRenderedHtml();
+
+    expect(calls).toEqual(['download', 'print', 'export-html']);
   });
 
   it('reports operation guard errors and cancels the operation', async () => {

@@ -1,5 +1,5 @@
 import type { ComputedRef } from 'vue'
-import { cloneFileViewerOperationAvailability } from '@file-viewer/core'
+import { createFileViewerPublicApi } from '@file-viewer/core'
 import type {
   FileViewerPublicApi as FileViewerExpose,
   FileViewerOperationAvailability
@@ -19,8 +19,8 @@ export const useViewerPublicApi = ({
   operationAvailability,
   ...api
 }: UseViewerPublicApiOptions): FileViewerExpose => {
-  return {
+  return createFileViewerPublicApi({
     ...api,
-    getOperationAvailability: () => cloneFileViewerOperationAvailability(operationAvailability.value)
-  }
+    getOperationAvailability: () => operationAvailability.value
+  })
 }

@@ -792,10 +792,12 @@ async function verifyVue3ScopedCompatibility() {
   const vuePublicApiHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPublicApi.ts`
   assertImportsFrom(vuePublicApiHookSource, '@file-viewer/core', vuePublicApiHookLabel)
   assertTokens(vuePublicApiHookSource, [
-    'cloneFileViewerOperationAvailability'
+    'createFileViewerPublicApi',
+    'getOperationAvailability: () => operationAvailability.value'
   ], vuePublicApiHookLabel)
   for (const forbiddenToken of [
-    '{ ...operationAvailability.value }'
+    '{ ...operationAvailability.value }',
+    'cloneFileViewerOperationAvailability'
   ]) {
     assert(
       !vuePublicApiHookSource.includes(forbiddenToken),

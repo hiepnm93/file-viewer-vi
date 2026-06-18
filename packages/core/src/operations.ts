@@ -21,6 +21,7 @@ import type {
   FileViewerSourceKind,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
+  FileViewerPublicApi,
   FileViewerZoomState,
   NormalizedFileViewerSource,
 } from './types';
@@ -278,6 +279,10 @@ export interface FileViewerToolbarActions {
   notifyOperationAvailabilityChange(availability?: FileViewerOperationAvailability): boolean;
   notifyZoomChange(state?: FileViewerZoomState): boolean;
   isZoomButtonDisabled(action: FileViewerZoomButtonAction): boolean;
+}
+
+export interface CreateFileViewerPublicApiInput extends Omit<FileViewerPublicApi, 'getOperationAvailability'> {
+  getOperationAvailability: () => FileViewerOperationAvailability;
 }
 
 export type FileViewerToolbarZoomSyncSnapshot = readonly [
@@ -952,6 +957,16 @@ export const createFileViewerToolbarActions = ({
         zoomState: getZoomState(),
       });
     },
+  };
+};
+
+export const createFileViewerPublicApi = ({
+  getOperationAvailability,
+  ...api
+}: CreateFileViewerPublicApiInput): FileViewerPublicApi => {
+  return {
+    ...api,
+    getOperationAvailability: () => cloneFileViewerOperationAvailability(getOperationAvailability()),
   };
 };
 
