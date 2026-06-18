@@ -52,6 +52,8 @@ const requiredValueExports = [
   'DEFAULT_FILE_VIEWER_EXPORT_FILENAME',
   'DEFAULT_FILE_VIEWER_PREVIEW_TITLE',
   'createFileViewerOriginalSourceState',
+  'createFileViewerOriginalSourceStateFromNormalizedSource',
+  'resolveFileViewerDisplayFilename',
   'resolveFileViewerOperationFilename',
   'resolveFileViewerOperationAvailability',
   'cloneFileViewerOperationAvailability',
@@ -305,6 +307,29 @@ function assertCoreViewerSurfaceState(viewerSource) {
   }
 }
 
+function assertCoreViewerOperationSourceState(viewerSource) {
+  for (const token of [
+    'createFileViewerOriginalSourceStateFromNormalizedSource',
+    'resolveFileViewerDisplayFilename'
+  ]) {
+    assert(
+      viewerSource.includes(token),
+      `createViewer must reuse core operation source helpers via ${token}`
+    )
+  }
+
+  for (const forbiddenToken of [
+    'const getDisplayFilename',
+    "currentSource?.filename || 'preview'",
+    'createFileViewerOriginalSourceState({'
+  ]) {
+    assert(
+      !viewerSource.includes(forbiddenToken),
+      `createViewer must not keep duplicate operation source state: ${forbiddenToken}`
+    )
+  }
+}
+
 function collectBareImportSpecifiers(source) {
   const imports = new Set()
   const patterns = [
@@ -363,6 +388,7 @@ assertCoreTsConfig(tsconfig)
 assertCoreEntrypoint(indexSource)
 assertCoreInstanceContract(typesSource)
 assertCoreViewerSurfaceState(viewerSource)
+assertCoreViewerOperationSourceState(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(

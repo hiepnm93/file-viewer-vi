@@ -12,10 +12,11 @@ import {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
-  createFileViewerOriginalSourceState,
+  createFileViewerOriginalSourceStateFromNormalizedSource,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
+  resolveFileViewerDisplayFilename,
   resolveFileViewerOperationFilename,
 } from './viewerOperations';
 import { getRendererAvailability, createUnsupportedAvailability } from './capabilities';
@@ -117,8 +118,6 @@ export const createViewer = (
       },
     });
   };
-
-  const getDisplayFilename = () => currentSource?.filename || 'preview';
 
   const getWatermarkInlineStyle = (override?: string) => {
     if (typeof override === 'string') {
@@ -227,12 +226,7 @@ export const createViewer = (
       return renderSurfaceState.exportAdapter;
     },
     async download(downloadOptions: FileViewerDownloadOptions = {}) {
-      const source = createFileViewerOriginalSourceState({
-        buffer: currentSource?.buffer,
-        file: currentSource?.file,
-        url: currentSource?.url,
-        filename: getDisplayFilename(),
-      });
+      const source = createFileViewerOriginalSourceStateFromNormalizedSource(currentSource);
       await executeFileViewerDownloadOperation({
         source,
         filename: downloadOptions.filename || resolveFileViewerOperationFilename({
@@ -248,11 +242,11 @@ export const createViewer = (
         adapter: renderSurfaceState.exportAdapter,
         download: exportOptions.download,
         filename: exportOptions.filename || resolveFileViewerOperationFilename({
-          filename: getDisplayFilename(),
+          filename: resolveFileViewerDisplayFilename(currentSource),
           fallback: DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
         }),
         title: exportOptions.title || resolveFileViewerOperationFilename({
-          filename: getDisplayFilename(),
+          filename: resolveFileViewerDisplayFilename(currentSource),
           fallback: DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
         }),
         watermarkInlineStyle: getWatermarkInlineStyle(exportOptions.watermarkInlineStyle),
@@ -267,7 +261,7 @@ export const createViewer = (
         openWindow: printOptions.openWindow,
         printWindow: printOptions.printWindow,
         title: printOptions.title || resolveFileViewerOperationFilename({
-          filename: getDisplayFilename(),
+          filename: resolveFileViewerDisplayFilename(currentSource),
           fallback: DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
         }),
         watermarkInlineStyle: getWatermarkInlineStyle(printOptions.watermarkInlineStyle),

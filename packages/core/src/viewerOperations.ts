@@ -11,6 +11,7 @@ import type {
   FileViewerExportHtmlOptions,
   FileViewerOperationType,
   FileViewerPrintOptions,
+  NormalizedFileViewerSource,
 } from './types';
 
 export interface FileViewerOriginalSourceState {
@@ -89,6 +90,26 @@ export const createFileViewerOriginalSourceState = ({
     filename,
     mimeType: mimeType || getBlobMimeType(file) || null,
   };
+};
+
+export const resolveFileViewerDisplayFilename = (
+  source?: Pick<NormalizedFileViewerSource, 'filename'> | null,
+  fallback = DEFAULT_FILE_VIEWER_EXPORT_FILENAME
+) => {
+  return source?.filename || fallback;
+};
+
+export const createFileViewerOriginalSourceStateFromNormalizedSource = (
+  source?: NormalizedFileViewerSource | null,
+  fallbackFilename = DEFAULT_FILE_VIEWER_EXPORT_FILENAME
+): FileViewerOriginalSourceState => {
+  return createFileViewerOriginalSourceState({
+    buffer: source?.buffer,
+    file: source?.file,
+    url: source?.url,
+    filename: resolveFileViewerDisplayFilename(source, fallbackFilename),
+    mimeType: source?.file?.type,
+  });
 };
 
 export const resolveFileViewerOriginalFilename = (

@@ -9,6 +9,7 @@ import {
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
+  createFileViewerOriginalSourceStateFromNormalizedSource,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
   executeFileViewerDownloadOperation,
@@ -31,6 +32,7 @@ import {
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarState,
   resolveFileViewerToolbarPosition,
+  resolveFileViewerDisplayFilename,
   resolveVisibleFileViewerToolbar,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
@@ -571,6 +573,25 @@ describe('@file-viewer/core operation helpers', () => {
       fallback: DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
     })).toBe(DEFAULT_FILE_VIEWER_EXPORT_FILENAME);
     expect(resolveFileViewerOperationFilename({})).toBe(DEFAULT_FILE_VIEWER_PREVIEW_TITLE);
+    expect(resolveFileViewerDisplayFilename({
+      kind: 'url',
+      filename: '线上报告.pdf',
+      extension: 'pdf',
+      url: '/docs/report.pdf',
+    })).toBe('线上报告.pdf');
+    expect(resolveFileViewerDisplayFilename(null)).toBe(DEFAULT_FILE_VIEWER_EXPORT_FILENAME);
+    expect(createFileViewerOriginalSourceStateFromNormalizedSource({
+      kind: 'url',
+      filename: '线上报告.pdf',
+      extension: 'pdf',
+      url: '/docs/report.pdf',
+      size: 1024,
+    })).toMatchObject({
+      buffer: null,
+      file: null,
+      url: '/docs/report.pdf',
+      filename: '线上报告.pdf',
+    });
   });
 
   it('clones operation availability snapshots without sharing mutable references', () => {

@@ -119,10 +119,12 @@ export {
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
   createFileViewerOriginalSourceState,
+  createFileViewerOriginalSourceStateFromNormalizedSource,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
   hasFileViewerOriginalSource,
+  resolveFileViewerDisplayFilename,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
 } from './viewerOperations';

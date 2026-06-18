@@ -163,6 +163,7 @@
     - [x] Vue3 `useViewerExport` 切换为 core operation executor + UI error adapter，和 core viewer 共享下载/导出/打印执行链路。
     - [x] 下载、导出 HTML、打印标题的文件名 fallback 规则迁入 `@file-viewer/core`，Vue export hook 不再硬编码默认文件名。
     - [x] 原始文件来源对象构建迁入 `@file-viewer/core`，core viewer 与 Vue export hook 共用 buffer / file / url / mimeType 归一化。
+    - [x] core viewer 的当前展示文件名和 normalized source 到下载源状态映射迁入 `@file-viewer/core` helper，避免入口本地硬编码 `preview`。
 - [x] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
   - [x] 缩放 runtime state 应用迁入 `@file-viewer/core`，core controller 与 Vue zoom hook 共用同一套字段归一化。
