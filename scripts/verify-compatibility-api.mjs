@@ -767,22 +767,23 @@ async function verifyVue3ScopedCompatibility() {
   const vueToolbarHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerToolbar.ts`
   assertImportsFrom(vueToolbarHookSource, '@file-viewer/core', vueToolbarHookLabel)
   assertTokens(vueToolbarHookSource, [
+    'createFileViewerToolbarControllerActionHandlers',
+  ], vueToolbarHookLabel)
+  for (const forbiddenToken of [
     'createFileViewerOriginalSourceState',
     'createFileViewerToolbarActions',
     'createFileViewerToolbarZoomSyncSnapshot',
-    'resolveFileViewerToolbarState',
-    'runFileViewerToolbarAvailabilitySync',
-    'runFileViewerToolbarZoomSync'
-  ], vueToolbarHookLabel)
-  for (const forbiddenToken of [
     'dispatchFileViewerOperationAvailabilityChange',
     'dispatchFileViewerZoomChange',
     'isFileViewerZoomButtonDisabled',
     "createFileViewerRawPostMessagePayload('flyfish-viewer:operation'",
     'postFileViewerMessageToParent(',
+    'resolveFileViewerToolbarState',
     'resolveFileViewerOperationAvailability',
     'resolveVisibleFileViewerToolbar',
     'resolveFileViewerToolbarPosition',
+    'runFileViewerToolbarAvailabilitySync',
+    'runFileViewerToolbarZoomSync',
     'hasVisibleFileViewerToolbarActions',
     'loading.value || !!error.value',
     'const payload = { ...availability }',

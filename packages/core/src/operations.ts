@@ -2,6 +2,7 @@ import { resolvePrintAvailability } from './capabilities';
 import { getExtension, normalizeFilename } from './source';
 import type { FileViewerErrorMessageFormatter } from './state';
 import {
+  createFileViewerOriginalSourceState,
   hasFileViewerOriginalSource,
   type FileViewerOriginalSourceState,
 } from './viewerOperations';
@@ -301,6 +302,33 @@ export interface RunFileViewerToolbarAvailabilitySyncInput {
 export interface RunFileViewerToolbarZoomSyncInput {
   toolbarActions: Pick<FileViewerToolbarActions, 'notifyZoomChange'>;
   state?: FileViewerZoomState;
+}
+
+export interface FileViewerToolbarControllerActionHandlers {
+  resolveToolbarState(): FileViewerToolbarState;
+  createZoomSyncSnapshot(): FileViewerToolbarZoomSyncSnapshot;
+  syncOperationAvailability(availability?: FileViewerOperationAvailability): boolean;
+  syncZoomChange(state?: FileViewerZoomState): boolean;
+  isZoomButtonDisabled(action: FileViewerZoomButtonAction): boolean;
+}
+
+export interface CreateFileViewerToolbarControllerActionHandlersInput {
+  getAdapter?: () => FileRenderExportAdapter | null | undefined;
+  getBuffer?: () => ArrayBuffer | null | undefined;
+  getExtension: () => string;
+  getFile?: () => File | null | undefined;
+  getHasError?: () => boolean;
+  getLoading?: () => boolean;
+  getOptions?: () => FileViewerOptions | undefined;
+  getSourceUrl?: () => string | null | undefined;
+  getToolbar: () => FileViewerToolbarOptions;
+  getRenderedReady: () => boolean;
+  getZoomState: () => FileViewerZoomState;
+  zoomSyncState?: FileViewerZoomState;
+  onOperationAvailabilityChange?: (availability: FileViewerOperationAvailability) => void;
+  onZoomChange?: (state: FileViewerZoomState) => void;
+  targetOrigin?: string;
+  targetWindow?: Window;
 }
 
 export interface FileViewerLifecycleStateController {
@@ -992,6 +1020,72 @@ export const runFileViewerToolbarZoomSync = ({
   state,
 }: RunFileViewerToolbarZoomSyncInput) => {
   return toolbarActions.notifyZoomChange(state);
+};
+
+export const createFileViewerToolbarControllerActionHandlers = ({
+  getAdapter = () => null,
+  getBuffer = () => null,
+  getExtension,
+  getFile = () => null,
+  getHasError = () => false,
+  getLoading = () => false,
+  getOptions,
+  getSourceUrl = () => null,
+  getToolbar,
+  getRenderedReady,
+  getZoomState,
+  zoomSyncState,
+  onOperationAvailabilityChange,
+  onZoomChange,
+  targetOrigin,
+  targetWindow,
+}: CreateFileViewerToolbarControllerActionHandlersInput): FileViewerToolbarControllerActionHandlers => {
+  let currentToolbarState: FileViewerToolbarState | null = null;
+
+  const resolveToolbarState = () => {
+    currentToolbarState = resolveFileViewerToolbarState({
+      extension: getExtension(),
+      source: createFileViewerOriginalSourceState({
+        buffer: getBuffer() ?? null,
+        file: getFile() ?? null,
+        url: getSourceUrl() ?? null,
+      }),
+      renderedReady: getRenderedReady(),
+      hasError: getHasError(),
+      adapter: getAdapter() ?? null,
+      zoomState: getZoomState(),
+      toolbar: getToolbar(),
+      options: getOptions?.(),
+      loading: getLoading(),
+    });
+    return currentToolbarState;
+  };
+
+  const getResolvedToolbarState = () => currentToolbarState ?? resolveToolbarState();
+
+  const toolbarActions = createFileViewerToolbarActions({
+    getOperationAvailability: () => getResolvedToolbarState().operationAvailability,
+    getToolbarDisabled: () => getResolvedToolbarState().toolbarDisabled,
+    getZoomState,
+    onOperationAvailabilityChange,
+    onZoomChange,
+    targetOrigin,
+    targetWindow,
+  });
+
+  return {
+    resolveToolbarState,
+    createZoomSyncSnapshot: () => createFileViewerToolbarZoomSyncSnapshot(zoomSyncState ?? getZoomState()),
+    syncOperationAvailability: availability => runFileViewerToolbarAvailabilitySync({
+      toolbarActions,
+      availability,
+    }),
+    syncZoomChange: state => runFileViewerToolbarZoomSync({
+      toolbarActions,
+      state,
+    }),
+    isZoomButtonDisabled: toolbarActions.isZoomButtonDisabled,
+  };
 };
 
 export const postFileViewerSearchChange = (

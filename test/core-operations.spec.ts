@@ -14,6 +14,7 @@ import {
   createFileViewerLifecycleFacade,
   createFileViewerPublicApi,
   createFileViewerToolbarActions,
+  createFileViewerToolbarControllerActionHandlers,
   createFileViewerToolbarZoomSyncSnapshot,
   createFileViewerOperationActionHandlers,
   createFileViewerLifecycleStateController,
@@ -988,6 +989,105 @@ describe('@file-viewer/core operation helpers', () => {
       'availability:false',
       'zoom:125%',
     ]);
+  });
+
+  it('creates reusable toolbar controller action handlers for framework wrappers', () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const zoomState = {
+      scale: 1,
+      label: '100%',
+      canZoomIn: true,
+      canZoomOut: false,
+      canReset: true,
+      minScale: 0.25,
+      maxScale: 4,
+    };
+    let buffer: ArrayBuffer | null = new ArrayBuffer(8);
+    let hasError = false;
+    let loading = false;
+    const controller = createFileViewerToolbarControllerActionHandlers({
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      getAdapter: () => ({ exportHtml: true }),
+      getBuffer: () => buffer,
+      getExtension: () => 'pdf',
+      getFile: () => null,
+      getHasError: () => hasError,
+      getLoading: () => loading,
+      getOptions: () => undefined,
+      getSourceUrl: () => null,
+      getToolbar: () => ({
+        download: true,
+        print: true,
+        exportHtml: true,
+        zoom: true,
+      }),
+      getRenderedReady: () => true,
+      getZoomState: () => zoomState,
+      zoomSyncState: zoomState,
+      onOperationAvailabilityChange: availability => {
+        events.push(`emit:availability:${availability.download}:${availability.zoomOut}`);
+      },
+      onZoomChange: state => {
+        events.push(`emit:zoom:${state.label}`);
+      },
+    });
+
+    const state = controller.resolveToolbarState();
+
+    expect(state.operationAvailability).toMatchObject({
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: false,
+      zoomReset: true,
+    });
+    expect(state.visibleToolbar).toEqual({
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+    });
+    expect(state.toolbarPosition).toBe('bottom-right');
+    expect(state.toolbarDisabled).toBe(false);
+    expect(controller.createZoomSyncSnapshot()).toEqual([
+      1,
+      '100%',
+      true,
+      false,
+      true,
+    ]);
+    expect(controller.isZoomButtonDisabled('canZoomIn')).toBe(false);
+    expect(controller.isZoomButtonDisabled('canZoomOut')).toBe(true);
+    expect(controller.syncOperationAvailability()).toBe(true);
+    expect(controller.syncZoomChange()).toBe(true);
+    expect(parent.postMessage).toHaveBeenCalledTimes(2);
+    expect(events).toEqual([
+      'emit:availability:true:false',
+      'post:operation-availability-change',
+      'emit:zoom:100%',
+      'post:zoom-change',
+    ]);
+
+    buffer = null;
+    hasError = true;
+    loading = true;
+    const disabledState = controller.resolveToolbarState();
+
+    expect(disabledState.operationAvailability.download).toBe(false);
+    expect(disabledState.operationAvailability.exportHtml).toBe(false);
+    expect(disabledState.toolbarDisabled).toBe(true);
+    expect(controller.isZoomButtonDisabled('canZoomIn')).toBe(true);
   });
 
   it('guards iframe postMessage events through the core protocol', () => {
