@@ -40,6 +40,8 @@ import {
   resolveFileViewerToolbarPosition,
   resolveFileViewerDisplayFilename,
   resolveVisibleFileViewerToolbar,
+  runFileViewerActiveUnloadComplete,
+  runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
   type FileViewerOperationType,
@@ -146,6 +148,63 @@ describe('@file-viewer/core operation helpers', () => {
     expect(controller.getLoadStartedAt(3)).toBeUndefined();
     expect(controller.getActiveDocumentContext()).toBeNull();
     expect(controller.buildActiveUnloadContext('unload-start', null)).toBeNull();
+  });
+
+  it('runs active unload lifecycle orchestration without framework code', () => {
+    const controller = createFileViewerLifecycleStateController();
+    const onLifecycle = vi.fn();
+    const context = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'url',
+      filename: 'active.docx',
+      url: '/active.docx',
+      version: 9,
+      timestamp: 500,
+    });
+
+    expect(runFileViewerActiveUnloadStart({
+      lifecycleState: controller,
+      onLifecycle,
+    })).toEqual({
+      reason: 'replace',
+      context: null,
+      unloadContext: null,
+    });
+    expect(onLifecycle).not.toHaveBeenCalled();
+
+    controller.setActiveDocumentContext(context);
+    const started = runFileViewerActiveUnloadStart({
+      lifecycleState: controller,
+      reason: 'replace',
+      onLifecycle,
+    });
+
+    expect(started.context).toBe(context);
+    expect(started.unloadContext).toMatchObject({
+      phase: 'unload-start',
+      filename: 'active.docx',
+      reason: 'replace',
+      version: 9,
+    });
+    expect(onLifecycle).toHaveBeenCalledTimes(1);
+    expect(onLifecycle).toHaveBeenLastCalledWith(started.unloadContext);
+
+    const completed = runFileViewerActiveUnloadComplete({
+      lifecycleState: controller,
+      context: started.context,
+      reason: 'component-unmount',
+      onLifecycle,
+    });
+
+    expect(completed.context).toBe(context);
+    expect(completed.unloadContext).toMatchObject({
+      phase: 'unload-complete',
+      filename: 'active.docx',
+      reason: 'component-unmount',
+      version: 9,
+    });
+    expect(onLifecycle).toHaveBeenCalledTimes(2);
+    expect(onLifecycle).toHaveBeenLastCalledWith(completed.unloadContext);
   });
 
   it('builds operation contexts from lifecycle state without wrapper fallback logic', () => {

@@ -815,14 +815,16 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerLoadStartState',
     'createFileViewerRenderCompleteState',
     'createFileViewerLifecycleStateController',
-    'lifecycleState.buildActiveUnloadContext',
     'dispatchFileViewerLifecycleEvent',
     'dispatchFileViewerOperationContextEvent',
+    'runFileViewerActiveUnloadComplete',
+    'runFileViewerActiveUnloadStart',
     'runFileViewerBeforeOperation',
   ], vueLifecycleHookLabel)
   for (const forbiddenToken of [
     'new Map<number, number>()',
     'let activeDocumentContext',
+    'lifecycleState.buildActiveUnloadContext',
     'createFileViewerPostMessagePayload',
     'postFileViewerMessageToParent(',
     'postFileViewerLifecycleEvent',

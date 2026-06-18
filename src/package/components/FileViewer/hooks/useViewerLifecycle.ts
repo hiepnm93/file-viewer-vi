@@ -5,6 +5,8 @@ import {
   createFileViewerRenderCompleteState,
   dispatchFileViewerLifecycleEvent,
   dispatchFileViewerOperationContextEvent,
+  runFileViewerActiveUnloadComplete,
+  runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
 } from '@file-viewer/core'
 import type {
@@ -82,28 +84,23 @@ export const useViewerLifecycle = ({
   }
 
   const notifyActiveUnloadStart = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    const context = lifecycleState.getActiveDocumentContext()
-    const unloadContext = lifecycleState.buildActiveUnloadContext('unload-start', context, reason)
-    if (!unloadContext) {
-      return null
-    }
-
-    notifyLifecycle(unloadContext)
-    return context
+    return runFileViewerActiveUnloadStart({
+      lifecycleState,
+      reason,
+      onLifecycle: notifyLifecycle
+    }).context
   }
 
   const notifyActiveUnloadComplete = (
     context: FileViewerLifecycleContext | null,
     reason: FileViewerLifecycleContext['reason'] = 'replace'
   ) => {
-    if (!context) {
-      return
-    }
-
-    const unloadContext = lifecycleState.buildActiveUnloadContext('unload-complete', context, reason)
-    if (unloadContext) {
-      notifyLifecycle(unloadContext)
-    }
+    runFileViewerActiveUnloadComplete({
+      lifecycleState,
+      context,
+      reason,
+      onLifecycle: notifyLifecycle
+    })
   }
 
   const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {

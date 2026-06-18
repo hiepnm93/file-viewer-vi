@@ -218,6 +218,25 @@ export interface BuildFileViewerOperationContextFromLifecycleStateInput {
   lifecycleTimestamp?: number;
 }
 
+export interface RunFileViewerActiveUnloadStartInput {
+  lifecycleState: Pick<FileViewerLifecycleStateController, 'getActiveDocumentContext' | 'buildActiveUnloadContext'>;
+  reason?: FileViewerLifecycleContext['reason'];
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+}
+
+export interface RunFileViewerActiveUnloadCompleteInput {
+  lifecycleState: Pick<FileViewerLifecycleStateController, 'buildActiveUnloadContext'>;
+  context?: FileViewerLifecycleContext | null;
+  reason?: FileViewerLifecycleContext['reason'];
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+}
+
+export interface FileViewerActiveUnloadState {
+  reason: FileViewerLifecycleContext['reason'];
+  context: FileViewerLifecycleContext | null;
+  unloadContext: FileViewerLifecycleContext | null;
+}
+
 export const buildFileViewerLifecycleContext = <
   Source extends string = FileViewerSourceKind,
 >({
@@ -376,6 +395,42 @@ export const buildFileViewerOperationContextFromLifecycleState = ({
   });
 
   return buildFileViewerOperationContext(operation, baseContext, timestamp);
+};
+
+export const runFileViewerActiveUnloadStart = ({
+  lifecycleState,
+  reason = 'replace',
+  onLifecycle,
+}: RunFileViewerActiveUnloadStartInput): FileViewerActiveUnloadState => {
+  const context = lifecycleState.getActiveDocumentContext();
+  const unloadContext = lifecycleState.buildActiveUnloadContext('unload-start', context, reason);
+  if (unloadContext) {
+    onLifecycle?.(unloadContext);
+  }
+
+  return {
+    reason,
+    context,
+    unloadContext,
+  };
+};
+
+export const runFileViewerActiveUnloadComplete = ({
+  lifecycleState,
+  context = null,
+  reason = 'replace',
+  onLifecycle,
+}: RunFileViewerActiveUnloadCompleteInput): FileViewerActiveUnloadState => {
+  const unloadContext = lifecycleState.buildActiveUnloadContext('unload-complete', context, reason);
+  if (unloadContext) {
+    onLifecycle?.(unloadContext);
+  }
+
+  return {
+    reason,
+    context,
+    unloadContext,
+  };
 };
 
 export const getFileViewerLifecycleHookName = (phase: FileViewerLifecyclePhase) => {

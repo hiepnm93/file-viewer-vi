@@ -211,6 +211,8 @@ export {
   resolveFileViewerToolbarState,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
+  runFileViewerActiveUnloadComplete,
+  runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
   serializeFileViewerContext,
@@ -221,9 +223,12 @@ export type {
   DispatchFileViewerOperationContextEventInput,
   DispatchFileViewerOperationAvailabilityChangeInput,
   DispatchFileViewerZoomChangeInput,
+  FileViewerActiveUnloadState,
   FileViewerToolbarState,
   BuildFileViewerLifecycleContextFromNormalizedSourceInput,
   ResolveFileViewerToolbarStateInput,
+  RunFileViewerActiveUnloadCompleteInput,
+  RunFileViewerActiveUnloadStartInput,
 } from './operations';
 export {
   FALLBACK_FILE_VIEWER_LOADING_THEME,
