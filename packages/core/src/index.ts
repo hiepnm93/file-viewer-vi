@@ -273,14 +273,17 @@ export {
   disposeFileViewerRendererSession,
   removeFileViewerRenderTarget,
   resetFileViewerRenderSurface,
+  runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount,
   renderFileViewerHandler,
 } from './rendererHandler';
 export type {
+  FileViewerRenderSurfaceClearState,
   FileViewerRenderSurfaceState,
   FileViewerRenderSurfaceMountContext,
   MutableFileViewerRenderSurfaceState,
   ResetFileViewerRenderSurfaceInput,
+  RunFileViewerRenderSurfaceClearInput,
   RunFileViewerRenderSurfaceMountInput,
 } from './rendererHandler';
 export {

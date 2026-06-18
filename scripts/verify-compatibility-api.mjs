@@ -748,14 +748,17 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueRenderSurfaceHookSource, [
     'applyFileViewerRenderSurfaceState',
     'disposeFileViewerRendererSession',
-    'resetFileViewerRenderSurface',
+    'runFileViewerRenderSurfaceClear',
     'runFileViewerRenderSurfaceMount'
   ], vueRenderSurfaceHookLabel)
   for (const forbiddenToken of [
     'applyFileViewerRenderReadinessState',
     'createFileViewerRenderTarget',
     'removeFileViewerRenderTarget',
+    'resetFileViewerRenderSurface',
     'waitForFileViewerNextPaint',
+    'const context = notifyActiveUnloadStart',
+    'notifyActiveUnloadComplete(context, reason)',
     'const waitForBrowserPaint',
     'requestAnimationFrame !==',
     'setTimeout(resolve',

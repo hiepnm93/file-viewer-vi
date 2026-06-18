@@ -18,6 +18,7 @@ import {
   removeFileViewerRenderTarget,
   resetFileViewerRenderSurface,
   renderFileViewerHandler,
+  runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount,
   refWorker,
   type FileRenderContext,
@@ -237,6 +238,62 @@ describe('@file-viewer/core worker and render contracts', () => {
       progressiveReady: false,
     });
     expect(root.childElementCount).toBe(0);
+  });
+
+  it('runs framework-neutral render surface clear lifecycle orchestration', () => {
+    const { document } = parseHTML('<main id="root"><section>rendered</section></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const session = { destroy: vi.fn() };
+    const state = createFileViewerRenderSurfaceState<typeof session>();
+    const readiness = {
+      renderedReady: true,
+      progressiveReady: true,
+    };
+    const events: string[] = [];
+    const unloadContext = { phase: 'unload-start' as const };
+
+    applyFileViewerRenderSurfaceState(state, {
+      session,
+      exportAdapter: { exportHtml: true },
+    });
+
+    const result = runFileViewerRenderSurfaceClear({
+      reason: 'component-unmount',
+      surfaceState: state,
+      readinessState: readiness,
+      container: root,
+      onUnloadStart: reason => {
+        events.push(`start:${reason}:${root.childElementCount}`)
+        return unloadContext;
+      },
+      onClearActiveDocumentContext: () => events.push(`clear-active:${root.childElementCount}`),
+      onClearDocumentState: () => events.push('clear-doc'),
+      onStopZoomObserver: () => events.push('stop-zoom'),
+      onClearZoomProvider: () => events.push('clear-zoom'),
+      onUnloadComplete: (context, reason) => events.push(`complete:${reason}:${context === unloadContext}`),
+    });
+
+    expect(result).toEqual({
+      reason: 'component-unmount',
+      unloadContext,
+      session,
+    });
+    expect(session.destroy).toHaveBeenCalledTimes(1);
+    expect(state.session).toBeNull();
+    expect(state.exportAdapter).toBeNull();
+    expect(readiness).toEqual({
+      renderedReady: false,
+      progressiveReady: false,
+    });
+    expect(root.childElementCount).toBe(0);
+    expect(events).toEqual([
+      'start:component-unmount:1',
+      'clear-active:0',
+      'clear-doc',
+      'stop-zoom',
+      'clear-zoom',
+      'complete:component-unmount:true',
+    ]);
   });
 
   it('runs framework-neutral render surface mount orchestration', async () => {

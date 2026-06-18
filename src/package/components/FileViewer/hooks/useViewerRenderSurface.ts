@@ -2,7 +2,7 @@ import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
   applyFileViewerRenderSurfaceState,
   disposeFileViewerRendererSession,
-  resetFileViewerRenderSurface,
+  runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount
 } from '@file-viewer/core'
 import type {
@@ -98,27 +98,25 @@ export const useViewerRenderSurface = ({
   }
 
   const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    const context = notifyActiveUnloadStart(reason)
-
-    try {
-      resetFileViewerRenderSurface({
-        surfaceState: renderSurfaceStateTarget,
-        readinessState: renderReadinessTarget,
-        container: output.value,
-        disposeOptions: {
-          onError: nextError => {
-            console.warn('预览内容卸载失败', nextError)
-          }
+    runFileViewerRenderSurfaceClear({
+      reason,
+      surfaceState: renderSurfaceStateTarget,
+      readinessState: renderReadinessTarget,
+      container: output.value,
+      disposeOptions: {
+        onError: nextError => {
+          console.warn('预览内容卸载失败', nextError)
         }
-      })
-    } finally {
-      clearActiveDocumentContext()
-      clearDocumentState()
-      stopZoomObserver()
-      clearZoomProvider()
-    }
-
-    notifyActiveUnloadComplete(context, reason)
+      },
+      onUnloadStart: notifyActiveUnloadStart,
+      onUnloadComplete: (context, nextReason) => {
+        notifyActiveUnloadComplete(context ?? null, nextReason)
+      },
+      onClearActiveDocumentContext: clearActiveDocumentContext,
+      onClearDocumentState: clearDocumentState,
+      onStopZoomObserver: stopZoomObserver,
+      onClearZoomProvider: clearZoomProvider
+    })
   }
 
   const mountRenderedContent = async (

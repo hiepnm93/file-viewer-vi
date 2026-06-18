@@ -113,6 +113,35 @@ export interface RunFileViewerRenderSurfaceMountInput<
   onRefreshZoomProvider?: () => void;
 }
 
+export interface RunFileViewerRenderSurfaceClearInput<
+  Session extends RendererSession = RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+> {
+  reason?: FileViewerLifecycleContext['reason'];
+  surfaceState: MutableFileViewerRenderSurfaceState<Session>;
+  readinessState: MutableFileViewerRenderReadinessState;
+  container?: HTMLElement | null;
+  disposeOptions?: DisposeFileViewerRendererSessionOptions;
+  onUnloadStart?: (reason: FileViewerLifecycleContext['reason']) => UnloadContext;
+  onUnloadComplete?: (
+    context: UnloadContext | undefined,
+    reason: FileViewerLifecycleContext['reason']
+  ) => void;
+  onClearActiveDocumentContext?: () => void;
+  onClearDocumentState?: () => void;
+  onStopZoomObserver?: () => void;
+  onClearZoomProvider?: () => void;
+}
+
+export interface FileViewerRenderSurfaceClearState<
+  Session extends RendererSession = RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+> {
+  reason: FileViewerLifecycleContext['reason'];
+  unloadContext: UnloadContext | undefined;
+  session: Session | null | undefined;
+}
+
 export const DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS = 'file-render';
 
 const isPromiseLike = (value: unknown): value is PromiseLike<unknown> => {
@@ -280,7 +309,7 @@ export const resetFileViewerRenderSurface = <
   container,
   disposeOptions,
 }: ResetFileViewerRenderSurfaceInput<Session>) => {
-  const session = disposeActiveFileViewerRendererSession(surfaceState, disposeOptions);
+  const session = disposeActiveFileViewerRendererSession(surfaceState, disposeOptions) as Session | null;
   applyFileViewerRenderSurfaceState(surfaceState, { exportAdapter: null });
   applyFileViewerRenderReadinessState(readinessState, {
     renderedReady: false,
@@ -288,6 +317,48 @@ export const resetFileViewerRenderSurface = <
   });
   clearFileViewerRenderSurface(container);
   return session;
+};
+
+export const runFileViewerRenderSurfaceClear = <
+  Session extends RendererSession,
+  UnloadContext = FileViewerLifecycleContext | null,
+>({
+  reason = 'replace',
+  surfaceState,
+  readinessState,
+  container,
+  disposeOptions,
+  onUnloadStart,
+  onUnloadComplete,
+  onClearActiveDocumentContext,
+  onClearDocumentState,
+  onStopZoomObserver,
+  onClearZoomProvider,
+}: RunFileViewerRenderSurfaceClearInput<Session, UnloadContext>): FileViewerRenderSurfaceClearState<Session, UnloadContext> => {
+  const unloadContext = onUnloadStart?.(reason);
+  let session: Session | null | undefined;
+
+  try {
+    session = resetFileViewerRenderSurface<Session>({
+      surfaceState,
+      readinessState,
+      container,
+      disposeOptions,
+    });
+  } finally {
+    onClearActiveDocumentContext?.();
+    onClearDocumentState?.();
+    onStopZoomObserver?.();
+    onClearZoomProvider?.();
+  }
+
+  onUnloadComplete?.(unloadContext, reason);
+
+  return {
+    reason,
+    unloadContext,
+    session,
+  };
 };
 
 export const runFileViewerRenderSurfaceMount = async <
