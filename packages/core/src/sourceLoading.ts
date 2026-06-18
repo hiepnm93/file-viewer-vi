@@ -213,6 +213,58 @@ export type FileViewerReadAndRenderFileState<Session = unknown> =
     readonly complete: FileViewerRenderCompleteState;
   };
 
+export interface RunFileViewerStreamingPdfPreviewInput<Session = unknown> {
+  url: string;
+  version: number;
+  filename?: string;
+  previewTarget: MutableFileViewerPreviewSourceUrlState & MutableFileViewerRenderReadinessState;
+  isCurrent: (version: number) => boolean;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string,
+    streamUrl?: string
+  ) => Promise<Session | undefined>;
+  destroyRenderSession?: (session?: Session | null) => void;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: 'url';
+    sourceUrl?: string | null;
+  }) => FileViewerRenderCompleteState;
+  loadingMessage?: string;
+  onStartLoading?: (message: string) => void;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onClearLoadStarted?: (version: number) => void;
+  onStopLoading?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+export type FileViewerStreamingPdfPreviewState<Session = unknown> =
+  | {
+    readonly status: 'ready';
+    readonly placeholderFile: File;
+    readonly session: Session | undefined;
+    readonly complete: FileViewerRenderCompleteState;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'stale';
+    readonly placeholderFile: File | null;
+    readonly session: Session | null | undefined;
+    readonly complete: null;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'error';
+    readonly placeholderFile: File | null;
+    readonly session: null;
+    readonly complete: null;
+    readonly error: unknown;
+  };
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -498,6 +550,95 @@ export const runFileViewerReadAndRenderFile = async <Session = unknown>({
     session,
     complete,
   };
+};
+
+export const runFileViewerStreamingPdfPreview = async <Session = unknown>({
+  url,
+  version,
+  filename,
+  previewTarget,
+  isCurrent,
+  mountRenderedContent,
+  destroyRenderSession,
+  buildRenderCompleteState,
+  loadingMessage = FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf,
+  onStartLoading,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+  onClearLoadStarted,
+  onStopLoading,
+  onError,
+}: RunFileViewerStreamingPdfPreviewInput<Session>): Promise<FileViewerStreamingPdfPreviewState<Session>> => {
+  let placeholderFile: File | null = null;
+
+  onStartLoading?.(loadingMessage);
+
+  try {
+    placeholderFile = createFileViewerStreamingPdfPlaceholderFile(filename);
+    applyFileViewerPreviewSourceUrlState(previewTarget, url);
+
+    const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url);
+    if (!isCurrent(version)) {
+      destroyRenderSession?.(session);
+      return {
+        status: 'stale',
+        placeholderFile,
+        session,
+        complete: null,
+        error: null,
+      };
+    }
+
+    const complete = commitFileViewerRenderCompleteState({
+      version,
+      session,
+      readinessTarget: previewTarget,
+      buildState: () => buildRenderCompleteState({
+        version,
+        source: 'url',
+        sourceUrl: url,
+      }),
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+    });
+
+    return {
+      status: 'ready',
+      placeholderFile,
+      session,
+      complete,
+      error: null,
+    };
+  } catch (error) {
+    if (!isCurrent(version)) {
+      return {
+        status: 'stale',
+        placeholderFile,
+        session: null,
+        complete: null,
+        error: null,
+      };
+    }
+
+    onError?.(error);
+    return {
+      status: 'error',
+      placeholderFile,
+      session: null,
+      complete: null,
+      error,
+    };
+  } finally {
+    finalizeFileViewerPreviewLoadState({
+      version,
+      isCurrent,
+      onClearLoadStarted,
+      onStopLoading,
+    });
+  }
 };
 
 export const finalizeFileViewerPreviewLoadState = ({

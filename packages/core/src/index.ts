@@ -347,6 +347,7 @@ export {
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
   runFileViewerReadAndRenderFile,
+  runFileViewerStreamingPdfPreview,
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export type {
@@ -370,6 +371,7 @@ export type {
   FileViewerReadPreviewState,
   FileViewerRemoteSourcePlan,
   FileViewerRequestController,
+  FileViewerStreamingPdfPreviewState,
   FinalizeFileViewerPreviewLoadStateInput,
   MutableFileViewerPreviewFilenameState,
   MutableFileViewerPreviewSourceUrlState,
@@ -378,6 +380,7 @@ export type {
   MutableFileViewerRenderReadinessState,
   MutableFileViewerReadPreviewState,
   RunFileViewerReadAndRenderFileInput,
+  RunFileViewerStreamingPdfPreviewInput,
   ResolveFileViewerFileRefSourcePlanInput,
   ResolveFileViewerPreviewRequestReasonInput,
 } from './sourceLoading';

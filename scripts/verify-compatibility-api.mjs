@@ -483,21 +483,19 @@ async function verifyVue3ScopedCompatibility() {
   const vueSourceLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerSourceLoading.ts`
   assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)
   assertTokens(vueSourceLoadingHookSource, [
-    'applyFileViewerPreviewSourceUrlState',
     'buildLoadStartState',
     'buildRenderCompleteState',
     'commitFileViewerEmptyPreviewResetState',
     'commitFileViewerLoadStartState',
     'commitFileViewerPreviewRequestStartState',
-    'commitFileViewerRenderCompleteState',
     'commitFileViewerRemoteDownloadState',
-    'createFileViewerStreamingPdfPlaceholderFile',
     'finalizeFileViewerPreviewLoadState',
     'resolveFileViewerFileRefSourcePlan',
     'resolveFileViewerPreviewRequestReason',
     'resolveFileViewerRemoteSourcePlan',
     'resolveFileViewerRuntimePageHref',
-    'runFileViewerReadAndRenderFile'
+    'runFileViewerReadAndRenderFile',
+    'runFileViewerStreamingPdfPreview'
   ], vueSourceLoadingHookLabel)
   for (const forbiddenToken of [
     'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
@@ -533,9 +531,15 @@ async function verifyVue3ScopedCompatibility() {
     'currentSourceUrl.value = normalizeFileViewerSourceUrl',
     'currentSourceUrl.value = url',
     'applyFileViewerReadPreviewState',
+    'applyFileViewerPreviewSourceUrlState',
     'createFileViewerReadPreviewState',
+    'createFileViewerStreamingPdfPlaceholderFile',
+    'commitFileViewerRenderCompleteState',
+    'FILE_VIEWER_PREVIEW_MESSAGES',
     'readFileViewerBuffer',
     'const arrayBuffer =',
+    'new ArrayBuffer(0)',
+    'streamingPdf',
     'renderedReady.value = true',
     'applyFileViewerPreviewFilenameState',
     'applyFileViewerRenderReadinessState',

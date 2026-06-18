@@ -1,14 +1,10 @@
 import axios from 'axios'
 import type { Ref } from 'vue'
 import {
-  FILE_VIEWER_PREVIEW_MESSAGES,
-  applyFileViewerPreviewSourceUrlState,
   commitFileViewerEmptyPreviewResetState,
   commitFileViewerLoadStartState,
   commitFileViewerPreviewRequestStartState,
-  commitFileViewerRenderCompleteState,
   commitFileViewerRemoteDownloadState,
-  createFileViewerStreamingPdfPlaceholderFile,
   finalizeFileViewerPreviewLoadState,
   isFileViewerAbortError,
   resolveFileViewerFileRefSourcePlan,
@@ -16,6 +12,7 @@ import {
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
   runFileViewerReadAndRenderFile,
+  runFileViewerStreamingPdfPreview,
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -185,44 +182,26 @@ export const useViewerSourceLoading = ({
   }
 
   const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
-    startLoading(FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)
-
-    try {
-      const placeholderFile = createFileViewerStreamingPdfPlaceholderFile(nextFilename)
-      applyFileViewerPreviewSourceUrlState(previewStateTarget, url)
-      const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
-      if (!isCurrentRequest(version)) {
-        destroyRenderSession(session)
-        return
+    await runFileViewerStreamingPdfPreview({
+      url,
+      version,
+      filename: nextFilename,
+      previewTarget: previewStateTarget,
+      isCurrent: isCurrentRequest,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildRenderCompleteState,
+      onStartLoading: startLoading,
+      onSession: setActiveRenderSession,
+      onActiveDocumentContext: setActiveDocumentContext,
+      onLifecycle: notifyLifecycle,
+      onClearLoadStarted: clearLoadStarted,
+      onStopLoading: stopLoading,
+      onError: nextError => {
+        console.error(nextError)
+        showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
       }
-      commitFileViewerRenderCompleteState({
-        version,
-        session,
-        readinessTarget: previewStateTarget,
-        buildState: () => buildRenderCompleteState({
-          version,
-          source: 'url',
-          sourceUrl: url
-        }),
-        onSession: setActiveRenderSession,
-        onActiveDocumentContext: setActiveDocumentContext,
-        onLifecycle: notifyLifecycle,
-        onClearLoadStarted: clearLoadStarted
-      })
-    } catch (nextError) {
-      if (!isCurrentRequest(version)) {
-        return
-      }
-      console.error(nextError)
-      showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
-    } finally {
-      finalizeFileViewerPreviewLoadState({
-        version,
-        isCurrent: isCurrentRequest,
-        onClearLoadStarted: clearLoadStarted,
-        onStopLoading: stopLoading
-      })
-    }
+    })
   }
 
   const previewLocalFile = async (source: FileRef, version: number) => {

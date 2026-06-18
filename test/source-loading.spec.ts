@@ -33,6 +33,7 @@ import {
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
   runFileViewerReadAndRenderFile,
+  runFileViewerStreamingPdfPreview,
   shouldStreamPdfUrl
 } from '../packages/core/src'
 
@@ -594,6 +595,187 @@ describe('remote source loading helpers', () => {
     })
     expect(events).toEqual(['destroy:session'])
     expect(target.renderedReady).toBe(false)
+  })
+
+  it('runs streaming PDF preview through shared core orchestration', async () => {
+    const events: string[] = []
+    const session = { id: 'stream-session' }
+    const target = {
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerStreamingPdfPreview({
+      url: '/example/stream.pdf',
+      version: 16,
+      filename: '报告.pdf',
+      previewTarget: target,
+      isCurrent: version => version === 16,
+      mountRenderedContent: async (buffer, file, version, sourceUrl, streamUrl) => {
+        events.push(`mount:${file.name}:${buffer.byteLength}:${version}:${sourceUrl}:${streamUrl}`)
+        return session
+      },
+      destroyRenderSession: () => {
+        events.push('destroy')
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build:${input.source}:${input.sourceUrl}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          filename: '报告.pdf',
+          timestamp: 360
+        })
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      },
+      onError: () => {
+        events.push('error')
+      }
+    })
+
+    expect(result.status).toBe('ready')
+    expect(result.placeholderFile?.name).toBe('报告.pdf')
+    expect(result.session).toBe(session)
+    expect(result.complete?.lifecycleContext).toMatchObject({
+      phase: 'load-complete',
+      filename: '报告.pdf',
+      source: 'url',
+      url: '/example/stream.pdf'
+    })
+    expect(target).toEqual({
+      sourceUrl: '/example/stream.pdf',
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf}`,
+      'mount:报告.pdf:0:16:/example/stream.pdf:/example/stream.pdf',
+      'session:set',
+      'build:url:/example/stream.pdf',
+      'active:load-complete:报告.pdf',
+      'lifecycle:load-complete',
+      'clear:16',
+      'clear:16',
+      'stop'
+    ])
+  })
+
+  it('destroys stale streaming PDF sessions without committing readiness', async () => {
+    const events: string[] = []
+    const session = { id: 'stale-stream-session' }
+    const target = {
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerStreamingPdfPreview({
+      url: '/example/stale.pdf',
+      version: 17,
+      filename: 'stale.pdf',
+      previewTarget: target,
+      isCurrent: () => false,
+      mountRenderedContent: async () => session,
+      destroyRenderSession: nextSession => {
+        events.push(nextSession === session ? 'destroy:session' : 'destroy:miss')
+      },
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'stale',
+      session,
+      complete: null,
+      error: null
+    })
+    expect(target).toEqual({
+      sourceUrl: '/example/stale.pdf',
+      renderedReady: false,
+      progressiveReady: true
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf}`,
+      'destroy:session',
+      'clear:17'
+    ])
+  })
+
+  it('reports current streaming PDF mount errors through shared core flow', async () => {
+    const events: string[] = []
+    const error = new Error('stream failed')
+    const target = {
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: false
+    }
+
+    const result = await runFileViewerStreamingPdfPreview({
+      url: '/example/error.pdf',
+      version: 18,
+      filename: 'error.pdf',
+      previewTarget: target,
+      isCurrent: version => version === 18,
+      mountRenderedContent: async () => {
+        throw error
+      },
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onError: nextError => {
+        events.push(nextError === error ? 'error:reported' : 'error:miss')
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'error',
+      complete: null,
+      error
+    })
+    expect(result.placeholderFile?.name).toBe('error.pdf')
+    expect(target).toEqual({
+      sourceUrl: '/example/error.pdf',
+      renderedReady: false,
+      progressiveReady: false
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf}`,
+      'error:reported',
+      'clear:18',
+      'stop'
+    ])
   })
 
   it('finalizes preview load state without stopping newer requests', () => {
