@@ -1,5 +1,4 @@
 import {
-  buildFileViewerLifecycleContext,
   buildFileViewerOperationContextFromLifecycleState,
   createFileViewerLifecycleStateController,
   createFileViewerLoadStartState,
@@ -19,15 +18,6 @@ import type {
   FileViewerOptions,
   FileViewerRenderCompleteState
 } from '@file-viewer/core'
-
-interface BuildViewerLifecycleContextInput {
-  phase: FileViewerLifecyclePhase;
-  version: number;
-  source: FileViewerLifecycleContext['source'];
-  file?: File | null;
-  sourceUrl?: string;
-  reason?: FileViewerLifecycleContext['reason'];
-}
 
 interface BuildViewerLoadStartStateInput {
   version: number;
@@ -82,27 +72,6 @@ export const useViewerLifecycle = ({
 
   const markLoadStarted = lifecycleState.markLoadStarted
   const clearLoadStarted = lifecycleState.clearLoadStarted
-
-  const buildLifecycleContext = ({
-    phase,
-    version,
-    source,
-    file,
-    sourceUrl,
-    reason
-  }: BuildViewerLifecycleContextInput): FileViewerLifecycleContext => {
-    return buildFileViewerLifecycleContext({
-      phase,
-      source,
-      version,
-      file,
-      filename: getFilename(),
-      url: sourceUrl,
-      bufferSize: getBufferSize(),
-      startedAt: lifecycleState.getLoadStartedAt(version),
-      reason
-    })
-  }
 
   const notifyLifecycle = (context: FileViewerLifecycleContext) => {
     emitLifecycle(context.phase, context)
@@ -201,7 +170,6 @@ export const useViewerLifecycle = ({
   return {
     markLoadStarted,
     clearLoadStarted,
-    buildLifecycleContext,
     notifyLifecycle,
     notifyActiveUnloadStart,
     notifyActiveUnloadComplete,

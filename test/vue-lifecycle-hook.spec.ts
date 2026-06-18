@@ -46,12 +46,11 @@ describe('Vue FileViewer lifecycle hook', () => {
     })
 
     lifecycle.markLoadStarted(3, 1000)
-    const loadedContext = lifecycle.buildLifecycleContext({
-      phase: 'load-complete',
+    const loadedContext = lifecycle.buildRenderCompleteState({
       version: 3,
       source: 'url',
       sourceUrl: '/example/demo.pdf'
-    })
+    }).lifecycleContext
 
     expect(loadedContext).toMatchObject({
       phase: 'load-complete',
