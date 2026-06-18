@@ -5,6 +5,7 @@ import {
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
   buildFileViewerLifecycleContext,
+  buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
@@ -68,6 +69,30 @@ describe('@file-viewer/core operation helpers', () => {
       label: '打印完整渲染内容',
       filename: '报告.pdf',
       timestamp: 1300,
+    });
+
+    expect(buildFileViewerLifecycleContextFromNormalizedSource({
+      phase: 'load-complete',
+      source: {
+        kind: 'url',
+        filename: '计划.pdf',
+        extension: 'pdf',
+        url: '/docs/%E8%AE%A1%E5%88%92.pdf',
+        size: 2048,
+      },
+      version: 8,
+      startedAt: 0,
+      timestamp: 320,
+    })).toMatchObject({
+      phase: 'load-complete',
+      type: 'pdf',
+      filename: '计划.pdf',
+      source: 'url',
+      url: '/docs/%E8%AE%A1%E5%88%92.pdf',
+      size: 2048,
+      version: 8,
+      timestamp: 320,
+      duration: 320,
     });
   });
 

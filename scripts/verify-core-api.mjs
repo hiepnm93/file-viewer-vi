@@ -61,6 +61,7 @@ const requiredValueExports = [
   'hasVisibleFileViewerToolbarActions',
   'isFileViewerZoomButtonDisabled',
   'resolveFileViewerToolbarState',
+  'buildFileViewerLifecycleContextFromNormalizedSource',
   'createFileViewerLifecycleStateController',
   'postFileViewerLifecycleEvent',
   'postFileViewerOperationContextEvent',
@@ -159,6 +160,7 @@ const requiredTypeExports = [
   'FileViewerDirectFrameHandle',
   'FileViewerMountedFrameHandle',
   'FileViewerFrameControllerHandle',
+  'BuildFileViewerLifecycleContextFromNormalizedSourceInput',
   'FileViewerPresentationState',
   'ResolveFileViewerPresentationStateInput',
   'FileViewerWorkerController',
@@ -330,6 +332,26 @@ function assertCoreViewerOperationSourceState(viewerSource) {
   }
 }
 
+function assertCoreViewerLifecycleSourceState(viewerSource) {
+  assert(
+    viewerSource.includes('buildFileViewerLifecycleContextFromNormalizedSource'),
+    'createViewer must build lifecycle contexts from normalized source through core helper'
+  )
+
+  for (const forbiddenToken of [
+    'buildFileViewerLifecycleContext({',
+    "typeof File !== 'undefined' && source.file instanceof File",
+    "phase.endsWith('complete')",
+    'filename: source.filename',
+    'source: source.kind'
+  ]) {
+    assert(
+      !viewerSource.includes(forbiddenToken),
+      `createViewer must not keep duplicate lifecycle source state: ${forbiddenToken}`
+    )
+  }
+}
+
 function collectBareImportSpecifiers(source) {
   const imports = new Set()
   const patterns = [
@@ -389,6 +411,7 @@ assertCoreEntrypoint(indexSource)
 assertCoreInstanceContract(typesSource)
 assertCoreViewerSurfaceState(viewerSource)
 assertCoreViewerOperationSourceState(viewerSource)
+assertCoreViewerLifecycleSourceState(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(

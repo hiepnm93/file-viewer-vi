@@ -21,6 +21,7 @@ import type {
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
   FileViewerZoomState,
+  NormalizedFileViewerSource,
 } from './types';
 
 export const FILE_VIEWER_LIFECYCLE_HOOKS = {
@@ -52,6 +53,15 @@ export interface BuildFileViewerLifecycleContextInput<
   bufferSize?: number;
   startedAt?: number;
   duration?: number;
+  timestamp?: number;
+  reason?: FileViewerLifecycleContext['reason'];
+}
+
+export interface BuildFileViewerLifecycleContextFromNormalizedSourceInput {
+  phase: FileViewerLifecyclePhase;
+  source: NormalizedFileViewerSource;
+  version: number;
+  startedAt?: number;
   timestamp?: number;
   reason?: FileViewerLifecycleContext['reason'];
 }
@@ -192,6 +202,30 @@ export const buildFileViewerLifecycleContext = <
     duration: duration ?? (phase === 'load-complete' && startedAt ? now - startedAt : undefined),
     reason,
   };
+};
+
+export const buildFileViewerLifecycleContextFromNormalizedSource = ({
+  phase,
+  source,
+  version,
+  startedAt,
+  timestamp,
+  reason,
+}: BuildFileViewerLifecycleContextFromNormalizedSourceInput): FileViewerLifecycleContext => {
+  const now = timestamp ?? Date.now();
+
+  return buildFileViewerLifecycleContext({
+    phase,
+    filename: source.filename,
+    source: source.kind,
+    url: source.url,
+    file: typeof File !== 'undefined' && source.file instanceof File ? source.file : undefined,
+    size: source.size,
+    version,
+    timestamp: now,
+    duration: phase.endsWith('complete') && typeof startedAt === 'number' ? now - startedAt : undefined,
+    reason,
+  });
 };
 
 export const resolveFileViewerLifecycleFallbackSource = ({

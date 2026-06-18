@@ -151,6 +151,7 @@ export {
   FILE_VIEWER_LIFECYCLE_HOOKS,
   FILE_VIEWER_OPERATION_LABELS,
   buildFileViewerLifecycleContext,
+  buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
@@ -180,6 +181,7 @@ export {
 } from './operations';
 export type {
   FileViewerToolbarState,
+  BuildFileViewerLifecycleContextFromNormalizedSourceInput,
   ResolveFileViewerToolbarStateInput,
 } from './operations';
 export {
