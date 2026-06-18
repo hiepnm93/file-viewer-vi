@@ -27,6 +27,14 @@ export interface ResolveFileViewerRenderSessionDisposeErrorMessageInput {
   message?: string;
 }
 
+export type FileViewerRenderSessionDisposeErrorLogger = (message: string, error: unknown) => void;
+
+export interface ReportFileViewerRenderSessionDisposeErrorInput
+  extends ResolveFileViewerRenderSessionDisposeErrorMessageInput {
+  error: unknown;
+  onLogError?: FileViewerRenderSessionDisposeErrorLogger | null;
+}
+
 export interface RenderFileViewerHandlerInput<
   Rendered = unknown,
   Target extends HTMLElement = HTMLElement,
@@ -325,6 +333,25 @@ export const disposeFileViewerRendered = (rendered?: unknown) => {
 export const resolveFileViewerRenderSessionDisposeErrorMessage = ({
   message = FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE,
 }: ResolveFileViewerRenderSessionDisposeErrorMessageInput = {}) => message;
+
+export const DEFAULT_FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_LOGGER: FileViewerRenderSessionDisposeErrorLogger = (
+  message,
+  error
+) => {
+  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+    console.warn(message, error);
+  }
+};
+
+export const reportFileViewerRenderSessionDisposeError = ({
+  error,
+  onLogError = DEFAULT_FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_LOGGER,
+  ...messageInput
+}: ReportFileViewerRenderSessionDisposeErrorInput) => {
+  const message = resolveFileViewerRenderSessionDisposeErrorMessage(messageInput);
+  onLogError?.(message, error);
+  return message;
+};
 
 export const disposeFileViewerRendererSession = (
   session?: RendererSession | null,

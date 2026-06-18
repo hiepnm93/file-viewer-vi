@@ -24,6 +24,7 @@ import {
   runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount,
   resolveFileViewerRenderSessionDisposeErrorMessage,
+  reportFileViewerRenderSessionDisposeError,
   refWorker,
   type FileRenderContext,
   type FileRenderHandler,
@@ -484,6 +485,26 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE).toBe('预览内容卸载失败');
     expect(resolveFileViewerRenderSessionDisposeErrorMessage()).toBe('预览内容卸载失败');
     expect(resolveFileViewerRenderSessionDisposeErrorMessage({ message: '自定义卸载失败' })).toBe('自定义卸载失败');
+
+    const loggedDisposeWarnings: Array<[string, unknown]> = [];
+    expect(reportFileViewerRenderSessionDisposeError({
+      error: syncError,
+      onLogError: (message, error) => {
+        loggedDisposeWarnings.push([message, error]);
+      },
+    })).toBe('预览内容卸载失败');
+    expect(reportFileViewerRenderSessionDisposeError({
+      message: '自定义卸载失败',
+      error: asyncError,
+      onLogError: (message, error) => {
+        loggedDisposeWarnings.push([message, error]);
+      },
+    })).toBe('自定义卸载失败');
+    expect(loggedDisposeWarnings).toEqual([
+      ['预览内容卸载失败', syncError],
+      ['自定义卸载失败', asyncError],
+    ]);
+
     expect(syncDestroy).toHaveBeenCalledTimes(1);
     expect(asyncDestroy).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledWith(syncError);

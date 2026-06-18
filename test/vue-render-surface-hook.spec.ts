@@ -132,7 +132,7 @@ describe('Vue FileViewer render surface hook', () => {
     expect(root.innerHTML).not.toContain('file-render')
   })
 
-  it('routes render session dispose warnings through the core message resolver', () => {
+  it('routes render session dispose warnings through the core report helper', () => {
     const root = installDom()
     const output = ref<HTMLDivElement | null>(root)
     const error = new Error('dispose failed')
