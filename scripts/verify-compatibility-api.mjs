@@ -379,6 +379,8 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueFileViewerSource, [
     'useViewerPreviewLifecycle',
     'useViewerRequestScope',
+    'reportFileViewerLifecycleHookError',
+    'reportFileViewerOperationError',
     'emitLifecycle: emit',
     'onOperationErrorMessage: showError'
   ], vueFileViewerLabel)
@@ -389,6 +391,8 @@ async function verifyVue3ScopedCompatibility() {
     "if (event === 'load-complete')",
     "if (event === 'unload-start')",
     '操作前置校验失败',
+    'console.error',
+    'FileViewer ${context.phase} hook failed',
     "props.file ? 'file'",
     "props.url ? 'url'"
   ]) {
@@ -401,9 +405,17 @@ async function verifyVue3ScopedCompatibility() {
     !vueFileViewerSource.includes('createFileViewerRequestController'),
     `${vueFileViewerLabel} must delegate request version scope to useViewerRequestScope instead of creating a core request controller directly`
   )
+  const allowedVueFileViewerRuntimeCoreImport = `import {
+  reportFileViewerLifecycleHookError,
+  reportFileViewerOperationError
+} from '@file-viewer/core'`
+  const vueFileViewerSourceWithoutAllowedRuntimeCoreImport = vueFileViewerSource.replace(
+    allowedVueFileViewerRuntimeCoreImport,
+    ''
+  )
   assert(
-    !/\bimport\s+(?!type\b)(?:{[^}]*}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*)(?:\s*,\s*{[^}]*})?\s+from\s+['"]@file-viewer\/core['"]/.test(vueFileViewerSource),
-    `${vueFileViewerLabel} must use type-only core imports and keep runtime core controllers inside component hooks`
+    !/\bimport\s+(?!type\b)(?:{[^}]*}|\*\s+as\s+[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*)(?:\s*,\s*{[^}]*})?\s+from\s+['"]@file-viewer\/core['"]/.test(vueFileViewerSourceWithoutAllowedRuntimeCoreImport),
+    `${vueFileViewerLabel} must only use approved runtime core report helpers and keep runtime core controllers inside component hooks`
   )
 
   const vueRequestScopeHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRequestScope.ts')

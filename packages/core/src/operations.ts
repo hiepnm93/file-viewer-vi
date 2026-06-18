@@ -43,6 +43,8 @@ export const FILE_VIEWER_OPERATION_LABELS = {
 
 export const FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX = '操作前置校验失败';
 
+export const FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX = 'FileViewer';
+
 export interface FileViewerLifecycleComponentEmit {
   (event: 'load-start', context: FileViewerLifecycleContext): void;
   (event: 'load-complete', context: FileViewerLifecycleContext): void;
@@ -169,6 +171,34 @@ export interface ResolveFileViewerBeforeOperationErrorMessageInput {
   error: unknown;
   formatErrorMessage: FileViewerErrorMessageFormatter;
   prefix?: string;
+}
+
+export interface ResolveFileViewerLifecycleHookErrorMessageInput {
+  context: Pick<FileViewerLifecycleContext, 'phase'>;
+  prefix?: string;
+}
+
+export type FileViewerLifecycleHookErrorLogger = (
+  message: string,
+  error: unknown,
+  context: FileViewerLifecycleContext
+) => void;
+
+export interface ReportFileViewerLifecycleHookErrorInput extends ResolveFileViewerLifecycleHookErrorMessageInput {
+  error: unknown;
+  context: FileViewerLifecycleContext;
+  onLogError?: FileViewerLifecycleHookErrorLogger | null;
+}
+
+export type FileViewerOperationErrorLogger = (
+  error: unknown,
+  context: FileViewerOperationContext
+) => void;
+
+export interface ReportFileViewerOperationErrorInput {
+  error: unknown;
+  context: FileViewerOperationContext;
+  onLogError?: FileViewerOperationErrorLogger | null;
 }
 
 export interface CreateFileViewerLifecycleActionsInput<
@@ -482,6 +512,48 @@ export const resolveFileViewerBeforeOperationErrorMessage = ({
   prefix = FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
 }: ResolveFileViewerBeforeOperationErrorMessageInput) => {
   return formatErrorMessage(prefix, error);
+};
+
+export const resolveFileViewerLifecycleHookErrorMessage = ({
+  context,
+  prefix = FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
+}: ResolveFileViewerLifecycleHookErrorMessageInput) => {
+  return `${prefix} ${context.phase} hook failed`;
+};
+
+export const DEFAULT_FILE_VIEWER_LIFECYCLE_HOOK_ERROR_LOGGER: FileViewerLifecycleHookErrorLogger = (
+  message,
+  error
+) => {
+  if (typeof console !== 'undefined' && typeof console.error === 'function') {
+    console.error(message, error);
+  }
+};
+
+export const reportFileViewerLifecycleHookError = ({
+  error,
+  context,
+  onLogError = DEFAULT_FILE_VIEWER_LIFECYCLE_HOOK_ERROR_LOGGER,
+  prefix,
+}: ReportFileViewerLifecycleHookErrorInput) => {
+  const message = resolveFileViewerLifecycleHookErrorMessage({ context, prefix });
+  onLogError?.(message, error, context);
+  return message;
+};
+
+export const DEFAULT_FILE_VIEWER_OPERATION_ERROR_LOGGER: FileViewerOperationErrorLogger = error => {
+  if (typeof console !== 'undefined' && typeof console.error === 'function') {
+    console.error(error);
+  }
+};
+
+export const reportFileViewerOperationError = ({
+  error,
+  context,
+  onLogError = DEFAULT_FILE_VIEWER_OPERATION_ERROR_LOGGER,
+}: ReportFileViewerOperationErrorInput) => {
+  onLogError?.(error, context);
+  return error;
 };
 
 export const runFileViewerActiveUnloadStart = ({

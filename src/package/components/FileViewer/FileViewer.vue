@@ -1,6 +1,10 @@
 <script setup lang='ts'>
 import { ref } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
+import {
+  reportFileViewerLifecycleHookError,
+  reportFileViewerOperationError
+} from '@file-viewer/core'
 import type {
   FileViewerComponentEmits as FileViewerEmits,
   FileViewerComponentProps as FileViewerProps
@@ -116,10 +120,10 @@ const {
   emitOperationCancel: context => emit('operation-cancel', context),
   formatErrorMessage,
   handleLifecycleError: (nextError, context) => {
-    console.error(`FileViewer ${context.phase} hook failed`, nextError)
+    reportFileViewerLifecycleHookError({ error: nextError, context })
   },
-  handleOperationError: (nextError) => {
-    console.error(nextError)
+  handleOperationError: (nextError, context) => {
+    reportFileViewerOperationError({ error: nextError, context })
   },
   onOperationErrorMessage: showError
 })

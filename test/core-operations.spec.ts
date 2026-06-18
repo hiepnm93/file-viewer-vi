@@ -26,6 +26,7 @@ import {
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
+  FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
   hasVisibleFileViewerToolbarActions,
   isFileViewerFrameEvent,
   isFileViewerZoomButtonDisabled,
@@ -37,8 +38,11 @@ import {
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
   postFileViewerZoomChange,
+  reportFileViewerLifecycleHookError,
+  reportFileViewerOperationError,
   resolveFileViewerBeforeOperationErrorMessage,
   resolveFileViewerLifecycleFallbackSource,
+  resolveFileViewerLifecycleHookErrorMessage,
   resolveFileViewerOperationActionErrorMessage,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
@@ -239,6 +243,34 @@ describe('@file-viewer/core operation helpers', () => {
       prefix: '权限校验失败',
       formatErrorMessage: (prefix, error) => `${prefix}:${String(error)}`,
     })).toBe('权限校验失败:offline');
+
+    const hookError = new Error('hook failed');
+    const lifecycleLogs: Array<[string, unknown, string]> = [];
+    expect(FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX).toBe('FileViewer');
+    expect(resolveFileViewerLifecycleHookErrorMessage({ context })).toBe('FileViewer load-start hook failed');
+    expect(resolveFileViewerLifecycleHookErrorMessage({
+      context,
+      prefix: 'Viewer',
+    })).toBe('Viewer load-start hook failed');
+    expect(reportFileViewerLifecycleHookError({
+      error: hookError,
+      context,
+      onLogError: (message, error, nextContext) => {
+        lifecycleLogs.push([message, error, nextContext.phase]);
+      },
+    })).toBe('FileViewer load-start hook failed');
+    expect(lifecycleLogs).toEqual([['FileViewer load-start hook failed', hookError, 'load-start']]);
+
+    const operationContext = buildFileViewerOperationContext('download', context, 220);
+    const operationLogs: Array<[unknown, string]> = [];
+    expect(reportFileViewerOperationError({
+      error: hookError,
+      context: operationContext,
+      onLogError: (error, nextContext) => {
+        operationLogs.push([error, nextContext.operation]);
+      },
+    })).toBe(hookError);
+    expect(operationLogs).toEqual([[hookError, 'download']]);
   });
 
   it('builds operation contexts from lifecycle state without wrapper fallback logic', () => {
