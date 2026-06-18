@@ -1,14 +1,8 @@
 import {
-  buildFileViewerDocumentTextChunks,
+  createEmptyFileViewerSearchState,
 } from './document';
 import {
-  collectFileViewerDocumentAnchors,
-  scrollToFileViewerDocumentAnchor,
-} from './documentDom';
-import { createFileViewerDomSearchController } from './documentSearch';
-import {
-  createFileViewerSearchChangeState,
-  resolveFileViewerLocationChangeAnchor,
+  createFileViewerDocumentFeatureControllerActionHandlers,
 } from './documentEvents';
 import { createFileViewerZoomController } from './documentZoom';
 import {
@@ -92,7 +86,10 @@ export const createViewer = (
   let currentSource: NormalizedFileViewerSource | null = null;
   const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
   const requestScope = createFileViewerRequestScope();
-  let anchors: FileViewerDocumentAnchor[] = [];
+  const documentTarget = {
+    anchors: { value: [] as FileViewerDocumentAnchor[] },
+    state: createEmptyFileViewerSearchState(),
+  };
 
   const buildCurrentLifecycleContext = () => {
     const source = currentSource || normalizeSource({});
@@ -135,12 +132,14 @@ export const createViewer = (
     root: () => container,
     beforeZoom: runBeforeViewerOperation,
   });
-  const searchController = createFileViewerDomSearchController({
+  const documentActions = createFileViewerDocumentFeatureControllerActionHandlers({
     root: () => container,
-    options: () => options.search,
+    searchTarget: documentTarget,
+    searchOptions: () => options.search,
+    getAiOptions: () => options.ai,
+    targetWindow: null,
   });
   zoomController.observe();
-  searchController.observe();
 
   const destroyCurrent = async (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     if (!currentSource) {
@@ -156,8 +155,7 @@ export const createViewer = (
       session: null,
       exportAdapter: null,
     });
-    anchors = [];
-    await searchController.clear();
+    await documentActions.clearDocumentState();
     zoomController.clearProvider();
     await emitLifecycle(options, 'unload-complete', source, version, startedAt, reason);
   };
@@ -192,13 +190,13 @@ export const createViewer = (
       });
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       zoomController.refreshProvider();
-      anchors = collectFileViewerDocumentAnchors(container);
+      await documentActions.refreshDocumentIndex({ notify: false });
       await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
       return session;
     },
     async destroy(reason = 'component-unmount') {
       await destroyCurrent(reason);
-      searchController.destroy();
+      documentActions.destroyDocumentFeatures();
       zoomController.destroy();
     },
     updateOptions(nextOptions: Partial<FileViewerOptions>) {
@@ -279,38 +277,34 @@ export const createViewer = (
       return zoomController.getState();
     },
     search(query: string) {
-      return searchController.search(query);
+      return documentActions.searchDocument(query);
     },
     nextSearchResult() {
-      return searchController.next();
+      return documentActions.nextSearchResult();
     },
     previousSearchResult() {
-      return searchController.previous();
+      return documentActions.previousSearchResult();
     },
     clearSearch() {
-      return searchController.clear();
+      return documentActions.clearDocumentSearch();
     },
     getSearchState() {
-      return createFileViewerSearchChangeState(searchController.state);
+      return documentActions.getSearchState();
     },
-    async collectDocumentAnchors() {
-      anchors = collectFileViewerDocumentAnchors(container);
-      return anchors;
+    collectDocumentAnchors() {
+      return documentActions.collectDocumentAnchors({ notify: false });
     },
     getCurrentDocumentAnchor() {
-      return resolveFileViewerLocationChangeAnchor({ root: container, anchors });
+      return documentActions.getCurrentDocumentAnchor();
     },
     scrollToDocumentAnchor(anchor: FileViewerDocumentAnchor | string | number | null | undefined) {
-      return scrollToFileViewerDocumentAnchor(container, anchor);
+      return documentActions.scrollToLoadedAnchor(anchor, { notify: false });
     },
-    async scrollToLine(line: number) {
-      if (!anchors.length) {
-        anchors = collectFileViewerDocumentAnchors(container);
-      }
-      return scrollToFileViewerDocumentAnchor(container, line);
+    scrollToLine(line: number) {
+      return documentActions.scrollToLine(line, { notify: false });
     },
     getDocumentTextChunks(textOptions?: boolean | FileViewerAiOptions) {
-      return buildFileViewerDocumentTextChunks(anchors, textOptions ?? options.ai);
+      return documentActions.getDocumentTextChunks(textOptions);
     },
   };
 };

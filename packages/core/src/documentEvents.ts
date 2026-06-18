@@ -41,14 +41,18 @@ export interface DispatchFileViewerSearchChangeInput {
   state: FileViewerSearchState;
   onChange?: (state: FileViewerSearchState) => void;
   targetOrigin?: string;
-  targetWindow?: Window;
+  targetWindow?: Window | null;
 }
 
 export interface DispatchFileViewerLocationChangeInput {
   anchor: FileViewerDocumentAnchor | null;
   onChange?: (anchor: FileViewerDocumentAnchor | null) => void;
   targetOrigin?: string;
-  targetWindow?: Window;
+  targetWindow?: Window | null;
+}
+
+export interface FileViewerDocumentFeatureActionOptions {
+  notify?: boolean;
 }
 
 export interface FileViewerDocumentFeatureSearchController {
@@ -69,22 +73,30 @@ export interface CreateFileViewerDocumentFeatureActionsInput {
   onSearchChange?: (state: FileViewerSearchState) => void;
   onLocationChange?: (anchor: FileViewerDocumentAnchor | null) => void;
   targetOrigin?: string;
-  targetWindow?: Window;
+  targetWindow?: Window | null;
 }
 
 export interface FileViewerDocumentFeatureActions {
-  refreshDocumentIndex(): Promise<FileViewerDocumentAnchor[]>;
-  clearDocumentState(): void;
+  refreshDocumentIndex(options?: FileViewerDocumentFeatureActionOptions): Promise<FileViewerDocumentAnchor[]>;
+  clearDocumentState(): Promise<FileViewerSearchState>;
   getScrollContainer(): HTMLElement | null;
   searchDocument(query: string): Promise<FileViewerSearchState>;
   clearDocumentSearch(): Promise<FileViewerSearchState>;
   nextSearchResult(): Promise<FileViewerSearchState>;
   previousSearchResult(): Promise<FileViewerSearchState>;
   getSearchState(): FileViewerSearchState;
-  collectDocumentAnchors(): Promise<FileViewerDocumentAnchor[]>;
-  scrollToAnchor(anchor: FileViewerDocumentAnchor | string): Promise<boolean>;
-  scrollToLine(line: number): Promise<boolean>;
-  getDocumentTextChunks(): FileViewerDocumentChunk[];
+  collectDocumentAnchors(options?: FileViewerDocumentFeatureActionOptions): Promise<FileViewerDocumentAnchor[]>;
+  getCurrentDocumentAnchor(): FileViewerDocumentAnchor | null;
+  scrollToLoadedAnchor(
+    anchor: FileViewerDocumentAnchor | string | number | null | undefined,
+    options?: FileViewerDocumentFeatureActionOptions
+  ): boolean;
+  scrollToAnchor(
+    anchor: FileViewerDocumentAnchor | string | number | null | undefined,
+    options?: FileViewerDocumentFeatureActionOptions
+  ): Promise<boolean>;
+  scrollToLine(line: number, options?: FileViewerDocumentFeatureActionOptions): Promise<boolean>;
+  getDocumentTextChunks(options?: boolean | FileViewerAiOptions): FileViewerDocumentChunk[];
 }
 
 export interface CreateFileViewerDocumentFeatureControllerActionHandlersInput
@@ -177,6 +189,9 @@ export const dispatchFileViewerSearchChange = ({
 }: DispatchFileViewerSearchChangeInput) => {
   const payload = createFileViewerSearchChangeState(state);
   onChange?.(payload);
+  if (!targetWindow) {
+    return false;
+  }
   return postFileViewerSearchChange(payload, targetOrigin, targetWindow);
 };
 
@@ -187,6 +202,9 @@ export const dispatchFileViewerLocationChange = ({
   targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerLocationChangeInput) => {
   onChange?.(anchor);
+  if (!targetWindow) {
+    return false;
+  }
   return postFileViewerLocationChange(anchor, targetOrigin, targetWindow);
 };
 
@@ -215,11 +233,15 @@ export const createFileViewerDocumentFeatureActions = ({
     return state;
   };
 
-  const notifyLocationChange = () => {
-    const anchor = resolveFileViewerLocationChangeAnchor({
+  const getCurrentDocumentAnchor = () => {
+    return resolveFileViewerLocationChangeAnchor({
       root: getRoot(),
       anchors: getAnchors(),
     });
+  };
+
+  const notifyLocationChange = () => {
+    const anchor = getCurrentDocumentAnchor();
     dispatchFileViewerLocationChange({
       anchor,
       onChange: onLocationChange,
@@ -229,24 +251,41 @@ export const createFileViewerDocumentFeatureActions = ({
     return anchor;
   };
 
-  const refreshDocumentIndex = async () => {
+  const maybeNotifyLocationChange = (actionOptions?: FileViewerDocumentFeatureActionOptions) => {
+    if (actionOptions?.notify === false) {
+      return getCurrentDocumentAnchor();
+    }
+    return notifyLocationChange();
+  };
+
+  const refreshDocumentIndex = async (actionOptions?: FileViewerDocumentFeatureActionOptions) => {
     searchController.observe();
     const anchors = await searchController.refreshAnchors();
-    notifyLocationChange();
+    maybeNotifyLocationChange(actionOptions);
     return anchors;
   };
 
-  const ensureAnchors = async () => {
+  const ensureAnchors = async (actionOptions?: FileViewerDocumentFeatureActionOptions) => {
     if (!getAnchors().length) {
-      await refreshDocumentIndex();
+      await refreshDocumentIndex(actionOptions);
     }
     return getAnchors();
   };
 
+  const scrollToLoadedAnchor = (
+    anchor: FileViewerDocumentAnchor | string | number | null | undefined,
+    actionOptions?: FileViewerDocumentFeatureActionOptions
+  ) => {
+    const result = scrollToFileViewerDocumentAnchor(getRoot(), anchor);
+    maybeNotifyLocationChange(actionOptions);
+    return result;
+  };
+
   return {
     refreshDocumentIndex,
-    clearDocumentState() {
-      void searchController.clear();
+    async clearDocumentState() {
+      await searchController.clear();
+      return getSearchState();
     },
     getScrollContainer() {
       return resolveFileViewerScrollContainer(getRoot());
@@ -270,24 +309,25 @@ export const createFileViewerDocumentFeatureActions = ({
       return notifySearchChange();
     },
     getSearchState,
-    async collectDocumentAnchors() {
-      await refreshDocumentIndex();
+    async collectDocumentAnchors(actionOptions?: FileViewerDocumentFeatureActionOptions) {
+      await refreshDocumentIndex(actionOptions);
       return getAnchors();
     },
-    async scrollToAnchor(anchor: FileViewerDocumentAnchor | string) {
-      await ensureAnchors();
-      const result = scrollToFileViewerDocumentAnchor(getRoot(), anchor);
-      notifyLocationChange();
-      return result;
+    getCurrentDocumentAnchor,
+    scrollToLoadedAnchor,
+    async scrollToAnchor(
+      anchor: FileViewerDocumentAnchor | string | number | null | undefined,
+      actionOptions?: FileViewerDocumentFeatureActionOptions
+    ) {
+      await ensureAnchors(actionOptions);
+      return scrollToLoadedAnchor(anchor, actionOptions);
     },
-    async scrollToLine(line: number) {
-      await ensureAnchors();
-      const result = scrollToFileViewerDocumentAnchor(getRoot(), line);
-      notifyLocationChange();
-      return result;
+    async scrollToLine(line: number, actionOptions?: FileViewerDocumentFeatureActionOptions) {
+      await ensureAnchors(actionOptions);
+      return scrollToLoadedAnchor(line, actionOptions);
     },
-    getDocumentTextChunks() {
-      return buildFileViewerDocumentTextChunks(getAnchors(), getAiOptions?.());
+    getDocumentTextChunks(textOptions?: boolean | FileViewerAiOptions) {
+      return buildFileViewerDocumentTextChunks(getAnchors(), textOptions ?? getAiOptions?.());
     },
   };
 };

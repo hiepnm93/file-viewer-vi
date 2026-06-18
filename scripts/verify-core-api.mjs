@@ -258,6 +258,7 @@ const requiredTypeExports = [
   'ResolveFileViewerPreviewLoadErrorMessageInput',
   'ReportFileViewerMissingRemoteDataInput',
   'ReportFileViewerPreviewLoadErrorInput',
+  'FileViewerDocumentFeatureActionOptions',
   'CreateFileViewerDocumentFeatureActionsInput',
   'CreateFileViewerDocumentFeatureControllerActionHandlersInput',
   'FileViewerDocumentFeatureControllerActionHandlers',
@@ -575,6 +576,38 @@ function assertCoreViewerRequestScope(viewerSource) {
   }
 }
 
+function assertCoreViewerDocumentFeatureActions(viewerSource) {
+  for (const token of [
+    'createFileViewerDocumentFeatureControllerActionHandlers',
+    'documentActions.refreshDocumentIndex',
+    'documentActions.clearDocumentState',
+    'documentActions.searchDocument',
+    'documentActions.getCurrentDocumentAnchor',
+    'documentActions.getDocumentTextChunks'
+  ]) {
+    assert(
+      viewerSource.includes(token),
+      `createViewer must reuse core document feature actions via ${token}`
+    )
+  }
+
+  for (const forbiddenToken of [
+    'createFileViewerDomSearchController',
+    'let anchors',
+    'searchController.clear',
+    'searchController.search',
+    'collectFileViewerDocumentAnchors(container)',
+    'scrollToFileViewerDocumentAnchor(container',
+    'buildFileViewerDocumentTextChunks(anchors',
+    'createFileViewerSearchChangeState(searchController.state)'
+  ]) {
+    assert(
+      !viewerSource.includes(forbiddenToken),
+      `createViewer must not keep duplicate document feature logic: ${forbiddenToken}`
+    )
+  }
+}
+
 function collectBareImportSpecifiers(source) {
   const imports = new Set()
   const patterns = [
@@ -636,6 +669,7 @@ assertCoreViewerSurfaceState(viewerSource)
 assertCoreViewerOperationSourceState(viewerSource)
 assertCoreViewerLifecycleSourceState(viewerSource)
 assertCoreViewerRequestScope(viewerSource)
+assertCoreViewerDocumentFeatureActions(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(

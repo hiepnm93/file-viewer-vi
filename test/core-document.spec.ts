@@ -321,6 +321,9 @@ describe('@file-viewer/core document helpers', () => {
     });
 
     await expect(actions.collectDocumentAnchors()).resolves.toHaveLength(2);
+    expect(actions.getCurrentDocumentAnchor()?.line).toBe(2);
+    expect(emitted).toEqual(['location:2']);
+    await expect(actions.collectDocumentAnchors({ notify: false })).resolves.toHaveLength(2);
     expect(emitted).toEqual(['location:2']);
 
     await expect(actions.searchDocument('PDF')).resolves.toMatchObject({
@@ -349,7 +352,12 @@ describe('@file-viewer/core document helpers', () => {
         startLine: 2,
       }),
     ]);
-    expect(calls).toEqual(['observe', 'refresh', 'search:PDF', 'next']);
+    await expect(actions.clearDocumentState()).resolves.toMatchObject({
+      total: 0,
+      currentIndex: -1,
+    });
+    expect(emitted[emitted.length - 1]).toBe('location:2');
+    expect(calls).toEqual(['observe', 'refresh', 'observe', 'refresh', 'search:PDF', 'next', 'clear']);
   });
 
   it('creates document feature controller action handlers with DOM search state targets', async () => {

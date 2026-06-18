@@ -65,6 +65,7 @@ export {
 } from './documentEvents';
 export type {
   CreateFileViewerDocumentChangeSnapshotInput,
+  FileViewerDocumentFeatureActionOptions,
   DispatchFileViewerLocationChangeInput,
   DispatchFileViewerSearchChangeInput,
   FileViewerDocumentChangeSnapshot,
