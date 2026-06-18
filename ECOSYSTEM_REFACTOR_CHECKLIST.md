@@ -27,6 +27,7 @@
 - [ ] 当前 194 个扩展名、23 条预览链路的支持矩阵不得倒退。
   - [x] 新增 `pnpm verify:format-support`，从 core 格式矩阵校验 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致。
 - [ ] 各生态 wrapper 共享同一个 core 版本、同一套类型定义、同一套参数语义和同一套能力判断。
+- [ ] React、Vue、Svelte、jQuery 和纯 JS 标准 wrapper 必须默认走 native core runtime，不把 iframe 作为正式 wrapper 实现；iframe 仅允许迁出到独立参考仓库，作为低成本集成示例而不是主生态包。
 - [ ] core 源码只在 Gitea 私有仓库维护，不把私有 core 源码推到公开 GitHub/Gitee。
 - [ ] 除 core 之外的生态 wrapper 项目公开维护，GitHub 和 Gitee 均在 `flyfish-dev` 组织下同步。
 - [ ] 现有 npm 包名继续作为标准包名的兼容别名同步更新。
@@ -123,6 +124,8 @@
 ## Phase 2: 抽离现有能力到 core
 
 - [ ] 从 `src/package/common` 抽出 source loading、类型识别、能力判断、打印导出、worker ref、生命周期事件。
+  - [x] 新增 `@file-viewer/core` native controller，统一处理 DOM container、File/Blob/ArrayBuffer/URL source 解析、AbortController 取消、fetch 下载、core viewer 加载、reload/update/destroy 生命周期，为所有框架原生 wrapper 提供共同底座。
+  - [x] Vue3 基线包新增 `createFlyfishFileViewer` / `mountFlyfishFileViewer`，复用当前完整 renderer registry 直接挂载到宿主 DOM，不创建 iframe，作为标准 wrapper 迁移到 native runtime 的过渡基座。
   - [x] source loading 的 PDF 流式策略迁入 `@file-viewer/core`。
   - [x] source loading 的请求版本、AbortController 和取消错误识别迁入 `@file-viewer/core`，wrapper 只负责触发 UI 状态。
   - [x] Vue3 来源加载门面拆到组件 hooks，复用 core source loading / source / state helper，继续削薄主入口。

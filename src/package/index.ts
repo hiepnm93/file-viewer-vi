@@ -59,6 +59,17 @@ export {
   FileViewer
 }
 
+export {
+  createFlyfishFileViewer,
+  mountFlyfishFileViewer
+} from './native'
+
+export type {
+  CreateFlyfishFileViewerOptions,
+  FlyfishFileViewerNativeController,
+  FlyfishFileViewerNativeSource
+} from './native'
+
 export type {
   FileRef,
   FileRenderContext,

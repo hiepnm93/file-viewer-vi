@@ -322,6 +322,10 @@ export {
   setFileViewerOptionsSearchParam,
 } from './options';
 export {
+  createFileViewerNativeController,
+  resolveFileViewerNativeLoadSource,
+} from './nativeController';
+export {
   resolveFileViewerPresentationState,
 } from './presentation';
 export type {
@@ -599,6 +603,13 @@ export type {
   FileViewerSerializableOptions,
   FileViewerSerializableToolbarOptions,
 } from './options';
+export type {
+  CreateFileViewerNativeControllerOptions,
+  FileViewerNativeController,
+  FileViewerNativeFetchFile,
+  FileViewerNativeFetchInput,
+  FileViewerNativeSource,
+} from './nativeController';
 export type {
   CreateFileViewerRendererDispatcherOptions,
   FileViewerRendererDispatcher,

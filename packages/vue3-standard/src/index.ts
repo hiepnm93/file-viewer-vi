@@ -9,7 +9,6 @@ import {
   type ViewerMountedFrameHandle,
   type ViewerFrameController,
   type ViewerFrameEventHandler,
-  type ViewerFrameEventPayload,
   type ViewerFrameOptions,
   type ViewerRuntimeOptions
 } from '@file-viewer/web'
