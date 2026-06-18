@@ -21,7 +21,8 @@ import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
   FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
-  FileViewerOptions
+  FileViewerOptions,
+  FileViewerRenderCompleteState
 } from '@file-viewer/core'
 import type { FileViewerVueRenderSession } from '../rendererBridge'
 
@@ -53,6 +54,12 @@ interface UseViewerSourceLoadingOptions {
     file?: File | null;
     sourceUrl?: string;
   }) => FileViewerLifecycleContext;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: FileViewerLifecycleContext['source'];
+    file?: File | null;
+    sourceUrl?: string | null;
+  }) => FileViewerRenderCompleteState;
   notifyLifecycle: (context: FileViewerLifecycleContext) => void;
   setActiveDocumentContext: (context: FileViewerLifecycleContext) => void;
   markLoadStarted: (version: number) => void;
@@ -88,6 +95,7 @@ export const useViewerSourceLoading = ({
   destroyRenderSession,
   setActiveRenderSession,
   buildLifecycleContext,
+  buildRenderCompleteState,
   notifyLifecycle,
   setActiveDocumentContext,
   markLoadStarted,
@@ -180,16 +188,15 @@ export const useViewerSourceLoading = ({
       return
     }
     setActiveRenderSession(session || null)
-    applyFileViewerRenderReadinessState(previewStateTarget, { renderedReady: true })
-    const context = buildLifecycleContext({
-      phase: 'load-complete',
+    const completeState = buildRenderCompleteState({
       version,
       source,
       file,
       sourceUrl
     })
-    setActiveDocumentContext(context)
-    notifyLifecycle(context)
+    applyFileViewerRenderReadinessState(previewStateTarget, completeState.readiness)
+    setActiveDocumentContext(completeState.lifecycleContext)
+    notifyLifecycle(completeState.lifecycleContext)
     clearLoadStarted(version)
   }
 
@@ -205,15 +212,14 @@ export const useViewerSourceLoading = ({
         return
       }
       setActiveRenderSession(session || null)
-      applyFileViewerRenderReadinessState(previewStateTarget, { renderedReady: true })
-      const context = buildLifecycleContext({
-        phase: 'load-complete',
+      const completeState = buildRenderCompleteState({
         version,
         source: 'url',
         sourceUrl: url
       })
-      setActiveDocumentContext(context)
-      notifyLifecycle(context)
+      applyFileViewerRenderReadinessState(previewStateTarget, completeState.readiness)
+      setActiveDocumentContext(completeState.lifecycleContext)
+      notifyLifecycle(completeState.lifecycleContext)
       clearLoadStarted(version)
     } catch (nextError) {
       if (!isCurrentRequest(version)) {

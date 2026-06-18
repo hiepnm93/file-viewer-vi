@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
   buildFileViewerLifecycleContext,
+  createFileViewerRenderCompleteState,
   createFileViewerRequestController
 } from '../packages/core/src'
 import { useViewerSourceLoading } from '../src/package/components/FileViewer/hooks/useViewerSourceLoading'
@@ -42,6 +43,12 @@ describe('Vue FileViewer source loading hook', () => {
       destroyRenderSession: vi.fn(),
       setActiveRenderSession,
       buildLifecycleContext: input => buildFileViewerLifecycleContext({
+        ...input,
+        filename: filename.value,
+        bufferSize: currentBuffer.value?.byteLength,
+        startedAt: startedAt.get(input.version)
+      }),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState({
         ...input,
         filename: filename.value,
         bufferSize: currentBuffer.value?.byteLength,

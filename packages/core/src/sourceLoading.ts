@@ -4,6 +4,10 @@ import type {
   FileViewerPdfOptions,
 } from './types';
 import {
+  buildFileViewerLifecycleContext,
+  type FileViewerLifecycleStateController,
+} from './operations';
+import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
   normalizeFilename,
@@ -94,6 +98,23 @@ export type FileViewerRenderReadinessState = Pick<
 >;
 
 export type MutableFileViewerRenderReadinessState = FileViewerRenderReadinessState;
+
+export interface FileViewerRenderCompleteState {
+  readiness: FileViewerRenderReadinessState;
+  lifecycleContext: FileViewerLifecycleContext;
+}
+
+export interface CreateFileViewerRenderCompleteStateInput {
+  version: number;
+  source: FileViewerLifecycleContext['source'];
+  filename?: string;
+  file?: File | null;
+  sourceUrl?: string | null;
+  bufferSize?: number;
+  startedAt?: number;
+  timestamp?: number;
+  lifecycleState?: Pick<FileViewerLifecycleStateController, 'getLoadStartedAt'>;
+}
 
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
@@ -259,6 +280,36 @@ export const applyFileViewerRenderReadinessState = <Target extends MutableFileVi
     target.progressiveReady = state.progressiveReady;
   }
   return target;
+};
+
+export const createFileViewerRenderCompleteState = ({
+  version,
+  source,
+  filename,
+  file,
+  sourceUrl,
+  bufferSize,
+  startedAt,
+  timestamp,
+  lifecycleState,
+}: CreateFileViewerRenderCompleteStateInput): FileViewerRenderCompleteState => {
+  return {
+    readiness: {
+      renderedReady: true,
+      progressiveReady: false,
+    },
+    lifecycleContext: buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      version,
+      source,
+      file,
+      filename,
+      url: normalizeFileViewerSourceUrl(sourceUrl) || undefined,
+      bufferSize,
+      startedAt: startedAt ?? lifecycleState?.getLoadStartedAt(version),
+      timestamp,
+    }),
+  };
 };
 
 export const resolveFileViewerFileRefSourcePlan = ({

@@ -486,6 +486,7 @@ async function verifyVue3ScopedCompatibility() {
     'applyFileViewerReadPreviewState',
     'applyFileViewerRenderReadinessState',
     'applyFileViewerPreviewRequestResetState',
+    'buildRenderCompleteState',
     'createFileViewerReadPreviewState',
     'createFileViewerStreamingPdfPlaceholderFile',
     'resolveFileViewerFileRefSourcePlan',
@@ -523,7 +524,9 @@ async function verifyVue3ScopedCompatibility() {
     'currentBuffer.value = arrayBuffer',
     'currentSourceUrl.value = normalizeFileViewerSourceUrl',
     'currentSourceUrl.value = url',
-    'renderedReady.value = true'
+    'renderedReady.value = true',
+    "phase: 'load-complete'",
+    'renderedReady: true'
   ]) {
     assert(
       !vueSourceLoadingHookSource.includes(forbiddenToken),
@@ -728,6 +731,7 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueLifecycleHookSource, '@file-viewer/core', vueLifecycleHookLabel)
   assertTokens(vueLifecycleHookSource, [
     'buildFileViewerOperationContextFromLifecycleState',
+    'createFileViewerRenderCompleteState',
     'createFileViewerLifecycleStateController',
     'lifecycleState.getLoadStartedAt',
     'lifecycleState.buildActiveUnloadContext',

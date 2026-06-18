@@ -101,6 +101,7 @@ const {
   notifyActiveUnloadComplete,
   setActiveDocumentContext,
   clearActiveDocumentContext,
+  buildRenderCompleteState,
   runBeforeOperation
 } = useViewerLifecycle({
   getOptions: () => props.options,
@@ -214,6 +215,7 @@ const {
   destroyRenderSession,
   setActiveRenderSession,
   buildLifecycleContext,
+  buildRenderCompleteState,
   notifyLifecycle,
   setActiveDocumentContext,
   markLoadStarted,

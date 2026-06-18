@@ -11,6 +11,7 @@ import {
   createFileViewerEmptyPreviewState,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
+  createFileViewerRenderCompleteState,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
   hasFileViewerPreviewSource,
@@ -210,6 +211,51 @@ describe('remote source loading helpers', () => {
     expect(target).toEqual({
       renderedReady: false,
       progressiveReady: true
+    })
+  })
+
+  it('creates render complete lifecycle state from preview source data', () => {
+    const file = new File(['demo'], '合同.docx')
+    const complete = createFileViewerRenderCompleteState({
+      version: 9,
+      source: 'file',
+      file,
+      bufferSize: 16,
+      startedAt: 0,
+      timestamp: 240
+    })
+
+    expect(complete.readiness).toEqual({
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(complete.lifecycleContext).toMatchObject({
+      phase: 'load-complete',
+      type: 'docx',
+      filename: '合同.docx',
+      source: 'file',
+      size: file.size,
+      version: 9,
+      timestamp: 240,
+      duration: 240
+    })
+
+    expect(createFileViewerRenderCompleteState({
+      version: 10,
+      source: 'url',
+      filename: 'stream.pdf',
+      sourceUrl: '',
+      bufferSize: 0,
+      lifecycleState: {
+        getLoadStartedAt: () => 100
+      },
+      timestamp: 125
+    }).lifecycleContext).toMatchObject({
+      filename: 'stream.pdf',
+      source: 'url',
+      url: undefined,
+      size: 0,
+      duration: 25
     })
   })
 

@@ -282,6 +282,7 @@ export {
   createFileViewerEmptyPreviewState,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
+  createFileViewerRenderCompleteState,
   createFileViewerRequestController,
   createFileViewerStreamingPdfPlaceholderFile,
   hasFileViewerPreviewSource,
@@ -297,10 +298,12 @@ export {
 } from './sourceLoading';
 export type {
   CreateFileViewerReadPreviewStateInput,
+  CreateFileViewerRenderCompleteStateInput,
   FileViewerEmptyPreviewState,
   FileViewerLocationLike,
   FileViewerFileRefSourcePlan,
   FileViewerPreviewRequestResetState,
+  FileViewerRenderCompleteState,
   FileViewerRenderReadinessState,
   FileViewerReadPreviewState,
   FileViewerRemoteSourcePlan,
