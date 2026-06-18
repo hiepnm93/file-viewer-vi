@@ -2,17 +2,10 @@ import axios from 'axios'
 import type { Ref } from 'vue'
 import {
   commitFileViewerEmptyPreviewResetState,
-  commitFileViewerLoadStartState,
   commitFileViewerPreviewRequestStartState,
-  commitFileViewerRemoteDownloadState,
-  finalizeFileViewerPreviewLoadState,
-  isFileViewerAbortError,
   resolveFileViewerPreviewRequestReason,
-  resolveFileViewerRemoteSourcePlan,
-  resolveFileViewerRuntimePageHref,
   runFileViewerLocalFilePreview,
-  runFileViewerReadAndRenderFile,
-  runFileViewerStreamingPdfPreview,
+  runFileViewerRemoteFilePreview,
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
@@ -158,52 +151,6 @@ export const useViewerSourceLoading = ({
     return requestController.isCurrent(version)
   }
 
-  const readAndRenderFile = async (
-    file: File,
-    version: number,
-    sourceUrl?: string,
-    source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
-  ) => {
-    await runFileViewerReadAndRenderFile({
-      file,
-      version,
-      source,
-      sourceUrl,
-      previewTarget: previewStateTarget,
-      isCurrent: isCurrentRequest,
-      mountRenderedContent,
-      destroyRenderSession,
-      buildRenderCompleteState,
-      onSession: setActiveRenderSession,
-      onActiveDocumentContext: setActiveDocumentContext,
-      onLifecycle: notifyLifecycle,
-      onClearLoadStarted: clearLoadStarted
-    })
-  }
-
-  const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
-    await runFileViewerStreamingPdfPreview({
-      url,
-      version,
-      filename: nextFilename,
-      previewTarget: previewStateTarget,
-      isCurrent: isCurrentRequest,
-      mountRenderedContent,
-      destroyRenderSession,
-      buildRenderCompleteState,
-      onStartLoading: startLoading,
-      onSession: setActiveRenderSession,
-      onActiveDocumentContext: setActiveDocumentContext,
-      onLifecycle: notifyLifecycle,
-      onClearLoadStarted: clearLoadStarted,
-      onStopLoading: stopLoading,
-      onError: nextError => {
-        console.error(nextError)
-        showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
-      }
-    })
-  }
-
   const previewLocalFile = async (source: FileRef, version: number) => {
     await runFileViewerLocalFilePreview({
       source,
@@ -230,69 +177,43 @@ export const useViewerSourceLoading = ({
   }
 
   const previewRemoteFile = async (url: string, version: number) => {
-    const remoteSource = resolveFileViewerRemoteSourcePlan({
-      pageHref: resolveFileViewerRuntimePageHref(),
-      streaming: getOptions()?.pdf?.streaming,
-      url
-    })
-    const nextFilename = remoteSource.filename
-    commitFileViewerLoadStartState({
+    await runFileViewerRemoteFilePreview({
+      url,
       version,
-      filename: nextFilename,
-      filenameTarget: previewStateTarget,
-      buildState: () => buildLoadStartState({
-        version,
-        source: 'url',
-        sourceUrl: url
-      }),
+      streaming: getOptions()?.pdf?.streaming,
+      previewTarget: previewStateTarget,
+      requestController,
+      isCurrent: isCurrentRequest,
+      downloadFile: async ({ url: downloadUrl, signal }) => {
+        const { data } = await axios({
+          url: downloadUrl,
+          method: 'get',
+          responseType: 'blob',
+          signal
+        })
+        return data
+      },
+      mountRenderedContent,
+      destroyRenderSession,
+      buildLoadStartState,
+      buildRenderCompleteState,
       onMarkLoadStarted: markLoadStarted,
+      onStartLoading: startLoading,
+      onSetLoadingMessage: setLoadingMessage,
+      onSession: setActiveRenderSession,
+      onActiveDocumentContext: setActiveDocumentContext,
       onLifecycle: notifyLifecycle,
-      onStartLoading: startLoading
+      onClearLoadStarted: clearLoadStarted,
+      onStopLoading: stopLoading,
+      onMissingData: () => showError('文件下载失败'),
+      onError: (nextError, kind) => {
+        console.error(nextError)
+        showError(formatErrorMessage(
+          kind === 'stream' ? '加载 PDF 流式预览异常' : '加载文件异常',
+          nextError
+        ))
+      }
     })
-
-    if (remoteSource.streamPdf) {
-      await previewRemotePdfStream(url, version, nextFilename)
-      return
-    }
-
-    const controller = requestController.createAbortController()
-
-    try {
-      const { data } = await axios({
-        url,
-        method: 'get',
-        responseType: 'blob',
-        signal: controller?.signal
-      })
-
-      const downloadState = commitFileViewerRemoteDownloadState({
-        version,
-        data,
-        currentFilename: nextFilename,
-        isCurrent: isCurrentRequest,
-        onMissingData: () => showError('文件下载失败'),
-        onSetLoadingMessage: setLoadingMessage
-      })
-      if (downloadState.stale || downloadState.missing) {
-        return
-      }
-
-      await readAndRenderFile(downloadState.source.file, version, url, 'url')
-    } catch (nextError) {
-      if (!isCurrentRequest(version) || isFileViewerAbortError(nextError)) {
-        return
-      }
-      console.error(nextError)
-      showError(formatErrorMessage('加载文件异常', nextError))
-    } finally {
-      requestController.clearAbortController(controller)
-      finalizeFileViewerPreviewLoadState({
-        version,
-        isCurrent: isCurrentRequest,
-        onClearLoadStarted: clearLoadStarted,
-        onStopLoading: stopLoading
-      })
-    }
   }
 
   const resetViewer = () => {

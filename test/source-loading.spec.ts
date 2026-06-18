@@ -33,6 +33,7 @@ import {
   resolveFileViewerRuntimePageHref,
   resolveFileViewerSourceFilename,
   runFileViewerLocalFilePreview,
+  runFileViewerRemoteFilePreview,
   runFileViewerReadAndRenderFile,
   runFileViewerStreamingPdfPreview,
   shouldStreamPdfUrl
@@ -988,6 +989,376 @@ describe('remote source loading helpers', () => {
       `loading:${FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf}`,
       'error:reported',
       'clear:18',
+      'stop'
+    ])
+  })
+
+  it('runs remote file preview through shared core orchestration', async () => {
+    const events: string[] = []
+    const session = { id: 'remote-session' }
+    const requestController = createFileViewerRequestController()
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerRemoteFilePreview({
+      url: '/example/remote.docx',
+      version: 19,
+      pageHref,
+      streaming: false,
+      previewTarget: target,
+      requestController,
+      isCurrent: version => version === 19,
+      downloadFile: async ({ url, signal }) => {
+        events.push(`download:${url}:${signal ? 'signal' : 'no-signal'}`)
+        return new Blob(['demo'], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+      },
+      mountRenderedContent: async (buffer, file, version, sourceUrl) => {
+        events.push(`mount:${file.name}:${buffer.byteLength}:${version}:${sourceUrl}`)
+        return session
+      },
+      buildLoadStartState: input => {
+        events.push(`build-start:${input.source}:${input.sourceUrl}`)
+        return createFileViewerLoadStartState({
+          ...input,
+          timestamp: 380
+        })
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build-complete:${input.source}:${input.file?.name}:${input.sourceUrl}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          timestamp: 420
+        })
+      },
+      onMarkLoadStarted: version => {
+        events.push(`mark:${version}:${target.filename}`)
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onSetLoadingMessage: message => {
+        events.push(`message:${message}`)
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}:${context.filename}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      },
+      onMissingData: () => {
+        events.push('missing')
+      },
+      onError: () => {
+        events.push('error')
+      }
+    })
+
+    if (result.status !== 'ready') {
+      throw new Error(`Expected ready remote preview state, got ${result.status}`)
+    }
+    expect(result.remoteSource).toMatchObject({
+      filename: 'remote.docx',
+      streamPdf: false
+    })
+    expect(result.download.source.file.name).toBe('remote.docx')
+    expect(result.read.session).toBe(session)
+    expect(target).toMatchObject({
+      filename: 'remote.docx',
+      file: result.download.source.file,
+      sourceUrl: '/example/remote.docx',
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(target.buffer?.byteLength).toBe(4)
+    expect(events).toEqual([
+      'mark:19:remote.docx',
+      'build-start:url:/example/remote.docx',
+      'lifecycle:load-start:remote.docx',
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.downloading}`,
+      'download:/example/remote.docx:signal',
+      `message:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`,
+      'mount:remote.docx:4:19:/example/remote.docx',
+      'session:set',
+      'build-complete:url:remote.docx:/example/remote.docx',
+      'active:load-complete:remote.docx',
+      'lifecycle:load-complete:remote.docx',
+      'clear:19',
+      'clear:19',
+      'stop'
+    ])
+  })
+
+  it('runs remote streaming PDF preview through the shared remote flow', async () => {
+    const events: string[] = []
+    const session = { id: 'remote-stream-session' }
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerRemoteFilePreview({
+      url: '/example/stream.pdf',
+      version: 20,
+      pageHref,
+      streaming: true,
+      previewTarget: target,
+      requestController: createFileViewerRequestController(),
+      isCurrent: version => version === 20,
+      downloadFile: async () => {
+        events.push('download')
+        return new Blob(['should-not-download'])
+      },
+      mountRenderedContent: async (buffer, file, version, sourceUrl, streamUrl) => {
+        events.push(`mount:${file.name}:${buffer.byteLength}:${version}:${sourceUrl}:${streamUrl}`)
+        return session
+      },
+      buildLoadStartState: input => {
+        events.push(`build-start:${input.source}:${input.sourceUrl}`)
+        return createFileViewerLoadStartState(input)
+      },
+      buildRenderCompleteState: input => {
+        events.push(`build-complete:${input.source}:${input.sourceUrl}`)
+        return createFileViewerRenderCompleteState({
+          ...input,
+          filename: 'stream.pdf',
+          timestamp: 440
+        })
+      },
+      onMarkLoadStarted: version => {
+        events.push(`mark:${version}:${target.filename}`)
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}:${context.filename}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    if (result.status !== 'stream') {
+      throw new Error(`Expected streaming remote preview state, got ${result.status}`)
+    }
+    expect(result.stream.session).toBe(session)
+    expect(result.remoteSource.streamPdf).toBe(true)
+    expect(target).toMatchObject({
+      filename: 'stream.pdf',
+      sourceUrl: '/example/stream.pdf',
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(events).toEqual([
+      'mark:20:stream.pdf',
+      'build-start:url:/example/stream.pdf',
+      'lifecycle:load-start:stream.pdf',
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.downloading}`,
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf}`,
+      'mount:stream.pdf:0:20:/example/stream.pdf:/example/stream.pdf',
+      'session:set',
+      'build-complete:url:/example/stream.pdf',
+      'active:load-complete:stream.pdf',
+      'lifecycle:load-complete:stream.pdf',
+      'clear:20',
+      'clear:20',
+      'stop'
+    ])
+  })
+
+  it('reports missing remote downloads through the shared remote flow', async () => {
+    const events: string[] = []
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerRemoteFilePreview({
+      url: '/example/missing.docx',
+      version: 21,
+      pageHref,
+      streaming: false,
+      previewTarget: target,
+      requestController: createFileViewerRequestController(),
+      isCurrent: version => version === 21,
+      downloadFile: async () => null,
+      mountRenderedContent: async () => {
+        events.push('mount')
+        return undefined
+      },
+      buildLoadStartState: input => createFileViewerLoadStartState(input),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onMissingData: () => {
+        events.push('missing')
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'missing',
+      error: null
+    })
+    expect(target).toMatchObject({
+      filename: 'missing.docx',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: true
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.downloading}`,
+      'missing',
+      'clear:21',
+      'stop'
+    ])
+  })
+
+  it('suppresses aborted remote downloads through the shared remote flow', async () => {
+    const events: string[] = []
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerRemoteFilePreview({
+      url: '/example/abort.docx',
+      version: 22,
+      pageHref,
+      streaming: false,
+      previewTarget: target,
+      requestController: createFileViewerRequestController(),
+      isCurrent: version => version === 22,
+      downloadFile: async () => {
+        throw { name: 'AbortError' }
+      },
+      mountRenderedContent: async () => {
+        events.push('mount')
+        return undefined
+      },
+      buildLoadStartState: input => createFileViewerLoadStartState(input),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onError: () => {
+        events.push('error')
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'stale',
+      error: null
+    })
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.downloading}`,
+      'clear:22',
+      'stop'
+    ])
+  })
+
+  it('reports current remote download errors through the shared remote flow', async () => {
+    const events: string[] = []
+    const error = new Error('download failed')
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const result = await runFileViewerRemoteFilePreview({
+      url: '/example/error.docx',
+      version: 23,
+      pageHref,
+      streaming: false,
+      previewTarget: target,
+      requestController: createFileViewerRequestController(),
+      isCurrent: version => version === 23,
+      downloadFile: async () => {
+        throw error
+      },
+      mountRenderedContent: async () => {
+        events.push('mount')
+        return undefined
+      },
+      buildLoadStartState: input => createFileViewerLoadStartState(input),
+      buildRenderCompleteState: input => createFileViewerRenderCompleteState(input),
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      },
+      onError: (nextError, kind) => {
+        events.push(`${kind}:${nextError === error ? 'reported' : 'miss'}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    expect(result).toMatchObject({
+      status: 'error',
+      error
+    })
+    expect(target.filename).toBe('error.docx')
+    expect(events).toEqual([
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.downloading}`,
+      'load:reported',
+      'clear:23',
       'stop'
     ])
   })

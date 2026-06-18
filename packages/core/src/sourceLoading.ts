@@ -319,6 +319,95 @@ export type FileViewerLocalFilePreviewState<Session = unknown> =
     readonly error: unknown;
   };
 
+export interface FileViewerRemoteFileDownloadInput {
+  url: string;
+  signal?: AbortSignal;
+}
+
+export type FileViewerRemoteFilePreviewErrorKind = 'stream' | 'load';
+
+export interface RunFileViewerRemoteFilePreviewInput<Session = unknown> {
+  url: string;
+  version: number;
+  pageHref?: string;
+  streaming?: FileViewerPdfOptions['streaming'];
+  previewTarget: MutableFileViewerPreviewState;
+  requestController: Pick<FileViewerRequestController, 'createAbortController' | 'clearAbortController'>;
+  isCurrent: (version: number) => boolean;
+  downloadFile: (input: FileViewerRemoteFileDownloadInput) => Promise<FileViewerFileRef | null | undefined>;
+  mountRenderedContent: (
+    buffer: ArrayBuffer,
+    file: File,
+    version: number,
+    sourceUrl?: string,
+    streamUrl?: string
+  ) => Promise<Session | undefined>;
+  destroyRenderSession?: (session?: Session | null) => void;
+  buildLoadStartState: (input: {
+    version: number;
+    source: 'url';
+    sourceUrl: string;
+  }) => FileViewerLoadStartState;
+  buildRenderCompleteState: (input: {
+    version: number;
+    source: 'url';
+    file?: File | null;
+    sourceUrl?: string | null;
+  }) => FileViewerRenderCompleteState;
+  onMarkLoadStarted?: (version: number) => void;
+  onStartLoading?: (message: string) => void;
+  onSetLoadingMessage?: (message: string) => void;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onClearLoadStarted?: (version: number) => void;
+  onStopLoading?: () => void;
+  onMissingData?: () => void;
+  onError?: (error: unknown, kind: FileViewerRemoteFilePreviewErrorKind) => void;
+}
+
+export type FileViewerRemoteFilePreviewState<Session = unknown> =
+  | {
+    readonly status: 'ready';
+    readonly remoteSource: FileViewerRemoteSourcePlan;
+    readonly download: Extract<FileViewerRemoteDownloadState, { stale: false; missing: false }>;
+    readonly read: Extract<FileViewerReadAndRenderFileState<Session>, { stale: false }>;
+    readonly stream: null;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'stream';
+    readonly remoteSource: FileViewerRemoteSourcePlan;
+    readonly download: null;
+    readonly read: null;
+    readonly stream: Extract<FileViewerStreamingPdfPreviewState<Session>, { status: 'ready' }>;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'missing';
+    readonly remoteSource: FileViewerRemoteSourcePlan;
+    readonly download: Extract<FileViewerRemoteDownloadState, { stale: false; missing: true }>;
+    readonly read: null;
+    readonly stream: null;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'stale';
+    readonly remoteSource: FileViewerRemoteSourcePlan;
+    readonly download: FileViewerRemoteDownloadState | null;
+    readonly read: FileViewerReadAndRenderFileState<Session> | null;
+    readonly stream: Extract<FileViewerStreamingPdfPreviewState<Session>, { status: 'stale' }> | null;
+    readonly error: null;
+  }
+  | {
+    readonly status: 'error';
+    readonly remoteSource: FileViewerRemoteSourcePlan;
+    readonly download: null;
+    readonly read: null;
+    readonly stream: Extract<FileViewerStreamingPdfPreviewState<Session>, { status: 'error' }> | null;
+    readonly error: unknown;
+  };
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -789,6 +878,215 @@ export const runFileViewerLocalFilePreview = async <Session = unknown>({
       error,
     };
   } finally {
+    finalizeFileViewerPreviewLoadState({
+      version,
+      isCurrent,
+      onClearLoadStarted,
+      onStopLoading,
+    });
+  }
+};
+
+export const runFileViewerRemoteFilePreview = async <Session = unknown>({
+  url,
+  version,
+  pageHref = resolveFileViewerRuntimePageHref(),
+  streaming,
+  previewTarget,
+  requestController,
+  isCurrent,
+  downloadFile,
+  mountRenderedContent,
+  destroyRenderSession,
+  buildLoadStartState,
+  buildRenderCompleteState,
+  onMarkLoadStarted,
+  onStartLoading,
+  onSetLoadingMessage,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+  onClearLoadStarted,
+  onStopLoading,
+  onMissingData,
+  onError,
+}: RunFileViewerRemoteFilePreviewInput<Session>): Promise<FileViewerRemoteFilePreviewState<Session>> => {
+  const remoteSource = resolveFileViewerRemoteSourcePlan({
+    pageHref,
+    streaming,
+    url,
+  });
+
+  commitFileViewerLoadStartState({
+    version,
+    filename: remoteSource.filename,
+    filenameTarget: previewTarget,
+    buildState: () => buildLoadStartState({
+      version,
+      source: 'url',
+      sourceUrl: url,
+    }),
+    onMarkLoadStarted,
+    onLifecycle,
+    onStartLoading,
+  });
+
+  if (remoteSource.streamPdf) {
+    const stream = await runFileViewerStreamingPdfPreview({
+      url,
+      version,
+      filename: remoteSource.filename,
+      previewTarget,
+      isCurrent,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildRenderCompleteState: input => buildRenderCompleteState({
+        version: input.version,
+        source: 'url',
+        sourceUrl: url,
+      }),
+      onStartLoading,
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+      onStopLoading,
+      onError: error => onError?.(error, 'stream'),
+    });
+
+    if (stream.status === 'ready') {
+      return {
+        status: 'stream',
+        remoteSource,
+        download: null,
+        read: null,
+        stream,
+        error: null,
+      };
+    }
+
+    if (stream.status === 'error') {
+      return {
+        status: 'error',
+        remoteSource,
+        download: null,
+        read: null,
+        stream,
+        error: stream.error,
+      };
+    }
+
+    return {
+      status: 'stale',
+      remoteSource,
+      download: null,
+      read: null,
+      stream,
+      error: null,
+    };
+  }
+
+  const controller = requestController.createAbortController();
+
+  try {
+    const data = await downloadFile({
+      url,
+      signal: controller?.signal,
+    });
+    const download = commitFileViewerRemoteDownloadState({
+      version,
+      data,
+      currentFilename: remoteSource.filename,
+      isCurrent,
+      onMissingData,
+      onSetLoadingMessage,
+    });
+
+    if (download.stale) {
+      return {
+        status: 'stale',
+        remoteSource,
+        download,
+        read: null,
+        stream: null,
+        error: null,
+      };
+    }
+
+    if (download.missing) {
+      return {
+        status: 'missing',
+        remoteSource,
+        download,
+        read: null,
+        stream: null,
+        error: null,
+      };
+    }
+
+    const read = await runFileViewerReadAndRenderFile({
+      file: download.source.file,
+      version,
+      source: 'url',
+      sourceUrl: url,
+      previewTarget,
+      isCurrent,
+      mountRenderedContent,
+      destroyRenderSession,
+      buildRenderCompleteState: input => buildRenderCompleteState({
+        version: input.version,
+        source: 'url',
+        file: input.file,
+        sourceUrl: url,
+      }),
+      onSession,
+      onActiveDocumentContext,
+      onLifecycle,
+      onClearLoadStarted,
+    });
+
+    if (read.stale) {
+      return {
+        status: 'stale',
+        remoteSource,
+        download,
+        read,
+        stream: null,
+        error: null,
+      };
+    }
+
+    return {
+      status: 'ready',
+      remoteSource,
+      download,
+      read,
+      stream: null,
+      error: null,
+    };
+  } catch (error) {
+    if (!isCurrent(version) || isFileViewerAbortError(error)) {
+      return {
+        status: 'stale',
+        remoteSource,
+        download: null,
+        read: null,
+        stream: null,
+        error: null,
+      };
+    }
+
+    onError?.(error, 'load');
+    return {
+      status: 'error',
+      remoteSource,
+      download: null,
+      read: null,
+      stream: null,
+      error,
+    };
+  } finally {
+    requestController.clearAbortController(controller);
     finalizeFileViewerPreviewLoadState({
       version,
       isCurrent,
