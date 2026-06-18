@@ -298,6 +298,15 @@ export type {
   RunFileViewerLoadingExtensionSyncInput,
 } from './loading';
 export {
+  createFileViewerLifecycleFacade,
+} from './lifecycleFacade';
+export type {
+  BuildFileViewerLifecycleFacadeLoadStartStateInput,
+  BuildFileViewerLifecycleFacadeRenderCompleteStateInput,
+  CreateFileViewerLifecycleFacadeInput,
+  FileViewerLifecycleFacade,
+} from './lifecycleFacade';
+export {
   getFileViewerOptionsSearchParam,
   normalizeFileViewerTheme,
   parseFileViewerOptions,

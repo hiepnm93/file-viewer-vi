@@ -187,6 +187,7 @@
   - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
   - [x] 对外实例 API 的 operation availability 快照克隆迁入 `@file-viewer/core`，Vue hook 只保留公开方法组合。
   - [x] 对外实例 API facade 组合迁入 `@file-viewer/core`，Vue public API hook 只传 getter 和方法表。
+  - [x] 生命周期上下文构建、load-start/load-complete state 构建和 beforeOperation action facade 迁入 `@file-viewer/core`，Vue lifecycle hook 只传 getter 与 emit/error 回调。
   - [x] Vue3 props / emits 契约沉淀为 `FileViewerProps` / `FileViewerEmits`，入口组件复用公共类型。
   - [x] 打印导出执行链路迁入 `@file-viewer/core`。
     - [x] 导出 HTML 文档模板迁入 `@file-viewer/core`，Vue3 旧路径保留 re-export。

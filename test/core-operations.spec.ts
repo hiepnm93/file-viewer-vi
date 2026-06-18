@@ -11,6 +11,7 @@ import {
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleActions,
+  createFileViewerLifecycleFacade,
   createFileViewerPublicApi,
   createFileViewerToolbarActions,
   createFileViewerToolbarZoomSyncSnapshot,
@@ -606,6 +607,92 @@ describe('@file-viewer/core operation helpers', () => {
       'post:operation-cancel',
     ]);
     expect(parent.postMessage).toHaveBeenCalledTimes(4);
+  });
+
+  it('creates lifecycle facades from wrapper state getters', async () => {
+    const events: string[] = [];
+    const errors: string[] = [];
+    const lifecycle = createFileViewerLifecycleFacade({
+      getOptions: () => ({
+        beforeOperation: context => {
+          events.push(`guard:${context.operation}:${context.filename}`);
+          return false;
+        },
+      }),
+      getFilename: () => 'facade.pdf',
+      getBufferSize: () => 2048,
+      getCurrentFile: () => null,
+      getCurrentVersion: () => 12,
+      getFallbackFile: () => undefined,
+      getFallbackUrl: () => '/fallback.pdf',
+      emitLifecycle: (event, context) => {
+        events.push(`emit:${event}:${context.filename}`);
+      },
+      emitOperationBefore: context => {
+        events.push(`before:${context.operation}:${context.source}`);
+      },
+      emitOperationCancel: context => {
+        events.push(`cancel:${context.operation}`);
+      },
+      formatErrorMessage: (prefix, error) => `${prefix}:${error instanceof Error ? error.message : String(error)}`,
+      handleLifecycleError: error => {
+        errors.push(String(error));
+      },
+      onOperationErrorMessage: message => {
+        errors.push(message);
+      },
+    });
+
+    lifecycle.markLoadStarted(12, 100);
+    const loadStart = lifecycle.buildLoadStartState({
+      version: 12,
+      source: 'url',
+      sourceUrl: '/facade.pdf',
+    });
+    expect(loadStart.lifecycleContext).toMatchObject({
+      phase: 'load-start',
+      source: 'url',
+      filename: 'facade.pdf',
+      size: 2048,
+      url: '/facade.pdf',
+    });
+    lifecycle.notifyLifecycle(loadStart.lifecycleContext);
+
+    const complete = lifecycle.buildRenderCompleteState({
+      version: 12,
+      source: 'url',
+      sourceUrl: '/facade.pdf',
+    });
+    expect(complete.lifecycleContext).toMatchObject({
+      phase: 'load-complete',
+      filename: 'facade.pdf',
+    });
+    lifecycle.setActiveDocumentContext(complete.lifecycleContext);
+
+    expect(lifecycle.buildOperationContext('download')).toMatchObject({
+      operation: 'download',
+      label: '下载原始文件',
+      filename: 'facade.pdf',
+      source: 'url',
+      size: 2048,
+    });
+    await expect(lifecycle.runBeforeOperation('download')).resolves.toBe(false);
+    lifecycle.clearLoadStarted(12);
+    lifecycle.clearActiveDocumentContext();
+    expect(lifecycle.buildOperationContext('print')).toMatchObject({
+      operation: 'print',
+      source: 'url',
+      url: '/fallback.pdf',
+      filename: 'facade.pdf',
+    });
+
+    expect(events).toEqual([
+      'emit:load-start:facade.pdf',
+      'before:download:url',
+      'guard:download:facade.pdf',
+      'cancel:download',
+    ]);
+    expect(errors).toEqual([]);
   });
 
   it('posts operation, search and location changes through named core helpers', () => {

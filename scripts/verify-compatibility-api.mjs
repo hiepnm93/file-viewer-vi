@@ -948,6 +948,12 @@ async function verifyVue3ScopedCompatibility() {
   const vueLifecycleHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerLifecycle.ts`
   assertImportsFrom(vueLifecycleHookSource, '@file-viewer/core', vueLifecycleHookLabel)
   assertTokens(vueLifecycleHookSource, [
+    'createFileViewerLifecycleFacade',
+    'formatErrorMessage',
+    'emitLifecycle',
+    'onOperationErrorMessage',
+  ], vueLifecycleHookLabel)
+  for (const forbiddenToken of [
     'buildFileViewerOperationContextFromLifecycleState',
     'createFileViewerLoadStartState',
     'createFileViewerRenderCompleteState',
@@ -955,10 +961,11 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerLifecycleStateController',
     'emitFileViewerComponentLifecycleEvent',
     'resolveFileViewerBeforeOperationErrorMessage',
-    'formatErrorMessage',
-    'onOperationErrorMessage',
-  ], vueLifecycleHookLabel)
-  for (const forbiddenToken of [
+    'const lifecycleState',
+    'const lifecycleActions',
+    'const buildOperationContext',
+    'const buildLoadStartState',
+    'const buildRenderCompleteState',
     '操作前置校验失败',
     'new Map<number, number>()',
     'let activeDocumentContext',

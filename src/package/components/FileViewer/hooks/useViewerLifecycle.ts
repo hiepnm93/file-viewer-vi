@@ -1,37 +1,14 @@
 import {
-  buildFileViewerOperationContextFromLifecycleState,
-  createFileViewerLifecycleActions,
-  createFileViewerLifecycleStateController,
-  createFileViewerLoadStartState,
-  createFileViewerRenderCompleteState,
-  emitFileViewerComponentLifecycleEvent,
-  resolveFileViewerBeforeOperationErrorMessage,
+  createFileViewerLifecycleFacade,
 } from '@file-viewer/core'
 import type {
   FileViewerErrorMessageFormatter,
   FileViewerFileRef,
-  FileViewerLifecycleContext,
   FileViewerLifecycleComponentEmit,
-  FileViewerLoadStartState,
+  FileViewerLifecycleContext,
   FileViewerOperationContext,
-  FileViewerOperationType,
   FileViewerOptions,
-  FileViewerRenderCompleteState
 } from '@file-viewer/core'
-
-interface BuildViewerLoadStartStateInput {
-  version: number;
-  source: FileViewerLifecycleContext['source'];
-  file?: File | null;
-  sourceUrl?: string | null;
-}
-
-interface BuildViewerRenderCompleteStateInput {
-  version: number;
-  source: FileViewerLifecycleContext['source'];
-  file?: File | null;
-  sourceUrl?: string | null;
-}
 
 interface UseViewerLifecycleOptions {
   getOptions: () => FileViewerOptions | undefined;
@@ -72,94 +49,20 @@ export const useViewerLifecycle = ({
   handleOperationError,
   onOperationErrorMessage
 }: UseViewerLifecycleOptions) => {
-  const lifecycleState = createFileViewerLifecycleStateController()
-
-  const markLoadStarted = lifecycleState.markLoadStarted
-  const clearLoadStarted = lifecycleState.clearLoadStarted
-
-  const lifecycleActions = createFileViewerLifecycleActions({
-    lifecycleState,
+  return createFileViewerLifecycleFacade({
     getOptions,
-    onLifecycleChange: (_event, context) => {
-      emitFileViewerComponentLifecycleEvent(emitLifecycle, context)
-    },
-    onLifecycleError: handleLifecycleError,
-    onOperationBefore: emitOperationBefore,
-    onOperationCancel: emitOperationCancel,
-    onOperationError: (error, context) => {
-      handleOperationError?.(error, context)
-      onOperationErrorMessage?.(
-        resolveFileViewerBeforeOperationErrorMessage({
-          error,
-          formatErrorMessage
-        }),
-        context
-      )
-    }
+    getFilename,
+    getBufferSize,
+    getCurrentFile,
+    getCurrentVersion,
+    getFallbackFile,
+    getFallbackUrl,
+    emitLifecycle,
+    emitOperationBefore,
+    emitOperationCancel,
+    formatErrorMessage,
+    handleLifecycleError,
+    handleOperationError,
+    onOperationErrorMessage
   })
-
-  const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
-    return buildFileViewerOperationContextFromLifecycleState({
-      operation,
-      lifecycleState,
-      version: getCurrentVersion(),
-      filename: getFilename(),
-      bufferSize: getBufferSize(),
-      currentFile: getCurrentFile(),
-      fallbackFile: getFallbackFile(),
-      fallbackUrl: getFallbackUrl()
-    })
-  }
-
-  const buildLoadStartState = ({
-    version,
-    source,
-    file,
-    sourceUrl
-  }: BuildViewerLoadStartStateInput): FileViewerLoadStartState => {
-    return createFileViewerLoadStartState({
-      version,
-      source,
-      file,
-      sourceUrl,
-      filename: getFilename(),
-      bufferSize: getBufferSize()
-    })
-  }
-
-  const buildRenderCompleteState = ({
-    version,
-    source,
-    file,
-    sourceUrl
-  }: BuildViewerRenderCompleteStateInput): FileViewerRenderCompleteState => {
-    return createFileViewerRenderCompleteState({
-      version,
-      source,
-      file,
-      sourceUrl,
-      filename: getFilename(),
-      bufferSize: getBufferSize(),
-      lifecycleState
-    })
-  }
-
-  const runBeforeOperation = async (operation: FileViewerOperationType) => {
-    const context = buildOperationContext(operation)
-    return lifecycleActions.runBeforeOperation(context)
-  }
-
-  return {
-    markLoadStarted,
-    clearLoadStarted,
-    notifyLifecycle: lifecycleActions.notifyLifecycle,
-    notifyActiveUnloadStart: lifecycleActions.notifyActiveUnloadStart,
-    notifyActiveUnloadComplete: lifecycleActions.notifyActiveUnloadComplete,
-    setActiveDocumentContext: lifecycleState.setActiveDocumentContext,
-    clearActiveDocumentContext: lifecycleState.clearActiveDocumentContext,
-    buildOperationContext,
-    buildLoadStartState,
-    buildRenderCompleteState,
-    runBeforeOperation
-  }
 }
