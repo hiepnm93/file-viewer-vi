@@ -133,6 +133,7 @@
   - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。
   - [x] Vue3 生命周期与 beforeOperation 门面拆到组件 hooks，复用 core context / hook / postMessage 协议，继续降低主入口职责。
   - [x] 生命周期与 operation-before / operation-cancel 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue lifecycle hook 不再拼接 payload。
+  - [x] 生命周期与 operation-before / operation-cancel 的 emit / hook / postMessage 编排迁入 `@file-viewer/core`，Vue lifecycle hook 不再直接发送 frame 事件。
   - [x] 生命周期 active context 与 load-start 时间状态迁入 `@file-viewer/core` controller，Vue hook 只做 emit / postMessage 适配。
   - [x] 生命周期 fallback source 判定迁入 `@file-viewer/core`，Vue 入口只传递 file / url getter。
   - [x] normalized source 到 lifecycle context 的映射迁入 `@file-viewer/core`，core viewer 不再手写 `File` 判断、source 字段和 duration 规则。

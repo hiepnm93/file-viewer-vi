@@ -3,10 +3,9 @@ import {
   createFileViewerLifecycleStateController,
   createFileViewerLoadStartState,
   createFileViewerRenderCompleteState,
-  postFileViewerLifecycleEvent,
-  postFileViewerOperationContextEvent,
+  dispatchFileViewerLifecycleEvent,
+  dispatchFileViewerOperationContextEvent,
   runFileViewerBeforeOperation,
-  runFileViewerLifecycleHook
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
@@ -74,9 +73,12 @@ export const useViewerLifecycle = ({
   const clearLoadStarted = lifecycleState.clearLoadStarted
 
   const notifyLifecycle = (context: FileViewerLifecycleContext) => {
-    emitLifecycle(context.phase, context)
-    void runFileViewerLifecycleHook(context, getOptions()?.hooks, handleLifecycleError)
-    postFileViewerLifecycleEvent(context)
+    dispatchFileViewerLifecycleEvent({
+      context,
+      hooks: getOptions()?.hooks,
+      onChange: emitLifecycle,
+      onError: handleLifecycleError
+    })
   }
 
   const notifyActiveUnloadStart = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
@@ -156,12 +158,18 @@ export const useViewerLifecycle = ({
       context,
       options: getOptions(),
       onBefore: nextContext => {
-        emitOperationBefore(nextContext)
-        postFileViewerOperationContextEvent('operation-before', nextContext)
+        dispatchFileViewerOperationContextEvent({
+          event: 'operation-before',
+          context: nextContext,
+          onChange: emitOperationBefore
+        })
       },
       onCancel: nextContext => {
-        emitOperationCancel(nextContext)
-        postFileViewerOperationContextEvent('operation-cancel', nextContext)
+        dispatchFileViewerOperationContextEvent({
+          event: 'operation-cancel',
+          context: nextContext,
+          onChange: emitOperationCancel
+        })
       },
       onError: handleOperationError
     })

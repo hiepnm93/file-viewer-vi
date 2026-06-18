@@ -155,6 +155,27 @@ export interface RunFileViewerBeforeOperationInput<
   onError?: (error: unknown, context: Context) => void;
 }
 
+export interface DispatchFileViewerLifecycleEventInput<
+  Context extends FileViewerLifecycleContext = FileViewerLifecycleContext,
+> {
+  context: Context;
+  hooks?: FileViewerLifecycleHooks;
+  onChange?: (event: FileViewerLifecyclePhase, context: Context) => void;
+  onError?: (error: unknown, context: Context) => void;
+  targetOrigin?: string;
+  targetWindow?: Window;
+}
+
+export interface DispatchFileViewerOperationContextEventInput<
+  Context extends FileViewerOperationContext = FileViewerOperationContext,
+> {
+  event: 'operation-before' | 'operation-cancel';
+  context: Context;
+  onChange?: (context: Context) => void;
+  targetOrigin?: string;
+  targetWindow?: Window;
+}
+
 export interface DispatchFileViewerOperationAvailabilityChangeInput {
   availability: FileViewerOperationAvailability;
   onChange?: (availability: FileViewerOperationAvailability) => void;
@@ -521,6 +542,34 @@ export const postFileViewerOperationContextEvent = <
     targetOrigin,
     targetWindow
   );
+};
+
+export const dispatchFileViewerLifecycleEvent = <
+  Context extends FileViewerLifecycleContext,
+>({
+  context,
+  hooks,
+  onChange,
+  onError,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined,
+}: DispatchFileViewerLifecycleEventInput<Context>) => {
+  onChange?.(context.phase, context);
+  void runFileViewerLifecycleHook(context, hooks, onError);
+  return postFileViewerLifecycleEvent(context, targetOrigin, targetWindow);
+};
+
+export const dispatchFileViewerOperationContextEvent = <
+  Context extends FileViewerOperationContext,
+>({
+  event,
+  context,
+  onChange,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined,
+}: DispatchFileViewerOperationContextEventInput<Context>) => {
+  onChange?.(context);
+  return postFileViewerOperationContextEvent(event, context, targetOrigin, targetWindow);
 };
 
 export const postFileViewerOperationAvailabilityChange = (

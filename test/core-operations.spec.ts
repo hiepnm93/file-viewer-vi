@@ -14,6 +14,8 @@ import {
   createFileViewerOriginalSourceStateFromNormalizedSource,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
+  dispatchFileViewerLifecycleEvent,
+  dispatchFileViewerOperationContextEvent,
   dispatchFileViewerOperationAvailabilityChange,
   dispatchFileViewerZoomChange,
   executeFileViewerDownloadOperation,
@@ -313,6 +315,93 @@ describe('@file-viewer/core operation helpers', () => {
         operation: 'download',
         label: '下载原始文件',
         hasFile: true,
+      },
+    }, 'https://host.example');
+  });
+
+  it('dispatches lifecycle and operation context events in wrapper event order', () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const lifecycleContext = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'url',
+      filename: 'dispatch.pdf',
+      url: '/docs/dispatch.pdf',
+      version: 3,
+      timestamp: 300,
+    });
+    const operationContext = buildFileViewerOperationContext('print', lifecycleContext, 320);
+
+    expect(dispatchFileViewerLifecycleEvent({
+      context: lifecycleContext,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      hooks: {
+        onLoadComplete: context => {
+          events.push(`hook:${context.phase}`);
+        },
+      },
+      onChange: (event, context) => {
+        events.push(`emit:${event}:${context.filename}`);
+      },
+    })).toBe(true);
+    expect(dispatchFileViewerOperationContextEvent({
+      event: 'operation-before',
+      context: operationContext,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      onChange: context => {
+        events.push(`emit:${context.operation}`);
+      },
+    })).toBe(true);
+
+    expect(events).toEqual([
+      'emit:load-complete:dispatch.pdf',
+      'hook:load-complete',
+      'post:load-complete',
+      'emit:print',
+      'post:operation-before',
+    ]);
+    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'flyfish-viewer:lifecycle',
+      event: 'load-complete',
+      payload: {
+        phase: 'load-complete',
+        type: 'pdf',
+        filename: 'dispatch.pdf',
+        source: 'url',
+        url: '/docs/dispatch.pdf',
+        size: undefined,
+        version: 3,
+        timestamp: 300,
+        duration: undefined,
+        reason: undefined,
+        hasFile: false,
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'flyfish-viewer:operation',
+      event: 'operation-before',
+      payload: {
+        type: 'pdf',
+        filename: 'dispatch.pdf',
+        source: 'url',
+        url: '/docs/dispatch.pdf',
+        size: undefined,
+        version: 3,
+        timestamp: 320,
+        duration: undefined,
+        reason: undefined,
+        operation: 'print',
+        label: '打印完整渲染内容',
+        hasFile: false,
       },
     }, 'https://host.example');
   });
