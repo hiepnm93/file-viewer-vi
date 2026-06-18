@@ -2,9 +2,7 @@ import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
-  destroyFileViewerDomSearchController,
-  observeFileViewerDomSearchController,
-  runFileViewerDomSearchControllerAction,
+  createFileViewerDomSearchControllerActionHandlers,
   type FileViewerDocumentAnchor,
   type FileViewerSearchOptions,
   type FileViewerSearchState
@@ -30,44 +28,20 @@ export const useDocumentSearch = (
     preferredScrollContainer: scrollContainerSource
   })
   const target = { anchors, state }
-
-  const observe = () => {
-    observeFileViewerDomSearchController(target, controller)
-  }
-
-  const refreshAnchors = async () => {
-    await runFileViewerDomSearchControllerAction(target, controller, () => controller.refreshAnchors())
-    return anchors.value
-  }
-
-  const search = async (query: string) => {
-    return runFileViewerDomSearchControllerAction(target, controller, () => controller.search(query))
-  }
-
-  const next = async () => {
-    return runFileViewerDomSearchControllerAction(target, controller, () => controller.next())
-  }
-
-  const previous = async () => {
-    return runFileViewerDomSearchControllerAction(target, controller, () => controller.previous())
-  }
-
-  const clear = async () => {
-    return runFileViewerDomSearchControllerAction(target, controller, () => controller.clear())
-  }
+  const actions = createFileViewerDomSearchControllerActionHandlers(target, controller)
 
   onBeforeUnmount(() => {
-    destroyFileViewerDomSearchController(target, controller)
+    actions.destroy()
   })
 
   return {
     anchors,
     state,
-    observe,
-    refreshAnchors,
-    search,
-    next,
-    previous,
-    clear
+    observe: actions.observe,
+    refreshAnchors: actions.refreshAnchors,
+    search: actions.search,
+    next: actions.next,
+    previous: actions.previous,
+    clear: actions.clear
   }
 }

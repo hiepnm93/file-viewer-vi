@@ -12,6 +12,7 @@ import {
   createFileViewerDocumentFeatureActions,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
+  createFileViewerDomSearchControllerActionHandlers,
   createFileViewerSearchChangeState,
   createFileViewerZoomController,
   createFileViewerZoomState,
@@ -574,6 +575,42 @@ describe('@file-viewer/core document helpers', () => {
     expect(paragraph.textContent).toBe('Alpha PDF beta pdf.');
 
     destroyFileViewerDomSearchController(target, controller);
+  });
+
+  it('creates DOM search action facades for wrapper state targets', async () => {
+    const { document } = parseHTML('<main id="root"><p>Alpha PDF beta pdf.</p></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const controller = createFileViewerDomSearchController({
+      root: () => root,
+      waitForDomUpdate: () => Promise.resolve(),
+      preferredScrollContainer: () => root,
+    });
+    const target = {
+      anchors: { value: [] as FileViewerDocumentAnchor[] },
+      state: createEmptyFileViewerSearchState(),
+    };
+    const actions = createFileViewerDomSearchControllerActionHandlers(target, controller);
+
+    expect(actions.observe()).toBe(target.state);
+
+    const searchState = await actions.search('pdf');
+    expect(searchState).toBe(target.state);
+    expect(target.state).toMatchObject({ query: 'pdf', total: 2, currentIndex: 0 });
+    expect(target.anchors.value).toBe(controller.anchors);
+
+    const anchors = await actions.refreshAnchors();
+    expect(anchors).toBe(target.anchors.value);
+
+    await actions.next();
+    expect(target.state.currentIndex).toBe(1);
+
+    await actions.previous();
+    expect(target.state.currentIndex).toBe(0);
+
+    await actions.clear();
+    expect(target.state).toMatchObject({ query: '', total: 0, currentIndex: -1 });
+
+    expect(actions.destroy()).toBe(target.state);
   });
 
   it('runs the zoom controller without framework state', async () => {

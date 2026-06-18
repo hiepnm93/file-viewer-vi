@@ -48,6 +48,16 @@ export interface FileViewerDomSearchControllerStateTarget {
   state: MutableFileViewerSearchState;
 }
 
+export interface FileViewerDomSearchControllerActionHandlers {
+  observe(): FileViewerSearchState;
+  refreshAnchors(): Promise<FileViewerDocumentAnchor[]>;
+  search(query: string): Promise<FileViewerSearchState>;
+  next(): Promise<FileViewerSearchState>;
+  previous(): Promise<FileViewerSearchState>;
+  clear(): Promise<FileViewerSearchState>;
+  destroy(): FileViewerSearchState;
+}
+
 export const DEFAULT_FILE_VIEWER_SEARCH_MATCH_CLASS = 'flyfish-search-match';
 export const DEFAULT_FILE_VIEWER_SEARCH_ACTIVE_CLASS = 'flyfish-search-match--active';
 export const DEFAULT_FILE_VIEWER_SEARCH_MAX_MATCHES = 1000;
@@ -145,6 +155,38 @@ export const destroyFileViewerDomSearchController = <
 ) => {
   controller.destroy();
   return syncFileViewerDomSearchControllerState(target, controller);
+};
+
+export const createFileViewerDomSearchControllerActionHandlers = <
+  Target extends FileViewerDomSearchControllerStateTarget,
+>(
+  target: Target,
+  controller: FileViewerDomSearchController
+): FileViewerDomSearchControllerActionHandlers => {
+  return {
+    observe() {
+      return observeFileViewerDomSearchController(target, controller);
+    },
+    async refreshAnchors() {
+      await runFileViewerDomSearchControllerAction(target, controller, () => controller.refreshAnchors());
+      return target.anchors.value;
+    },
+    async search(query: string) {
+      return runFileViewerDomSearchControllerAction(target, controller, () => controller.search(query));
+    },
+    async next() {
+      return runFileViewerDomSearchControllerAction(target, controller, () => controller.next());
+    },
+    async previous() {
+      return runFileViewerDomSearchControllerAction(target, controller, () => controller.previous());
+    },
+    async clear() {
+      return runFileViewerDomSearchControllerAction(target, controller, () => controller.clear());
+    },
+    destroy() {
+      return destroyFileViewerDomSearchController(target, controller);
+    },
+  };
 };
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

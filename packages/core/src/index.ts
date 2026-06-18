@@ -41,6 +41,7 @@ export {
   applyFileViewerSearchState,
   cloneFileViewerSearchState,
   createFileViewerDomSearchController,
+  createFileViewerDomSearchControllerActionHandlers,
   destroyFileViewerDomSearchController,
   observeFileViewerDomSearchController,
   runFileViewerDomSearchControllerAction,
@@ -49,6 +50,7 @@ export {
 export type {
   FileViewerDocumentAnchorsTarget,
   FileViewerDomSearchController,
+  FileViewerDomSearchControllerActionHandlers,
   FileViewerDomSearchControllerStateTarget,
   MutableFileViewerSearchState,
 } from './documentSearch';
