@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -258,6 +259,7 @@ const gaps = [
   ]),
   ...npmPackages.map(row => !row.ok && `${row.packageName} npm ${row.publishedVersion || 'unpublished'} !== ${row.expectedVersion}`)
 ].filter(Boolean)
+const gapReport = describeReleaseGaps(gaps)
 
 const report = {
   schemaVersion: 1,
@@ -278,6 +280,8 @@ const report = {
   componentRepositories,
   npmPackages,
   gaps,
+  gapSummary: gapReport.summary,
+  gapDetails: gapReport.details,
   nextActions: [
     'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
     'After npm publish, run `pnpm verify:npm-registry-release`.',

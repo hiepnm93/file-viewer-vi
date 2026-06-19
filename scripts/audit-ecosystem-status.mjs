@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -272,6 +273,7 @@ const failures = [
     return false
   })
 ].filter(Boolean)
+const gapReport = describeReleaseGaps(failures)
 
 const nextActions = [
   failures.some(failure => failure.includes('npm')) &&
@@ -360,9 +362,23 @@ for (const row of npmRows) {
 console.log()
 
 if (failures.length) {
+  console.log(`## Gap Summary\n`)
+  console.log(`- Total: ${gapReport.summary.total}`)
+  console.log(`- External blockers: ${gapReport.summary.externalBlockers}`)
+  console.log(`- Local actionable: ${gapReport.summary.localActionable}`)
+  console.log(`- External blocker channels: ${gapReport.summary.externalBlockerChannels.length ? gapReport.summary.externalBlockerChannels.join(', ') : 'none'}`)
+  console.log()
+  console.log(`| channel | count | external blocker |`)
+  console.log(`| --- | --- | --- |`)
+  for (const [channel, count] of Object.entries(gapReport.summary.byChannel).sort(([left], [right]) => left.localeCompare(right))) {
+    const externalBlocker = gapReport.details.some(detail => detail.channel === channel && detail.externalBlocker)
+    console.log(`| ${channel} | ${count} | ${externalBlocker ? 'yes' : 'no'} |`)
+  }
+  console.log()
+
   console.log(`## Remaining Gaps\n`)
-  for (const failure of failures) {
-    console.log(`- ${failure}`)
+  for (const detail of gapReport.details) {
+    console.log(`- [${detail.channel}] ${detail.message}`)
   }
   console.log()
 }

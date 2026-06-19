@@ -143,6 +143,19 @@ async function assertReleaseStatus(repoDir) {
   assert(Array.isArray(status.componentRepositories), 'Release status component repository rows missing')
   assert(Array.isArray(status.npmPackages), 'Release status npm package rows missing')
   assert(Array.isArray(status.gaps), 'Release status gaps list missing')
+  assert(Array.isArray(status.gapDetails), 'Release status gap detail rows missing')
+  assert(status.gapSummary?.total === status.gaps.length, 'Release status gap summary total drifted')
+  assert(status.gapDetails.length === status.gaps.length, 'Release status gap detail count drifted')
+  assert(
+    status.gapSummary.byChannel && typeof status.gapSummary.byChannel === 'object',
+    'Release status gap summary channel map missing'
+  )
+  for (const detail of status.gapDetails) {
+    assert(typeof detail.channel === 'string' && detail.channel, 'Release status gap detail channel missing')
+    assert(typeof detail.message === 'string' && status.gaps.includes(detail.message), 'Release status gap detail message drifted')
+    assert(typeof detail.externalBlocker === 'boolean', 'Release status gap detail externalBlocker flag missing')
+    assert(typeof detail.nextAction === 'string' && detail.nextAction, 'Release status gap detail next action missing')
+  }
   assert(
     status.componentRepositories.length === wrapperManifest.wrappers.length + 1,
     `Release status component repository count ${status.componentRepositories.length} !== ${wrapperManifest.wrappers.length + 1}`

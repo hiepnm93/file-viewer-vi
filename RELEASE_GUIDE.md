@@ -187,6 +187,8 @@ pnpm verify:wrapper-github-content
 pnpm release:status:write
 ```
 
+状态报告会同时输出 `gaps`、`gapSummary` 和 `gapDetails`。`gapSummary` 用于快速区分本地可修问题和 npm/Gitee/GitHub 等外部发布阻塞，`gapDetails` 会为每条缺口标记 channel、scope、externalBlocker 和下一步动作。
+
 注意: 状态报告会先生成再提交到开源总仓，因此其中记录的开源总仓 HEAD 可能落后承载该报告文件的元数据提交；需要实时远端头时，以 `pnpm audit:ecosystem-status` 的输出为准。
 
 ## npm 发布
@@ -359,7 +361,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | 发布前门禁 | `pnpm release:channels:preflight` | 本地结构、npm 登录态、Gitee token、公开仓边界全部通过 |
 | GitHub Release | `pnpm verify:github-release-assets` | `artifacts/` 与 Release 资产名称、大小、sha256 完全一致，包含 manifest 和状态报告 |
 | GitHub 组件分仓 | `pnpm verify:wrapper-github-content` | core / 标准组件分仓内容与本地导出源码树一致 |
-| 状态报告 | `artifacts/release-status.json` | 机器可读记录私有 main、开源总仓、组件分仓、npm、Gitee 和剩余缺口 |
+| 状态报告 | `artifacts/release-status.json` | 机器可读记录私有 main、开源总仓、组件分仓、npm、Gitee、剩余缺口和 gap 分类摘要 |
 | 快速审计 | `pnpm audit:ecosystem-status:fast` | 列出当前缺口和下一步命令 |
 | npm | `pnpm verify:npm-registry-release` | 14 个标准包和兼容包均可从 npm 拉回并通过包体校验 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
