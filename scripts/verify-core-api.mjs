@@ -425,7 +425,12 @@ const requiredBrowserApiTokens = [
 ]
 
 const forbiddenCoreSourceExtensions = new Set(['.jsx', '.tsx', '.vue', '.svelte'])
-const allowedCoreDevDependencies = new Set(['typescript', '@types/three', '@types/tinycolor2'])
+const allowedCoreDevDependencies = new Set([
+  'typescript',
+  '@types/three',
+  '@types/tinycolor2',
+  '@types/pako'
+])
 const forbiddenCoreDependencyPrefixes = [
   'vue',
   '@vue/',
