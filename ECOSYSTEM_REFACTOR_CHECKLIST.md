@@ -24,7 +24,7 @@
 
 - 实时审计命令: `pnpm audit:ecosystem-status`；最终发布阻断可使用 `node scripts/audit-ecosystem-status.mjs --strict`。
 - 源码仓当前状态: 私有 Gitea 聚合仓 `origin/v3` 已完成推送；具体提交以实时审计命令输出为准，避免 checklist 因自我更新产生哈希追尾。
-- 开源总仓库: GitHub `flyfish-dev/file-viewer` 与 Gitee `flyfish-dev/file-viewer` 已同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
+- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已同步到最新开源总仓库内容；Gitee `flyfish-dev/file-viewer` 因远端仓库 `1168MB > 1024MB` 配额拒绝 push，待 Gitee 仓库 GC / 扩容后再同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
 - 开源总仓库 Release: GitHub Release `v2.0.0` 已创建并维护 18 个资产（core、标准组件包、兼容包、Demo、文档、lib dist 和 `release-manifest.json`）。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:publish`。
@@ -54,6 +54,7 @@
 - [ ] 当前 `v3` 分支提升为新的 `main` 基线，并在远端完成分支角色切换。
 - [ ] 新的 Vue3 标准组件包线提交到新的 `v3` 分支，并保持 `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` 三个发布入口一致。
 - [x] 分支切换预演已标准化为 `pnpm branch:cutover:prepare` / `pnpm branch:cutover:verify`，会生成 `.release/branch-cutover/main-core`、`.release/branch-cutover/v2-vue2.7-component`、`.release/branch-cutover/v3-vue3-component` 供正式替换远端分支前审计。
+- [x] 分支切换执行已标准化为 `pnpm branch:cutover:apply`，默认 dry-run，显式 `-- --push` 时先推 `workspace/pre-branch-cutover-*` 备份分支，再用 `--force-with-lease` 替换私有 Gitea `main` / `v2` / `v3`。
 - [x] `packages/components/vue3`、`packages/components/vue2.7`、`packages/components/vue2.6`、`packages/components/react`、`packages/components/react-legacy`、`packages/components/web`、`packages/components/jquery`、`packages/components/svelte` 都只保留对应生态组件职责，不依赖其他标准组件包。
 - [x] `packages/compat/vue2.7`、`packages/compat/vue3-scoped`、`packages/compat/vue3-unscoped`、`packages/compat/web`、`packages/compat/react` 与根包只作为历史兼容别名或历史发布入口，不承载新的业务实现。
 - [x] core 与标准组件包的类型边界在 CI 中通过 `pnpm verify:core-api`、`pnpm verify:wrapper-api`、`pnpm verify:wrapper-options` 固化。
@@ -128,6 +129,7 @@
 - [ ] 旧 `main` 分支迁移为 `v2`，对应 Vue2.7 标准组件包。
 - [ ] 当前 `v3` 基线提升为新的 core `main` 前，完成源码、产物、文档和发布记录审计。
 - [x] 远端分支替换前可以使用 `.release/branch-cutover/` 快照核对 `main` / `v2` / `v3` 的包名、README、license、manifest、历史兼容包和 workspace 依赖边界。
+- [x] 远端分支替换执行脚本已具备 dry-run、备份分支、远端 URL 校验、工作区 clean 校验和 `--force-with-lease` 防误覆盖机制。
 - [ ] `ecosystem/branch-roles.json`、`ecosystem/wrappers.json`、`README.md`、`README.en.md` 与实际远端分支一致。
 
 ## Phase 4: 标准组件包实现
@@ -199,8 +201,8 @@
 - [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
 - [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
 - [x] Gitee core/组件分仓创建与发布命令已标准化为 `components:gitee:create` / `components:gitee:publish`，但仍待有效组织 token 实际执行。
-- [ ] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
-- [ ] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址。
+- [x] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式，并由 `pnpm verify:ecosystem-readmes` 覆盖。
+- [x] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址，并由 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main` 覆盖。
 - [x] core 源码进入 `file-viewer-core` 与开源总仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
 
 ## Phase 6: npm 发布与兼容别名
@@ -215,7 +217,7 @@
 
 - [x] 开源总仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
 - [x] 开源总仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
-- [x] GitHub / Gitee 开源总仓库同步一致。
+- [~] GitHub 开源总仓库已同步最新内容；Gitee 开源总仓库因远端 1GB 配额拒绝 push，待仓库 GC / 扩容后同步一致。
 - [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。
 
 ## Phase 8: 验证与发布门禁
@@ -231,6 +233,7 @@
 - [x] `pnpm verify:branch-roles`
 - [x] `pnpm branch:cutover:prepare`
 - [x] `pnpm branch:cutover:verify`
+- [x] `pnpm branch:cutover:apply`
 - [x] `pnpm verify:core-api`
 - [x] `pnpm verify:core-framework-neutral`
 - [x] `pnpm verify:wrapper-api`
@@ -260,7 +263,7 @@
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。
 - [ ] 所有历史兼容包和别名包均发布成功。
-- [ ] 所有标准组件包的 README 中英文完整。
+- [x] 所有标准组件包的 README 中英文完整。
 - [ ] 开源总仓库包含最新全渠道构建产物。
 - [ ] 文档站和 Demo 站均上线最新内容。
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。

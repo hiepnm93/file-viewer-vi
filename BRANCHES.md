@@ -19,9 +19,12 @@ Before replacing remote branch roles, maintainers should prepare and inspect dry
 ```bash
 pnpm branch:cutover:prepare
 pnpm branch:cutover:verify
+pnpm branch:cutover:apply
 ```
 
 The snapshots are written to `.release/branch-cutover/main-core`, `.release/branch-cutover/v2-vue2.7-component`, and `.release/branch-cutover/v3-vue3-component` inside that private workspace. They contain standalone package trees plus `BRANCH_ROLE.md` and `branch-cutover-manifest.json`, so maintainers can verify the exact future `main`, `v2`, and `v3` contents before pushing any branch rewrite.
+
+`pnpm branch:cutover:apply` is a dry-run command by default. To actually replace the private Gitea `main`, `v2`, and `v3` branches, maintainers must re-run it with `-- --push`; the script first pushes a `workspace/pre-branch-cutover-*` backup branch and uses `--force-with-lease` for the target branch updates.
 
 Run the source-boundary gate before release work:
 

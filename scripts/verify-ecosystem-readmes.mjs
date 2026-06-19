@@ -14,6 +14,7 @@ const renderers = await readCoreRendererDefinitions(sourceRoot)
 const supportSummary = summarizeRendererSupport(renderers)
 
 const publicMarkers = readmeTemplate.markers.publicGenerated
+const wrapperMarkers = readmeTemplate.markers.wrapperGenerated
 const sharedRequiredLinks = [
   ...readmeTemplate.requiredLinks,
   'https://viewer.flyfish.dev/compare.html',
@@ -49,6 +50,59 @@ const localeReadmes = [
   }
 ]
 
+const wrapperReadmeConfigs = [
+  {
+    locale: 'zh',
+    filename: 'README.md',
+    generatedHeading: readmeTemplate.locales.zh.wrapperEcosystemHeading,
+    formatHeading: readmeTemplate.locales.zh.wrapperFormatHeading,
+    rendererCountText: `${supportSummary.rendererCount} 条预览链路`,
+    extensionCountText: `${supportSummary.uniqueExtensionCount} 个扩展名`,
+    noAliasLabel: '无',
+    requiredTerms: [
+      '统一参数与事件',
+      '生命周期与操作事件',
+      '公共操作 API',
+      'Worker、WASM 与私有化部署',
+      '质量门禁',
+      'ViewerMountOptions',
+      'FileViewerOptions',
+      'beforeOperation',
+      'getDocumentTextChunks()',
+      'file-viewer-copy-assets',
+      '按需异步',
+      'https://doc.flyfish.dev/',
+      'https://viewer.flyfish.dev/',
+      'Apache-2.0'
+    ]
+  },
+  {
+    locale: 'en',
+    filename: 'README.en.md',
+    generatedHeading: readmeTemplate.locales.en.wrapperEcosystemHeading,
+    formatHeading: readmeTemplate.locales.en.wrapperFormatHeading,
+    rendererCountText: `${supportSummary.rendererCount} preview pipelines`,
+    extensionCountText: `${supportSummary.uniqueExtensionCount} file extensions`,
+    noAliasLabel: 'none',
+    requiredTerms: [
+      'Shared Options And Events',
+      'Lifecycle And Operation Events',
+      'Public Operation API',
+      'Workers, WASM, And Private Deployment',
+      'Quality Gates',
+      'ViewerMountOptions',
+      'FileViewerOptions',
+      'beforeOperation',
+      'getDocumentTextChunks()',
+      'file-viewer-copy-assets',
+      'lazy-loaded',
+      'https://doc.flyfish.dev/',
+      'https://viewer.flyfish.dev/',
+      'Apache-2.0'
+    ]
+  }
+]
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
@@ -68,11 +122,11 @@ function assertIncludesUrl(content, value, label) {
   )
 }
 
-function assertGeneratedBlock(content, label) {
-  const startIndex = content.indexOf(publicMarkers.start)
-  const endIndex = content.indexOf(publicMarkers.end)
-  assert(startIndex >= 0, `${label} must include ${publicMarkers.start}`)
-  assert(endIndex > startIndex, `${label} must include ${publicMarkers.end} after the start marker`)
+function assertGeneratedBlock(content, label, markers = publicMarkers) {
+  const startIndex = content.indexOf(markers.start)
+  const endIndex = content.indexOf(markers.end)
+  assert(startIndex >= 0, `${label} must include ${markers.start}`)
+  assert(endIndex > startIndex, `${label} must include ${markers.end} after the start marker`)
 }
 
 function assertWrapperMatrix(content, label, locale, noAliasLabel) {
@@ -120,6 +174,27 @@ for (const config of localeReadmes) {
   assertWrapperMatrix(content, label, config.locale, config.noAliasLabel)
 }
 
+for (const wrapper of wrapperManifest.wrappers) {
+  for (const config of wrapperReadmeConfigs) {
+    const readmePath = join(sourceRoot, wrapper.packageDir, config.filename)
+    const label = `${wrapper.packageName} ${config.filename}`
+    const content = await readFile(readmePath, 'utf8')
+
+    assertGeneratedBlock(content, label, wrapperMarkers)
+    assertIncludes(content, wrapper.packageName, label)
+    assertIncludes(content, wrapper.framework, label)
+    assertIncludes(content, wrapperManifest.corePackage.packageName, label)
+    assertIncludes(content, config.generatedHeading, label)
+    assertIncludes(content, config.formatHeading, label)
+    assertIncludes(content, config.rendererCountText, label)
+    assertIncludes(content, config.extensionCountText, label)
+    assertWrapperMatrix(content, label, config.locale, config.noAliasLabel)
+    for (const term of config.requiredTerms) {
+      assertIncludes(content, term, label)
+    }
+  }
+}
+
 console.log(
-  `Verified root ecosystem READMEs for ${wrapperManifest.wrappers.length} component packages, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
+  `Verified root and component ecosystem READMEs for ${wrapperManifest.wrappers.length} component packages, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
 )

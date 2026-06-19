@@ -129,6 +129,7 @@ pnpm docs:build
 cd /Users/wangyu/IdeaProjects/file-viewer3
 pnpm branch:cutover:prepare
 pnpm branch:cutover:verify
+pnpm branch:cutover:apply
 ```
 
 预演目录在 `.release/branch-cutover/`:
@@ -140,6 +141,14 @@ pnpm branch:cutover:verify
 | `v3-vue3-component` | `v3` | `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` Vue 3 组件线 |
 
 每个目录都必须包含 `package.json`、`README.md`、`README.en.md`、`LICENSE`、`BRANCH_ROLE.md` 和 `branch-cutover-manifest.json`，并且不能包含 `node_modules/`、`dist/` 或 `workspace:` 依赖范围。确认这些快照之后，才进入远端分支替换和 npm 发布。
+
+`pnpm branch:cutover:apply` 默认只输出推送计划，不会修改远端。确认计划无误后，维护者再显式执行:
+
+```bash
+pnpm branch:cutover:apply -- --push
+```
+
+脚本会先把当前聚合仓 HEAD 推到 `workspace/pre-branch-cutover-*` 备份分支，再用 `--force-with-lease` 替换私有 Gitea 的 `main` / `v2` / `v3`。如果远端分支在预演后被他人更新，`--force-with-lease` 会拒绝覆盖，需要重新生成快照。
 
 ## npm 发布
 
