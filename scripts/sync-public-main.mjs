@@ -1,7 +1,8 @@
-import { existsSync } from 'node:fs'
-import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { createReadStream, existsSync } from 'node:fs'
+import { cp, mkdir, readFile, readdir, rename, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { basename, join, relative, resolve, sep } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 import { assertOpenSourceMainRepoLayout } from './lib/public-main.mjs'
 
@@ -50,6 +51,7 @@ const legacyStandaloneDemoArtifactSegment = ['adapter', 'demo'].join('-')
 const viewerDemoDistDir = join(sourceRoot, 'apps', 'viewer-demo', 'dist')
 const viewerDemoExampleDir = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
 const vue3LibraryDistDir = join(sourceRoot, 'packages', 'components', 'vue3', 'dist')
+const stableArchiveDate = new Date('2020-01-01T00:00:00.000Z')
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -86,7 +88,14 @@ async function assertFile(path, label) {
 }
 
 async function assertCleanGitRepo(repoDir, label) {
-  await assertDirectory(join(repoDir, '.git'), `${label} .git`)
+  const gitMetadataPath = join(repoDir, '.git')
+  if (!existsSync(gitMetadataPath)) {
+    throw new Error(`${label} git metadata does not exist: ${gitMetadataPath}`)
+  }
+  const gitMetadata = await stat(gitMetadataPath)
+  if (!gitMetadata.isDirectory() && !gitMetadata.isFile()) {
+    throw new Error(`${label} git metadata must be a .git directory or worktree .git file: ${gitMetadataPath}`)
+  }
   const status = run('git', ['status', '--porcelain'], { cwd: repoDir, capture: true })
   if (status) {
     throw new Error(`${label} has uncommitted changes. Commit or clean it first:\n${status}`)
@@ -99,6 +108,57 @@ function currentBranch() {
 
 async function removePath(path) {
   await rm(path, { recursive: true, force: true })
+}
+
+async function fileDigest(path) {
+  return new Promise((resolveDigest, rejectDigest) => {
+    const hash = createHash('sha256')
+    const stream = createReadStream(path)
+    stream.on('data', chunk => hash.update(chunk))
+    stream.on('error', rejectDigest)
+    stream.on('end', () => resolveDigest(hash.digest('hex')))
+  })
+}
+
+async function filesEqual(left, right) {
+  if (!existsSync(left) || !existsSync(right)) {
+    return false
+  }
+  const [leftStat, rightStat] = await Promise.all([stat(left), stat(right)])
+  if (leftStat.size !== rightStat.size) {
+    return false
+  }
+  const [leftDigest, rightDigest] = await Promise.all([fileDigest(left), fileDigest(right)])
+  return leftDigest === rightDigest
+}
+
+async function replaceFileIfChanged(sourceFile, targetFile, label = targetFile) {
+  if (await filesEqual(sourceFile, targetFile)) {
+    await removePath(sourceFile)
+    console.log(`unchanged ${label}`)
+    return false
+  }
+  await removePath(targetFile)
+  await rename(sourceFile, targetFile)
+  return true
+}
+
+async function copyFileIfChanged(sourceFile, targetFile, label = targetFile) {
+  if (await filesEqual(sourceFile, targetFile)) {
+    console.log(`unchanged ${label}`)
+    return false
+  }
+  await cp(sourceFile, targetFile, { force: true })
+  return true
+}
+
+async function writeTextIfChanged(targetFile, content, label = targetFile) {
+  if (existsSync(targetFile) && (await readFile(targetFile, 'utf8')) === content) {
+    console.log(`unchanged ${label}`)
+    return false
+  }
+  await writeFile(targetFile, content, 'utf8')
+  return true
 }
 
 async function copyCleanDir(from, to) {
@@ -153,6 +213,20 @@ async function walkFiles(dir, callback) {
     }
     await callback(path, entry.name)
   }
+}
+
+async function normalizeArchiveTimestamps(path) {
+  if (!existsSync(path)) {
+    return
+  }
+  const info = await stat(path)
+  if (info.isDirectory()) {
+    const entries = await readdir(path, { withFileTypes: true })
+    for (const entry of entries) {
+      await normalizeArchiveTimestamps(join(path, entry.name))
+    }
+  }
+  await utimes(path, stableArchiveDate, stableArchiveDate)
 }
 
 function normalizePublicWorkspaceRange(dependencyName, range) {
@@ -316,29 +390,47 @@ async function removeOldArtifacts(artifactsDir) {
   const currentEcosystemTarballs = new Set(
     ecosystemPackageEntries.map(ecosystemPackage => ecosystemPackage.tarballName)
   )
+  const currentStaticArchives = new Set([
+    `file-viewer-v2-${version}-demo.tar.gz`,
+    `file-viewer-v2-${version}-component-demo.tar.gz`,
+    `file-viewer-v2-${version}-lib-dist.tar.gz`,
+    `file-viewer-v2-${version}-docs.tar.gz`
+  ])
   for (const entry of entries) {
     if (
       /^file-viewer-v[23]-.*-(demo|component-demo|lib-dist|docs)\.tar\.gz$/.test(entry) ||
       entry.includes(`-${legacyStandaloneDemoArtifactSegment}.tar.gz`)
     ) {
-      await removePath(join(artifactsDir, entry))
+      if (!currentStaticArchives.has(entry)) {
+        await removePath(join(artifactsDir, entry))
+      }
     }
     if (/^flyfish-group-file-viewer(3|-web|-react)?-.*\.tgz$/.test(entry)) {
-      await removePath(join(artifactsDir, entry))
+      if (!currentEcosystemTarballs.has(entry)) {
+        await removePath(join(artifactsDir, entry))
+      }
     }
     if (
       currentEcosystemTarballs.has(entry) ||
       /^(file-viewer3|file-viewer-core)-.*\.tgz$/.test(entry) ||
       /^file-viewer-(vue3|vue2\.7|vue2\.6|react|react-legacy|web|jquery|svelte)-.*\.tgz$/.test(entry)
     ) {
-      await removePath(join(artifactsDir, entry))
+      if (!currentEcosystemTarballs.has(entry)) {
+        await removePath(join(artifactsDir, entry))
+      }
     }
   }
 }
 
 async function createTarball(sourceDir, targetFile) {
-  await removePath(targetFile)
-  run('tar', ['-czf', targetFile, '-C', sourceDir, '.'])
+  const tempTar = `${targetFile}.tar-${process.pid}-${Date.now()}`
+  const tempGzip = `${tempTar}.gz`
+  await removePath(tempTar)
+  await removePath(tempGzip)
+  await normalizeArchiveTimestamps(sourceDir)
+  run('tar', ['-cf', tempTar, '-C', sourceDir, '.'])
+  run('gzip', ['-n', '-f', tempTar])
+  await replaceFileIfChanged(tempGzip, targetFile, basename(targetFile))
 }
 
 function shouldPublishArtifactTarball(packageRecord) {
@@ -425,10 +517,21 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'component-demo', 'docs-dist', 'example'],
     slimMode: slimArtifacts
   }
-  await writeFile(
-    join(repoDir, 'artifacts', 'release-manifest.json'),
+  const manifestPath = join(repoDir, 'artifacts', 'release-manifest.json')
+  if (existsSync(manifestPath)) {
+    const previousManifest = await readJson(manifestPath)
+    const previousComparable = {
+      ...previousManifest,
+      generatedAt: manifest.generatedAt
+    }
+    if (JSON.stringify(previousComparable) === JSON.stringify(manifest)) {
+      manifest.generatedAt = previousManifest.generatedAt
+    }
+  }
+  await writeTextIfChanged(
+    manifestPath,
     `${JSON.stringify(manifest, null, 2)}\n`,
-    'utf8'
+    'artifacts/release-manifest.json'
   )
 }
 
@@ -500,13 +603,15 @@ for (const packageRecord of ecosystemPackManifest.packages || []) {
   if (!shouldPublishArtifactTarball(packageRecord)) {
     continue
   }
-  await cp(join(ecosystemPackDir, packageRecord.tarball), join(artifactsDir, packageRecord.tarball), {
-    force: true
-  })
+  await copyFileIfChanged(
+    join(ecosystemPackDir, packageRecord.tarball),
+    join(artifactsDir, packageRecord.tarball),
+    packageRecord.tarball
+  )
 }
 if (!skipVue2Tarball) {
   await assertFile(vue2Tarball, 'Vue2 npm tarball')
-  await cp(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), { force: true })
+  await copyFileIfChanged(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), basename(vue2Tarball))
 }
 
 await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-demo.tar.gz`))

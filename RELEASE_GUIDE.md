@@ -188,6 +188,8 @@ pnpm release:public -- --public-repo-dir /Users/wangyu/IdeaProjects/file-viewer-
 - 写入 `artifacts/release-manifest.json`
 - 检查开源总仓库根目录是否误出现 `.env`、`.release/`、`node_modules/`、根目录 `scripts/` 等内部内容
 
+脚本会使用稳定的 gzip 头生成静态 tarball，并在复制/打包前做内容比较；如果产物字节完全一致，会保留旧文件，避免 GitHub/Gitee 历史因为无意义的二进制重写继续膨胀。Gitee 已提示仓库接近或超过 1GB 时，务必优先确认 `git diff --stat` 中没有重复变化的大型 `.tar.gz`。
+
 如果你已经手动完成构建，也可以复用 `.release/` 暂存目录并跳过构建:
 
 ```bash
