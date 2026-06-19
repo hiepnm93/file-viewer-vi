@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "description": "Native wrapper experience contract used while the viewer is being split into a pure TypeScript core and public framework wrappers.",
   "baseline": {
-    "sourceBranch": "v3",
+    "sourceBranch": "main",
     "rootPackage": "@flyfish-group/file-viewer-workspace",
     "versionSource": "package.json",
     "formatMatrixSource": "packages/core/src/formats.ts",
@@ -11,7 +11,7 @@
   },
   "requiredScripts": [
     "verify:demo-browser-smoke",
-    "verify:wrapper-browser-smoke",
+    "verify:component-browser-smoke",
     "verify:browser-smoke",
     "verify:smoke-matrix",
     "verify:wrapper-api",
@@ -60,7 +60,7 @@
       "entryFiles": [
         "packages/components/vue3/src/package/components/FileViewer/FileViewer.vue",
         "packages/components/vue3/src/package/index.ts",
-        "src/main.ts"
+        "apps/viewer-demo/src/main.ts"
       ],
       "smokeScripts": ["verify:demo-browser-smoke"],
       "preserves": ["source-loading", "options", "toolbar-operations", "lifecycle-events", "document-navigation", "layout-visual", "print-export"]
@@ -71,9 +71,9 @@
       "kind": "baseline-page",
       "packageName": "@flyfish-group/file-viewer3",
       "entryFiles": [
-        "src/compare/CompareApp.vue",
-        "src/compare/main.ts",
-        "src/compare/useSynchronizedScroll.ts"
+        "apps/viewer-demo/src/compare/CompareApp.vue",
+        "apps/viewer-demo/src/compare/main.ts",
+        "apps/viewer-demo/src/compare/useSynchronizedScroll.ts"
       ],
       "smokeScripts": ["verify:demo-browser-smoke"],
       "preserves": ["source-loading", "document-navigation", "layout-visual"]
@@ -88,7 +88,7 @@
         "packages/components/web/src/global.ts",
         "packages/components/web/package.json"
       ],
-      "smokeScripts": ["verify:wrapper-browser-smoke"],
+      "smokeScripts": ["verify:component-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
@@ -98,7 +98,7 @@
       "wrapperId": "react",
       "packageName": "@flyfish-group/file-viewer-react",
       "entryFiles": ["packages/compat/react/src/index.tsx", "apps/component-demo/src/main.tsx"],
-      "smokeScripts": ["verify:wrapper-browser-smoke"],
+      "smokeScripts": ["verify:component-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
@@ -108,7 +108,7 @@
       "wrapperId": "web",
       "packageName": "@flyfish-group/file-viewer-web",
       "entryFiles": ["packages/compat/web/src/index.ts", "apps/component-demo/manual-js.html"],
-      "smokeScripts": ["verify:wrapper-browser-smoke"],
+      "smokeScripts": ["verify:component-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
@@ -118,7 +118,7 @@
       "wrapperId": "web",
       "packageName": "@file-viewer/web",
       "entryFiles": ["packages/components/web/src/global.ts", "apps/component-demo/manual-iife.html"],
-      "smokeScripts": ["verify:wrapper-browser-smoke"],
+      "smokeScripts": ["verify:component-browser-smoke"],
       "preserves": ["source-loading", "options", "wrapper-contract"]
     }
   ],
@@ -164,7 +164,7 @@
       "surface": "pure-web-native-viewer",
       "smokeCaseId": "word-openxml-docx",
       "sample": "word.docx",
-      "scripts": ["verify:wrapper-browser-smoke"],
+      "scripts": ["verify:component-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
       "assertions": ["mount-viewer", "shared-controller-handle", "load-complete", "lifecycle-events"]
     },
@@ -173,7 +173,7 @@
       "surface": "react-native-wrapper",
       "wrapperId": "react",
       "sample": "word.docx",
-      "scripts": ["verify:wrapper-browser-smoke"],
+      "scripts": ["verify:component-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
       "assertions": ["native-mount", "shared-controller-handle", "load-complete"]
     },
@@ -182,7 +182,7 @@
       "surface": "pure-js-native-wrapper",
       "wrapperId": "web",
       "sample": "word.docx",
-      "scripts": ["verify:wrapper-browser-smoke"],
+      "scripts": ["verify:component-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
       "assertions": ["native-mount", "mount-viewer", "load-complete"]
     },
@@ -191,7 +191,7 @@
       "surface": "script-tag-iife",
       "wrapperId": "web",
       "sample": "preview.md",
-      "scripts": ["verify:wrapper-browser-smoke"],
+      "scripts": ["verify:component-browser-smoke"],
       "features": ["source-loading", "options", "wrapper-contract"],
       "assertions": ["global-api", "mount-viewer", "load-complete"]
     }

@@ -108,6 +108,14 @@ for (const requiredAuditItem of [
   assertIncludes(requiredAuditItem, 'completion audit requirement')
 }
 
+for (const requiredGate of [
+  'pnpm verify:experience-baseline',
+  'pnpm verify:format-support',
+  'pnpm verify:smoke-matrix'
+]) {
+  assertIncludes(requiredGate, 'non-regression verification gate')
+}
+
 for (const requiredChecklistStatus of [
   '## 目标包名和仓库矩阵',
   '## Phase 3: 当前仓库分支职责重排',

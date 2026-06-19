@@ -36,8 +36,8 @@
 
 ## 总体不变量
 
-- [ ] 主 Demo、文档比对页、示例文件选择器、工具栏、水印、搜索、缩放、打印、导出、主题、生命周期 hooks 和 beforeOperation 行为不倒退。
-- [ ] 当前 194 个扩展名、23 条预览链路的支持矩阵不得倒退。
+- [x] 主 Demo、文档比对页、示例文件选择器、工具栏、水印、搜索、缩放、打印、导出、主题、生命周期 hooks 和 beforeOperation 行为已由 `pnpm verify:experience-baseline` / `pnpm verify:smoke-matrix` 固化，后续变更不得倒退。
+- [x] 当前 194 个扩展名、23 条预览链路的支持矩阵已由 `pnpm verify:format-support` / `pnpm verify:smoke-matrix` 固化，后续变更不得倒退。
 - [x] core 是唯一总底座：内部可以分 `headless`、`browser`、`renderers`，但对外不再形成第二个核心包。
 - [x] core 可以承载 `HTMLElement` / `window` / `document` / `MutationObserver` / DOM 搜索高亮 / 缩放 provider / 打印窗口 / 下载触发 / Canvas、Worker、WASM 渲染等浏览器执行能力，但必须保持纯 TS 和 framework-neutral，不依赖 Vue/React/Svelte 等上层框架。
 - [x] 移除 `@flyfish-group/file-viewer3` 临时 renderer host，将渲染器注册、异步加载和呈现链路收敛到 `@file-viewer/core` 内部 browser/renderers 分层；各标准组件包 仅持有自己的本地 controller 和生态生命周期逻辑。
