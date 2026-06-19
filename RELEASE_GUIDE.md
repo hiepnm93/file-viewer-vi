@@ -181,6 +181,12 @@ GitHub core / 标准组件分仓需要和本地导出的独立仓源码树一致
 pnpm verify:wrapper-github-content
 ```
 
+开源总仓会在 `artifacts/release-status.json` 中输出机器可读的全渠道状态报告。需要单独刷新时:
+
+```bash
+pnpm release:status:write
+```
+
 ## npm 发布
 
 所有标准包和历史兼容包使用统一生态发布脚本:
@@ -351,6 +357,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | 发布前门禁 | `pnpm release:channels:preflight` | 本地结构、npm 登录态、Gitee token、公开仓边界全部通过 |
 | GitHub Release | `pnpm verify:github-release-assets` | `artifacts/` 与 Release 资产名称、大小、sha256 完全一致 |
 | GitHub 组件分仓 | `pnpm verify:wrapper-github-content` | core / 标准组件分仓内容与本地导出源码树一致 |
+| 状态报告 | `artifacts/release-status.json` | 机器可读记录私有 main、开源总仓、组件分仓、npm、Gitee 和剩余缺口 |
 | 快速审计 | `pnpm audit:ecosystem-status:fast` | 列出当前缺口和下一步命令 |
 | npm | `pnpm verify:npm-registry-release` | 14 个标准包和兼容包均可从 npm 拉回并通过包体校验 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |

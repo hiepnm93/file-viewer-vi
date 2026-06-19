@@ -126,6 +126,33 @@ async function assertReleaseManifest(repoDir) {
   return manifest
 }
 
+async function assertReleaseStatus(repoDir) {
+  const statusPath = join(repoDir, 'artifacts', 'release-status.json')
+  await assertFile(statusPath, 'artifacts/release-status.json')
+  const status = await readJson(statusPath)
+  assert(status.schemaVersion === 1, 'Release status schemaVersion drifted')
+  assert(status.version === version, `Release status version ${status.version} !== ${version}`)
+  assert(status.sourcePolicy === 'private-complete-original-workspace', 'Release status source policy drifted')
+  assert(status.openSourcePolicy === 'public-open-source-main-repository', 'Release status open-source policy drifted')
+  assert(Array.isArray(status.componentRepositories), 'Release status component repository rows missing')
+  assert(Array.isArray(status.npmPackages), 'Release status npm package rows missing')
+  assert(Array.isArray(status.gaps), 'Release status gaps list missing')
+  assert(
+    status.componentRepositories.length === wrapperManifest.wrappers.length + 1,
+    `Release status component repository count ${status.componentRepositories.length} !== ${wrapperManifest.wrappers.length + 1}`
+  )
+  assert(
+    status.npmPackages.length === ecosystemPackageEntries.length,
+    `Release status npm package count ${status.npmPackages.length} !== ${ecosystemPackageEntries.length}`
+  )
+  const npmRows = new Map(status.npmPackages.map(row => [row.packageName, row]))
+  for (const entry of ecosystemPackageEntries) {
+    const row = npmRows.get(entry.packageName)
+    assert(row, `Release status missing npm row for ${entry.packageName}`)
+    assert(row.expectedVersion === entry.version, `${entry.packageName} release status expected version drifted`)
+  }
+}
+
 async function assertReadmes(repoDir) {
   const readme = await readText(join(repoDir, 'README.md'))
   const readmeEn = await readText(join(repoDir, 'README.en.md'))
@@ -170,6 +197,7 @@ await assertDirectory(join(publicRepoDir, 'packages', 'core'), 'packages/core')
 await assertFile(join(publicRepoDir, 'pnpm-workspace.yaml'), 'pnpm-workspace.yaml')
 
 const manifest = await assertReleaseManifest(publicRepoDir)
+await assertReleaseStatus(publicRepoDir)
 await assertOpenSourceMainRepoLayout(publicRepoDir, { allowedRoots: manifest.allowedRoots })
 await assertReadmes(publicRepoDir)
 
