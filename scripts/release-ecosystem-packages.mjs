@@ -24,6 +24,7 @@ const mode = args.includes('--publish')
     ? 'list'
     : 'pack'
 const dryRun = args.includes('--dry-run')
+const preflight = args.includes('--preflight')
 const clean = args.includes('--clean')
 const packDir = resolve(
   sourceRoot,
@@ -42,6 +43,36 @@ function run(command, commandArgs, cwd = sourceRoot) {
   if (result.status !== 0) {
     throw new Error(`Command failed: ${command} ${commandArgs.join(' ')}`)
   }
+}
+
+function capture(command, commandArgs, cwd = sourceRoot) {
+  const result = spawnSync(command, commandArgs, {
+    cwd,
+    encoding: 'utf8',
+    stdio: 'pipe'
+  })
+  return {
+    ok: result.status === 0,
+    status: result.status,
+    stdout: (result.stdout || '').trim(),
+    stderr: (result.stderr || '').trim()
+  }
+}
+
+function verifyNpmAuthentication() {
+  const result = capture('npm', ['whoami'])
+  if (!result.ok || !result.stdout) {
+    throw new Error(
+      [
+        'npm authentication is required before publishing ecosystem packages.',
+        'Run `npm login` or `npm adduser` in an interactive terminal, complete MFA/passkey verification, then rerun `pnpm release:ecosystem:publish`.',
+        result.stderr || result.stdout
+      ]
+        .filter(Boolean)
+        .join('\n')
+    )
+  }
+  console.log(`npm authenticated as ${result.stdout}`)
 }
 
 async function assertDirectory(path, label = path) {
@@ -109,7 +140,7 @@ for (const entry of entries) {
     throw new Error(`Duplicate release package: ${entry.packageName}`)
   }
   names.add(entry.packageName)
-  await verifyPackage(entry, { requireFiles: mode !== 'list' })
+  await verifyPackage(entry, { requireFiles: mode !== 'list' && !preflight })
 }
 
 if (mode === 'list') {
@@ -148,6 +179,13 @@ if (mode === 'pack') {
 }
 
 if (mode === 'publish') {
+  if (!dryRun) {
+    verifyNpmAuthentication()
+  }
+  if (preflight) {
+    console.log(`Publish preflight passed for ${entries.length} ecosystem packages.`)
+    process.exit(0)
+  }
   for (const entry of entries) {
     const publishArgs = [
       '-C',

@@ -155,11 +155,12 @@ pnpm branch:cutover:apply -- --push
 
 ```bash
 pnpm release:ecosystem:list
+pnpm release:ecosystem:publish:preflight
 pnpm release:ecosystem:publish:dry-run
 pnpm release:ecosystem:publish
 ```
 
-发布脚本会统一执行版本、入口文件、`publishConfig.access=public` 和包体校验，并在调用 `pnpm publish` 时传入 `--no-git-checks --ignore-scripts`。这是为了兼容本地过渡 checkout 仍显示为 `v3`、但审计基线已经是远端 `origin/main` 完整原始聚合仓的发布场景，同时避免包内 `prepublishOnly` 重新构建并覆盖统一构建、混淆后的产物；不要绕过脚本手工逐包发布。
+`publish:preflight` 会在构建前确认 npm 登录态和 14 个发布包的基础元数据，避免未登录时先跑一轮完整构建再失败。发布脚本会统一执行版本、入口文件、`publishConfig.access=public` 和包体校验，并在调用 `pnpm publish` 时传入 `--no-git-checks --ignore-scripts`。这是为了兼容本地过渡 checkout 仍显示为 `v3`、但审计基线已经是远端 `origin/main` 完整原始聚合仓的发布场景，同时避免包内 `prepublishOnly` 重新构建并覆盖统一构建、混淆后的产物；不要绕过脚本手工逐包发布。
 
 npm 账号启用 MFA/passkey 时，使用交互式会话完成浏览器确认。发布完成后确认关键包:
 
