@@ -22,13 +22,14 @@
 
 ## 最新外部发布审计
 
-- 审计时间: `2026-06-19`
-- 源码仓当前状态: 本地 `v3` 工作区干净，领先 `origin/v3` 223 个提交；推送 `https://git.flyfish.dev/flyfish-group/file-viewer.git` 返回 `403`，待私有 Gitea / Cloudflare 权限放行。
-- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
-- Component GitHub 仓库: 8 个标准组件包仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Component Gitee 仓库: 8 个标准组件包仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
-- Demo / 文档站: `pnpm deploy:cloudflare` 已部署 demo 到 Cloudflare Pages `https://6b7ec5e0.flyfish-file-viewer.pages.dev`，`pnpm docs:deploy:cloudflare` 已部署文档站到 `https://a2fbb134.flyfish-file-viewer-docs.pages.dev`；正式域名 `https://viewer.flyfish.dev` 与 `https://doc.flyfish.dev` 均返回 200，并能读取到本轮构建内容。
-- npm 发布: `@file-viewer/*` 标准包尚未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
+- 审计时间: `2026-06-19 21:33 CST`
+- 源码仓当前状态: 本地 `v3` 工作区干净，`origin/v3` 已对齐 `5081e11`，私有 Gitea 聚合仓推送完成。
+- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已推送 `7066c3d0`，Gitee `flyfish-dev/file-viewer` 已推送 `98d7fe35`；两端 tree hash 均为 `8a3adc31d0dbe1fc88a5b8ff065f11483f39e721`，内容一致。
+- 开源总仓库 Release: GitHub Release `v2.0.0` 已创建，包含 18 个资产（core、标准组件包、兼容包、Demo、文档、lib dist 和 `release-manifest.json`）。
+- Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
+- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前环境没有可用 Gitee token，SSH 账号也不是 `flyfish-dev` 写权限，待有效 Gitee 组织权限后创建并推送。
+- Demo / 文档站: 历史 Cloudflare Pages 部署曾完成并指向正式域名；本次 `5081e11` / 开源总仓库定位更新后，`viewer.flyfish.dev` 与 `doc.flyfish.dev` 的最新重部署仍待执行。
+- npm 发布: `@file-viewer/*` 标准包均仍未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
 ## 总体不变量
 
@@ -233,13 +234,14 @@
 - [x] `pnpm verify:compatibility-readmes`
 - [x] `pnpm verify:ecosystem-versions`
 - [x] `pnpm verify:ecosystem-tarballs`
+- [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
 - [ ] `pnpm verify:wrapper-public-remotes`
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
 - [x] `pnpm components:standalone-smoke`
-- [x] `pnpm deploy:cloudflare`
-- [x] `pnpm docs:deploy:cloudflare`
+- [ ] `pnpm deploy:cloudflare`（需针对 `5081e11` 之后的当前最新内容重新执行）
+- [ ] `pnpm docs:deploy:cloudflare`（需针对 `5081e11` 之后的当前最新内容重新执行）
 - [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
 - [x] `pnpm test`
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
@@ -253,6 +255,6 @@
 - [ ] 所有历史兼容包和别名包均发布成功。
 - [ ] 所有标准组件包的 README 中英文完整。
 - [ ] 开源总仓库包含最新全渠道构建产物。
-- [x] 文档站和 Demo 站均上线最新内容。
+- [ ] 文档站和 Demo 站均上线最新内容。
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
 - [ ] 发布记录能证明 npm、GitHub、Gitee、Gitea、Demo、文档站、开源总仓库的版本口径一致。
