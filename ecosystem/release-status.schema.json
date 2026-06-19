@@ -68,7 +68,7 @@
     "githubRelease": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ok", "tag", "url", "assetCount", "hasManifest", "hasStatus", "error"],
+      "required": ["ok", "tag", "url", "assetCount", "hasManifest", "hasStatus", "hasSchema", "error"],
       "properties": {
         "ok": { "type": "boolean" },
         "tag": { "type": "string" },
@@ -76,6 +76,7 @@
         "assetCount": { "type": "integer" },
         "hasManifest": { "type": "boolean" },
         "hasStatus": { "type": "boolean" },
+        "hasSchema": { "type": "boolean" },
         "error": { "type": "string" }
       }
     },

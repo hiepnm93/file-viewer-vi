@@ -153,6 +153,7 @@ async function assertReleaseStatus(repoDir) {
   )
   assert(typeof status.githubRelease?.hasManifest === 'boolean', 'Release status GitHub Release manifest flag missing')
   assert(typeof status.githubRelease?.hasStatus === 'boolean', 'Release status GitHub Release status flag missing')
+  assert(typeof status.githubRelease?.hasSchema === 'boolean', 'Release status GitHub Release schema flag missing')
   assert(Array.isArray(status.componentRepositories), 'Release status component repository rows missing')
   assert(Array.isArray(status.npmPackages), 'Release status npm package rows missing')
   assert(Array.isArray(status.gaps), 'Release status gaps list missing')

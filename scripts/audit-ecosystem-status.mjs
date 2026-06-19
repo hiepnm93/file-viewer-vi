@@ -104,6 +104,7 @@ function ghRelease(tag) {
       assetCount: 0,
       hasManifest: false,
       hasStatus: false,
+      hasSchema: false,
       error: result.error || result.stderr || result.stdout || result.signal
     }
   }
@@ -118,6 +119,7 @@ function ghRelease(tag) {
       assetCount: assets.length,
       hasManifest: assets.some(asset => asset.name === 'release-manifest.json'),
       hasStatus: assets.some(asset => asset.name === 'release-status.json'),
+      hasSchema: assets.some(asset => asset.name === 'release-status.schema.json'),
       error: ''
     }
   } catch (error) {
@@ -128,6 +130,7 @@ function ghRelease(tag) {
       assetCount: 0,
       hasManifest: false,
       hasStatus: false,
+      hasSchema: false,
       error: error instanceof Error ? error.message : String(error)
     }
   }
@@ -259,6 +262,7 @@ const failures = [
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
   release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
+  release.ok && !release.hasSchema && `GitHub Release v${rootPackage.version} missing release-status.schema.json`,
   ...remoteRows.flatMap(row => [
     !row.github.ok && `${row.id} GitHub repository missing`,
     !row.gitee.ok && `${row.id} Gitee repository missing`
@@ -338,7 +342,7 @@ console.log(`## Open-Source Main Repository\n`)
 console.log(`- GitHub main: ${formatHash(publicGithubHead.hash)} (${okLabel(publicGithubHead.ok)})`)
 console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${syncLabel(publicGithubHead, publicGiteeHead)})`)
 console.log(
-  `- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}, manifest: ${okLabel(release.hasManifest)}, status: ${okLabel(release.hasStatus)}${release.url ? `, ${release.url}` : ''})\n`
+  `- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}, manifest: ${okLabel(release.hasManifest)}, status: ${okLabel(release.hasStatus)}, schema: ${okLabel(release.hasSchema)}${release.url ? `, ${release.url}` : ''})\n`
 )
 
 console.log(`## Core And Component Repositories\n`)
