@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export const publicArtifactForbiddenTopLevel = [
+export const openSourceMainForbiddenTopLevel = [
   '.env',
   '.env.local',
   '.eslintrc.cjs',
@@ -18,7 +18,7 @@ export const publicArtifactForbiddenTopLevel = [
   'yarn.lock'
 ]
 
-export const publicArtifactDefaultRoots = [
+export const openSourceMainDefaultRoots = [
   'README.md',
   'README.en.md',
   'LICENSE',
@@ -55,14 +55,14 @@ export async function assertFile(path, label = path) {
   }
 }
 
-export async function assertPublicArtifactOnlyRepo(repoDir, options = {}) {
-  for (const entry of publicArtifactForbiddenTopLevel) {
+export async function assertOpenSourceMainRepoLayout(repoDir, options = {}) {
+  for (const entry of openSourceMainForbiddenTopLevel) {
     if (existsSync(join(repoDir, entry))) {
-      throw new Error(`Forbidden source workspace entry found in public artifact repo: ${entry}`)
+      throw new Error(`Forbidden private workspace entry found in open-source main repo: ${entry}`)
     }
   }
   if (existsSync(join(repoDir, 'packages', 'runtime'))) {
-    throw new Error('Forbidden removed runtime package found in public artifact repo: packages/runtime')
+    throw new Error('Forbidden removed runtime package found in open-source main repo: packages/runtime')
   }
 
   if (!options.allowedRoots) {
@@ -71,11 +71,11 @@ export async function assertPublicArtifactOnlyRepo(repoDir, options = {}) {
 
   const allowedRoots = new Set([
     '.git',
-    ...(Array.isArray(options.allowedRoots) ? options.allowedRoots : publicArtifactDefaultRoots)
+    ...(Array.isArray(options.allowedRoots) ? options.allowedRoots : openSourceMainDefaultRoots)
   ])
   for (const entry of await readdir(repoDir)) {
     if (!allowedRoots.has(entry)) {
-      throw new Error(`Unexpected top-level entry in public artifact repo: ${entry}`)
+      throw new Error(`Unexpected top-level entry in open-source main repo: ${entry}`)
     }
   }
 }

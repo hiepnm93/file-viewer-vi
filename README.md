@@ -18,9 +18,9 @@
 - 文档比对 Demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
 - Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.0`
-- 公开成品仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-- 公开成品仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
-- 私有聚合仓与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- 开源总仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
+- 开源总仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
+- 打赏与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ## 当前发布版本
 
@@ -32,7 +32,7 @@
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | 标准组件包 | React 原生组件，复用共享 core native engine |
 | 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | 标准组件包 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
 
-如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball。离线安装 React 包时请先安装同版本 web 包:
+如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用开源总仓库 `artifacts/` 里的 release tarball。离线安装 React 包时请先安装同版本 web 包:
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-2.0.0.tgz
@@ -43,7 +43,7 @@ npm install ./artifacts/flyfish-group-file-viewer-web-2.0.0.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-2.0.0.tgz
 ```
 
-Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，公开成品仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 GitHub Release 会同步提供完整下载项:
 
@@ -67,14 +67,14 @@ GitHub Release 会同步提供完整下载项:
 | `flyfish-group-file-viewer-web-*.tgz` | 纯 JS 历史兼容包，提供 `mountViewer` 原生挂载和资源复制工具 |
 | `flyfish-group-file-viewer-react-*.tgz` | React 历史兼容包，提供原生 React 组件入口 |
 
-`file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；公开成品仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
+`file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；开源总仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## 标准生态包与公开仓库
 
-下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开组件仓库。
+下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。
 
-核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。公开仓库提供分散包源码、Demo、文档站、构建产物、示例文件和 tarball；私有 Gitea 完整聚合仓用于打赏支持、统一自动化和优先技术支持。
+核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea 完整聚合仓用于统一自动化、内部集成历史、打赏支持和优先技术支持。
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
@@ -105,7 +105,7 @@ GitHub Release 会同步提供完整下载项:
 - **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
 - **各框架体验一致。** core 聚焦底层预览能力，Vue3、Vue2、React、纯 Web、jQuery 和 Svelte 标准组件包 各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
 - **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
-- **适合成品交付和二次接入。** 公开仓库同时维护 core、标准组件包、兼容包、Demo、文档源码、混淆压缩产物、npm tarball 和静态部署产物，便于下载、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
+- **适合开源分发和二次接入。** 开源总仓库同时维护 core、标准组件包、兼容包、主 Demo 源码、文档源码、混淆压缩产物、npm tarball、静态部署产物和 release 下载物，便于下载、运行、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
 
 ## 支持格式
 
@@ -296,7 +296,7 @@ const file = new File([blob], 'contract.pdf', { type: blob.type })
 
 ## 本地开发
 
-下面的命令适用于公开仓库和源码开通后的完整项目。GitHub / Gitee 会公开 core、Demo、标准组件包、兼容包和文档站源码；私有 Gitea 提供完整聚合仓、统一发布脚本、内部自动化和优先技术支持。普通用户仍建议优先通过 npm、公开仓库 `dist/` 或 `artifacts/` 里的 tarball 使用。
+下面的命令适用于开源总仓库和私有 Gitea 完整聚合仓。GitHub / Gitee 会公开 core、Demo、标准组件包、兼容包和文档站源码；私有 Gitea 提供完整聚合仓、统一发布脚本、内部自动化和优先技术支持。普通用户仍建议优先通过 npm、开源总仓库 `dist/` 或 `artifacts/` 里的 tarball 使用。
 
 ```bash
 pnpm install
@@ -375,7 +375,7 @@ npm publish --access public
 
 如果 npm 账号启用了 MFA，请使用交互式终端完成浏览器确认后再等待发布结果。
 
-公开 GitHub / Gitee 仓库提交 core、Demo、标准组件包、兼容包、文档源码，同时保留可直接使用的构建产物、示例文件和 npm tarball。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新完整快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
+开源总仓库会提交 core、Demo、标准组件包、兼容包、文档源码，同时保留可直接使用的构建产物、示例文件和 npm tarball。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新完整快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
 
 ## 文档导航
 

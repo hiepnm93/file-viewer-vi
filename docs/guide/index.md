@@ -3,15 +3,15 @@
 <div class="doc-kicker">Start From The Right Door</div>
 
 <p class="doc-lead">
-  Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和成品分发。
+  Flyfish Viewer 官方文档同时承担组件主页、接入手册和开源分发说明。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和开源分发。
 </p>
 
 <div class="doc-link-row">
   <a href="https://doc.flyfish.dev" target="_blank" rel="noreferrer">官方文档</a>
   <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
-  <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品仓库</a>
-  <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 成品仓库</a>
+  <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
+  <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 开源总仓库</a>
   <a href="/guide/quickstart">快速开始</a>
   <a href="/guide/formats">支持格式</a>
   <a href="/guide/usage">组件用法</a>
@@ -56,7 +56,7 @@
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
-    <p>成品分发说明了 npm 包、私有化 Worker/WASM viewer assets、文档静态产物和公开成品仓库之间的交付关系。</p>
+    <p>开源分发说明了 npm 包、私有化 Worker/WASM viewer assets、文档静态产物和开源总仓库之间的交付关系。</p>
   </div>
 </div>
 
@@ -92,7 +92,7 @@
 | 想在非框架页面中接入 | [纯 JS 集成](/guide/quickstart-web) |
 | 想了解统一 options 和事件 | [组件用法](/guide/usage) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
-| 想下载成品或二开 | [发布与成品分发](/guide/distribution) |
+| 想下载源码、release 或了解支持 | [发布与开源分发](/guide/distribution) |
 
 <div class="doc-note">
   如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件会在业务页面中原生挂载，不依赖官网 Demo。

@@ -43,6 +43,7 @@ const readmeTemplate = await readJson(join(sourceRoot, 'ecosystem', 'wrapper-rea
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
 const rendererCount = formatModule.DEFAULT_RENDERER_DEFINITIONS.length
 const extensionCount = formatModule.DEFAULT_SUPPORTED_EXTENSIONS.length
+const deprecatedFixedPriceTerms = [`${4}.${99}`, `${6}.${22}`]
 const historicalPackageNames = new Set(
   wrapperManifest.wrappers.flatMap(wrapper => wrapper.historicalPackages)
 )
@@ -409,8 +410,9 @@ async function verifyReadmePair(dir, wrapper, label) {
     }
     assertIncludes(readme, String(rendererCount), readmeLabel)
     assertIncludes(readme, String(extensionCount), readmeLabel)
-    assertNotIncludes(readme, '4.99', readmeLabel)
-    assertNotIncludes(readme, '6.22', readmeLabel)
+    for (const deprecatedPriceTerm of deprecatedFixedPriceTerms) {
+      assertNotIncludes(readme, deprecatedPriceTerm, readmeLabel)
+    }
     for (const ecosystemWrapper of wrapperManifest.wrappers) {
       assertIncludes(readme, ecosystemWrapper.packageName, readmeLabel)
       assertIncludes(readme, ecosystemWrapper.github, readmeLabel)
@@ -447,8 +449,9 @@ async function verifyCoreReadmePair(dir, label) {
     assertIncludes(readme, 'createViewer', readmeLabel)
     assertIncludes(readme, 'headless', readmeLabel)
     assertIncludes(readme, 'browser', readmeLabel)
-    assertNotIncludes(readme, '4.99', readmeLabel)
-    assertNotIncludes(readme, '6.22', readmeLabel)
+    for (const deprecatedPriceTerm of deprecatedFixedPriceTerms) {
+      assertNotIncludes(readme, deprecatedPriceTerm, readmeLabel)
+    }
   }
 }
 

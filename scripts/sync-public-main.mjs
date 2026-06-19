@@ -3,7 +3,7 @@ import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { basename, join, relative, resolve, sep } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
-import { assertPublicArtifactOnlyRepo } from './lib/public-artifacts.mjs'
+import { assertOpenSourceMainRepoLayout } from './lib/public-main.mjs'
 
 const sourceRoot = process.cwd()
 const args = process.argv.slice(2)
@@ -342,7 +342,7 @@ async function createTarball(sourceDir, targetFile) {
 }
 
 function shouldPublishArtifactTarball(packageRecord) {
-  return packageRecord.publicArtifact?.includeTarball !== false
+  return packageRecord.releaseArtifact?.includeTarball !== false
 }
 
 async function readEcosystemPackManifest() {
@@ -391,8 +391,8 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
         packageDir: packageRecord.packageDir,
         tarball: includeTarball ? packageRecord.tarball : null,
         artifactIncluded: includeTarball,
-        artifactDuplicateOf: packageRecord.publicArtifact?.duplicateOf ?? null,
-        artifactNote: packageRecord.publicArtifact?.reason ?? null,
+        artifactDuplicateOf: packageRecord.releaseArtifact?.duplicateOf ?? null,
+        artifactNote: packageRecord.releaseArtifact?.reason ?? null,
         github: packageRecord.github ?? null,
         gitee: packageRecord.gitee ?? null,
         entryFormats: wrapper?.entryFormats ?? [],
@@ -416,9 +416,10 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
           tarball: basename(vue2Tarball)
     },
     publicRepo: repoDir,
-    artifactOnly: false,
+    openSourceMain: true,
     coreSourceIncluded: true,
-    sourcePolicy: 'public-open-source-demo-and-artifacts',
+    sourcePolicy: 'public-open-source-main-repository',
+    repositoryRole: 'open-source-main-repository',
     layout: keepExpandedAssets ? 'expanded' : 'slim',
     allowedRoots,
     archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'component-demo', 'docs-dist', 'example'],
@@ -432,11 +433,11 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
 }
 
 if (currentBranch() !== 'v3' && process.env.FILE_VIEWER_ALLOW_NON_V3 !== '1') {
-  throw new Error('Public artifacts must be prepared from v3. Set FILE_VIEWER_ALLOW_NON_V3=1 only for emergency maintenance.')
+  throw new Error('Open-source main repository releases must be prepared from v3. Set FILE_VIEWER_ALLOW_NON_V3=1 only for emergency maintenance.')
 }
 
-await assertCleanGitRepo(publicRepoDir, 'Public artifact repository')
-await assertPublicArtifactOnlyRepo(publicRepoDir)
+await assertCleanGitRepo(publicRepoDir, 'Open-source main repository')
+await assertOpenSourceMainRepoLayout(publicRepoDir)
 
 if (!skipBuild) {
   await removePath(releaseDir)
@@ -510,10 +511,10 @@ await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v2-${version}-lib-dist.tar.gz`))
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
-await assertPublicArtifactOnlyRepo(publicRepoDir)
-run('node', ['scripts/verify-public-artifacts.mjs', '--public-repo-dir', publicRepoDir])
+await assertOpenSourceMainRepoLayout(publicRepoDir)
+run('node', ['scripts/verify-public-main.mjs', '--public-repo-dir', publicRepoDir])
 
-console.log(`Public artifacts prepared in ${publicRepoDir}`)
+console.log(`Open-source main repository prepared in ${publicRepoDir}`)
 console.log('Review with:')
 console.log(`  git -C ${publicRepoDir} status --short`)
 console.log(`  git -C ${publicRepoDir} diff --stat`)

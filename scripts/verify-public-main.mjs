@@ -5,8 +5,8 @@ import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.
 import {
   assertDirectory,
   assertFile,
-  assertPublicArtifactOnlyRepo
-} from './lib/public-artifacts.mjs'
+  assertOpenSourceMainRepoLayout
+} from './lib/public-main.mjs'
 import { entryFormatLabels } from './lib/wrapper-entry-formats.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
@@ -55,10 +55,11 @@ async function assertReleaseManifest(repoDir) {
   const manifestPath = join(repoDir, 'artifacts', 'release-manifest.json')
   await assertFile(manifestPath, 'artifacts/release-manifest.json')
   const manifest = await readJson(manifestPath)
-  assert(manifest.version === version, `Public artifact manifest version ${manifest.version} !== ${version}`)
-  assert(manifest.artifactOnly === false, 'Public artifact manifest must declare artifactOnly=false after source is published')
-  assert(manifest.coreSourceIncluded === true, 'Public artifact manifest must declare coreSourceIncluded=true')
-  assert(manifest.sourcePolicy === 'public-open-source-demo-and-artifacts', 'Public artifact manifest source policy drifted')
+  assert(manifest.version === version, `Open-source main repository manifest version ${manifest.version} !== ${version}`)
+  assert(manifest.openSourceMain === true, 'Open-source main repository manifest must declare openSourceMain=true')
+  assert(manifest.coreSourceIncluded === true, 'Open-source main repository manifest must declare coreSourceIncluded=true')
+  assert(manifest.sourcePolicy === 'public-open-source-main-repository', 'Open-source main repository source policy drifted')
+  assert(manifest.repositoryRole === 'open-source-main-repository', 'Open-source main repository role drifted')
   assert(manifest.corePackage?.packageName === wrapperManifest.corePackage.packageName, 'Core package metadata drifted')
   assert(manifest.corePackage?.visibility === wrapperManifest.corePackage.visibility, 'Core package visibility metadata drifted')
 
@@ -74,9 +75,9 @@ async function assertReleaseManifest(repoDir) {
         `${entry.packageName} ecosystem artifact entry format mapping drifted`
       )
     }
-    if (entry.publicArtifact?.includeTarball === false) {
+    if (entry.releaseArtifact?.includeTarball === false) {
       assert(record.artifactIncluded === false, `${entry.packageName} duplicate artifact should not be included`)
-      assert(record.artifactDuplicateOf === entry.publicArtifact.duplicateOf, `${entry.packageName} duplicate artifact target drifted`)
+      assert(record.artifactDuplicateOf === entry.releaseArtifact.duplicateOf, `${entry.packageName} duplicate artifact target drifted`)
       continue
     }
     assert(record.artifactIncluded === true, `${entry.packageName} artifact should be included`)
@@ -158,7 +159,7 @@ async function assertReadmes(repoDir) {
   }
 }
 
-await assertDirectory(publicRepoDir, 'public artifact repository')
+await assertDirectory(publicRepoDir, 'open-source main repository')
 for (const requiredFile of ['README.md', 'README.en.md', 'LICENSE', 'package.json']) {
   await assertFile(join(publicRepoDir, requiredFile), requiredFile)
 }
@@ -169,7 +170,7 @@ await assertDirectory(join(publicRepoDir, 'packages', 'core'), 'packages/core')
 await assertFile(join(publicRepoDir, 'pnpm-workspace.yaml'), 'pnpm-workspace.yaml')
 
 const manifest = await assertReleaseManifest(publicRepoDir)
-await assertPublicArtifactOnlyRepo(publicRepoDir, { allowedRoots: manifest.allowedRoots })
+await assertOpenSourceMainRepoLayout(publicRepoDir, { allowedRoots: manifest.allowedRoots })
 await assertReadmes(publicRepoDir)
 
-console.log(`Verified public artifact repository at ${publicRepoDir} for ${version}.`)
+console.log(`Verified open-source main repository at ${publicRepoDir} for ${version}.`)

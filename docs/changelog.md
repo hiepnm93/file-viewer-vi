@@ -6,10 +6,10 @@
 
 ### `v2.0.0` 架构重构与全生态 2.x 起始版本
 
-- 全线 npm 包、workspace 依赖、Docker 镜像和公开成品包从 `2.0.0` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
+- 全线 npm 包、workspace 依赖、Docker 镜像和开源 release 包从 `2.0.0` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
 - `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只依赖 core，各自提供原生集成体验
 - 清理旧独立页面实现和历史过渡口径，对外文档统一强调原生组件与纯 Web API 是核心集成路径
-- 公开成品仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Component Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
+- 开源总仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Component Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
 - 文档、README、分发说明、Docker 部署说明和生态验收清单同步刷新到 2.x 版本口径，后续新增能力都在 2.x 线上连续演进
 
 ### 当前主线 统一缩放工具栏
@@ -22,7 +22,7 @@
 
 - 修复 `@flyfish-group/file-viewer3@1.0.25` 在发布前被 Demo 构建覆盖 `dist` 后，npm 包缺少 `dist/src/package/index.d.ts`，导致 TypeScript 项目出现 `TS2307: Cannot find module '@flyfish-group/file-viewer3' or its corresponding type declarations` 的问题
 - Vue3 标准组件包 使用包内 `prepublishOnly` 发布前保护，根包只保留 monorepo 编排脚本，阻止 Demo HTML 产物误进入组件库 npm 包
-- 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；公开成品仓库只保留一份 scoped v3 tarball，避免重复占用存储
+- 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；开源总仓库只保留一份 scoped v3 tarball，避免重复占用存储
 - 支持格式矩阵补齐到 194 个扩展名、23 条预览链路，新增 RTF/ODT/ODP、MBOX、GeoJSON/KML/GPX/SHP、AVIF/ICO/HEIC/HEIF/JXL、WEBM/M3U8、MIDI、JSONC/JSON5/IPYNB/TOML/Proto/HCL/TeX/Graphviz/HTTP/Ruby/Swift/Kotlin/React 片段，以及字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro、WebArchive 等资产/数据预览入口
 
 ### `v1.0.25` 移动端压缩包与表格体验修复版本
@@ -31,7 +31,7 @@
 - 压缩包预览迁移为 core 共享 archive renderer，并保留 Worker 探测、初始化超时、静态 Worker/WASM 路径和 ZIP/TAR/GZIP 兼容模式；手机 WebView、本地临时服务器、MIME 或 CSP 导致 `libarchive.js` Worker 卡住时，会自动降级，避免一直停留在 loading
 - `options.archive` 新增 `wasmUrl` 和 `workerTimeoutMs` 说明；普通私有化部署不再需要写死 `workerUrl`，只有静态目录或 CDN 路径特殊时才需要显式指定
 - 移动端 Excel / XLS 预览把工作表名称移到表格上方的横向可滚动标签栏，当前工作表自动滚入可见区域，解决手机上 sheet 名称藏在底部角落、需要技巧才能看到的问题
-- README、文档站、React / 纯 JS 接入文档、公开成品包和 workspace 依赖同步刷新到 `1.0.25`
+- README、文档站、React / 纯 JS 接入文档、开源 release 包和 workspace 依赖同步刷新到 `1.0.25`
 
 ### 当前主线 Demo 富样式公开样例升级
 
@@ -63,7 +63,7 @@
 - 构建脚本新增复制 `dwfv-render.wasm`，与 `libredwg-web.js`、`libredwg-web.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 一起进入 `wasm/cad/`，私有化部署可通过 `options.cad.dwfWasmUrl` 覆盖路径
 - 压缩包和邮件附件的嵌套预览同步识别 `dwf`、`dwfx`、`xps`，避免主入口支持 CAD 五类格式而附件链路覆盖不足
 - Demo 图纸分组补充 Apache Tika `blocks_and_tables.dwf` 以及 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，便于验证 DWF、DWFx/XPS、多页结构、W2D/W3D 图形、视图适配和按需加载体验
-- README、文档站、React / 纯 JS README、入口缓存策略、公开成品包和 workspace 依赖同步刷新到 `1.0.24`
+- README、文档站、React / 纯 JS README、入口缓存策略、开源 release 包和 workspace 依赖同步刷新到 `1.0.24`
 
 ### `v1.0.22` PPTX 兼容性修复与连续发布版本
 
@@ -71,7 +71,7 @@
 - 修复部分客户 PPTX 无法打开的问题，兼容缺少 `docProps/app.xml` 的演示文稿，默认按现代 Office 版本降级解析
 - PPTX OpenXML 关系解析改为通用路径解析，支持 relationship 单对象 / 数组 / 缺失三种形态，并按 `presentation.xml` 真实 slide 顺序渲染
 - 增强 slide / layout / master / theme / diagram 关系读取容错，缺失可选部件时降级渲染当前页内容，不再因空指针导致整份 PPTX 白屏
-- README、文档站、React / 纯 JS README、入口缓存策略、公开成品包和 workspace 依赖同步刷新到 `1.0.22`
+- README、文档站、React / 纯 JS README、入口缓存策略、开源 release 包和 workspace 依赖同步刷新到 `1.0.22`
 
 ### `v1.0.21` Docker Hub 仓库与格式边界校准版本
 
@@ -80,7 +80,7 @@
 - Office 模板和宏格式继续按实际可渲染链路保留，包括 `dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`
 - 新增 Docker Hub 仓库创建脚本，支持用 Docker Hub API 创建 `flyfishdev/file-viewer` 公开仓库，并在异常时输出更明确的安全诊断信息
 - 文档站补全文档比对页使用说明，明确 `/compare.html`、`left` / `right` 预置参数、内置示例、URL、本地上传、同步滚动、私有化部署路径和视觉比对边界
-- 公开成品仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
+- 开源总仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
 - Demo 输出校验继续覆盖 `compare.html`、主入口资源、viewer 资源目录和示例资源，避免上线缺少独立比对入口
 - 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.flyfish.dev` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
 - 新增 `options.theme`，支持 `light`、`dark`、`system`；显式主题优先于浏览器 `prefers-color-scheme`，固定浅色业务 UI 可以传 `light` 避免 Markdown、代码、Typst 等预览区域被系统暗色模式带偏
@@ -108,7 +108,7 @@
 - DOCX / DOC 打印保留白色纸张和文档页尺寸，导出窗口只包含主体页面，避免把 Demo 外壳、工具栏、滚动容器或预览缩放带入打印结果
 - 新增 `printStyle` 渲染适配器能力，PDF、DOCX、DOC 等有真实页面尺寸的格式可以按文件自身尺寸输出打印样式，后续格式可复用同一机制
 - 将下载、打印、导出 HTML 的实现从 `FileViewer.vue` 抽离到 `useViewerExport` 和导出模板 helper，入口组件回归预览状态、生命周期和操作可用性的单一职责
-- 补充打印页尺寸与导出模板单测，并同步刷新文档站、README、Demo 示例版本、公开成品包和 npm 版本说明到 `1.0.19`
+- 补充打印页尺寸与导出模板单测，并同步刷新文档站、README、Demo 示例版本、开源 release 包和 npm 版本说明到 `1.0.19`
 
 ### `v1.0.18` 公开 issue 修复与真实 PDF 示例版本
 
@@ -118,7 +118,7 @@
 - 修复 GitHub issue #4: `.doc` 表格布局和单元格可读性增强，老 Word 文档在白色纸张容器里更接近实际阅读效果
 - 修复 GitHub issue #1: `.doc` 的 `msdoc-viewer` CFB 局部 sector 容错改为包管理器无关的 `scripts/patch-msdoc-viewer.mjs`，npm / pnpm / yarn 安装后都可在构建前自动应用
 - Demo PDF 替换为项目方提供的 13 页《PDF沉浸式翻译技术说明》，用于验证长文档阅读、缩放、页导航、树形目录、完整打印和 HTML 导出
-- 文档站、README、集成说明、示例来源、公开成品包和 npm 版本说明同步刷新到 `1.0.18`
+- 文档站、README、集成说明、示例来源、开源 release 包和 npm 版本说明同步刷新到 `1.0.18`
 
 ### `v1.0.17` 打印能力矩阵与完整页打印版本
 
@@ -128,7 +128,7 @@
 - 新增打印能力动态判断，表格、压缩包、邮件、EPUB、音视频、3D 等不适合直接打印的渲染链路会自动隐藏打印按钮，避免用户进入错误打印流程
 - 优化 Demo 暗色模式和 Markdown 阅读面，Markdown / 代码跟随系统主题，PDF / Word / Excel 等原始版式内容保持独立显示；同时替换更丰富的 DOCX / PDF / Markdown 示例并同步压缩包样例
 - 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，历史适配层同步透出事件和操作能力变化
-- 文档站、README、集成说明、分发说明和公开成品包说明同步刷新到 `1.0.17`
+- 文档站、README、集成说明、分发说明和开源 release 包说明同步刷新到 `1.0.17`
 
 ### `v1.0.15` 预览交互、打印与集成钩子增强版本
 
@@ -143,10 +143,10 @@
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.14`、Vue2 包 `@flyfish-group/file-viewer@1.0.14`、React 包 `@flyfish-group/file-viewer-react@1.0.14` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.14` 统一抬升到最新版本
 - 文档站首页、快速开始、分发说明、支持格式页和 README 中的安装示例同步刷新到 `1.0.14`
-- 公开成品仓库、Demo 静态产物和文档站静态产物重新构建，方便直接下载和验收
+- 开源总仓库、Demo 静态产物和文档站静态产物重新构建，方便直接下载和验收
 - 继续保持 Vue3 / Vue2 / React / 纯 JS 的集成路径、按需异步加载、示例分组和 PDF / OFD / 压缩包 / 邮件 / CAD / 绘图 / 电子书预览链路一致
 
-### `v1.0.12` 完整格式、成品仓库与 npm 同步版本
+### `v1.0.12` 完整格式、分发仓库与 npm 同步版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.12`、Vue2 包 `@flyfish-group/file-viewer@1.0.12`、React 包 `@flyfish-group/file-viewer-react@1.0.12` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.12` 统一对齐到 npm `latest`
 - 新增压缩包预览，基于 `libarchive.js` Worker 支持 ZIP、7z、RAR、TAR、GZIP、BZIP2、XZ、CAB、ISO、JAR、APK、CBZ/CBR 等入口，内部文件按需解压、IndexedDB 缓存并继续调用统一预览器
@@ -158,7 +158,7 @@
 - 新增 Three.js 3D 模型预览器，支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`；`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会给出转换原因和建议
 - Demo 新增 GLTF / OBJ / STL / PLY / STEP 3D 样例，以及 ZIP、TAR.GZ、EML、MSG、OLB、DRA 样例，支持格式矩阵更新到 135 个扩展名、19 条预览链路
 - 文档站全局导航、首页、格式矩阵、分发说明、快速开始和 npm README 均刷新到 `1.0.12`
-- 公开成品仓库继续只保留混淆压缩构建产物、Demo 静态站、文档静态站、样例文件和 tarball，不提交源码目录
+- 开源总仓库已升级为一站式主入口，保留可运行源码、Demo 静态站、文档静态站、样例文件和 release tarball
 - React / 纯 JS 文档继续推荐 `npm install` 零步骤安装，并补充 pnpm 10 拦截 `postinstall` 时的 `pnpm approve-builds` / `pnpm exec file-viewer-copy-assets` 处理方式
 
 ### `v1.0.9` 媒体、绘图与电子书预览增强版本
@@ -186,16 +186,16 @@
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.7` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.7` 同步发布到 npm `latest`
 - 修复 PDF.js 5 下 canvas 布局尺寸被 DPR backing store 干扰的问题，避免 PDF 页面被裁切或显示不完整
 - 修复 PDF 默认宽度适配计算，导航窗格开启时也能按当前视口宽度给出可读缩放比例
-- 同步刷新线上 Demo、文档说明和公开成品仓库产物
+- 同步刷新线上 Demo、文档说明和开源总仓库产物
 
-### `v1.0.6` 成品分发版本
+### `v1.0.6` 开源分发版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.6` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.6` 均已发布到 npm `latest`
 - 新增 PDF 缩放工具栏、页码状态和可显隐页面导航窗格
 - 补齐 OFD、CAD、代码高亮与完整示例文件盒子
 - 示例文件选择器支持分组折叠，默认展开第一个分组，并保持同一时间只展开一个分组
 - 增加 `pnpm obfuscate` 与 `pnpm release:ecosystem:pack`，库产物支持压缩混淆后分发
-- README、文档站和公开成品仓库说明同步补充 npm、GitHub、私有聚合仓、优先支持、授权与贡献说明
+- README、文档站和开源总仓库说明同步补充 npm、GitHub、私有聚合仓、优先支持、授权与贡献说明
 - npm tarball 只包含 `README.md`、`LICENSE` 和混淆压缩后的 `dist/`
 
 ### 文档站与交付说明完善

@@ -40,7 +40,7 @@ pnpm install
 | `pnpm verify:experience-baseline` | 校验 `ecosystem/experience-baseline.json` 中的 Vue3 当前组件、比对页、历史 React、历史纯 JS 和 script 标签 IIFE 基线体验证据 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准组件包 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准组件包 仓库元数据和历史包依赖边界 |
-| `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、组件仓库索引、入口格式、历史兼容包和源码边界 |
+| `pnpm verify:public-main` | 校验开源总仓库的 release manifest、tarball、README、组件仓库索引、入口格式、历史兼容包和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 资源、可导入 ESM 入口，以及 组件 manifest 声明的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、分支职责、组件源包、组件运行 API、组件参数面、兼容包 API/README、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
@@ -148,7 +148,7 @@ pnpm release:ecosystem:pack
 - 修改主入口、文档比对、历史 React / 纯 JS 组件或 script tag 接入时，`ecosystem/experience-baseline.json` 是否同步补充对应页面、特性组、事件/按钮/打印导出/视觉证据和验证脚本
 - 每个标准组件包 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准组件包 和历史兼容包不会漂移，且标准组件包 仍指向对应 GitHub 公开仓库
-- 根 README 与公开成品仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-artifacts`，确认 组件入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
+- 根 README 与开源总仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main`，确认 组件入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免未声明源码、工作区目录、source map、构建配置和本地元数据泄露
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认 组件 manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
 - 本地构建和文档构建是否全部通过
@@ -162,7 +162,7 @@ pnpm release:ecosystem:pack
 - 独立 组件仓库是否已经通过 `pnpm components:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准组件包、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`、source map 或私有源码
-- 公开成品仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-artifacts`，确认 `artifacts/release-manifest.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
+- 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
 - 混淆后的 `packages/components/vue3/dist/index.mjs` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 公开仓库、私有聚合仓与优先支持和 Apache-2.0 许可证说明
 
@@ -183,8 +183,8 @@ pnpm release:ecosystem:pack
 - 不要把已移除的旧式页面协议写成推荐接入方式
 - 发布前先用本地构建产物做一次完整 smoke test
 
-## 源码与成品分发
+## 开源总仓库与支持
 
-公开仓库用于分发可直接使用的成品；需要源码、二开包或商业自助开通的用户，请前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水后按页面提示自助开通。
+开源总仓库用于分发可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例和 release tarball。私有 Gitea 继续作为完整聚合仓，保留统一发布自动化、内部集成历史和优先支持上下文；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
 
 二开或商用时，请保留 Flyfish Viewer / `@flyfish-group/file-viewer3` 或 `@flyfish-group/file-viewer` 的来源说明、许可证和版权信息。通用问题修复和通用增强建议通过 issue / PR 贡献回来。

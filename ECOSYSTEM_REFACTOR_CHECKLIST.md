@@ -15,8 +15,8 @@
 - 当前源码远端: `origin -> https://git.flyfish.dev/flyfish-group/file-viewer.git`
 - 当前源码远端可见性: `private`
 - 公开组织: `flyfish-dev`
-- 公开成品仓库: `https://github.com/flyfish-dev/file-viewer` / `https://gitee.com/flyfish-dev/file-viewer`
-- 公开仓库策略: `public-open-source-demo-and-artifacts`
+- 开源总仓库: `https://github.com/flyfish-dev/file-viewer` / `https://gitee.com/flyfish-dev/file-viewer`
+- 开源总仓库策略: `public-open-source-main-repository`
 - core source visibility policy: `public-source`
 - 标准包命名: `@file-viewer/*`
 
@@ -24,7 +24,7 @@
 
 - 审计时间: `2026-06-19`
 - 源码仓当前状态: 本地 `v3` 工作区干净，领先 `origin/v3` 223 个提交；推送 `https://git.flyfish.dev/flyfish-group/file-viewer.git` 返回 `403`，待私有 Gitea / Cloudflare 权限放行。
-- 公开成品仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
+- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
 - Component GitHub 仓库: 8 个标准组件包仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Component Gitee 仓库: 8 个标准组件包仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
 - Demo / 文档站: `pnpm deploy:cloudflare` 已部署 demo 到 Cloudflare Pages `https://6b7ec5e0.flyfish-file-viewer.pages.dev`，`pnpm docs:deploy:cloudflare` 已部署文档站到 `https://a2fbb134.flyfish-file-viewer-docs.pages.dev`；正式域名 `https://viewer.flyfish.dev` 与 `https://doc.flyfish.dev` 均返回 200，并能读取到本轮构建内容。
@@ -40,8 +40,8 @@
 - [x] Vue、React、Svelte、jQuery 和 Pure JS 标准组件包必须默认走 core native browser engine，不把旧的独立页面方案作为正式组件实现。
 - [x] Vue、React、Svelte、jQuery 和 Pure JS 标准组件包只能依赖 `@file-viewer/core` 和自身生态依赖，不得依赖其他标准组件包或任何第二核心包。
 - [x] `@flyfish-group/*`、`file-viewer3` 等历史包名只作为标准包名的兼容别名同步更新。
-- [x] core 源码公开到独立 `file-viewer-core` 仓库，并随公开成品仓库提供可审计源码。
-- [x] 公开仓库发布 core、标准组件包、兼容包、Demo、文档源码，同时保留混淆/压缩后的构建产物、示例、tarball、release manifest 和分发说明。
+- [x] core 源码公开到独立 `file-viewer-core` 仓库，并随开源总仓库提供可审计源码。
+- [x] 开源总仓库发布 core、标准组件包、兼容包、主 Demo 源码、组件 Demo 源码和文档源码，同时保留混淆/压缩后的构建产物、示例、tarball、release manifest 和分发说明。
 
 ## 分支与目录验收
 
@@ -78,7 +78,7 @@
 | Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/components/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] GitHub 已发布，Gitee 待完成 |
 | jQuery | `@file-viewer/jquery` | 无 | `packages/components/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] GitHub 已发布，Gitee 待完成 |
 | Svelte | `@file-viewer/svelte` | 无 | `packages/components/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] GitHub 已发布，Gitee 待完成 |
-| Public repository | 开源源码 + 成品分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
+| Open-source main repository | 开源源码 + 主分发入口 | 当前 `flyfish-dev/file-viewer` | 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
 
 ## npm 发布包清单
 
@@ -196,8 +196,8 @@
 - [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
 - [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
 - [ ] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
-- [ ] 公开成品仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址。
-- [x] core 源码进入 `file-viewer-core` 与公开成品仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
+- [ ] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址。
+- [x] core 源码进入 `file-viewer-core` 与开源总仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
 
 ## Phase 6: npm 发布与兼容别名
 
@@ -205,13 +205,13 @@
 - [x] `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer-web`、`@flyfish-group/file-viewer-react` 纳入发布矩阵。
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。
 - [ ] 所有历史兼容包均发布成功，版本连续，latest 指向最新。
-- [ ] `file-viewer3` 非 scoped alias 发布到 npm，但公开成品仓库不重复存储其 tarball。
+- [ ] `file-viewer3` 非 scoped alias 发布到 npm，但开源总仓库不重复存储其 tarball。
 
 ## Phase 7: 构建产物与公开分发
 
-- [x] 公开产物仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
-- [x] 公开产物仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
-- [x] GitHub / Gitee 公开成品仓库同步一致。
+- [x] 开源总仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
+- [x] 开源总仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
+- [x] GitHub / Gitee 开源总仓库同步一致。
 - [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。
 
 ## Phase 8: 验证与发布门禁
@@ -240,7 +240,7 @@
 - [x] `pnpm components:standalone-smoke`
 - [x] `pnpm deploy:cloudflare`
 - [x] `pnpm docs:deploy:cloudflare`
-- [x] `node scripts/sync-public-artifacts.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
+- [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
 - [x] `pnpm test`
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
 
@@ -252,7 +252,7 @@
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。
 - [ ] 所有历史兼容包和别名包均发布成功。
 - [ ] 所有标准组件包的 README 中英文完整。
-- [ ] 公开产物仓库包含最新全渠道构建产物。
+- [ ] 开源总仓库包含最新全渠道构建产物。
 - [x] 文档站和 Demo 站均上线最新内容。
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
-- [ ] 发布记录能证明 npm、GitHub、Gitee、Gitea、Demo、文档站、公开成品仓库的版本口径一致。
+- [ ] 发布记录能证明 npm、GitHub、Gitee、Gitea、Demo、文档站、开源总仓库的版本口径一致。

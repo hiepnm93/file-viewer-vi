@@ -17,9 +17,9 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Online demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - Document comparison demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
 - Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
-- GitHub artifact repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-- Gitee artifact mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
-- Source access and commercial customization: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- GitHub open-source main repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
+- Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
+- Sponsorship and priority support: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ## Current Packages
 
@@ -31,7 +31,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | component package | Native React component backed by the shared core |
 | Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | component package | `mountViewer(container, options)` native DOM mounting and asset tooling |
 
-For intranet or offline environments, this artifact repository also ships npm tarballs under `artifacts/`:
+For intranet or offline environments, the open-source main repository also ships release tarballs under `artifacts/`:
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-2.0.0.tgz
@@ -42,7 +42,7 @@ npm install ./artifacts/flyfish-group-file-viewer-web-2.0.0.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-2.0.0.tgz
 ```
 
-The public artifact repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the artifact repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
+The open-source main repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
 
 If you use pnpm 10 and see `Ignored build scripts: @flyfish-group/file-viewer-web`, run:
 
@@ -78,14 +78,14 @@ GitHub Releases provide all distribution downloads:
 | `flyfish-group-file-viewer-web-*.tgz` | Historical vanilla JavaScript package with `mountViewer` native mounting and asset tooling |
 | `flyfish-group-file-viewer-react-*.tgz` | Historical React package with a native React component entry |
 
-The unscoped `file-viewer3` historical alias remains part of the npm release flow. The artifact repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
+The unscoped `file-viewer3` historical alias remains part of the npm release flow. The open-source main repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## Standard Ecosystem Packages and Public Repositories
 
-This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public component repositories from one place.
+This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.
 
-Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. Public repositories provide split package sources, demos, documentation, build artifacts, examples, and tarballs; the private Gitea aggregate remains available for sponsorship, unified automation, and priority support.
+Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. The open-source main repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; the private Gitea aggregate remains available for unified automation, integration history, sponsorship, and priority support.
 
 | Framework | Standard npm package | Entrypoints | GitHub | Gitee | Historical aliases |
 | --- | --- | --- | --- | --- | --- |
@@ -115,7 +115,7 @@ The shared core currently declares 23 preview pipelines and 194 file extensions.
 - **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
 - **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
 - **Consistent native component package experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
-- **Open source plus artifact delivery.** Public repositories contain core, standard component packages, compatibility packages, demos, documentation source, minified build artifacts, sample files, Docker deployment assets, and npm tarballs. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
+- **Open-source main distribution.** The open-source main repository contains core, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
 
 ## Supported Formats
 
@@ -355,7 +355,7 @@ file-viewer/vendor/libarchive/worker-bundle.js  # optional unless you want a sta
 file-viewer/vendor/libarchive/libarchive.wasm   # keep next to worker-bundle.js when using archive.workerUrl
 ```
 
-The artifact repository also contains:
+The open-source main repository also contains:
 
 | Path | Purpose |
 | --- | --- |
@@ -394,10 +394,10 @@ The private Gitea workspace remains valuable as the complete aggregate repositor
 
 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-The shop is now a lemonade-level sponsorship and priority support channel rather than a source-code paywall. Public GitHub repositories stay split by package; the private aggregate workspace is still useful for teams that want one consolidated source tree and faster maintainer help.
+The shop is now a lemonade-level sponsorship and priority support channel. Public GitHub repositories stay split by package; the private aggregate workspace is still useful for teams that want one consolidated source tree and faster maintainer help.
 
 ## License and Attribution
 
-Flyfish Viewer is distributed under the Apache-2.0 license. You may use the public artifacts according to that license.
+Flyfish Viewer is distributed under the Apache-2.0 license. You may use the public source and release artifacts according to that license.
 
 For second development or commercial use, please keep clear attribution to Flyfish Viewer and contribute useful fixes or compatibility improvements back whenever possible. This keeps the preview ecosystem healthier for everyone using the component in real business systems.

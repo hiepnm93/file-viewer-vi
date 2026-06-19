@@ -17,7 +17,7 @@ titleTemplate: false
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
 <a class="doc-action" href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
 <a class="doc-action" href="https://viewer.flyfish.dev/compare.html" target="_blank" rel="noreferrer">文档比对</a>
-<a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品</a>
+<a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
 </div>
 </div>
 </section>
@@ -32,8 +32,8 @@ titleTemplate: false
 <span>条预览链路</span>
 </div>
 <div>
-<strong>4</strong>
-<span>条 npm 包线</span>
+<strong>14</strong>
+<span>个 npm 发布入口</span>
 </div>
 <div>
 <strong>Native</strong>
@@ -106,12 +106,12 @@ titleTemplate: false
 <p>Vue3、Vue2.7、React、纯 JS、jQuery 和 Svelte 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
 </article>
 <article class="doc-card">
-<h3>成品可直接下载</h3>
-<p>公开仓库提供混淆压缩库产物、Demo 静态站点、文档静态站点、样例文件和 tarball。</p>
+<h3>开源总仓一站式入口</h3>
+<p>GitHub / Gitee 同步 core、标准组件包、Demo、文档源码、构建产物、样例文件和 release tarball。</p>
 </article>
 <article class="doc-card">
 <h3>版本交付可追踪</h3>
-<p>README、文档站、Demo、npm 包和公开成品仓库同步维护，便于验收和分发。</p>
+<p>README、文档站、Demo、npm 包和开源总仓库同步维护，便于验收和分发。</p>
 </article>
 </div>
 </section>
@@ -145,8 +145,8 @@ titleTemplate: false
 <span>查看 options、事件、搜索、缩放、打印、导出和 beforeOperation 钩子。</span>
 </a>
 <a class="doc-path-card" href="/guide/distribution">
-<strong>成品与二开</strong>
-<span>下载公开源码与产物，或通过官方渠道支持项目并获得优先协助。</span>
+<strong>开源与支持</strong>
+<span>下载开源总仓库、分散组件仓库和 release 产物，或通过官方渠道支持项目并获得优先协助。</span>
 </a>
 </div>
 </section>
@@ -158,7 +158,7 @@ titleTemplate: false
 <p>
 官方文档是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
 在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
-公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
+开源总仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
 Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。
 React 和纯 JS 组件默认在业务页面内原生挂载预览器，不会把官网 Demo 地址作为内置依赖。
 </p>

@@ -17,8 +17,8 @@ const publicMarkers = readmeTemplate.markers.publicGenerated
 const sharedRequiredLinks = [
   ...readmeTemplate.requiredLinks,
   'https://viewer.flyfish.dev/compare.html',
-  branchRoles.publicArtifactRepository.github,
-  branchRoles.publicArtifactRepository.gitee,
+  branchRoles.publicMainRepository.github,
+  branchRoles.publicMainRepository.gitee,
   wrapperManifest.corePackage.github,
   wrapperManifest.corePackage.gitee,
   'https://dev.flyfish.group/shop'

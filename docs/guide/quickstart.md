@@ -133,4 +133,4 @@ npm install @file-viewer/web@2.0.0
 - 想了解 Demo 中每个示例文件的作用: 看 [Demo 说明](/guide/demo)
 - 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/guide/usage)
 - 准备做本地验证和打包: 看 [本地开发与打包](/guide/development)
-- 想下载公开源码、成品或了解优先支持: 看 [发布与成品分发](/guide/distribution)
+- 想下载公开源码、成品或了解优先支持: 看 [发布与开源分发](/guide/distribution)

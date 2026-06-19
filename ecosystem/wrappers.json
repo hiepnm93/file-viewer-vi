@@ -20,7 +20,7 @@
       "targetPackage": "@file-viewer/vue3",
       "packageDir": "packages/compat/vue3-scoped",
       "publicSource": false,
-      "publicArtifact": {
+      "releaseArtifact": {
         "includeTarball": true
       }
     },
@@ -30,10 +30,10 @@
       "targetPackage": "@file-viewer/vue3",
       "packageDir": "packages/compat/vue3-unscoped",
       "publicSource": false,
-      "publicArtifact": {
+      "releaseArtifact": {
         "includeTarball": false,
         "duplicateOf": "@flyfish-group/file-viewer3",
-        "reason": "The public artifact repository keeps one Vue 3 compatibility tarball to avoid duplicate package bodies; the unscoped alias is still published to npm."
+        "reason": "The open-source main repository keeps one Vue 3 compatibility tarball to avoid duplicate package bodies; the unscoped alias is still published to npm."
       }
     },
     {
@@ -42,7 +42,7 @@
       "targetPackage": "@file-viewer/vue2.7",
       "packageDir": "packages/compat/vue2.7",
       "publicSource": false,
-      "publicArtifact": {
+      "releaseArtifact": {
         "includeTarball": true
       }
     },
@@ -52,7 +52,7 @@
       "targetPackage": "@file-viewer/web",
       "packageDir": "packages/compat/web",
       "publicSource": false,
-      "publicArtifact": {
+      "releaseArtifact": {
         "includeTarball": true
       }
     },
@@ -62,7 +62,7 @@
       "targetPackage": "@file-viewer/react",
       "packageDir": "packages/compat/react",
       "publicSource": false,
-      "publicArtifact": {
+      "releaseArtifact": {
         "includeTarball": true
       }
     }

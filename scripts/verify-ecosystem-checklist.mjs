@@ -50,7 +50,7 @@ for (const requiredTerm of [
   'GitHub',
   'Gitee',
   'flyfish-dev',
-  '公开产物仓库',
+  '开源总仓库',
   '完成审计标准'
 ]) {
   assertIncludes(requiredTerm, 'core objective term')
@@ -82,9 +82,9 @@ assertIncludes(branchRoles.sourceRemote.name, 'private source remote name')
 assertIncludesUrl(branchRoles.sourceRemote.url, 'private source remote URL')
 assertIncludes(branchRoles.sourceRemote.visibility, 'private source remote visibility')
 assertIncludes(branchRoles.publicOrganization, 'public organization')
-assertIncludesUrl(branchRoles.publicArtifactRepository.github, 'public artifact GitHub repository')
-assertIncludesUrl(branchRoles.publicArtifactRepository.gitee, 'public artifact Gitee repository')
-assertIncludes(branchRoles.publicArtifactRepository.sourcePolicy, 'public artifact source policy')
+assertIncludesUrl(branchRoles.publicMainRepository.github, 'open-source main GitHub repository')
+assertIncludesUrl(branchRoles.publicMainRepository.gitee, 'open-source main Gitee repository')
+assertIncludes(branchRoles.publicMainRepository.sourcePolicy, 'open-source main repository source policy')
 
 for (const branch of branchRoles.branches) {
   assertIncludes(branch.name, `${branch.name} branch name`)
@@ -102,7 +102,7 @@ for (const requiredAuditItem of [
   '所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库',
   '所有 `@file-viewer/*` npm 包均发布成功',
   '所有标准组件包的 README 中英文完整',
-  '公开产物仓库包含最新全渠道构建产物',
+  '开源总仓库包含最新全渠道构建产物',
   '本地和生产 smoke 证明各生态体验与当前 v3 基线一致'
 ]) {
   assertIncludes(requiredAuditItem, 'completion audit requirement')

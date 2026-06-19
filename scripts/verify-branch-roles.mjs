@@ -146,13 +146,13 @@ assert(
 )
 assert(branchRoles.publicOrganization === wrapperManifest.organization, 'Public organization must match wrappers.json')
 assert(
-  branchRoles.publicArtifactRepository?.sourcePolicy === 'public-open-source-demo-and-artifacts',
-  'Public artifact repository must publish open-source demo code and artifacts'
+  branchRoles.publicMainRepository?.sourcePolicy === 'public-open-source-main-repository',
+  'Open-source main repository must publish source, demo code, documentation, and release artifacts'
 )
-assertPublicRepository(branchRoles.publicArtifactRepository.github, branchRoles.publicOrganization, 'Public artifact GitHub repository')
-assertPublicRepository(branchRoles.publicArtifactRepository.gitee, branchRoles.publicOrganization, 'Public artifact Gitee repository')
+assertPublicRepository(branchRoles.publicMainRepository.github, branchRoles.publicOrganization, 'Open-source main GitHub repository')
+assertPublicRepository(branchRoles.publicMainRepository.gitee, branchRoles.publicOrganization, 'Open-source main Gitee repository')
 
-const publicArtifactRepo = repositoryPath(branchRoles.publicArtifactRepository.github)
+const publicMainRepo = repositoryPath(branchRoles.publicMainRepository.github)
 assertPublicRepository(
   wrapperManifest.corePackage.github,
   wrapperManifest.organization,
@@ -164,15 +164,15 @@ assertPublicRepository(
   `${wrapperManifest.corePackage.packageName} Gitee repository`
 )
 assert(
-  repositoryPath(wrapperManifest.corePackage.github) !== publicArtifactRepo,
-  `${wrapperManifest.corePackage.packageName} must use a dedicated core repository, not the public artifact repository`
+  repositoryPath(wrapperManifest.corePackage.github) !== publicMainRepo,
+  `${wrapperManifest.corePackage.packageName} must use a dedicated core repository, not the open-source main repository`
 )
 for (const wrapper of wrapperManifest.wrappers) {
   assertPublicRepository(wrapper.github, wrapperManifest.organization, `${wrapper.packageName} GitHub repository`)
   assertPublicRepository(wrapper.gitee, wrapperManifest.organization, `${wrapper.packageName} Gitee repository`)
   assert(
-    repositoryPath(wrapper.github) !== publicArtifactRepo,
-    `${wrapper.packageName} must use a dedicated wrapper repository, not the public artifact repository`
+    repositoryPath(wrapper.github) !== publicMainRepo,
+    `${wrapper.packageName} must use a dedicated component repository, not the open-source main repository`
   )
 }
 

@@ -12,10 +12,11 @@
     "visibility": "private"
   },
   "publicOrganization": "flyfish-dev",
-  "publicArtifactRepository": {
+  "publicMainRepository": {
     "github": "https://github.com/flyfish-dev/file-viewer",
     "gitee": "https://gitee.com/flyfish-dev/file-viewer",
-    "sourcePolicy": "public-open-source-demo-and-artifacts"
+    "sourcePolicy": "public-open-source-main-repository",
+    "role": "open-source-main-repository"
   },
   "branches": [
     {

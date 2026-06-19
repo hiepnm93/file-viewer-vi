@@ -24,7 +24,7 @@ export function ecosystemPackageSpecs(wrapperManifest) {
       packageDir: compatibilityPackage.packageDir,
       compatibilityPackage,
       publicSource: compatibilityPackage.publicSource === true,
-      publicArtifact: compatibilityPackage.publicArtifact ?? {
+      releaseArtifact: compatibilityPackage.releaseArtifact ?? {
         includeTarball: true
       }
     })),
@@ -48,7 +48,7 @@ export async function loadEcosystemPackageEntry(sourceRoot, spec) {
     packageName: packageJson.name,
     version: packageJson.version,
     tarballName: npmPackFilename(packageJson.name, packageJson.version),
-    publicArtifact: spec.publicArtifact ?? {
+    releaseArtifact: spec.releaseArtifact ?? {
       includeTarball: true
     }
   }
@@ -123,7 +123,7 @@ export function ecosystemPackageManifestEntry(entry) {
     packageDir: entry.packageDir,
     tarball: entry.tarballName,
     publicSource: entry.publicSource,
-    publicArtifact: entry.publicArtifact,
+    releaseArtifact: entry.releaseArtifact,
     targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
     github: entry.wrapper?.github ?? null,
     gitee: entry.wrapper?.gitee ?? null,
