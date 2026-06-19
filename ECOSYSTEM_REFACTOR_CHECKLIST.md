@@ -257,7 +257,7 @@
 - [x] `pnpm release:status:write` 已接入机器可读状态报告，开源总仓 `artifacts/release-status.json` 会记录各渠道当前状态、缺口、`gapSummary` 和 `gapDetails`
 - [x] `release-status.json` 已声明 `sourceBaseline`，明确私有 Gitea `main` 是完整原始聚合仓发布基线，本地 checkout 分支名只作为执行环境记录
 - [x] `pnpm verify:release-status-schema` 已接入状态报告 schema 校验，开源总仓 `artifacts/release-status.schema.json` 会随 Release 分发
-- [ ] `pnpm release:channels:preflight`（需要 npm 登录态和 Gitee API token 均已就绪）
+- [ ] `pnpm release:channels:preflight`（已验证本地结构、GitHub Release、GitHub core/组件仓均通过；当前仅缺 npm 登录态和 Gitee API token，`--use-git-credential` 也未发现可用 Gitee token）
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
 - [ ] `pnpm verify:wrapper-public-remotes`
