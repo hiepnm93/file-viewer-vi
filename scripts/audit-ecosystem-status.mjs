@@ -105,11 +105,62 @@ function syncLabel(left, right) {
   return left.hash === right.hash ? 'ok' : 'stale'
 }
 
+function parseWorktrees(output) {
+  return output
+    .split(/\n(?=worktree )/)
+    .map(block => block.trim())
+    .filter(Boolean)
+    .map(block => {
+      const entry = {
+        path: '',
+        head: '',
+        branch: ''
+      }
+
+      for (const line of block.split('\n')) {
+        const [key, ...valueParts] = line.split(' ')
+        const value = valueParts.join(' ')
+        if (key === 'worktree') {
+          entry.path = value
+        }
+        if (key === 'HEAD') {
+          entry.head = value
+        }
+        if (key === 'branch') {
+          entry.branch = value.replace(/^refs\/heads\//, '')
+        }
+      }
+
+      return entry
+    })
+}
+
+function worktreeStatus(path) {
+  if (!path) {
+    return {
+      dirty: false,
+      changeCount: 0
+    }
+  }
+
+  const result = run('git', ['status', '--porcelain'], { cwd: path })
+  const changes = result.stdout.split('\n').filter(Boolean)
+  return {
+    dirty: changes.length > 0,
+    changeCount: changes.length
+  }
+}
+
 const localBranch = run('git', ['branch', '--show-current']).stdout
 const sourceBranch = branchRoles.currentSourceBranch || localBranch
 const sourceHead = run('git', ['rev-parse', 'HEAD']).stdout
 const sourceRemoteHead = lsRemoteHead(branchRoles.sourceRemote.url, sourceBranch)
 const sourceHeadInSync = sourceRemoteHead.ok && sourceHead === sourceRemoteHead.hash
+const worktrees = parseWorktrees(run('git', ['worktree', 'list', '--porcelain']).stdout)
+const sourceBranchWorktree = worktrees.find(worktree => worktree.branch === sourceBranch) || null
+const sourceBranchWorktreeStatus = sourceBranchWorktree ? worktreeStatus(sourceBranchWorktree.path) : null
+const sourceBranchWorktreeInSync =
+  !sourceBranchWorktree || (sourceRemoteHead.ok && sourceBranchWorktree.head === sourceRemoteHead.hash)
 const branchRows = branchRoles.branches.map(branch => ({
   ...branch,
   remote: lsRemoteHead(branchRoles.sourceRemote.url, branch.name)
@@ -190,6 +241,29 @@ console.log(`- Local HEAD: ${formatHash(sourceHead)}`)
 console.log(
   `- Remote \`${branchRoles.sourceRemote.name}/${sourceBranch}\`: ${formatHash(sourceRemoteHead.hash)} (${sourceHeadInSync ? 'ok' : okLabel(sourceRemoteHead.ok)})\n`
 )
+
+console.log(`## Local Worktrees\n`)
+console.log(`| branch | path | head | status |`)
+console.log(`| --- | --- | --- | --- |`)
+for (const worktree of worktrees) {
+  const status = worktreeStatus(worktree.path)
+  const notes = []
+  if (worktree.branch === sourceBranch && !sourceBranchWorktreeInSync) {
+    notes.push('stale-source-worktree')
+  }
+  if (status.dirty) {
+    notes.push(`${status.changeCount} local changes`)
+  }
+  console.log(
+    `| \`${worktree.branch || '(detached)'}\` | \`${worktree.path}\` | ${formatHash(worktree.head)} | ${notes.length ? notes.join(', ') : 'clean'} |`
+  )
+}
+if (sourceBranchWorktree && sourceBranchWorktreeStatus?.dirty) {
+  console.log(
+    `\n> Note: \`${sourceBranch}\` is checked out at \`${sourceBranchWorktree.path}\` with ${sourceBranchWorktreeStatus.changeCount} local change(s). Treat \`${sourceRoot}\` and remote \`${branchRoles.sourceRemote.name}/${sourceBranch}\` as the release audit source until that worktree is reconciled.`
+  )
+}
+console.log()
 
 console.log(`## Source Branch Roles\n`)
 console.log(`| branch | role | package | remote |`)

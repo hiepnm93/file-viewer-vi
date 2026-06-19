@@ -25,11 +25,12 @@
 ## 最新外部发布审计
 
 - 实时审计命令: `pnpm audit:ecosystem-status`；最终发布阻断可使用 `node scripts/audit-ecosystem-status.mjs --strict`。
+- 本地 worktree 风险: `pnpm audit:ecosystem-status` 会列出所有本地 worktree。当前 `/Users/wangyu/IdeaProjects/file-viewer-main-sync` 仍占用本地 `main` 且停留在旧提交并含本地改动；发布审计基线以 `/Users/wangyu/IdeaProjects/file-viewer3` 的当前 HEAD 和远端 `origin/main` 为准，不能用旧 worktree 直接发布。
 - 源码仓当前状态: 私有 Gitea 聚合仓 `origin/main` 已同步为完整原始聚合仓；`origin/v2` / `origin/v3` 已切为 Vue2.7 / Vue3 标准组件包快照；具体提交以实时审计命令输出为准，避免 checklist 因自我更新产生哈希追尾。
-- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已同步到最新开源总仓库内容；Gitee `flyfish-dev/file-viewer` 当前仍停留在旧快照，`pnpm audit:ecosystem-status` 会将其标记为 stale，待 Gitee 仓库 GC / 扩容或远端推送恢复后再同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
+- 开源总仓库: GitHub `flyfish-dev/file-viewer` 已同步到最新开源总仓库内容；Gitee `flyfish-dev/file-viewer` 当前仍停留在旧快照，普通 push 为 non-fast-forward，`git push --force-with-lease gitee main` 持续无响应，`pnpm audit:ecosystem-status` 会将其标记为 stale，待 Gitee 仓库 GC / 扩容或远端推送恢复后再同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
 - 开源总仓库 Release: GitHub Release `v2.0.0` 已创建并维护 18 个资产（core、标准组件包、兼容包、Demo、文档、lib dist 和 `release-manifest.json`）。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
+- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
 - Demo / 文档站: Demo 生产部署仍以 `viewer.flyfish.dev` 为准；文档站已生成并部署最新开源总仓库口径，`doc.flyfish.dev` 当前由 Cloudflare Pages 生产分支 `v3` 承载，源码发布基线仍是私有 Gitea `main` 完整原始聚合仓。
 - npm 发布: `@file-viewer/*` 标准包均仍未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
