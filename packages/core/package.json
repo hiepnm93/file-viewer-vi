@@ -58,7 +58,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "node scripts/clean-dist.mjs && tsc -b tsconfig.json --force && node ../../scripts/fix-core-esm-extensions.mjs",
+    "build": "node scripts/clean-dist.mjs && tsc -b tsconfig.json --force && node scripts/fix-core-esm-extensions.mjs",
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {

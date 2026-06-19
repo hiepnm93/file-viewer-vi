@@ -53,6 +53,12 @@ const selectedVerifyArgs = [
 
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'))
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+const corePackage = wrapperManifest.corePackage
+
+const includeCore = selectedIds.size === 0 && (
+  selectedPackages.size === 0 ||
+  selectedPackages.has(corePackage.packageName)
+)
 
 const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   if (selectedPackages.size && !selectedPackages.has(wrapper.packageName)) {
@@ -64,8 +70,27 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   return true
 })
 
-if (!wrappers.length) {
-  throw new Error('No component packages selected for publishing.')
+const targets = [
+  ...(includeCore
+    ? [{
+        kind: 'core',
+        packageName: corePackage.packageName,
+        repository: corePackage.repository,
+        github: corePackage.github,
+        gitee: corePackage.gitee
+      }]
+    : []),
+  ...wrappers.map(wrapper => ({
+    kind: 'component',
+    packageName: wrapper.packageName,
+    repository: wrapper.repository,
+    github: wrapper.github,
+    gitee: wrapper.gitee
+  }))
+]
+
+if (!targets.length) {
+  throw new Error('No core or component packages selected for publishing.')
 }
 
 const assertDirectory = async (path, label = path) => {
@@ -155,9 +180,9 @@ const verifyWrapperRepos = () => {
 
 verifyWrapperRepos()
 
-for (const wrapper of wrappers) {
-  const repoDir = join(outputRoot, wrapper.repository)
-  await assertDirectory(repoDir, wrapper.repository)
+for (const target of targets) {
+  const repoDir = join(outputRoot, target.repository)
+  await assertDirectory(repoDir, target.repository)
 
   if (!existsSync(join(repoDir, '.git'))) {
     run('git', ['init', '-b', branch], repoDir)
@@ -165,27 +190,27 @@ for (const wrapper of wrappers) {
     run('git', ['checkout', '-B', branch], repoDir)
   }
 
-  ensureRemote(repoDir, 'origin', gitUrl(wrapper.github))
-  ensureRemote(repoDir, 'gitee', gitUrl(wrapper.gitee))
+  ensureRemote(repoDir, 'origin', gitUrl(target.github))
+  ensureRemote(repoDir, 'gitee', gitUrl(target.gitee))
 
   run('git', ['add', '-A'], repoDir)
   if (hasStagedChanges(repoDir)) {
     run('git', ['commit', '-m', commitMessage], repoDir)
   } else {
-    console.log(`No component package changes to commit for ${wrapper.packageName}`)
+    console.log(`No ${target.kind} package changes to commit for ${target.packageName}`)
   }
 
   if (push) {
     if (!hasHeadCommit(repoDir)) {
-      throw new Error(`Cannot push ${wrapper.packageName}: repository has no commit`)
+      throw new Error(`Cannot push ${target.packageName}: repository has no commit`)
     }
     run('git', ['push', '-u', 'origin', branch], repoDir)
     run('git', ['push', '-u', 'gitee', branch], repoDir)
   }
 
-  console.log(`${push ? 'Published' : 'Prepared'} ${wrapper.packageName} in ${repoDir}`)
+  console.log(`${push ? 'Published' : 'Prepared'} ${target.packageName} in ${repoDir}`)
 }
 
 console.log(
-  `${push ? 'Published' : 'Prepared'} ${wrappers.length} component repos from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
+  `${push ? 'Published' : 'Prepared'} ${targets.length} core/component repos from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
 )

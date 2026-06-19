@@ -4,11 +4,8 @@ import { dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
-const sourceRoot = resolve(scriptDir, '..')
-const workspaceCoreDistDir = join(sourceRoot, 'packages', 'core', 'dist')
-const coreDistDir = existsSync(workspaceCoreDistDir)
-  ? workspaceCoreDistDir
-  : join(sourceRoot, 'dist')
+const packageRoot = resolve(scriptDir, '..')
+const coreDistDir = join(packageRoot, 'dist')
 
 const relativeSpecifierPattern = /(\bfrom\s*['"]|\bimport\s*\(\s*['"])(\.{1,2}\/[^'"]+)(['"])/g
 

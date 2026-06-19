@@ -68,3 +68,16 @@ const cadAssets = resolveFileViewerRendererAssets('cad', {
 ```
 
 The manifest API lets wrappers and deployment scripts discover archive, DOCX, Spreadsheet, CAD, Typst and data-asset worker/WASM resources from the same core contract instead of hard-coding per-framework paths.
+
+Official documentation: https://doc.flyfish.dev/
+
+Online demo: https://viewer.flyfish.dev/
+
+Public source repositories:
+
+- GitHub: https://github.com/flyfish-dev/file-viewer-core
+- Gitee: https://gitee.com/flyfish-dev/file-viewer-core
+
+The GitHub/Gitee repositories are distributed public source packages. The private Gitea aggregate remains useful for the complete workspace, release automation, integration history, sponsorship, and priority support.
+
+License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution and contribute shared compatibility improvements where possible.

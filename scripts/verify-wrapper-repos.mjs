@@ -38,6 +38,7 @@ const selectedIds = new Set(
 )
 
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+const corePackage = wrapperManifest.corePackage
 const readmeTemplate = await readJson(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'))
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
 const rendererCount = formatModule.DEFAULT_RENDERER_DEFINITIONS.length
@@ -428,6 +429,47 @@ async function verifyReadmePair(dir, wrapper, label) {
   assertIncludes(en, 'npm install', `${label} README.en.md`)
 }
 
+async function verifyCoreReadmePair(dir, label) {
+  const zhPath = join(dir, 'README.md')
+  const enPath = join(dir, 'README.en.md')
+  await assertFile(zhPath, `${label} README.md`)
+  await assertFile(enPath, `${label} README.en.md`)
+
+  const zh = await readFile(zhPath, 'utf8')
+  const en = await readFile(enPath, 'utf8')
+  for (const [locale, readme] of [['zh', zh], ['en', en]]) {
+    const readmeLabel = `${label} ${locale} README`
+    assertIncludes(readme, corePackage.packageName, readmeLabel)
+    assertIncludes(readme, corePackage.github, readmeLabel)
+    assertIncludes(readme, corePackage.gitee, readmeLabel)
+    assertIncludes(readme, 'https://doc.flyfish.dev/', readmeLabel)
+    assertIncludes(readme, 'https://viewer.flyfish.dev/', readmeLabel)
+    assertIncludes(readme, 'createViewer', readmeLabel)
+    assertIncludes(readme, 'headless', readmeLabel)
+    assertIncludes(readme, 'browser', readmeLabel)
+    assertNotIncludes(readme, '4.99', readmeLabel)
+    assertNotIncludes(readme, '6.22', readmeLabel)
+  }
+}
+
+async function verifyCorePackageDir() {
+  const packageDir = join(sourceRoot, 'packages', 'core')
+  await assertDirectory(packageDir, 'packages/core')
+  await verifyCoreReadmePair(packageDir, 'packages/core')
+  await assertFile(join(packageDir, 'src', 'index.ts'), 'packages/core/src/index.ts')
+
+  const packageJson = await readJson(join(packageDir, 'package.json'))
+  if (packageJson.name !== corePackage.packageName) {
+    throw new Error(`packages/core package name mismatch: ${packageJson.name} !== ${corePackage.packageName}`)
+  }
+  if (packageJson.private === true) {
+    throw new Error('packages/core must be publishable, but package.json has private=true')
+  }
+  verifyNoHistoricalPackageDependency(packageJson, 'packages/core/package.json')
+  verifyStandalonePortableText(JSON.stringify(packageJson), 'packages/core/package.json')
+  await verifyPackageEntrypointMetadata(packageDir, packageJson, 'packages/core')
+}
+
 async function verifyPackageDir(wrapper) {
   const packageDir = join(sourceRoot, wrapper.packageDir)
   await assertDirectory(packageDir, wrapper.packageDir)
@@ -541,6 +583,82 @@ async function verifyExportedRepo(wrapper) {
   }
 }
 
+async function verifyExportedCoreRepo() {
+  const repoDir = join(outputRoot, corePackage.repository)
+  await assertDirectory(repoDir, corePackage.repository)
+  await verifyCoreReadmePair(repoDir, corePackage.repository)
+  await assertFile(join(repoDir, 'LICENSE'), `${corePackage.repository}/LICENSE`)
+  await assertFile(join(repoDir, '.gitignore'), `${corePackage.repository}/.gitignore`)
+  await assertFile(join(repoDir, 'package-repo-manifest.json'), `${corePackage.repository}/package-repo-manifest.json`)
+  await assertFile(join(repoDir, 'src', 'index.ts'), `${corePackage.repository}/src/index.ts`)
+  await assertFile(join(repoDir, 'scripts', 'clean-dist.mjs'), `${corePackage.repository}/scripts/clean-dist.mjs`)
+  await assertFile(join(repoDir, 'scripts', 'fix-core-esm-extensions.mjs'), `${corePackage.repository}/scripts/fix-core-esm-extensions.mjs`)
+
+  const packageJson = await readJson(join(repoDir, 'package.json'))
+  if (packageJson.name !== corePackage.packageName) {
+    throw new Error(`${corePackage.repository} package name mismatch: ${packageJson.name} !== ${corePackage.packageName}`)
+  }
+  if (packageJson.private !== false) {
+    throw new Error(`${corePackage.repository} package.json must set private=false`)
+  }
+  if (packageJson.repository?.url !== `git+${corePackage.github}.git`) {
+    throw new Error(`${corePackage.repository} repository URL mismatch`)
+  }
+  if (packageJson.homepage !== corePackage.github) {
+    throw new Error(`${corePackage.repository} homepage mismatch`)
+  }
+  if (packageJson.bugs?.url !== `${corePackage.github}/issues`) {
+    throw new Error(`${corePackage.repository} bugs URL mismatch`)
+  }
+  await verifyPackageEntrypointMetadata(repoDir, packageJson, corePackage.repository)
+  verifyNoHistoricalPackageDependency(packageJson, `${corePackage.repository}/package.json`)
+  await verifyNoHistoricalPackageReferences(repoDir, corePackage.repository)
+  for (const block of dependencyBlocks(packageJson)) {
+    for (const [dependencyName, range] of Object.entries(block)) {
+      if (String(range).includes('workspace:')) {
+        throw new Error(`${corePackage.repository} dependency ${dependencyName} still uses ${range}`)
+      }
+    }
+  }
+
+  const standaloneManifest = await readJson(join(repoDir, 'package-repo-manifest.json'))
+  for (const [key, expected] of Object.entries({
+    sourceBranch: currentSourceBranch,
+    sourceCommit: currentSourceCommit,
+    organization: wrapperManifest.organization,
+    packageName: corePackage.packageName,
+    repository: corePackage.repository,
+    github: corePackage.github,
+    gitee: corePackage.gitee,
+    aggregateRepository: corePackage.aggregateRepository,
+    sourcePackageDir: 'packages/core'
+  })) {
+    const actual = standaloneManifest[key]
+    if (actual !== expected) {
+      throw new Error(`${corePackage.repository} manifest ${key} mismatch: ${actual} !== ${expected}`)
+    }
+  }
+
+  const allFiles = await readAllFiles(repoDir)
+  for (const file of allFiles) {
+    const relativePath = file.slice(repoDir.length + 1)
+    if (
+      relativePath.includes('node_modules/') ||
+      relativePath.startsWith('dist/') ||
+      relativePath.startsWith('packages/')
+    ) {
+      throw new Error(`${corePackage.repository} exported build/dependency output leaked: ${relativePath}`)
+    }
+    const content = await readFile(file, 'utf8').catch(() => '')
+    verifyStandalonePortableText(content, `${corePackage.repository}/${relativePath}`, exportedRepoForbiddenPatterns)
+  }
+}
+
+const includeCore = selectedIds.size === 0 && (
+  selectedPackages.size === 0 ||
+  selectedPackages.has(corePackage.packageName)
+)
+
 const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   if (selectedPackages.size && !selectedPackages.has(wrapper.packageName)) {
     return false
@@ -551,8 +669,19 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   return true
 })
 
-if (!wrappers.length) {
-  throw new Error('No wrappers selected for verification.')
+if (!includeCore && !wrappers.length) {
+  throw new Error('No core or component packages selected for verification.')
+}
+
+let verifiedCount = 0
+
+if (includeCore) {
+  await verifyCorePackageDir()
+  if (!sourceOnly) {
+    await verifyExportedCoreRepo()
+  }
+  verifiedCount += 1
+  console.log(`Verified ${corePackage.packageName}`)
 }
 
 for (const wrapper of wrappers) {
@@ -560,9 +689,10 @@ for (const wrapper of wrappers) {
   if (!sourceOnly) {
     await verifyExportedRepo(wrapper)
   }
+  verifiedCount += 1
   console.log(`Verified ${wrapper.packageName}`)
 }
 
 console.log(
-  `Verified ${wrappers.length} component package${wrappers.length === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
+  `Verified ${verifiedCount} core/component package${verifiedCount === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
 )
