@@ -20,8 +20,8 @@ outputs
 .DS_Store
 docs/.vitepress/cache
 docs/.vitepress/dist
-packages/demo/dist
-packages/demo/public/file-viewer
-packages/demo/public/vendor
+apps/wrapper-demo/dist
+apps/wrapper-demo/public/file-viewer
+apps/wrapper-demo/public/vendor
 test/vue3-npm-smoke-demo
 test/vue3-pdf-npm-demo

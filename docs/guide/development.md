@@ -19,10 +19,10 @@ pnpm install
 | --- | --- |
 | `pnpm dev` | 启动示例站点 |
 | `pnpm build` | 构建示例站点 |
-| `pnpm build-lib` | 构建组件库产物 |
+| `pnpm build:vue3` | 构建 Vue3 标准 wrapper 包产物 |
 | `pnpm obfuscate` | 对 `dist/` 中的库 JS 产物做压缩混淆 |
-| `pnpm release:pack` | 类型检查、库构建、混淆并生成 npm tarball |
-| `pnpm build:viewer-assets` | 构建 Vue3 基线产物，并同步 Worker/WASM viewer assets 到 `packages/web/viewer` |
+| `pnpm release:ecosystem:pack` | 构建 core、标准 wrapper、历史兼容 alias，并生成完整 npm tarball |
+| `pnpm build:viewer-assets` | 构建 Vue3 基线产物，并同步 Worker/WASM viewer assets 到 `packages/compat/web/viewer` |
 | `pnpm build:wrappers` | 构建 Vue3 基线 viewer、历史兼容包和所有标准 wrapper 包 |
 | `pnpm verify:demo-output` | 校验 Demo 多入口 HTML 及其引用的静态资源，防止比对页或 hash 资源漏传 |
 | `pnpm verify:demo-browser-smoke` | 使用 Playwright 打开构建后的主 Demo 和文档比对页，验证轻量样例渲染、双栏组件挂载和比对页快捷键搜索 |
@@ -72,7 +72,7 @@ pnpm install
 pnpm type-check
 pnpm type-check:wrappers
 pnpm build
-pnpm build-lib
+pnpm build:vue3
 pnpm obfuscate
 pnpm verify:browser-smoke
 pnpm verify:demo-browser-smoke
@@ -104,7 +104,7 @@ npm pack
 或者直接使用项目内置的发包准备命令:
 
 ```bash
-pnpm release:pack
+pnpm release:ecosystem:pack
 ```
 
 ## Vue2 / Vue3 / React / 纯 JS 发版
@@ -123,7 +123,7 @@ pnpm release:pack
 | jQuery | 当前仓库子工程 | `@file-viewer/jquery@2.0.0` | `$(el).fileViewer(options)` |
 | Svelte | 当前仓库子工程 | `@file-viewer/svelte@2.0.0` | Svelte component wrapper |
 
-分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: `main` 只承载 core 基座，`v2` 对应 Vue 2.7 集成线，`v3` 对应独立 Vue 3 wrapper 包线。迁移完成后，当前 Vue3 旧代码必须收敛到 `packages/vue3` 独立包，原 `v3` 分支提升为 `main` 的 core 基线，原 `main` 变为 `v2`，新的 Vue3 包线提交到新的 `v3` 分支。标准 wrapper、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且 wrapper 入口使用最新 core native engine。
+分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: `main` 只承载 core 基座，`v2` 对应 Vue 2.7 集成线，`v3` 对应独立 Vue 3 wrapper 包线。迁移完成后，当前 Vue3 旧代码必须收敛到 `packages/wrappers/vue3` 独立包，原 `v3` 分支提升为 `main` 的 core 基线，原 `main` 变为 `v2`，新的 Vue3 包线提交到新的 `v3` 分支。标准 wrapper、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且 wrapper 入口使用最新 core native engine。
 
 ## 主要产物位置
 
@@ -131,8 +131,8 @@ pnpm release:pack
 - Docker 镜像运行产物: `dist/` 会被复制到 nginx 的 `/usr/share/nginx/html/`
 - 文档站构建产物: `docs/.vitepress/dist/`
 - npm 包 tarball: 仓库根目录下的 `*.tgz`，完整生态 tarball 默认位于 `.release/ecosystem/`，wrapper 离线安装包位于 `.release/wrappers/`
-- React / 纯 JS 随包 viewer assets: `packages/web/viewer/`
-- wrapper Demo 构建产物: `packages/demo/dist/`
+- React / 纯 JS 随包 viewer assets: `packages/compat/web/viewer/`
+- wrapper Demo 构建产物: `apps/wrapper-demo/dist/`
 - 公开 GitHub / Gitee 成品仓库: 只放混淆压缩后的库产物、Demo 静态站点、文档静态站点、示例文件和 tarball，不包含源码目录
 
 ## 发版前检查清单
@@ -153,7 +153,7 @@ pnpm release:pack
 - 本地构建和文档构建是否全部通过
 - 主 Demo、文档比对页和 wrapper Demo 是否已经通过 `pnpm verify:browser-smoke`，确认轻量文档实际渲染、左右比对组件挂载、`Ctrl/Command+F` 搜索浮层、React/Web/Vue3/jQuery/Svelte wrapper 和 script tag IIFE 行为正常
 - React / 纯 JS wrapper Demo 是否在开发服务和 build preview 中都能显示内容
-- `packages/web` / `packages/web-standard` 的资源复制结果是否已经由最新构建产物同步
+- `packages/compat/web` / `packages/wrappers/web` 的资源复制结果是否已经由最新构建产物同步
 - `file-viewer-copy-assets` 是否生成 `flyfish-viewer-assets.json`，且 archive / CAD 等 worker/WASM 资源校验为 `valid: true`
 - `.release/wrapper-repos/*` 是否已经通过 `pnpm wrappers:publish:dry-run` 预检，确认 GitHub/Gitee remotes、README、manifest、source HEAD freshness、依赖边界和 npm 入口元数据均来自 `ecosystem/wrappers.json`
 - wrapper README 是否已经通过 `pnpm wrappers:readme` 和 `pnpm wrappers:verify --source-only`，确认中英文模板、生态矩阵、格式矩阵、官方文档和 Demo 链接与 `ecosystem/wrapper-readme-template.json` 一致

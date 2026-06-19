@@ -26,7 +26,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | `2.0.0` | `main` | Framework-neutral format matrix, preview capabilities, events, and operation APIs |
-| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/vue3` package line |
+| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/wrappers/vue3` package line |
 | Vue 2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Native Vue 2 package with the same format coverage and API semantics |
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | wrapper package | Native React component backed by the shared core |
 | Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | wrapper package | `mountViewer(container, options)` native DOM mounting and asset tooling |

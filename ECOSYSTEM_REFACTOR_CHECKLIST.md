@@ -38,11 +38,11 @@
 - [ ] `main` 分支成为 core 主线，只承载 framework-neutral 底座和共享协议，branch role 为 `core`，包名为 `@file-viewer/core`，source policy 为 `private-core-source-only`。
 - [ ] 原 `main` 分支转为 `v2`，用于 Vue2.7 wrapper 兼容包线，branch role 为 `vue2.7-wrapper`，包名为 `@file-viewer/vue2.7`，source policy 为 `wrapper-source-exported-publicly`。
 - [ ] 新 `v3` 分支用于 Vue3 wrapper 包线，branch role 为 `vue3-wrapper`，包名为 `@file-viewer/vue3`，source policy 为 `wrapper-source-exported-publicly`。
-- [x] 当前 `v3` 分支的 Vue3 wrapper 代码迁移到 `packages/vue3` 独立包。
+- [x] 当前 `v3` 分支的 Vue3 wrapper 代码迁移到 `packages/wrappers/vue3` 独立包。
 - [ ] 当前 `v3` 分支提升为新的 `main` 基线，并在远端完成分支角色切换。
 - [ ] 新的 Vue3 wrapper 包线提交到新的 `v3` 分支，并保持 `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` 三个发布入口一致。
-- [x] `packages/vue3`、`packages/vue27-standard`、`packages/vue26-standard`、`packages/react-standard`、`packages/react-legacy-standard`、`packages/web-standard`、`packages/jquery-standard`、`packages/svelte-standard` 都只保留对应生态 wrapper 职责，不依赖其他 wrapper。
-- [x] `packages/vue27-compat`、`packages/vue3-compat`、`packages/vue3-unscoped`、`packages/web`、`packages/react` 与根包只作为历史兼容别名或历史发布入口，不承载新的业务实现。
+- [x] `packages/wrappers/vue3`、`packages/wrappers/vue2.7`、`packages/wrappers/vue2.6`、`packages/wrappers/react`、`packages/wrappers/react-legacy`、`packages/wrappers/web`、`packages/wrappers/jquery`、`packages/wrappers/svelte` 都只保留对应生态 wrapper 职责，不依赖其他 wrapper。
+- [x] `packages/compat/vue2.7`、`packages/compat/vue3-scoped`、`packages/compat/vue3-unscoped`、`packages/compat/web`、`packages/compat/react` 与根包只作为历史兼容别名或历史发布入口，不承载新的业务实现。
 - [x] core 与 wrapper 的类型边界在 CI 中通过 `pnpm verify:core-api`、`pnpm verify:wrapper-api`、`pnpm verify:wrapper-options` 固化。
 
 ## 架构分层验收
@@ -59,14 +59,14 @@
 | 能力 | 标准 npm 包名 | 兼容/历史 npm 包名 | 代码归属 | GitHub | Gitee | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | 无 | Gitea 私有 `main` | 仅公开 npm 包和产物 | 仅公开 npm 包和产物 | [ ] 待最终切主线 |
-| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 已迁移，待远端分支切换 |
-| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/vue27-standard` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] monorepo 已有，待切分支 |
-| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/vue26-standard` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] monorepo 已有 |
-| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/react-standard` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 已有 |
-| React legacy | `@file-viewer/react-legacy` | 无 | `packages/react-legacy-standard` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo 已有 |
-| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/web-standard` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 已有 |
-| jQuery | `@file-viewer/jquery` | 无 | `packages/jquery-standard` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo 已有 |
-| Svelte | `@file-viewer/svelte` | 无 | `packages/svelte-standard` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] monorepo 已有 |
+| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/wrappers/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 已迁移，待远端分支切换 |
+| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/wrappers/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] monorepo 已有，待切分支 |
+| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/wrappers/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] monorepo 已有 |
+| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/wrappers/react` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 已有 |
+| React legacy | `@file-viewer/react-legacy` | 无 | `packages/wrappers/react-legacy` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo 已有 |
+| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/wrappers/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 已有 |
+| jQuery | `@file-viewer/jquery` | 无 | `packages/wrappers/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo 已有 |
+| Svelte | `@file-viewer/svelte` | 无 | `packages/wrappers/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] monorepo 已有 |
 | Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [ ] 待每次发布刷新 |
 
 ## npm 发布包清单
@@ -104,7 +104,7 @@
 
 ## Phase 2: Vue3 基线拆包
 
-- [x] Vue3 wrapper 从旧 `v3` 根实现迁移到 `packages/vue3`。
+- [x] Vue3 wrapper 从旧 `v3` 根实现迁移到 `packages/wrappers/vue3`。
 - [x] `@file-viewer/vue3` 提供 Vue 插件、组件、props、ref API、事件和类型出口。
 - [x] `@flyfish-group/file-viewer3` 和 `file-viewer3` 保持兼容发布入口。
 - [ ] 新的 `v3` 分支只维护 Vue3 wrapper 包线。

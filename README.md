@@ -27,7 +27,7 @@
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | `2.0.0` | `main` | 框架无关的格式矩阵、预览能力、事件和操作 API |
-| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/vue3` 独立包线 |
+| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/wrappers/vue3` 独立包线 |
 | Vue2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Vue2 原生组件包，格式能力与 Vue3 保持一致 |
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | wrapper 子工程 | React 原生组件，复用共享 core native engine |
 | 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | wrapper 子工程 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
@@ -249,7 +249,7 @@ pnpm build:wrapper-demo
 pnpm --filter @flyfish-group/file-viewer-demo preview
 ```
 
-确认无误后，`packages/demo/dist` 可以作为普通静态目录部署；其中包含主 Demo、文档比对入口和示例文件。
+确认无误后，`apps/wrapper-demo/dist` 可以作为普通静态目录部署；其中包含主 Demo、文档比对入口和示例文件。
 
 ### 4. Docker 一键部署
 
@@ -306,7 +306,7 @@ pnpm dev
 常用脚本:
 
 - `pnpm build`: 构建示例站点
-- `pnpm build-lib`: 构建组件库产物
+- `pnpm build:vue3`: 构建 Vue3 标准 wrapper 包产物
 - `pnpm docs:dev`: 启动 VitePress 文档站
 - `pnpm docs:build`: 构建文档站
 - `pnpm type-check`: 执行 TypeScript 类型检查
@@ -335,15 +335,15 @@ Vue3 和 Vue2 发包时分别在对应分支执行同一套发布链路:
 ```bash
 pnpm type-check
 pnpm build
-pnpm build-lib
+pnpm build:vue3
 pnpm obfuscate
 pnpm docs:build
-npm pack
+pnpm release:ecosystem:pack
 ```
 
 其中:
 
-- `dist/` 是库构建产物；执行 `pnpm obfuscate` 后会对其中的 `.js` / `.mjs` 进行压缩混淆
+- `dist/` 是主 Demo 和根部署产物；执行 `pnpm obfuscate` 后会对其中的 `.js` / `.mjs` 进行压缩混淆
 - `pnpm build` 会生成可独立部署的 Demo 静态站点产物
 - `docs/.vitepress/dist/` 是文档站静态产物
 - `npm pack` 会生成可直接发布或分发的 npm 包 tarball
@@ -351,7 +351,7 @@ npm pack
 如果只是准备 npm 包，可以直接执行:
 
 ```bash
-pnpm release:pack
+pnpm release:ecosystem:pack
 ```
 
 完整生态包发布前执行:

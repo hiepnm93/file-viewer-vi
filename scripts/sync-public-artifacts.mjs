@@ -246,11 +246,10 @@ if (!skipBuild) {
   await copyCleanDir(join(sourceRoot, 'dist'), demoStagingDir)
 
   run('pnpm', ['run', 'build:wrapper-demo'])
-  await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), wrapperDemoStagingDir)
+  await copyCleanDir(join(sourceRoot, 'apps', 'wrapper-demo', 'dist'), wrapperDemoStagingDir)
 
   run('pnpm', ['--filter', '@file-viewer/core', 'build'])
   run('pnpm', ['run', 'build:wrapper-packages'])
-  run('pnpm', ['run', 'build-lib-only'])
   run('pnpm', ['run', 'obfuscate'])
   run('pnpm', ['run', 'docs:build'])
   run('node', ['scripts/release-ecosystem-packages.mjs', '--pack', '--pack-dir', ecosystemPackDir, '--clean'])

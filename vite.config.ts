@@ -21,11 +21,11 @@ const viewerQueryFallbackPlugin = (): Plugin => ({
 // https://vitejs.dev/config/
 export default defineConfig(ctx => {
   const alias: Record<string, string> = {
-    '@/package': fileURLToPath(new URL('./packages/vue3/src/package', import.meta.url)),
+    '@/package': fileURLToPath(new URL('./packages/wrappers/vue3/src/package', import.meta.url)),
     '@': fileURLToPath(new URL('./src', import.meta.url)),
-    '@file-viewer/vue3': fileURLToPath(new URL('./packages/vue3/src/package/index.ts', import.meta.url)),
-    '@file-viewer/web': fileURLToPath(new URL('./packages/web-standard/src/index.ts', import.meta.url)),
-    '@flyfish-group/file-viewer3': fileURLToPath(new URL('./packages/vue3/src/package/index.ts', import.meta.url)),
+    '@file-viewer/vue3': fileURLToPath(new URL('./packages/wrappers/vue3/src/package/index.ts', import.meta.url)),
+    '@file-viewer/web': fileURLToPath(new URL('./packages/wrappers/web/src/index.ts', import.meta.url)),
+    '@flyfish-group/file-viewer3': fileURLToPath(new URL('./packages/wrappers/vue3/src/package/index.ts', import.meta.url)),
     events: 'events',
     path: 'path-browserify',
     stream: 'stream-browserify',

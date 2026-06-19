@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
 | 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位 |
-| wrapper Demo | `packages/demo` | 同时验证 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入 |
+| wrapper Demo | `apps/wrapper-demo` | 同时验证 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入 |
 
 ## 主示例页
 
@@ -98,7 +98,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 
 ## React / 纯 JS wrapper Demo
 
-仓库中的 `packages/demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery wrapper、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 wrapper 原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
+仓库中的 `apps/wrapper-demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery wrapper、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 wrapper 原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
 
 ```bash
 pnpm dev:wrappers

@@ -3,13 +3,13 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promi
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import viewerPackage from '../packages/web-standard/package.json' with { type: 'json' }
+import viewerPackage from '../packages/wrappers/web/package.json' with { type: 'json' }
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const source = resolve(root, 'dist')
 const targets = [
-  resolve(root, 'packages/web/viewer'),
-  resolve(root, 'packages/web-standard/viewer')
+  resolve(root, 'packages/compat/web/viewer'),
+  resolve(root, 'packages/wrappers/web/viewer')
 ]
 const coreAssetsEntry = resolve(root, 'packages/core/dist/assets.js')
 const viewerAssetManifestFilename = 'flyfish-viewer-assets.json'

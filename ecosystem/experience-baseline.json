@@ -58,8 +58,8 @@
       "kind": "baseline-component",
       "packageName": "@flyfish-group/file-viewer3",
       "entryFiles": [
-        "packages/vue3/src/package/components/FileViewer/FileViewer.vue",
-        "packages/vue3/src/package/index.ts",
+        "packages/wrappers/vue3/src/package/components/FileViewer/FileViewer.vue",
+        "packages/wrappers/vue3/src/package/index.ts",
         "src/main.ts"
       ],
       "smokeScripts": ["verify:demo-browser-smoke"],
@@ -84,9 +84,9 @@
       "kind": "native-viewer",
       "packageName": "@file-viewer/web",
       "entryFiles": [
-        "packages/web-standard/src/index.ts",
-        "packages/web-standard/src/global.ts",
-        "packages/web-standard/package.json"
+        "packages/wrappers/web/src/index.ts",
+        "packages/wrappers/web/src/global.ts",
+        "packages/wrappers/web/package.json"
       ],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
@@ -97,7 +97,7 @@
       "kind": "native-wrapper",
       "wrapperId": "react",
       "packageName": "@flyfish-group/file-viewer-react",
-      "entryFiles": ["packages/react/src/index.tsx", "packages/demo/src/main.tsx"],
+      "entryFiles": ["packages/compat/react/src/index.tsx", "apps/wrapper-demo/src/main.tsx"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
@@ -107,7 +107,7 @@
       "kind": "native-wrapper",
       "wrapperId": "web",
       "packageName": "@flyfish-group/file-viewer-web",
-      "entryFiles": ["packages/web/src/index.ts", "packages/demo/manual-js.html"],
+      "entryFiles": ["packages/compat/web/src/index.ts", "apps/wrapper-demo/manual-js.html"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
@@ -117,7 +117,7 @@
       "kind": "script-tag",
       "wrapperId": "web",
       "packageName": "@file-viewer/web",
-      "entryFiles": ["packages/web-standard/src/global.ts", "packages/demo/manual-iife.html"],
+      "entryFiles": ["packages/wrappers/web/src/global.ts", "apps/wrapper-demo/manual-iife.html"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "wrapper-contract"]
     }

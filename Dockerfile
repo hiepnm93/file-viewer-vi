@@ -9,10 +9,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.0.9 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/web/package.json packages/web/package.json
-COPY packages/web/scripts packages/web/scripts
-COPY packages/react/package.json packages/react/package.json
-COPY packages/demo/package.json packages/demo/package.json
+COPY packages/compat/web/package.json packages/compat/web/package.json
+COPY packages/compat/web/scripts packages/compat/web/scripts
+COPY packages/compat/react/package.json packages/compat/react/package.json
+COPY apps/wrapper-demo/package.json apps/wrapper-demo/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .

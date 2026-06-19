@@ -6,8 +6,8 @@ import { build } from 'vite'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
-const packageDir = resolve(sourceRoot, process.argv[2] || 'packages/web')
-const entry = join(sourceRoot, 'packages', 'web', 'src', 'global.ts')
+const packageDir = resolve(sourceRoot, process.argv[2] || 'packages/compat/web')
+const entry = join(packageDir, 'src', 'global.ts')
 const outDir = join(packageDir, 'dist')
 const fileName = 'flyfish-file-viewer-web.iife.js'
 

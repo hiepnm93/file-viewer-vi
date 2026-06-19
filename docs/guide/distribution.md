@@ -158,10 +158,10 @@ Vue 组件 npm 包线分别在对应分支发布:
 ```bash
 pnpm type-check
 pnpm build
-pnpm build-lib-only
+pnpm build:vue3
 pnpm obfuscate
 pnpm docs:build
-npm pack
+pnpm release:ecosystem:pack
 ```
 
 其中 `pnpm obfuscate` 会处理 `dist/` 中的 `.js` / `.mjs` 文件。类型声明、CSS、图片和示例文件不会被混淆，便于业务方正常接入和排查。

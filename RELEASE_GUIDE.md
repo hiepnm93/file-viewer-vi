@@ -89,7 +89,7 @@ pnpm run docs:build
 
 ```bash
 pnpm run build-only
-pnpm run build-lib-only
+pnpm run build:vue3
 pnpm run obfuscate
 pnpm run docs:build
 ```
@@ -97,7 +97,7 @@ pnpm run docs:build
 说明:
 
 - `build-only` 生成 Demo 静态站点。
-- `build-lib-only` 生成 npm 组件库产物。
+- `build:vue3` 生成 Vue3 标准 wrapper 包产物；完整生态包统一使用 `release:ecosystem:*`。
 - `obfuscate` 只处理 `dist/` 下的 JS/MJS 产物，公开仓库必须使用这一步之后的 `dist/`。
 - `docs:build` 生成 `docs/.vitepress/dist`，这是文档站的静态产物。
 
@@ -118,7 +118,7 @@ git pull origin main
 pnpm install --frozen-lockfile
 pnpm run type-check
 pnpm exec vitest run
-pnpm run build-lib-only
+pnpm run build:vue3
 pnpm run obfuscate
 npm publish --dry-run --access public --registry=https://registry.npmjs.org/
 npm publish --access public --registry=https://registry.npmjs.org/

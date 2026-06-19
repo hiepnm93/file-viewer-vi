@@ -6,14 +6,14 @@ This document records the public wrapper repository plan. The core source remain
 
 | Framework | npm package | GitHub | Gitee | Source directory |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@file-viewer/vue3` | `flyfish-dev/file-viewer-vue3` | `flyfish-dev/file-viewer-vue3` | `packages/vue3` |
-| Vue 2.7 | `@file-viewer/vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `packages/vue27-standard` |
-| Vue 2.6 | `@file-viewer/vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `packages/vue26-standard` |
-| React 18/19 | `@file-viewer/react` | `flyfish-dev/file-viewer-react` | `flyfish-dev/file-viewer-react` | `packages/react-standard` |
-| React 16.8/17 | `@file-viewer/react-legacy` | `flyfish-dev/file-viewer-react-legacy` | `flyfish-dev/file-viewer-react-legacy` | `packages/react-legacy-standard` |
-| Pure Web | `@file-viewer/web` | `flyfish-dev/file-viewer-web` | `flyfish-dev/file-viewer-web` | `packages/web-standard` |
-| jQuery | `@file-viewer/jquery` | `flyfish-dev/file-viewer-jquery` | `flyfish-dev/file-viewer-jquery` | `packages/jquery-standard` |
-| Svelte | `@file-viewer/svelte` | `flyfish-dev/file-viewer-svelte` | `flyfish-dev/file-viewer-svelte` | `packages/svelte-standard` |
+| Vue 3 | `@file-viewer/vue3` | `flyfish-dev/file-viewer-vue3` | `flyfish-dev/file-viewer-vue3` | `packages/wrappers/vue3` |
+| Vue 2.7 | `@file-viewer/vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `packages/wrappers/vue2.7` |
+| Vue 2.6 | `@file-viewer/vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `packages/wrappers/vue2.6` |
+| React 18/19 | `@file-viewer/react` | `flyfish-dev/file-viewer-react` | `flyfish-dev/file-viewer-react` | `packages/wrappers/react` |
+| React 16.8/17 | `@file-viewer/react-legacy` | `flyfish-dev/file-viewer-react-legacy` | `flyfish-dev/file-viewer-react-legacy` | `packages/wrappers/react-legacy` |
+| Pure Web | `@file-viewer/web` | `flyfish-dev/file-viewer-web` | `flyfish-dev/file-viewer-web` | `packages/wrappers/web` |
+| jQuery | `@file-viewer/jquery` | `flyfish-dev/file-viewer-jquery` | `flyfish-dev/file-viewer-jquery` | `packages/wrappers/jquery` |
+| Svelte | `@file-viewer/svelte` | `flyfish-dev/file-viewer-svelte` | `flyfish-dev/file-viewer-svelte` | `packages/wrappers/svelte` |
 
 The canonical machine-readable matrix is [`ecosystem/wrappers.json`](./ecosystem/wrappers.json).
 

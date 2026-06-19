@@ -4,7 +4,7 @@ import { createRequire } from 'node:module'
 import { delimiter, extname, join, normalize, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'packages/demo/dist')
+const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'apps/wrapper-demo/dist')
 const externalUrl = process.env.WRAPPER_DEMO_URL
 const timeout = Number(process.env.WRAPPER_BROWSER_SMOKE_TIMEOUT || 30000)
 

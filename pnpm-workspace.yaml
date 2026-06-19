@@ -1,6 +1,9 @@
 packages:
   - .
-  - packages/*
+  - packages/core
+  - packages/compat/*
+  - packages/wrappers/*
+  - apps/*
 
 peerDependencyRules:
   allowedVersions:

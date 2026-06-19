@@ -21,7 +21,7 @@
 ### `v1.0.26` Vue3 npm 入口类型声明修复版本
 
 - 修复 `@flyfish-group/file-viewer3@1.0.25` 在发布前被 Demo 构建覆盖 `dist` 后，npm 包缺少 `dist/src/package/index.d.ts`，导致 TypeScript 项目出现 `TS2307: Cannot find module '@flyfish-group/file-viewer3' or its corresponding type declarations` 的问题
-- 根包新增 `prepublishOnly` 发布前保护，会重新执行库模式构建并校验 `dist/index.mjs`、`dist/src/package/index.d.ts`、`dist/style.css` 和 CAD WASM Worker 产物，阻止 Demo HTML 产物误进入组件库 npm 包
+- Vue3 标准 wrapper 使用包内 `prepublishOnly` 发布前保护，根包只保留 monorepo 编排脚本，阻止 Demo HTML 产物误进入组件库 npm 包
 - 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；公开成品仓库只保留一份 scoped v3 tarball，避免重复占用存储
 - 支持格式矩阵补齐到 194 个扩展名、23 条预览链路，新增 RTF/ODT/ODP、MBOX、GeoJSON/KML/GPX/SHP、AVIF/ICO/HEIC/HEIF/JXL、WEBM/M3U8、MIDI、JSONC/JSON5/IPYNB/TOML/Proto/HCL/TeX/Graphviz/HTTP/Ruby/Swift/Kotlin/React 片段，以及字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro、WebArchive 等资产/数据预览入口
 
@@ -194,7 +194,7 @@
 - 新增 PDF 缩放工具栏、页码状态和可显隐页面导航窗格
 - 补齐 OFD、CAD、代码高亮与完整示例文件盒子
 - 示例文件选择器支持分组折叠，默认展开第一个分组，并保持同一时间只展开一个分组
-- 增加 `pnpm obfuscate` 与 `pnpm release:pack`，库产物支持压缩混淆后分发
+- 增加 `pnpm obfuscate` 与 `pnpm release:ecosystem:pack`，库产物支持压缩混淆后分发
 - README、文档站和公开成品仓库说明同步补充 npm、GitHub、源码自助开通、授权与贡献说明
 - npm tarball 只包含 `README.md`、`LICENSE` 和混淆压缩后的 `dist/`
 

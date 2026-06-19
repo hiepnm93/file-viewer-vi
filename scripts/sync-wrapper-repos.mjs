@@ -29,20 +29,30 @@ const selectedIds = new Set(
 )
 const keepExisting = args.includes('--keep-existing')
 
-const workspacePackageDirs = [
-  sourceRoot,
-  ...(
-    await readdir(join(sourceRoot, 'packages'), { withFileTypes: true })
-  )
-    .filter(entry => entry.isDirectory())
-    .map(entry => join(sourceRoot, 'packages', entry.name))
-]
-
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'))
 const writeJson = async (path, value) => writeFile(path, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
 
 const rootPackage = await readJson(join(sourceRoot, 'package.json'))
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+
+const collectPackageDirs = async workspaceRoot => {
+  if (!existsSync(workspaceRoot)) {
+    return []
+  }
+  const entries = await readdir(workspaceRoot, { withFileTypes: true })
+  return entries
+    .filter(entry => entry.isDirectory())
+    .map(entry => join(workspaceRoot, entry.name))
+    .filter(packageDir => existsSync(join(packageDir, 'package.json')))
+}
+
+const workspacePackageDirs = [
+  sourceRoot,
+  join(sourceRoot, 'packages', 'core'),
+  ...(await collectPackageDirs(join(sourceRoot, 'packages', 'compat'))),
+  ...(await collectPackageDirs(join(sourceRoot, 'packages', 'wrappers'))),
+  ...(await collectPackageDirs(join(sourceRoot, 'apps')))
+]
 
 const workspaceVersions = new Map()
 for (const packageDir of workspacePackageDirs) {
@@ -179,8 +189,8 @@ const ensureWebViewerAssets = async (targetDir, wrapper) => {
     return
   }
 
-  const sourceViewerDir = join(sourceRoot, 'packages/web-standard/viewer')
-  const fallbackViewerDir = join(sourceRoot, 'packages/web/viewer')
+  const sourceViewerDir = join(sourceRoot, 'packages/wrappers/web/viewer')
+  const fallbackViewerDir = join(sourceRoot, 'packages/compat/web/viewer')
   const viewerSource = existsSync(join(sourceViewerDir, 'index.html'))
     ? sourceViewerDir
     : fallbackViewerDir

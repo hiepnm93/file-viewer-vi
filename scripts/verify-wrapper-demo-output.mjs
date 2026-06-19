@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'packages/demo/dist')
+const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'apps/wrapper-demo/dist')
 const requiredFiles = [
   'index.html',
   'jquery.html',
