@@ -20,6 +20,15 @@
 - core source visibility policy: `private-source`
 - 标准包命名: `@file-viewer/*`
 
+## 最新外部发布审计
+
+- 审计时间: `2026-06-19`
+- 源码仓当前状态: 本地 `v3` 工作区干净，领先 `origin/v3` 223 个提交；推送 `https://git.flyfish.dev/flyfish-group/file-viewer.git` 返回 `403`，待私有 Gitea / Cloudflare 权限放行。
+- 公开成品仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
+- Wrapper GitHub 仓库: 8 个标准 wrapper 仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
+- Wrapper Gitee 仓库: 8 个标准 wrapper 仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
+- npm 发布: `@file-viewer/*` 标准包尚未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
+
 ## 总体不变量
 
 - [ ] 主 Demo、文档比对页、示例文件选择器、工具栏、水印、搜索、缩放、打印、导出、主题、生命周期 hooks 和 beforeOperation 行为不倒退。
@@ -31,7 +40,7 @@
 - [x] Vue、React、Svelte、jQuery 和 Pure JS wrapper 只能依赖 `@file-viewer/core` 和自身生态依赖，不得依赖其他 wrapper 或任何第二核心包。
 - [x] `@flyfish-group/*`、`file-viewer3` 等历史包名只作为标准包名的兼容别名同步更新。
 - [ ] core 源码只在 Gitea 私有仓库维护，不把私有源码推到公开 GitHub/Gitee。
-- [ ] 公开产物仓库只发布混淆/压缩后的构建产物、Demo、文档、示例、tarball、release manifest 和分发说明。
+- [x] 公开产物仓库只发布混淆/压缩后的构建产物、Demo、文档、示例、tarball、release manifest 和分发说明。
 
 ## 分支与目录验收
 
@@ -59,15 +68,15 @@
 | 能力 | 标准 npm 包名 | 兼容/历史 npm 包名 | 代码归属 | GitHub | Gitee | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | 无 | Gitea 私有 `main` | 仅公开 npm 包和产物 | 仅公开 npm 包和产物 | [ ] 待最终切主线 |
-| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/wrappers/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] monorepo 已迁移，待远端分支切换 |
-| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/wrappers/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] monorepo 已有，待切分支 |
-| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/wrappers/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] monorepo 已有 |
-| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/wrappers/react` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 已有 |
-| React legacy | `@file-viewer/react-legacy` | 无 | `packages/wrappers/react-legacy` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo 已有 |
-| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/wrappers/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 已有 |
-| jQuery | `@file-viewer/jquery` | 无 | `packages/wrappers/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo 已有 |
-| Svelte | `@file-viewer/svelte` | 无 | `packages/wrappers/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] monorepo 已有 |
-| Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [ ] 待每次发布刷新 |
+| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/wrappers/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] GitHub 已发布，Gitee / 分支切换待完成 |
+| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/wrappers/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] GitHub 已发布，Gitee / v2 分支待完成 |
+| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/wrappers/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] GitHub 已发布，Gitee 待完成 |
+| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/wrappers/react` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] GitHub 已发布，Gitee 待完成 |
+| React legacy | `@file-viewer/react-legacy` | 无 | `packages/wrappers/react-legacy` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] GitHub 已发布，Gitee 待完成 |
+| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/wrappers/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] GitHub 已发布，Gitee 待完成 |
+| jQuery | `@file-viewer/jquery` | 无 | `packages/wrappers/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] GitHub 已发布，Gitee 待完成 |
+| Svelte | `@file-viewer/svelte` | 无 | `packages/wrappers/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] GitHub 已发布，Gitee 待完成 |
+| Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
 
 ## npm 发布包清单
 
@@ -182,6 +191,8 @@
 ## Phase 5: 公开仓库与 README
 
 - [ ] 所有目标 wrapper 均存在 GitHub 和 Gitee 公开仓库。
+- [x] 所有目标 wrapper 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
+- [ ] 所有目标 wrapper 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
 - [ ] 所有 wrapper 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
 - [ ] 公开成品仓库 README 中列出所有开源 wrapper 仓库、npm 包、历史兼容包、下载包和文档地址。
 - [ ] core 源码不进入任何公开 GitHub/Gitee wrapper 或成品仓库。
@@ -196,9 +207,9 @@
 
 ## Phase 7: 构建产物与公开分发
 
-- [ ] 公开产物仓库包含最新全渠道构建产物、viewer assets、Demo、wrapper demo、文档静态产物、示例文件、tarball、release manifest 和更新历史。
-- [ ] 公开产物仓库只包含混淆压缩后的成品，不包含私有 core 源码。
-- [ ] GitHub / Gitee 公开成品仓库同步一致。
+- [x] 公开产物仓库包含最新全渠道构建产物、viewer assets、Demo、wrapper demo、文档静态产物、示例文件、tarball、release manifest 和更新历史。
+- [x] 公开产物仓库只包含混淆压缩后的成品，不包含私有 core 源码。
+- [x] GitHub / Gitee 公开成品仓库同步一致。
 - [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。
 
 ## Phase 8: 验证与发布门禁
@@ -220,6 +231,8 @@
 - [x] `pnpm verify:compatibility-readmes`
 - [x] `pnpm verify:ecosystem-versions`
 - [x] `pnpm verify:ecosystem-tarballs`
+- [x] `pnpm verify:wrapper-public-remotes --host=github`
+- [ ] `pnpm verify:wrapper-public-remotes`
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
 - [x] `pnpm wrappers:standalone-smoke`

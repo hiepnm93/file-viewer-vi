@@ -120,7 +120,10 @@ for (const requiredChecklistStatus of [
   assertIncludes(requiredChecklistStatus, 'required checklist section')
 }
 
-assertIncludesAny(['[ ] 待建', '[~] monorepo'], 'matrix progress status markers')
+assertIncludesAny(
+  ['[ ] 待建', '[~] monorepo', '[~] GitHub 已发布', '[x] v2.0.0 已刷新'],
+  'matrix progress status markers'
+)
 
 console.log(
   `[ecosystem-checklist] Verified checklist coverage for ${wrapperManifest.wrappers.length} wrappers, ${entries.length} npm packages, ${branchRoles.branches.length} branch roles, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
