@@ -191,7 +191,7 @@ pnpm release:ecosystem:publish
 
 `release:ecosystem:pack` 会先构建 core、core browser engine、历史兼容包和标准组件包，再统一打包 15 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
-开源总仓库使用当前 `v3` 分支生成，发布前执行:
+开源总仓库使用私有 Gitea `main` 完整聚合仓生成，发布前执行:
 
 ```bash
 pnpm release:public

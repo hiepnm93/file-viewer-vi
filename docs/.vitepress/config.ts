@@ -26,9 +26,9 @@ export default defineConfig({
           { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
           { text: 'npm(React)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-react' },
           { text: 'npm(纯 JS)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-web' },
-          { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
-          { text: 'Gitee 成品仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
-          { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
+          { text: 'GitHub 开源总仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
+          { text: 'Gitee 开源总仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
+          { text: '打赏与优先支持', link: 'https://dev.flyfish.group/shop' }
         ]
       }
     ],
