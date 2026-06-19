@@ -76,6 +76,10 @@ function defaultBackupBranch(version, sourceCommit) {
   return `workspace/pre-branch-cutover-v${version}-${sourceCommit}-${timestamp}`
 }
 
+function stagingRefForTarget(backupBranch, targetBranch) {
+  return `refs/file-viewer-cutover/${backupBranch}/${targetBranch}`
+}
+
 function readRemoteHead(remoteRefs, branch) {
   const suffix = `refs/heads/${branch}`
   const line = remoteRefs
@@ -203,12 +207,18 @@ try {
     mainPushArgs.push(remoteName, 'HEAD:refs/heads/main')
     run('git', mainPushArgs)
     for (const target of materializedTargets) {
-      const pushArgs = ['push']
-      if (target.currentRemoteHead) {
-        pushArgs.push(`--force-with-lease=refs/heads/${target.branch}:${target.currentRemoteHead}`)
+      const stagingRef = stagingRefForTarget(backupBranch, target.branch)
+      run('git', ['push', sourceRoot, `HEAD:${stagingRef}`], { cwd: target.workDir })
+      try {
+        const pushArgs = ['push']
+        if (target.currentRemoteHead) {
+          pushArgs.push(`--force-with-lease=refs/heads/${target.branch}:${target.currentRemoteHead}`)
+        }
+        pushArgs.push(remoteName, `${stagingRef}:refs/heads/${target.branch}`)
+        run('git', pushArgs)
+      } finally {
+        run('git', ['update-ref', '-d', stagingRef])
       }
-      pushArgs.push(remoteUrl, `HEAD:refs/heads/${target.branch}`)
-      run('git', pushArgs, { cwd: target.workDir })
     }
     run('git', ['fetch', remoteName, 'main', 'v2', 'v3'])
     console.log('Branch cutover pushed successfully.')
