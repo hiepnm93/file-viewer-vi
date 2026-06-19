@@ -151,6 +151,13 @@ pnpm branch:cutover:apply -- --push
 
 ## 全渠道发布前置检查
 
+先跑完整本地迁移门禁和本地浏览器 smoke，确认主 Demo、文档比对页、标准组件包、历史兼容包和 script tag / manual JS 接入都没有倒退:
+
+```bash
+pnpm verify:migration-gates
+pnpm verify:browser-smoke
+```
+
 正式发布 npm、Gitee 组件分仓、开源总仓和 release 前，先跑聚合 preflight:
 
 ```bash

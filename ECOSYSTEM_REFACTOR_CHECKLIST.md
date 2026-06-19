@@ -245,6 +245,7 @@
 - [x] `pnpm verify:compatibility-readmes`
 - [x] `pnpm verify:ecosystem-versions`
 - [x] `pnpm verify:ecosystem-tarballs`
+- [x] `pnpm verify:migration-gates`
 - [x] `node scripts/release-ecosystem-packages.mjs --publish --dry-run`（14 个包均通过，发布参数包含 `--no-git-checks --ignore-scripts`）
 - [x] `pnpm release:ecosystem:publish:preflight` 已接入正式发布链路，未登录时会在构建前以 `ENEEDAUTH` 明确失败
 - [x] `pnpm release:channels:preflight -- --skip-external` 已接入聚合发布门禁，本地结构、分支角色、README、包元数据和开源总仓边界可一次校验
@@ -270,7 +271,8 @@
 - [x] `pnpm docs:deploy:cloudflare`
 - [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
 - [x] `pnpm test`
-- [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
+- [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。
 
 ## 完成审计标准
 
@@ -282,5 +284,6 @@
 - [x] 所有标准组件包的 README 中英文完整。
 - [ ] 开源总仓库包含最新全渠道构建产物。
 - [ ] 文档站和 Demo 站均上线最新内容。
-- [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
+- [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。
 - [ ] 发布记录能证明 npm、GitHub、Gitee、Gitea、Demo、文档站、开源总仓库的版本口径一致。

@@ -103,14 +103,17 @@ for (const requiredAuditItem of [
   '所有 `@file-viewer/*` npm 包均发布成功',
   '所有标准组件包的 README 中英文完整',
   '开源总仓库包含最新全渠道构建产物',
-  '本地和生产 smoke 证明各生态体验与当前 v3 基线一致'
+  '本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`',
+  '生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致'
 ]) {
   assertIncludes(requiredAuditItem, 'completion audit requirement')
 }
 
 for (const requiredGate of [
+  'pnpm verify:browser-smoke',
   'pnpm verify:experience-baseline',
   'pnpm verify:format-support',
+  'pnpm verify:migration-gates',
   'pnpm verify:smoke-matrix'
 ]) {
   assertIncludes(requiredGate, 'non-regression verification gate')
