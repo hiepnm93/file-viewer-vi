@@ -204,6 +204,12 @@ npm view @flyfish-group/file-viewer3 version --registry=https://registry.npmjs.o
 npm view @flyfish-group/file-viewer version --registry=https://registry.npmjs.org/
 ```
 
+最后从 npm registry 拉回 14 个生态包 tarball，并复用包体校验规则确认入口文件、README、包名版本和 workspace 依赖都正确:
+
+```bash
+pnpm verify:npm-registry-release
+```
+
 ## Cloudflare Pages 上线
 
 线上 Demo 域名是 `viewer.flyfish.dev`:
@@ -346,7 +352,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | GitHub Release | `pnpm verify:github-release-assets` | `artifacts/` 与 Release 资产名称、大小、sha256 完全一致 |
 | GitHub 组件分仓 | `pnpm verify:wrapper-github-content` | core / 标准组件分仓内容与本地导出源码树一致 |
 | 快速审计 | `pnpm audit:ecosystem-status:fast` | 列出当前缺口和下一步命令 |
-| npm | `pnpm release:ecosystem:list` + `npm view` | 所有标准包和兼容包版本一致 |
+| npm | `pnpm verify:npm-registry-release` | 14 个标准包和兼容包均可从 npm 拉回并通过包体校验 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
 | 文档站 | `https://doc.flyfish.dev` | 页面可打开，导航和样式正常 |
 | Release | `https://github.com/flyfish-dev/file-viewer/releases` | 当前版本 tarball 和 manifest 已上传 |
