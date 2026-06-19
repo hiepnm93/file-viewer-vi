@@ -5,8 +5,39 @@ import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
-const args = new Set(process.argv.slice(2))
+const argv = process.argv.slice(2)
+const args = new Set(argv)
 const strict = args.has('--strict')
+const fast = args.has('--fast')
+
+function readArg(name, fallback) {
+  const index = argv.indexOf(name)
+  return index >= 0 ? argv[index + 1] : fallback
+}
+
+function readNumberArg(name, fallback) {
+  const value = Number(readArg(name, fallback))
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`${name} must be a positive number, got ${value}`)
+  }
+  return value
+}
+
+const defaultGitTimeout = fast ? 5_000 : 20_000
+const defaultNpmTimeout = fast ? 8_000 : 30_000
+const defaultGhTimeout = fast ? 8_000 : 20_000
+const gitTimeout = readNumberArg(
+  '--git-timeout-ms',
+  process.env.FILE_VIEWER_AUDIT_GIT_TIMEOUT_MS || defaultGitTimeout
+)
+const npmTimeout = readNumberArg(
+  '--npm-timeout-ms',
+  process.env.FILE_VIEWER_AUDIT_NPM_TIMEOUT_MS || defaultNpmTimeout
+)
+const ghTimeout = readNumberArg(
+  '--gh-timeout-ms',
+  process.env.FILE_VIEWER_AUDIT_GH_TIMEOUT_MS || defaultGhTimeout
+)
 
 const { rootPackage, wrapperManifest, entries } = await loadEcosystemReleaseContext(sourceRoot)
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
@@ -19,11 +50,15 @@ function run(command, commandArgs, options = {}) {
     timeout: options.timeout ?? 20_000
   })
 
+  const errorMessage = result.error instanceof Error ? result.error.message : ''
+
   return {
     ok: result.status === 0,
     status: result.status,
+    signal: result.signal || '',
     stdout: (result.stdout || '').trim(),
-    stderr: (result.stderr || '').trim()
+    stderr: (result.stderr || '').trim(),
+    error: errorMessage
   }
 }
 
@@ -32,20 +67,20 @@ function firstRefHash(output) {
 }
 
 function lsRemoteHead(url, branch = 'main') {
-  const result = run('git', ['ls-remote', url, `refs/heads/${branch}`])
+  const result = run('git', ['ls-remote', url, `refs/heads/${branch}`], { timeout: gitTimeout })
   return {
     ok: result.ok && Boolean(firstRefHash(result.stdout)),
     hash: firstRefHash(result.stdout),
-    error: result.ok ? '' : result.stderr || result.stdout
+    error: result.ok ? '' : result.error || result.stderr || result.stdout || result.signal
   }
 }
 
 function npmVersion(packageName) {
-  const result = run('npm', ['view', packageName, 'version'], { timeout: 30_000 })
+  const result = run('npm', ['view', packageName, 'version'], { timeout: npmTimeout })
   return {
     ok: result.ok && Boolean(result.stdout),
     version: result.stdout.replace(/^"|"$/g, ''),
-    error: result.ok ? '' : result.stderr || result.stdout
+    error: result.ok ? '' : result.error || result.stderr || result.stdout || result.signal
   }
 }
 
@@ -58,7 +93,7 @@ function ghRelease(tag) {
     'flyfish-dev/file-viewer',
     '--json',
     'tagName,url,assets'
-  ])
+  ], { timeout: ghTimeout })
 
   if (!result.ok) {
     return {
@@ -66,7 +101,7 @@ function ghRelease(tag) {
       tag,
       url: '',
       assetCount: 0,
-      error: result.stderr || result.stdout
+      error: result.error || result.stderr || result.stdout || result.signal
     }
   }
 
@@ -229,10 +264,23 @@ const failures = [
   })
 ].filter(Boolean)
 
+const nextActions = [
+  failures.some(failure => failure.includes('npm')) &&
+    'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
+  failures.some(failure => failure.includes('Gitee repository missing')) &&
+    'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.',
+  failures.some(failure => failure.includes('open-source main Gitee repository')) &&
+    'After Gitee quota/GC or remote recovery, push `/Users/wangyu/IdeaProjects/file-viewer-public` to `gitee main`.',
+  'Use `pnpm release:channels:preflight -- --skip-external` for a fast local release gate, or `pnpm release:channels:preflight` when npm/Gitee credentials are ready.'
+].filter(Boolean)
+
 console.log(`# File Viewer Ecosystem Status\n`)
 console.log(`Generated: ${new Date().toISOString()}`)
 console.log(`Workspace: \`${sourceRoot}\``)
 console.log(`Version target: \`${rootPackage.version}\`\n`)
+if (fast) {
+  console.log(`Mode: \`fast\` (git ${gitTimeout}ms, npm ${npmTimeout}ms, gh ${ghTimeout}ms)\n`)
+}
 
 console.log(`## Aggregate Source\n`)
 console.log(`- Local checkout branch: \`${localBranch}\``)
@@ -307,6 +355,12 @@ if (failures.length) {
   }
   console.log()
 }
+
+console.log(`## Next Actions\n`)
+for (const action of nextActions) {
+  console.log(`- ${action}`)
+}
+console.log()
 
 if (strict && failures.length) {
   process.exitCode = 1

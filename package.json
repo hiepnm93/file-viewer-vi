@@ -72,6 +72,7 @@
     "branch:cutover:verify": "node scripts/prepare-branch-cutover.mjs --verify-only",
     "branch:cutover:apply": "node scripts/apply-branch-cutover.mjs",
     "audit:ecosystem-status": "node scripts/audit-ecosystem-status.mjs",
+    "audit:ecosystem-status:fast": "node scripts/audit-ecosystem-status.mjs --fast",
     "deploy:cloudflare": "pnpm build-only && pnpm verify:demo-output && node scripts/deploy-cloudflare-pages.mjs",
     "docker:build": "node scripts/docker-buildx.mjs --load",
     "docker:repo:create": "node scripts/docker-hub-create-repo.mjs",

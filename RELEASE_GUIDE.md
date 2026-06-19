@@ -163,6 +163,12 @@ pnpm release:channels:preflight
 pnpm release:channels:preflight -- --skip-external
 ```
 
+需要快速查看当前还有哪些外部发布缺口时，使用快速审计；它会缩短 GitHub/Gitee/npm 探测超时，并在报告末尾给出下一步命令:
+
+```bash
+pnpm audit:ecosystem-status:fast
+```
+
 ## npm 发布
 
 所有标准包和历史兼容包使用统一生态发布脚本:
@@ -325,6 +331,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | GitHub 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | README、apps、packages、docs、demo、docs-dist、example、artifacts 均存在 |
 | Gitee 开源总仓库 | `https://gitee.com/flyfish-dev/file-viewer` | 国内镜像目标；如远端配额阻塞，以 GitHub 开源总仓库和 release 为准 |
 | 发布前门禁 | `pnpm release:channels:preflight` | 本地结构、npm 登录态、Gitee token、公开仓边界全部通过 |
+| 快速审计 | `pnpm audit:ecosystem-status:fast` | 列出当前缺口和下一步命令 |
 | npm | `pnpm release:ecosystem:list` + `npm view` | 所有标准包和兼容包版本一致 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
 | 文档站 | `https://doc.flyfish.dev` | 页面可打开，导航和样式正常 |
