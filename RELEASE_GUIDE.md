@@ -184,6 +184,8 @@ pnpm deploy:cloudflare
 pnpm docs:deploy:cloudflare
 ```
 
+注意: 私有 Gitea `main` 是源码发布基线；Cloudflare Pages 项目的自定义域名当前绑定生产分支 `v3`，因此 `docs:deploy:cloudflare` 会把 `docs/.vitepress/dist` 发布到 Pages 的 `v3` 分支，确保 `doc.flyfish.dev` 直接更新。
+
 部署完成后至少打开以下地址冒烟:
 
 - `https://viewer.flyfish.dev/?smoke=<本次标识>`
@@ -297,7 +299,8 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 
 | 检查项 | 命令或地址 | 预期 |
 | --- | --- | --- |
-| 私有聚合仓 v3 | `git ls-remote --heads origin v3` | Gitea 有最新 v3 |
+| 私有聚合仓 main | `git ls-remote --heads origin main` | Gitea `main` 是完整原始聚合仓 |
+| Vue2 / Vue3 分支 | `git ls-remote --heads origin v2 v3` | Gitea `v2` / `v3` 分别是 Vue2.7 / Vue3 标准组件分支 |
 | GitHub 默认分支 | `gh repo view flyfish-dev/file-viewer --json defaultBranchRef` | `main` |
 | GitHub 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | README、apps、packages、docs、demo、docs-dist、example、artifacts 均存在 |
 | Gitee 开源总仓库 | `https://gitee.com/flyfish-dev/file-viewer` | 国内镜像目标；如远端配额阻塞，以 GitHub 开源总仓库和 release 为准 |
