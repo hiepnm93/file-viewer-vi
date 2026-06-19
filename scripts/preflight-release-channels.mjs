@@ -50,6 +50,12 @@ const steps = [
     skipReason: `missing ${publicRepoDir}`
   },
   {
+    name: 'GitHub core/component content',
+    command: ['pnpm', 'verify:wrapper-github-content'],
+    external: true,
+    okDetail: 'GitHub core/component repositories match local exports'
+  },
+  {
     name: 'npm publish authentication',
     command: ['node', 'scripts/release-ecosystem-packages.mjs', '--publish', '--preflight'],
     external: true
