@@ -151,6 +151,7 @@ async function githubRelease(tag) {
       url: '',
       assetCount: 0,
       hasManifest: false,
+      hasStatus: false,
       error: commandError(result)
     }
   }
@@ -164,6 +165,7 @@ async function githubRelease(tag) {
       url: release.url,
       assetCount: assets.length,
       hasManifest: assets.some(asset => asset.name === 'release-manifest.json'),
+      hasStatus: assets.some(asset => asset.name === 'release-status.json'),
       error: ''
     }
   } catch (error) {
@@ -173,6 +175,7 @@ async function githubRelease(tag) {
       url: '',
       assetCount: 0,
       hasManifest: false,
+      hasStatus: false,
       error: error instanceof Error ? error.message : String(error)
     }
   }
@@ -248,6 +251,7 @@ const gaps = [
     `open-source main Gitee repository ${publicGitee.hash.slice(0, 12)} differs from GitHub ${publicGithub.hash.slice(0, 12)}`,
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
+  release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
   ...componentRepositories.flatMap(row => [
     !row.github.ok && `${row.id} GitHub repository missing`,
     !row.gitee.ok && `${row.id} Gitee repository missing`

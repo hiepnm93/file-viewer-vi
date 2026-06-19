@@ -101,17 +101,22 @@ function ghRelease(tag) {
       tag,
       url: '',
       assetCount: 0,
+      hasManifest: false,
+      hasStatus: false,
       error: result.error || result.stderr || result.stdout || result.signal
     }
   }
 
   try {
     const release = JSON.parse(result.stdout)
+    const assets = Array.isArray(release.assets) ? release.assets : []
     return {
       ok: true,
       tag: release.tagName,
       url: release.url,
-      assetCount: Array.isArray(release.assets) ? release.assets.length : 0,
+      assetCount: assets.length,
+      hasManifest: assets.some(asset => asset.name === 'release-manifest.json'),
+      hasStatus: assets.some(asset => asset.name === 'release-status.json'),
       error: ''
     }
   } catch (error) {
@@ -120,6 +125,8 @@ function ghRelease(tag) {
       tag,
       url: '',
       assetCount: 0,
+      hasManifest: false,
+      hasStatus: false,
       error: error instanceof Error ? error.message : String(error)
     }
   }
@@ -249,6 +256,8 @@ const failures = [
     !publicMainInSync &&
     `open-source main Gitee repository ${publicGiteeHead.hash.slice(0, 12)} differs from GitHub ${publicGithubHead.hash.slice(0, 12)}`,
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
+  release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
+  release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
   ...remoteRows.flatMap(row => [
     !row.github.ok && `${row.id} GitHub repository missing`,
     !row.gitee.ok && `${row.id} Gitee repository missing`
@@ -326,7 +335,9 @@ console.log()
 console.log(`## Open-Source Main Repository\n`)
 console.log(`- GitHub main: ${formatHash(publicGithubHead.hash)} (${okLabel(publicGithubHead.ok)})`)
 console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${syncLabel(publicGithubHead, publicGiteeHead)})`)
-console.log(`- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}${release.url ? `, ${release.url}` : ''})\n`)
+console.log(
+  `- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}, manifest: ${okLabel(release.hasManifest)}, status: ${okLabel(release.hasStatus)}${release.url ? `, ${release.url}` : ''})\n`
+)
 
 console.log(`## Core And Component Repositories\n`)
 console.log(`| id | package | GitHub | Gitee |`)

@@ -163,7 +163,7 @@ pnpm release:ecosystem:pack
 - 独立 组件仓库是否已经通过 `pnpm components:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准组件包、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`、source map 或私有源码
-- 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
+- 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、`artifacts/release-status.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
 - 混淆后的 `packages/components/vue3/dist/index.mjs` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 公开仓库、私有聚合仓与优先支持和 Apache-2.0 许可证说明
 

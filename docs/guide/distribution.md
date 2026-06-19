@@ -203,7 +203,7 @@ pnpm release:public
 pnpm verify:public-main
 ```
 
-校验会反查 `artifacts/release-manifest.json`、所有应公开 tarball、README / README.en.md、组件 GitHub / Gitee 索引和顶层目录边界，避免漏掉源码、重复 tarball 或发布过期产物。
+校验会反查 `artifacts/release-manifest.json`、`artifacts/release-status.json`、所有应公开 tarball、README / README.en.md、组件 GitHub / Gitee 索引和顶层目录边界，避免漏掉源码、重复 tarball 或发布过期产物。
 
 ## Docker 镜像发布
 
