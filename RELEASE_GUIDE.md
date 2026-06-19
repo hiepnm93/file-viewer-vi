@@ -170,6 +170,14 @@ pnpm release:channels:preflight
 pnpm release:channels:preflight -- --skip-external
 ```
 
+如果完整 preflight 只失败在 npm 登录态和 Gitee token，按下面顺序补齐外部凭据后重跑:
+
+```bash
+npm login --registry=https://registry.npmjs.org/
+FILE_VIEWER_GITEE_TOKEN_FILE=~/.config/flyfish/gitee-token pnpm components:gitee:preflight
+pnpm release:channels:preflight
+```
+
 需要快速查看当前还有哪些外部发布缺口时，使用快速审计；它会缩短 GitHub/Gitee/npm 探测超时，并在报告末尾给出下一步命令:
 
 ```bash

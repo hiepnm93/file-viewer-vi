@@ -58,12 +58,21 @@ const steps = [
   {
     name: 'npm publish authentication',
     command: ['node', 'scripts/release-ecosystem-packages.mjs', '--publish', '--preflight'],
-    external: true
+    external: true,
+    nextActions: [
+      'Run `npm login --registry=https://registry.npmjs.org/` in an interactive terminal and complete MFA/passkey.',
+      'Then rerun `pnpm release:channels:preflight` and `pnpm release:ecosystem:publish`.'
+    ]
   },
   {
     name: 'Gitee API token',
     command: ['node', 'scripts/create-gitee-component-repos.mjs', '--preflight'],
-    external: true
+    external: true,
+    nextActions: [
+      'Store a Gitee organization API token outside the repository, for example `~/.config/flyfish/gitee-token`.',
+      'Run `FILE_VIEWER_GITEE_TOKEN_FILE=<token-file> pnpm components:gitee:preflight` before publishing mirrors.',
+      'Then run `FILE_VIEWER_GITEE_TOKEN_FILE=<token-file> pnpm components:gitee:publish`.'
+    ]
   }
 ]
 
@@ -125,6 +134,15 @@ if (failures.length) {
   console.error(
     `\nRelease channels preflight failed: ${failures.map(result => result.name).join(', ')}.`
   )
+  const nextActions = [
+    ...new Set(failures.flatMap(result => result.nextActions || []))
+  ]
+  if (nextActions.length) {
+    console.error('\nNext actions:')
+    for (const action of nextActions) {
+      console.error(`- ${action}`)
+    }
+  }
   process.exit(1)
 }
 
