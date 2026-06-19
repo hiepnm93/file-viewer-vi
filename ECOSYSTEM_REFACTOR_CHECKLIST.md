@@ -252,6 +252,7 @@
 - [x] `pnpm verify:github-release-assets` 已接入 GitHub Release 资产校验，会逐项比对开源总仓 `artifacts/` 的文件名、大小和 sha256，包括 `release-manifest.json`、`release-status.json` 与 `release-status.schema.json`
 - [x] `pnpm verify:wrapper-github-content` 已接入 GitHub core/标准组件分仓内容校验，会先导出独立仓再与远端 `main` 源码树比较
 - [x] `pnpm verify:npm-registry-release` 已接入 npm 发布后校验，会从 registry 拉回 14 个生态包并复用包体规则校验
+- [x] `release-manifest.json` 已声明 `metadataAssets`，显式索引 `release-manifest.json`、`release-status.json` 和 `release-status.schema.json`
 - [x] `pnpm release:status:write` 已接入机器可读状态报告，开源总仓 `artifacts/release-status.json` 会记录各渠道当前状态、缺口、`gapSummary` 和 `gapDetails`
 - [x] `pnpm verify:release-status-schema` 已接入状态报告 schema 校验，开源总仓 `artifacts/release-status.schema.json` 会随 Release 分发
 - [ ] `pnpm release:channels:preflight`（需要 npm 登录态和 Gitee API token 均已就绪）

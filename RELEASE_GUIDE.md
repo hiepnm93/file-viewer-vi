@@ -189,7 +189,7 @@ pnpm release:status:write
 
 状态报告会同时输出 `gaps`、`gapSummary` 和 `gapDetails`。`gapSummary` 用于快速区分本地可修问题和 npm/Gitee/GitHub 等外部发布阻塞，`gapDetails` 会为每条缺口标记 channel、scope、externalBlocker 和下一步动作。
 
-`release-status.schema.json` 是状态报告的机器可读 JSON Schema。发布前可单独执行:
+`release-manifest.json` 会把 `release-manifest.json`、`release-status.json` 和 `release-status.schema.json` 作为 `metadataAssets` 列出，方便下载端从一个入口发现完整发布元数据。`release-status.schema.json` 是状态报告的机器可读 JSON Schema。发布前可单独执行:
 
 ```bash
 pnpm verify:release-status-schema

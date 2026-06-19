@@ -495,6 +495,26 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     : ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const packages = ecosystemPackManifest.packages || []
+  const metadataAssets = [
+    {
+      name: 'release-manifest.json',
+      role: 'release-manifest',
+      required: true,
+      description: 'Release index for ecosystem packages, repositories, source policy and public artifacts.'
+    },
+    {
+      name: 'release-status.json',
+      role: 'release-status',
+      required: true,
+      description: 'Machine-readable channel status, remaining gaps and blocker classification.'
+    },
+    {
+      name: 'release-status.schema.json',
+      role: 'release-status-schema',
+      required: true,
+      description: 'JSON Schema for release-status.json.'
+    }
+  ]
   const manifest = {
     version,
     package: packageJson.name,
@@ -505,6 +525,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     ecosystemPackages: Object.fromEntries(
       packages.map(packageRecord => [packageRecord.packageName, packageRecord.version])
     ),
+    metadataAssets,
     ecosystemArtifacts: packages.map(packageRecord => {
       const wrapper = wrappersByPackageName.get(packageRecord.packageName)
       const includeTarball = shouldPublishArtifactTarball(packageRecord)

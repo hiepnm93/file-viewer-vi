@@ -30,6 +30,20 @@ const { rootPackage, wrapperManifest, entries: ecosystemPackageEntries } =
   await loadEcosystemReleaseContext(sourceRoot)
 const readmeTemplate = await readJson(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'))
 const version = rootPackage.version
+const requiredMetadataAssets = [
+  {
+    name: 'release-manifest.json',
+    role: 'release-manifest'
+  },
+  {
+    name: 'release-status.json',
+    role: 'release-status'
+  },
+  {
+    name: 'release-status.schema.json',
+    role: 'release-status-schema'
+  }
+]
 
 function assert(condition, message) {
   if (!condition) {
@@ -63,6 +77,15 @@ async function assertReleaseManifest(repoDir) {
   assert(manifest.repositoryRole === 'open-source-main-repository', 'Open-source main repository role drifted')
   assert(manifest.corePackage?.packageName === wrapperManifest.corePackage.packageName, 'Core package metadata drifted')
   assert(manifest.corePackage?.visibility === wrapperManifest.corePackage.visibility, 'Core package visibility metadata drifted')
+
+  const metadataAssets = new Map((manifest.metadataAssets || []).map(asset => [asset.name, asset]))
+  for (const expected of requiredMetadataAssets) {
+    const asset = metadataAssets.get(expected.name)
+    assert(asset, `Release manifest is missing metadata asset ${expected.name}`)
+    assert(asset.role === expected.role, `Release manifest metadata asset ${expected.name} role drifted`)
+    assert(asset.required === true, `Release manifest metadata asset ${expected.name} must be required`)
+    await assertFile(join(repoDir, 'artifacts', expected.name), `metadata asset ${expected.name}`)
+  }
 
   const artifactRecords = new Map((manifest.ecosystemArtifacts || []).map(record => [record.name, record]))
   const ecosystemPackages = manifest.ecosystemPackages || {}
