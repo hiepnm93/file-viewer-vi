@@ -21,7 +21,10 @@ const publicRepoDir = resolve(
 )
 const skipBuild = args.includes('--skip-build')
 const keepOldArtifacts = args.includes('--keep-old-artifacts')
-const skipVue2Tarball = args.includes('--skip-vue2-tarball')
+const includeLegacyVue2Tarball =
+  args.includes('--include-legacy-vue2-tarball') ||
+  process.env.FILE_VIEWER_INCLUDE_LEGACY_VUE2_TARBALL === '1'
+const skipVue2Tarball = args.includes('--skip-vue2-tarball') || !includeLegacyVue2Tarball
 const slimArtifacts =
   (args.includes('--slim') || process.env.FILE_VIEWER_PUBLIC_SLIM === '1') &&
   !args.includes('--expanded-assets')
