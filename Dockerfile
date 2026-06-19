@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build-only
 
-FROM nginx:${NGINX_VERSION} AS runtime
+FROM nginx:${NGINX_VERSION} AS web-server
 
 ARG APP_VERSION=0.0.0
 LABEL org.opencontainers.image.title="Flyfish Viewer" \

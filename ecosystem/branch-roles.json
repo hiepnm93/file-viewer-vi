@@ -1,5 +1,11 @@
 {
   "schemaVersion": 1,
+  "currentSourceBranch": "v3",
+  "targetBranchModel": {
+    "main": "core",
+    "v2": "vue2.7-wrapper",
+    "v3": "vue3-wrapper"
+  },
   "sourceRemote": {
     "name": "origin",
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
@@ -40,7 +46,7 @@
         "file-viewer3"
       ],
       "sourcePolicy": "wrapper-source-exported-publicly",
-      "description": "Tracks the Vue 3 baseline viewer and demo experience while sharing the same @file-viewer/core foundation and public wrapper repository."
+      "description": "Tracks the Vue 3 wrapper and v3 demo experience while sharing the same @file-viewer/core foundation and public wrapper repository."
     }
   ]
 }

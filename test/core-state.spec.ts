@@ -3,13 +3,13 @@ import {
   DEFAULT_FILE_VIEWER_STATE_THEME,
   DEFAULT_FILE_VIEWER_UNSUPPORTED_DESCRIPTION,
   FILE_VIEWER_PREVIEW_MESSAGES,
-  applyFileViewerLoadingRuntimeState,
+  applyFileViewerLoadingState,
   createFileViewerLoadingController,
   createFileViewerLoadingControllerActionHandlers,
   createFileViewerEmptyState,
   createFileViewerErrorState,
-  createFileViewerLoadingRuntimeState,
   createFileViewerLoadingState,
+  createFileViewerPreviewLoadingState,
   createFileViewerReadyState,
   createFileViewerUnsupportedState,
   formatFileViewerErrorMessage,
@@ -30,7 +30,7 @@ describe('@file-viewer/core render state helpers', () => {
   })
 
   it('creates loading and ready descriptors with stable theme semantics', () => {
-    expect(createFileViewerLoadingState('PDF', FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)).toMatchObject({
+    expect(createFileViewerPreviewLoadingState('PDF', FILE_VIEWER_PREVIEW_MESSAGES.streamingPdf)).toMatchObject({
       state: 'loading',
       extension: 'pdf',
       title: DEFAULT_FILE_VIEWER_STATE_THEME.label,
@@ -77,7 +77,7 @@ describe('@file-viewer/core render state helpers', () => {
     })
   })
 
-  it('keeps loading runtime state and themes framework-neutral', () => {
+  it('keeps loading state and themes framework-neutral', () => {
     expect(resolveFileViewerLoadingTheme('DOCX')).toMatchObject({
       badge: 'W',
       label: 'Word 文档',
@@ -85,7 +85,7 @@ describe('@file-viewer/core render state helpers', () => {
     })
     expect(resolveFileViewerLoadingTheme('unknown')).toEqual(DEFAULT_FILE_VIEWER_STATE_THEME)
 
-    expect(createFileViewerLoadingRuntimeState('pdf')).toMatchObject({
+    expect(createFileViewerLoadingState('pdf')).toMatchObject({
       loading: false,
       error: '',
       message: '',
@@ -126,7 +126,7 @@ describe('@file-viewer/core render state helpers', () => {
     })
 
     const source = controller.startLoading('再次加载')
-    const target = createFileViewerLoadingRuntimeState('pdf')
+    const target = createFileViewerLoadingState('pdf')
     expect(syncFileViewerLoadingControllerState(target, controller)).toBe(target)
     expect(target).toMatchObject({
       loading: true,
@@ -137,7 +137,7 @@ describe('@file-viewer/core render state helpers', () => {
       }
     })
 
-    const nextTarget = createFileViewerLoadingRuntimeState('pdf')
+    const nextTarget = createFileViewerLoadingState('pdf')
     expect(runFileViewerLoadingControllerAction(nextTarget, () => source)).toBe(nextTarget)
     expect(nextTarget).toMatchObject({
       loading: true,
@@ -163,7 +163,7 @@ describe('@file-viewer/core render state helpers', () => {
       }
     })
 
-    expect(applyFileViewerLoadingRuntimeState(target, source)).toBe(target)
+    expect(applyFileViewerLoadingState(target, source)).toBe(target)
     expect(target).toMatchObject({
       loading: true,
       message: '再次加载',
@@ -176,9 +176,9 @@ describe('@file-viewer/core render state helpers', () => {
     expect(target.styleVars).not.toBe(source.styleVars)
   })
 
-  it('creates loading controller action facades for wrapper runtime targets', () => {
+  it('creates loading controller action facades for wrapper targets', () => {
     const controller = createFileViewerLoadingController('pdf')
-    const target = createFileViewerLoadingRuntimeState('docx')
+    const target = createFileViewerLoadingState('docx')
     const actions = createFileViewerLoadingControllerActionHandlers(target, controller)
 
     expect(actions.syncLoadingState()).toBe(target)

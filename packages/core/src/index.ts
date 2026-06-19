@@ -1,11 +1,20 @@
+import type {
+  FileRenderContext,
+  FileViewerRenderedInstance,
+} from './types';
+
 export {
   DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
   DEFAULT_FILE_VIEWER_ARCHIVE_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_DWF_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_WASM_PATH,
   DEFAULT_FILE_VIEWER_CAD_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL,
+  DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH,
   DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS,
+  DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH,
   DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL,
+  DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL,
   DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_PACKAGE_PATH,
   getFileViewerRendererAssetManifest,
   listFileViewerRendererAssetManifests,
@@ -13,8 +22,12 @@ export {
   resolveFileViewerArchiveWorkerUrl,
   resolveFileViewerAssetUrl,
   resolveFileViewerCadAssetUrls,
+  resolveFileViewerDataSqlWasmUrl,
+  resolveFileViewerDocxWorkerUrl,
   resolveFileViewerRendererAssets,
+  resolveFileViewerSpreadsheetWorkerUrl,
   resolveFileViewerTypstCompilerWasmUrl,
+  resolveFileViewerTypstRendererWasmUrl,
 } from './assets';
 export {
   ARCHIVE_EXTENSIONS,
@@ -96,35 +109,6 @@ export type {
   MutableFileViewerZoomState,
 } from './documentZoom';
 export {
-  DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL,
-  DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT,
-  DEFAULT_FILE_VIEWER_FRAME_TITLE,
-  DEFAULT_FILE_VIEWER_PUBLIC_DIR,
-  DEFAULT_FILE_VIEWER_URL,
-  appendFileViewerFrameSearchParam,
-  buildFileViewerFrameSrc,
-  canUseFileViewerDom,
-  createFileViewerDirectFrameController,
-  createFileViewerDirectFrameHandle,
-  createFileViewerFrameControllerHandle,
-  createFileViewerFrame,
-  createFileViewerFrameFilePostController,
-  createFileViewerMountedFrameHandle,
-  createFileViewerFrameUrl,
-  getFileViewerCurrentOrigin,
-  getFileViewerFrameOrigin,
-  getFileViewerFrameSourceFilename,
-  getFileViewerFrameUrl,
-  isFileViewerAbsoluteUrl,
-  mountFileViewerFrame,
-  normalizeFileViewerFrameUrl,
-  postFileToFileViewerFrame,
-  serializeFileViewerFrameUrl,
-  syncFileViewerFrame,
-  toFileViewerFrameOptions,
-  toFileViewerFrameMessageBlob,
-} from './frame';
-export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
   DEFAULT_FILE_VIEWER_SCROLL_CONTAINER_CANDIDATE_SELECTOR,
@@ -185,13 +169,224 @@ export type {
   FileViewerPublicOperationActionHandlers,
   ResolveFileViewerOperationActionErrorMessageInput,
 } from './viewerOperations';
-export {
-  applyPrintPageSize,
-  buildPrintPageStyle,
-  formatCssPixels,
-  getElementPrintPageSize,
-} from './printLayout';
 export { createRendererRegistry } from './registry';
+export {
+  coreBrowserRendererHandlers,
+  createFileViewerCoreRendererRegistry,
+  fileViewerCoreRendererDispatcher,
+  fileViewerCoreRendererRegistry,
+  fileViewerCoreRendererRegistryBridge,
+  missingFileViewerCoreRendererHandlers,
+} from './renderers/index';
+export const renderFileViewerAudio = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderAudio } = await import('./renderers/audio');
+  return renderAudio(buffer, target, type);
+};
+export const renderFileViewerArchive = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderArchive } = await import('./renderers/archive');
+  return renderArchive(buffer, target, type, context);
+};
+export const renderFileViewerCad = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderCad } = await import('./renderers/cad');
+  return renderCad(buffer, target, type, context);
+};
+export const renderFileViewerCode = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderCode } = await import('./renderers/code');
+  return renderCode(buffer, target, type);
+};
+export const renderFileViewerDataAsset = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderDataAsset } = await import('./renderers/data');
+  return renderDataAsset(buffer, target, type, context);
+};
+export const renderFileViewerDrawing = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderDrawing } = await import('./renderers/drawing');
+  return renderDrawing(buffer, target, type, context);
+};
+export const renderFileViewerEda = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderEda } = await import('./renderers/eda');
+  return renderEda(buffer, target, type, context);
+};
+export const renderFileViewerEmail = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderEmail } = await import('./renderers/email');
+  return renderEmail(buffer, target, type, context);
+};
+export const renderFileViewerEpub = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderEpub } = await import('./renderers/epub');
+  return renderEpub(buffer, target);
+};
+export const renderFileViewerGeo = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderGeo } = await import('./renderers/geo');
+  return renderGeo(buffer, target, type);
+};
+export const renderFileViewerImage = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderImage } = await import('./renderers/image');
+  return renderImage(buffer, target, type);
+};
+export const renderFileViewerMarkdown = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderMarkdown } = await import('./renderers/markdown');
+  return renderMarkdown(buffer, target);
+};
+export const renderFileViewerModel = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderModel } = await import('./renderers/model');
+  return renderModel(buffer, target, type, context);
+};
+export const renderFileViewerOfd = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderOfd } = await import('./renderers/ofd');
+  return renderOfd(buffer, target, context);
+};
+export const renderFileViewerOpenDocument = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderOpenDocument } = await import('./renderers/openDocument');
+  return renderOpenDocument(buffer, target, type);
+};
+export const renderFileViewerPdf = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderPdf } = await import('./renderers/pdf');
+  return renderPdf(buffer, target, context);
+};
+export const renderFileViewerPptx = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderPptx } = await import('./renderers/pptx');
+  return renderPptx(buffer, target, type, context);
+};
+export const renderFileViewerTypst = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderTypst } = await import('./renderers/typst');
+  return renderTypst(buffer, target, type, context);
+};
+export const renderFileViewerUmd = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderUmd } = await import('./renderers/umd');
+  return renderUmd(buffer, target);
+};
+export const renderFileViewerVideo = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderVideo } = await import('./renderers/video');
+  return renderVideo(buffer, target, type, context);
+};
+export const renderFileViewerWordDoc = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderWordDoc } = await import('./renderers/wordDoc');
+  return renderWordDoc(buffer, target, context);
+};
+export const renderFileViewerWordDocx = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderWordDocx } = await import('./renderers/wordDocx');
+  return renderWordDocx(buffer, target, context);
+};
+export const renderFileViewerSpreadsheet = async (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+): Promise<FileViewerRenderedInstance> => {
+  const { default: renderSpreadsheet } = await import('./renderers/spreadsheet');
+  return renderSpreadsheet(buffer, target, type, context);
+};
+export {
+  parseEdaFile,
+} from './renderers/edaParser';
+export type {
+  EdaDiagnostic,
+  EdaDiagnosticLevel,
+  EdaDomainRole,
+  EdaEntity,
+  EdaFileType,
+  EdaParseResult,
+  EdaParserMode,
+  EdaProperty,
+  EdaStats,
+  EdaStreamKind,
+  EdaStreamView,
+  EdaTreeNode,
+} from './renderers/edaParser';
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
   createUnsupportedAvailability,
@@ -220,8 +415,6 @@ export {
   createFileViewerToolbarActions,
   createFileViewerToolbarControllerActionHandlers,
   createFileViewerToolbarZoomSyncSnapshot,
-  createFileViewerPostMessagePayload,
-  createFileViewerRawPostMessagePayload,
   DEFAULT_FILE_VIEWER_LIFECYCLE_HOOK_ERROR_LOGGER,
   DEFAULT_FILE_VIEWER_OPERATION_ERROR_LOGGER,
   dispatchFileViewerLifecycleEvent,
@@ -232,16 +425,8 @@ export {
   getFileViewerBeforeOperationHooks,
   getFileViewerLifecycleHookName,
   hasVisibleFileViewerToolbarActions,
-  isFileViewerFrameEvent,
   isFileViewerZoomButtonDisabled,
   normalizeFileViewerToolbar,
-  postFileViewerLifecycleEvent,
-  postFileViewerLocationChange,
-  postFileViewerOperationContextEvent,
-  postFileViewerOperationAvailabilityChange,
-  postFileViewerMessageToParent,
-  postFileViewerSearchChange,
-  postFileViewerZoomChange,
   reportFileViewerLifecycleHookError,
   reportFileViewerOperationError,
   resolveFileViewerLifecycleFallbackSource,
@@ -288,11 +473,11 @@ export type {
 export {
   FALLBACK_FILE_VIEWER_LOADING_THEME,
   FILE_VIEWER_LOADING_THEME_MAP,
-  applyFileViewerLoadingRuntimeState,
-  cloneFileViewerLoadingRuntimeState,
+  applyFileViewerLoadingState,
+  cloneFileViewerLoadingState,
   createFileViewerLoadingController,
   createFileViewerLoadingControllerActionHandlers,
-  createFileViewerLoadingRuntimeState,
+  createFileViewerLoadingState,
   createFileViewerLoadingStyleVars,
   runFileViewerLoadingControllerAction,
   runFileViewerLoadingExtensionSync,
@@ -321,10 +506,6 @@ export {
   serializeFileViewerOptions,
   setFileViewerOptionsSearchParam,
 } from './options';
-export {
-  createFileViewerNativeController,
-  resolveFileViewerNativeLoadSource,
-} from './nativeController';
 export {
   resolveFileViewerPresentationState,
 } from './presentation';
@@ -397,7 +578,7 @@ export {
   FILE_VIEWER_PREVIEW_MESSAGES,
   createFileViewerEmptyState,
   createFileViewerErrorState,
-  createFileViewerLoadingState,
+  createFileViewerPreviewLoadingState,
   createFileViewerReadyState,
   createFileViewerUnsupportedState,
   formatFileViewerErrorMessage,
@@ -458,7 +639,7 @@ export {
   resolveFileViewerPreviewLoadErrorMessage,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
-  resolveFileViewerRuntimePageHref,
+  resolveFileViewerPageHref,
   reportFileViewerMissingRemoteData,
   reportFileViewerPreviewLoadError,
   runFileViewerLocalFilePreview,
@@ -552,10 +733,6 @@ export type {
   FileViewerLifecycleStateController,
   FileViewerLifecycleHookErrorLogger,
   FileViewerOperationErrorLogger,
-  FileViewerFrameEventHandler,
-  FileViewerFrameEventPayload,
-  FileViewerPostMessagePayload,
-  FileViewerPostMessageType,
   ResolveFileViewerOperationAvailabilityInput,
   ReportFileViewerLifecycleHookErrorInput,
   ReportFileViewerOperationErrorInput,
@@ -564,9 +741,9 @@ export type {
   ResolveFileViewerLifecycleHookErrorMessageInput,
 } from './operations';
 export type {
-  FileViewerLoadingRuntimeState,
+  FileViewerLoadingState,
   FileViewerLoadingTheme,
-  MutableFileViewerLoadingRuntimeState,
+  MutableFileViewerLoadingState,
 } from './loading';
 export type {
   ExecuteFileViewerDownloadOperationInput,
@@ -577,39 +754,10 @@ export type {
   ResolveFileViewerOperationFilenameInput,
 } from './viewerOperations';
 export type {
-  BuildFileViewerFrameSrcOptions,
-  CreateFileViewerFrameOptions,
-  FileViewerDirectFrameController,
-  FileViewerDirectFrameControllerAccessor,
-  FileViewerDirectFrameControllerOptions,
-  FileViewerDirectFrameHandle,
-  FileViewerFrameControllerHandle,
-  FileViewerFrameController,
-  FileViewerFrameControllerAccessor,
-  FileViewerFrameComponentBridgeOptions,
-  FileViewerFrameFilePostController,
-  FileViewerFrameFilePostControllerOptions,
-  FileViewerFrameContainerComponentProps,
-  FileViewerFrameComponentProps,
-  FileViewerFrameHostComponentProps,
-  FileViewerFrameIframeComponentProps,
-  FileViewerFrameOptions,
-  FileViewerFrameParamValue,
-  FileViewerFrameTimer,
-  FileViewerMountedFrameHandle,
-} from './frame';
-export type {
   FileViewerSerializableCadOptions,
   FileViewerSerializableOptions,
   FileViewerSerializableToolbarOptions,
 } from './options';
-export type {
-  CreateFileViewerNativeControllerOptions,
-  FileViewerNativeController,
-  FileViewerNativeFetchFile,
-  FileViewerNativeFetchInput,
-  FileViewerNativeSource,
-} from './nativeController';
 export type {
   CreateFileViewerRendererDispatcherOptions,
   FileViewerRendererDispatcher,
@@ -643,11 +791,6 @@ export type {
   BuildFileViewerRenderedHtmlDocumentOptions,
 } from './export';
 export type {
-  ApplyPrintPageSizeOptions,
-  BuildPrintPageStyleOptions,
-  PrintPageSize,
-} from './printLayout';
-export type {
   CreateFileViewerWorkerControllerOptions,
   FileViewerWorkerContext,
   FileViewerWorkerController,
@@ -672,6 +815,9 @@ export type {
   FileViewerDocumentChunk,
   FileViewerDownloadOptions,
   FileViewerDocxOptions,
+  FileViewerEvent,
+  FileViewerEventHandler,
+  FileViewerEventType,
   FileViewerExportHtmlOptions,
   FileViewerFileRef,
   FileRenderContext,
@@ -700,6 +846,7 @@ export type {
   FileViewerSearchState,
   FileViewerSource,
   FileViewerSourceKind,
+  FileViewerSpreadsheetOptions,
   FileViewerStateDescriptor,
   FileViewerStateTheme,
   FileViewerThemeMode,

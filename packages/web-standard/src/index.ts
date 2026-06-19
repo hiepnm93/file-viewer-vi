@@ -1,200 +1,56 @@
 import {
-  DEFAULT_FILE_VIEWER_PUBLIC_DIR,
-  DEFAULT_FILE_VIEWER_URL,
-  buildFileViewerFrameSrc,
-  createFileViewerDirectFrameController,
-  createFileViewerDirectFrameHandle,
-  createFileViewerFrameControllerHandle,
-  createFileViewerFrame as createCoreFileViewerFrame,
-  createFileViewerFrameFilePostController,
-  createFileViewerMountedFrameHandle,
-  getFileViewerCurrentOrigin,
-  getFileViewerFrameOrigin,
-  getFileViewerFrameSourceFilename,
-  getFileViewerFrameUrl,
-  isFileViewerFrameEvent,
-  mountFileViewerFrame as mountCoreFileViewerFrame,
-  postFileToFileViewerFrame,
-  syncFileViewerFrame as syncCoreFileViewerFrame,
-  toFileViewerFrameOptions,
-  toFileViewerFrameMessageBlob
-} from '@file-viewer/core'
-import type {
-  FileViewerFileRef,
-  FileViewerAiOptions,
-  FileViewerArchiveOptions,
-  FileViewerDocxOptions,
-  FileViewerDirectFrameController as CoreFileViewerDirectFrameController,
-  FileViewerDirectFrameControllerAccessor,
-  FileViewerDirectFrameControllerOptions as CoreFileViewerDirectFrameControllerOptions,
-  FileViewerDirectFrameHandle as CoreFileViewerDirectFrameHandle,
-  FileViewerFrameControllerHandle as CoreFileViewerFrameControllerHandle,
-  FileViewerFrameController as CoreFileViewerFrameController,
-  FileViewerFrameFilePostController as CoreFileViewerFrameFilePostController,
-  FileViewerFrameFilePostControllerOptions as CoreFileViewerFrameFilePostControllerOptions,
-  FileViewerFrameEventHandler,
-  FileViewerFrameEventPayload,
-  FileViewerFrameComponentBridgeOptions as CoreFileViewerFrameComponentBridgeOptions,
-  FileViewerFrameComponentProps as CoreFileViewerFrameComponentProps,
-  FileViewerFrameContainerComponentProps as CoreFileViewerFrameContainerComponentProps,
-  FileViewerFrameHostComponentProps as CoreFileViewerFrameHostComponentProps,
-  FileViewerFrameIframeComponentProps as CoreFileViewerFrameIframeComponentProps,
-  FileViewerFrameControllerAccessor,
-  FileViewerFrameOptions,
-  FileViewerFrameParamValue,
-  FileViewerMountedFrameHandle as CoreFileViewerMountedFrameHandle,
-  FileViewerPdfOptions,
-  FileViewerPostMessageType,
-  FileViewerSearchOptions,
-  FileViewerSerializableOptions,
-  FileViewerSerializableCadOptions,
-  FileViewerSerializableToolbarOptions,
-  FileViewerThemeMode,
-  FileViewerToolbarPosition,
-  FileViewerTypstOptions,
-  FileViewerWatermarkOptions
-} from '@file-viewer/core'
+  createViewerControllerHandle,
+  mountViewer as mountCoreViewer,
+  type ViewerController,
+  type ViewerMountOptions,
+  type ViewerCoreOptions,
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
-export type FileRef = FileViewerFileRef
-
-export type ViewerFrameParamValue = FileViewerFrameParamValue
-
-export type ViewerWatermarkOptions = FileViewerWatermarkOptions
-export type ViewerToolbarPosition = FileViewerToolbarPosition
-export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
-export type ViewerArchiveOptions = FileViewerArchiveOptions
-export type ViewerPdfOptions = FileViewerPdfOptions
-export type ViewerDocxOptions = FileViewerDocxOptions
-export type ViewerTypstOptions = FileViewerTypstOptions
-export type ViewerCadOptions = FileViewerSerializableCadOptions
-export type ViewerSearchOptions = FileViewerSearchOptions
-export type ViewerAiOptions = FileViewerAiOptions
-export type ViewerThemeMode = FileViewerThemeMode
-export type ViewerRuntimeOptions = FileViewerSerializableOptions
-
-export type ViewerFrameEventType = FileViewerPostMessageType
-export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
-export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
-
-export interface ViewerFrameOptions extends FileViewerFrameOptions {}
-
-export interface ViewerFrameComponentProps extends CoreFileViewerFrameComponentProps {}
-
-export interface ViewerFrameComponentBridgeOptions extends CoreFileViewerFrameComponentBridgeOptions {}
-
-export interface ViewerFrameIframeComponentProps extends CoreFileViewerFrameIframeComponentProps {}
-
-export interface ViewerFrameContainerComponentProps<
-  ContainerClass = unknown,
-  ContainerStyle = unknown
-> extends CoreFileViewerFrameContainerComponentProps<ContainerClass, ContainerStyle> {}
-
-export interface ViewerFrameHostComponentProps<
-  ContainerClass = unknown,
-  ContainerStyle = unknown
-> extends CoreFileViewerFrameHostComponentProps<ContainerClass, ContainerStyle> {}
-
-export interface CreateViewerFrameOptions extends ViewerFrameOptions {
-  autoPostFile?: boolean
-  className?: string
-  style?: Partial<CSSStyleDeclaration>
-  title?: string
-}
-
-export interface ViewerFrameController extends CoreFileViewerFrameController {}
-
-export type ViewerFrameControllerAccessor = FileViewerFrameControllerAccessor
-
-export interface ViewerFrameFilePostController extends CoreFileViewerFrameFilePostController {}
-
-export interface ViewerFrameFilePostControllerOptions extends CoreFileViewerFrameFilePostControllerOptions {}
-
-export interface ViewerDirectFrameControllerOptions extends CoreFileViewerDirectFrameControllerOptions {}
-
-export interface ViewerDirectFrameController extends CoreFileViewerDirectFrameController {}
-
-export type ViewerDirectFrameControllerAccessor = FileViewerDirectFrameControllerAccessor
-
-export interface ViewerDirectFrameHandle extends CoreFileViewerDirectFrameHandle {}
-
-export interface ViewerMountedFrameHandle extends CoreFileViewerMountedFrameHandle {}
-
-export interface ViewerFrameControllerHandle extends CoreFileViewerFrameControllerHandle {}
-
-export const DEFAULT_VIEWER_PUBLIC_DIR = DEFAULT_FILE_VIEWER_PUBLIC_DIR
-export const DEFAULT_VIEWER_URL = DEFAULT_FILE_VIEWER_URL
-export const VIEWER_FRAME_CACHE_KEY = '1.0.23'
-
-export const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
-  return isFileViewerFrameEvent(value)
-}
-
-export const getCurrentOrigin = getFileViewerCurrentOrigin
-
-export const getViewerUrl = (viewerUrl?: string) => getFileViewerFrameUrl(viewerUrl, DEFAULT_VIEWER_URL)
-
-export const getViewerOrigin = (viewerUrl?: string) => {
-  return getFileViewerFrameOrigin(viewerUrl, DEFAULT_VIEWER_URL)
-}
-
-export const getSourceFilename = getFileViewerFrameSourceFilename
-
-export const buildViewerSrc = (options: ViewerFrameOptions = {}) => {
-  return buildFileViewerFrameSrc({
-    ...options,
-    defaultViewerUrl: DEFAULT_VIEWER_URL,
-    defaultCacheKey: VIEWER_FRAME_CACHE_KEY
+export const mountViewer = (
+  container: HTMLElement,
+  initialOptions: ViewerMountOptions = {},
+  coreOptions: ViewerCoreOptions = {}
+): ViewerController => {
+  return mountCoreViewer(container, initialOptions, {
+    registry: fileViewerCoreRendererRegistry,
+    ...coreOptions,
   })
 }
 
-const withViewerFrameDefaults = <Options extends ViewerFrameOptions>(options: Options) => ({
-  ...options,
-  defaultViewerUrl: DEFAULT_VIEWER_URL,
-  defaultCacheKey: VIEWER_FRAME_CACHE_KEY
-})
-
-export const toMessageBlob = toFileViewerFrameMessageBlob
-
-export const toViewerFrameOptions = (
-  props: ViewerFrameHostComponentProps,
-  bridgeOptions: ViewerFrameComponentBridgeOptions = {}
-): CreateViewerFrameOptions => {
-  return toFileViewerFrameOptions(props, bridgeOptions)
+const FlyfishFileViewerWeb = {
+  createViewerControllerHandle,
+  mountViewer,
 }
 
-export const postFileToViewer = (
-  frame: HTMLIFrameElement | null | undefined,
-  options: ViewerFrameOptions
-) => {
-  return postFileToFileViewerFrame(frame, options)
-}
+export { createViewerControllerHandle }
 
-export const syncViewerFrame = (
-  frame: HTMLIFrameElement | null | undefined,
-  options: ViewerFrameOptions
-) => {
-  return syncCoreFileViewerFrame(frame, withViewerFrameDefaults(options))
-}
+export type {
+  FileRef,
+  ViewerAiOptions,
+  ViewerArchiveOptions,
+  ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
+  ViewerDocxOptions,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
+  ViewerPdfOptions,
+  ViewerSpreadsheetOptions,
+  ViewerCoreOptions,
+  ViewerSearchOptions,
+  ViewerSourceInput,
+  ViewerThemeMode,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition,
+  ViewerTypstOptions,
+  ViewerWatermarkOptions,
+} from './controller.js'
 
-export const createViewerFrame = (options: CreateViewerFrameOptions = {}) => {
-  return createCoreFileViewerFrame(withViewerFrameDefaults(options))
-}
-
-export const createViewerDirectFrameController = createFileViewerDirectFrameController
-
-export const createViewerDirectFrameHandle = createFileViewerDirectFrameHandle
-
-export const createViewerMountedFrameHandle = createFileViewerMountedFrameHandle
-
-export const createViewerFrameControllerHandle = createFileViewerFrameControllerHandle
-
-export const createViewerFrameFilePostController = createFileViewerFrameFilePostController
-
-export const mountViewerFrame = (
-  container: HTMLElement,
-  initialOptions: CreateViewerFrameOptions = {}
-): ViewerFrameController => {
-  return mountCoreFileViewerFrame(container, withViewerFrameDefaults(initialOptions))
-}
-
-export const mountViewer = mountViewerFrame
+export default FlyfishFileViewerWeb

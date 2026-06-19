@@ -60,7 +60,7 @@ async function loadTypescriptModule(path) {
     exports: module.exports,
     module,
     require(specifier) {
-      throw new Error(`Unexpected runtime import while reading ${path}: ${specifier}`)
+      throw new Error(`Unexpected module import while reading ${path}: ${specifier}`)
     }
   }
   vm.runInNewContext(transpiled.outputText, sandbox, { filename: path })
@@ -358,14 +358,11 @@ async function verifyExportedWebViewerAssets(repoDir, label) {
   const viewerDir = join(repoDir, 'viewer')
   await assertDirectory(viewerDir, `${label}/viewer`)
   for (const file of [
-    'index.html',
-    'compare.html',
     'flyfish-viewer-assets.json',
     'flyfish-viewer-manifest.json'
   ]) {
     await assertFile(join(viewerDir, file), `${label}/viewer/${file}`)
   }
-  await assertDirectory(join(viewerDir, 'assets'), `${label}/viewer/assets`)
   await assertDirectory(join(viewerDir, 'wasm'), `${label}/viewer/wasm`)
 }
 

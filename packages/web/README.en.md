@@ -1,71 +1,61 @@
 # @flyfish-group/file-viewer-web
 
-Private-deploy pure web integration for Flyfish Viewer. The package carries the Vue 3 baseline viewer assets and the framework-neutral iframe helper. New integrations should prefer the standard package name `@file-viewer/web`; this historical package remains synchronized for compatibility.
+Pure web file preview package. This package is the historical alias of `@file-viewer/web` and now provides the same native DOM mounting API: it creates the complete Flyfish Viewer inside your target container.
 
 ```bash
-npm install @flyfish-group/file-viewer-web
+npm install @flyfish-group/file-viewer-web@2.0.0
 ```
-
-The package installs the `file-viewer-copy-assets` command. Copy the complete viewer directory into your public static directory before using the helper:
-
-```bash
-npx file-viewer-copy-assets ./public/file-viewer
-```
-
-The copy command writes `flyfish-viewer-assets.json` into the target directory and validates public worker/WASM files against the renderer asset manifest exported by `@file-viewer/core`. This catches missing archive or CAD deployment assets before users open a document.
 
 ```ts
-import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
+import { mountViewer } from '@flyfish-group/file-viewer-web'
 
-mountViewerFrame(document.getElementById('viewer')!, {
-  viewerUrl: '/file-viewer/index.html',
+const controller = mountViewer(document.getElementById('viewer')!, {
   url: '/files/demo.pdf',
   options: {
     theme: 'light',
-    toolbar: { position: 'bottom-right' }
+    toolbar: { position: 'bottom-right' },
+    search: { maxMatches: 1000 }
   },
   onEvent(event) {
     console.log(event.type, event.event, event.payload)
   }
 })
+
+controller.reload()
 ```
-
-No-build or legacy admin pages can self-host the helper files and load the browser global bundle:
-
-```bash
-mkdir -p ./public/vendor/file-viewer-web
-cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
-cp ./node_modules/@flyfish-group/file-viewer-web/dist/flyfish-file-viewer-web.iife.js ./public/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js
-```
-
-```html
-<script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
-<script>
-  window.FlyfishFileViewerWeb.mountViewer(document.getElementById('viewer'), {
-    viewerUrl: '/file-viewer/index.html',
-    url: '/files/demo.pdf',
-    options: { theme: 'light' }
-  })
-</script>
-```
-
-`mountViewer(container, options)` is the standardized pure web alias of `mountViewerFrame(container, options)`. Existing integrations can keep using `mountViewerFrame`.
 
 For authenticated files, download the file in your host application first and pass a `Blob` plus a filename:
 
 ```ts
 const blob = await fetch('/api/files/contract', { credentials: 'include' }).then(res => res.blob())
 
-mountViewerFrame(document.getElementById('viewer')!, {
+mountViewer(document.getElementById('viewer')!, {
   file: blob,
   name: 'contract.pdf'
 })
 ```
 
-pnpm 10 may block dependency postinstall scripts. If you see `Ignored build scripts: @flyfish-group/file-viewer-web`, run `pnpm approve-builds` and allow this package, or run `pnpm exec file-viewer-copy-assets ./public/file-viewer` manually.
+## Script Tag Usage
 
-Official documentation: https://doc.flyfish.dev/
+No-build projects can self-host the IIFE bundle. It exposes `window.FlyfishFileViewerWeb`:
 
-Online demo: https://viewer.flyfish.dev/
+```html
+<div id="viewer" style="height: 720px"></div>
+<script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
+<script>
+  window.FlyfishFileViewerWeb.mountViewer(document.getElementById('viewer'), {
+    url: '/files/demo.docx',
+    options: { theme: 'light' }
+  })
+</script>
+```
 
-License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution and contribute shared compatibility improvements where possible.
+Browsers cannot resolve a bare package name such as `@flyfish-group/file-viewer-web` without a build tool. Use a static URL, the IIFE global bundle, or an import map. Workers, WASM files, and examples can be self-hosted with:
+
+```bash
+npx file-viewer-copy-assets ./public/file-viewer
+```
+
+`options` are passed to the shared core and cover theme, toolbar operations, watermarking, search, AI-friendly text chunks, unified zoom, archive workers, IndexedDB cache, and size limits. Lifecycle, operation availability, search state, and document location updates are emitted through `onEvent`.
+
+New projects should prefer the standard package name `@file-viewer/web`. Official documentation: https://doc.flyfish.dev/

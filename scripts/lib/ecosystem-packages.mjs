@@ -17,35 +17,16 @@ export function ecosystemPackageSpecs(wrapperManifest) {
       packageDir: 'packages/core',
       publicSource: false
     },
-    {
-      id: 'vue3-compat-scoped',
+    ...(wrapperManifest.compatibilityPackages || []).map(compatibilityPackage => ({
+      id: compatibilityPackage.id,
       kind: 'compatibility',
-      packageDir: '.',
-      publicSource: false
-    },
-    {
-      id: 'vue3-compat-unscoped',
-      kind: 'compatibility',
-      packageDir: 'packages/vue3-unscoped',
-      publicSource: false,
-      publicArtifact: {
-        includeTarball: false,
-        duplicateOf: '@flyfish-group/file-viewer3',
-        reason: 'The public artifact repository keeps one Vue 3 compatibility tarball to avoid duplicate package bodies; the unscoped alias is still published to npm.'
+      packageDir: compatibilityPackage.packageDir,
+      compatibilityPackage,
+      publicSource: compatibilityPackage.publicSource === true,
+      publicArtifact: compatibilityPackage.publicArtifact ?? {
+        includeTarball: true
       }
-    },
-    {
-      id: 'web-compat',
-      kind: 'compatibility',
-      packageDir: 'packages/web',
-      publicSource: false
-    },
-    {
-      id: 'react-compat',
-      kind: 'compatibility',
-      packageDir: 'packages/react',
-      publicSource: false
-    },
+    })),
     ...wrapperManifest.wrappers.map(wrapper => ({
       id: wrapper.id,
       kind: 'standard-wrapper',
@@ -142,6 +123,7 @@ export function ecosystemPackageManifestEntry(entry) {
     tarball: entry.tarballName,
     publicSource: entry.publicSource,
     publicArtifact: entry.publicArtifact,
+    targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
     github: entry.wrapper?.github ?? null,
     gitee: entry.wrapper?.gitee ?? null
   }

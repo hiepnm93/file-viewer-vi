@@ -1,12 +1,12 @@
 # File Viewer Wrapper Ecosystem
 
-This document records the public wrapper repository plan. The core source remains private in Gitea; every framework integration is a thin public wrapper that depends on the same `@file-viewer/core` / `@file-viewer/web` runtime path.
+This document records the public wrapper repository plan. The core source remains private in Gitea; every framework integration owns a local wrapper controller on top of the same `@file-viewer/core` contracts and core browser engine. Wrappers must not depend on another wrapper implementation, and all shared low-level rendering contracts stay under the single core package.
 
 ## Public Wrappers
 
 | Framework | npm package | GitHub | Gitee | Source directory |
 | --- | --- | --- | --- | --- |
-| Vue 3 | `@file-viewer/vue3` | `flyfish-dev/file-viewer-vue3` | `flyfish-dev/file-viewer-vue3` | `packages/vue3-standard` |
+| Vue 3 | `@file-viewer/vue3` | `flyfish-dev/file-viewer-vue3` | `flyfish-dev/file-viewer-vue3` | `packages/vue3` |
 | Vue 2.7 | `@file-viewer/vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `flyfish-dev/file-viewer-vue2.7` | `packages/vue27-standard` |
 | Vue 2.6 | `@file-viewer/vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `flyfish-dev/file-viewer-vue2.6` | `packages/vue26-standard` |
 | React 18/19 | `@file-viewer/react` | `flyfish-dev/file-viewer-react` | `flyfish-dev/file-viewer-react` | `packages/react-standard` |
@@ -33,7 +33,7 @@ The export command first refreshes all wrapper README files from `ecosystem/wrap
 - a standalone `.gitignore`
 - `wrapper-repo-manifest.json` with source commit and repository metadata
 
-Workspace dependency specifiers such as `workspace:^1.0.26` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
+Workspace dependency specifiers such as `workspace:^2.0.0` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
 
 Refresh README files without exporting standalone repositories:
 
@@ -76,13 +76,13 @@ pnpm release:ecosystem:publish:dry-run
 pnpm release:ecosystem:publish
 ```
 
-The helper currently covers 13 public npm targets:
+The helper currently covers 14 public npm targets during the migration:
 
 - `@file-viewer/core`
 - `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`
 - `@file-viewer/react`, `@file-viewer/react-legacy`
 - `@file-viewer/web`, `@file-viewer/jquery`, `@file-viewer/svelte`
-- `@flyfish-group/file-viewer3`, `file-viewer3`
+- `@flyfish-group/file-viewer3`, `file-viewer3`, `@flyfish-group/file-viewer`
 - `@flyfish-group/file-viewer-web`, `@flyfish-group/file-viewer-react`
 
 It verifies public publish settings, type declarations, package entry files, README language pairs and version alignment before packing or publishing. The compatibility packages remain synchronized for existing customers; new integrations should prefer the standard `@file-viewer/*` names.
@@ -92,7 +92,7 @@ It verifies public publish settings, type declarations, package entry files, REA
 `scripts/sync-public-artifacts.mjs` delegates npm tarball creation to the same ecosystem release helper, then reads the generated `npm-release-manifest.json`. During a full public artifact release it packs:
 
 - the compiled core foundation tarball `@file-viewer/core`
-- historical compatibility packages such as `@flyfish-group/file-viewer3`, `@flyfish-group/file-viewer-web`, and `@flyfish-group/file-viewer-react`
+- historical compatibility packages such as `@flyfish-group/file-viewer3`, `@flyfish-group/file-viewer`, `@flyfish-group/file-viewer-web`, and `@flyfish-group/file-viewer-react`
 - every standard wrapper package listed in the manifest
 
 The unscoped `file-viewer3` compatibility package remains part of the npm release flow, but the public artifact repository omits its duplicate tarball and records that policy in `artifacts/release-manifest.json`. The generated manifest records each package, whether its tarball is included, the GitHub repository, and the Gitee mirror for every public integration.

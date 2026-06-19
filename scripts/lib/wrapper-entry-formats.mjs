@@ -14,7 +14,7 @@ const labelsByLocale = {
     esm: 'ESM',
     types: '类型声明',
     iife: 'script 标签 IIFE',
-    'viewer-assets': '内置 viewer 静态产物',
+    'viewer-assets': 'Worker/WASM viewer 资源',
     'copy-assets-cli': '复制静态资源 CLI',
     'svelte-component': 'Svelte 组件'
   },
@@ -22,7 +22,7 @@ const labelsByLocale = {
     esm: 'ESM',
     types: 'type declarations',
     iife: 'script tag IIFE',
-    'viewer-assets': 'bundled viewer assets',
+    'viewer-assets': 'worker/WASM viewer assets',
     'copy-assets-cli': 'asset copy CLI',
     'svelte-component': 'Svelte component'
   }

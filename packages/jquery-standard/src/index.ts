@@ -1,49 +1,43 @@
 import {
-  mountViewerFrame,
-  type CreateViewerFrameOptions,
-  type ViewerFrameController,
-  type ViewerFrameOptions
-} from '@file-viewer/web'
+  type ViewerController,
+  type ViewerMountOptions,
+  type ViewerCoreOptions,
+  mountViewer as mountCoreViewer
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
-  CreateViewerFrameOptions,
   FileRef,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
   ViewerDocxOptions,
-  ViewerDirectFrameHandle,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameController,
-  ViewerFrameControllerHandle,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerFrameOptions,
-  ViewerFrameParamValue,
-  ViewerMountedFrameHandle,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
   ViewerPdfOptions,
-  ViewerRuntimeOptions,
+  ViewerSpreadsheetOptions,
   ViewerSearchOptions,
+  ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
   ViewerWatermarkOptions
-} from '@file-viewer/web'
+} from './controller.js'
 
-export type JQueryFileViewerMethod = 'destroy' | 'reload' | 'postFile' | 'update'
+export type JQueryFileViewerMethod = 'destroy' | 'reload' | 'load' | 'update'
 
-export interface JQueryFileViewerOptions extends CreateViewerFrameOptions {
+export interface JQueryFileViewerOptions extends ViewerMountOptions {
   /**
-   * Replace the previous iframe when the same element is initialized again.
+   * Replace the previous native viewer when the same element is initialized again.
    * Set to false to update the existing controller in place.
    */
   replace?: boolean
@@ -57,7 +51,16 @@ type FileViewerPlugin = ((
   __flyfishFileViewer?: true
 }
 
-const controllers = new WeakMap<Element, ViewerFrameController>()
+const controllers = new WeakMap<Element, ViewerController>()
+
+export const mountViewer = (
+  container: HTMLElement,
+  options: ViewerMountOptions = {},
+  coreOptions: ViewerCoreOptions = {}
+) => mountCoreViewer(container, options, {
+  registry: fileViewerCoreRendererRegistry,
+  ...coreOptions
+})
 
 const isBrowser = () => typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -104,7 +107,7 @@ const mountIntoElement = (element: Element, options: JQueryFileViewerOptions) =>
   }
 
   const { replace: _replace, ...viewerOptions } = options
-  controllers.set(container, mountViewerFrame(container, viewerOptions))
+  controllers.set(container, mountViewer(container, viewerOptions))
 }
 
 const callControllerMethod = (
@@ -128,17 +131,17 @@ const callControllerMethod = (
     return
   }
 
-  if (method === 'postFile') {
-    controller.postFile()
+  if (method === 'load') {
+    controller.load((args[0] || {}) as ViewerMountOptions)
     return
   }
 
-  controller.update((args[0] || {}) as ViewerFrameOptions)
+  controller.update((args[0] || {}) as ViewerMountOptions)
 }
 
 export const getFileViewerController = (
   target: Element | JQuery | null | undefined
-): ViewerFrameController | null => {
+): ViewerController | null => {
   const element = resolveElement(target)
   return element ? controllers.get(element) ?? null : null
 }
@@ -197,34 +200,4 @@ declare global {
 
 installJQueryFileViewer()
 
-export { mountViewerFrame }
-export type {
-  CreateViewerFrameOptions,
-  FileRef,
-  ViewerAiOptions,
-  ViewerArchiveOptions,
-  ViewerCadOptions,
-  ViewerDocxOptions,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameController,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerFrameOptions,
-  ViewerPdfOptions,
-  ViewerRuntimeOptions,
-  ViewerSearchOptions,
-  ViewerThemeMode,
-  ViewerToolbarOptions,
-  ViewerToolbarPosition,
-  ViewerTypstOptions,
-  ViewerWatermarkOptions
-} from '@file-viewer/web'
 export default installJQueryFileViewer

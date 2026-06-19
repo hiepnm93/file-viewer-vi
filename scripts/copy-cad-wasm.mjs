@@ -1,5 +1,5 @@
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
@@ -10,10 +10,27 @@ const packageRoot = dirname(packageJson)
 const distRoot = join(packageRoot, 'dist')
 const wasmDir = join(distRoot, 'wasm')
 const dwgWorker = join(wasmDir, 'dwg-worker.js')
-const args = new Set(process.argv.slice(2))
+const rawArgs = process.argv.slice(2)
+const args = new Set(rawArgs)
+const readArgValue = name => {
+  const index = rawArgs.indexOf(name)
+  if (index === -1) {
+    return undefined
+  }
+  const value = rawArgs[index + 1]
+  return value && !value.startsWith('--') ? value : undefined
+}
+const resolveFromCwd = value => {
+  if (!value) {
+    return undefined
+  }
+  return isAbsolute(value) ? value : resolve(process.cwd(), value)
+}
+const publicRoot = resolveFromCwd(readArgValue('--public-root')) ?? join(projectRoot, 'public')
+const distBaseRoot = resolveFromCwd(readArgValue('--dist-root')) ?? join(projectRoot, 'dist')
 const targetRoots = [
-  !args.has('--dist-only') && join(projectRoot, 'public', 'wasm', 'cad'),
-  (args.has('--dist') || args.has('--dist-only')) && join(projectRoot, 'dist', 'wasm', 'cad')
+  !args.has('--dist-only') && join(publicRoot, 'wasm', 'cad'),
+  (args.has('--dist') || args.has('--dist-only')) && join(distBaseRoot, 'wasm', 'cad')
 ].filter(Boolean)
 
 const copyWorkerChunks = async targetRoot => {

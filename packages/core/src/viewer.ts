@@ -36,6 +36,7 @@ import type {
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
   FileViewerDownloadOptions,
+  FileViewerEventHandler,
   FileViewerExportHtmlOptions,
   FileViewerInstance,
   FileViewerLifecycleContext,
@@ -52,10 +53,12 @@ export interface CreateViewerOptions {
   registry?: RendererRegistry;
   options?: FileViewerOptions;
   signal?: AbortSignal;
+  onEvent?: FileViewerEventHandler;
 }
 
 const emitLifecycle = async (
   options: FileViewerOptions,
+  onEvent: FileViewerEventHandler | undefined,
   phase: FileViewerLifecycleContext['phase'],
   source: NormalizedFileViewerSource,
   version: number,
@@ -75,6 +78,7 @@ const emitLifecycle = async (
   await runFileViewerLifecycleHook(context, options.hooks, error => {
     throw error;
   });
+  onEvent?.({ type: phase, payload: context });
 };
 
 export const createViewer = (
@@ -106,6 +110,12 @@ export const createViewer = (
     return runFileViewerBeforeOperation({
       context,
       options,
+      onBefore: nextContext => {
+        createOptions.onEvent?.({ type: 'operation-before', payload: nextContext });
+      },
+      onCancel: nextContext => {
+        createOptions.onEvent?.({ type: 'operation-cancel', payload: nextContext });
+      },
       onError(error) {
         throw error;
       },
@@ -128,6 +138,20 @@ export const createViewer = (
     return getRendererAvailability(renderer, renderSurfaceState.session);
   };
 
+  const emitOperationAvailabilityChange = () => {
+    createOptions.onEvent?.({
+      type: 'operation-availability-change',
+      payload: getCapabilitiesForExtension(),
+    });
+  };
+
+  const emitZoomChange = (state = zoomController.getState()) => {
+    createOptions.onEvent?.({
+      type: 'zoom-change',
+      payload: state,
+    });
+  };
+
   const zoomController = createFileViewerZoomController({
     root: () => container,
     beforeZoom: runBeforeViewerOperation,
@@ -137,7 +161,12 @@ export const createViewer = (
     searchTarget: documentTarget,
     searchOptions: () => options.search,
     getAiOptions: () => options.ai,
-    targetWindow: null,
+    onSearchChange: state => {
+      createOptions.onEvent?.({ type: 'search-change', payload: state });
+    },
+    onLocationChange: anchor => {
+      createOptions.onEvent?.({ type: 'location-change', payload: anchor });
+    },
   });
   zoomController.observe();
 
@@ -148,7 +177,7 @@ export const createViewer = (
     const source = currentSource;
     const startedAt = Date.now();
     const version = requestScope.getCurrentVersion();
-    await emitLifecycle(options, 'unload-start', source, version, startedAt, reason);
+    await emitLifecycle(options, createOptions.onEvent, 'unload-start', source, version, startedAt, reason);
     await renderSurfaceState.session?.destroy?.();
     currentSource = null;
     applyFileViewerRenderSurfaceState(renderSurfaceState, {
@@ -157,7 +186,9 @@ export const createViewer = (
     });
     await documentActions.clearDocumentState();
     zoomController.clearProvider();
-    await emitLifecycle(options, 'unload-complete', source, version, startedAt, reason);
+    emitOperationAvailabilityChange();
+    emitZoomChange();
+    await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
   };
 
   return {
@@ -171,11 +202,13 @@ export const createViewer = (
 
       const renderer = registry.getByExtension(normalized.extension);
       const startedAt = Date.now();
-      await emitLifecycle(options, 'load-start', normalized, version, startedAt);
+      await emitLifecycle(options, createOptions.onEvent, 'load-start', normalized, version, startedAt);
 
       if (!renderer?.load) {
         applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
-        await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
+        emitOperationAvailabilityChange();
+        emitZoomChange();
+        await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
         return null;
       }
 
@@ -191,7 +224,9 @@ export const createViewer = (
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       zoomController.refreshProvider();
       await documentActions.refreshDocumentIndex({ notify: false });
-      await emitLifecycle(options, 'load-complete', normalized, version, startedAt);
+      emitOperationAvailabilityChange();
+      emitZoomChange();
+      await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
       return session;
     },
     async destroy(reason = 'component-unmount') {
@@ -264,14 +299,20 @@ export const createViewer = (
         beforeOperation: runBeforeViewerOperation,
       });
     },
-    zoomIn() {
-      return zoomController.zoomIn();
+    async zoomIn() {
+      const state = await zoomController.zoomIn();
+      emitZoomChange(state);
+      return state;
     },
-    zoomOut() {
-      return zoomController.zoomOut();
+    async zoomOut() {
+      const state = await zoomController.zoomOut();
+      emitZoomChange(state);
+      return state;
     },
-    resetZoom() {
-      return zoomController.resetZoom();
+    async resetZoom() {
+      const state = await zoomController.resetZoom();
+      emitZoomChange(state);
+      return state;
     },
     getZoomState() {
       return zoomController.getState();
@@ -298,10 +339,10 @@ export const createViewer = (
       return documentActions.getCurrentDocumentAnchor();
     },
     scrollToDocumentAnchor(anchor: FileViewerDocumentAnchor | string | number | null | undefined) {
-      return documentActions.scrollToLoadedAnchor(anchor, { notify: false });
+      return documentActions.scrollToLoadedAnchor(anchor);
     },
     scrollToLine(line: number) {
-      return documentActions.scrollToLine(line, { notify: false });
+      return documentActions.scrollToLine(line);
     },
     getDocumentTextChunks(textOptions?: boolean | FileViewerAiOptions) {
       return documentActions.getDocumentTextChunks(textOptions);

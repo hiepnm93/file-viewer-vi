@@ -74,7 +74,7 @@ export interface ViewerAssetManifestFile {
 export interface CopyViewerAssetsResult {
   sourceDir: string
   targetDir: string
-  viewerUrl: string
+  assetBaseUrl: string
   assetManifestPath: string
   validation: ViewerAssetValidationResult
 }
@@ -83,7 +83,7 @@ const distDir = dirname(fileURLToPath(import.meta.url))
 const packageDir = resolve(distDir, '..')
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = 'public/file-viewer'
-export const DEFAULT_VIEWER_PUBLIC_URL = '/file-viewer/index.html'
+export const DEFAULT_VIEWER_ASSET_BASE_URL = '/file-viewer/'
 export const VIEWER_ASSET_MANIFEST_FILENAME = 'flyfish-viewer-assets.json'
 
 export const getViewerAssetDir = () => resolve(packageDir, 'viewer')
@@ -203,8 +203,8 @@ export const copyViewerAssets = async (
   const sourceDir = resolve(options.sourceDir || getViewerAssetDir())
   const targetDir = resolve(options.targetDir || getDefaultViewerTargetDir())
 
-  if (!existsSync(resolve(sourceDir, 'index.html'))) {
-    throw new Error(`Missing viewer build output: ${sourceDir}`)
+  if (!existsSync(sourceDir)) {
+    throw new Error(`Missing viewer asset output: ${sourceDir}`)
   }
 
   if (options.clean !== false) {
@@ -230,7 +230,7 @@ export const copyViewerAssets = async (
   return {
     sourceDir,
     targetDir,
-    viewerUrl: DEFAULT_VIEWER_PUBLIC_URL,
+    assetBaseUrl: DEFAULT_VIEWER_ASSET_BASE_URL,
     assetManifestPath,
     validation
   }

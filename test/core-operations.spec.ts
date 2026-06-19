@@ -20,9 +20,7 @@ import {
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
   createFileViewerOriginalSourceStateFromNormalizedSource,
-  createFileViewerPostMessagePayload,
   createFileViewerPublicOperationActionHandlers,
-  createFileViewerRawPostMessagePayload,
   dispatchFileViewerLifecycleEvent,
   dispatchFileViewerOperationContextEvent,
   dispatchFileViewerOperationAvailabilityChange,
@@ -33,16 +31,8 @@ import {
   executeFileViewerPrintOperation,
   FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
   hasVisibleFileViewerToolbarActions,
-  isFileViewerFrameEvent,
   isFileViewerZoomButtonDisabled,
   normalizeFileViewerToolbar,
-  postFileViewerLifecycleEvent,
-  postFileViewerLocationChange,
-  postFileViewerOperationContextEvent,
-  postFileViewerOperationAvailabilityChange,
-  postFileViewerMessageToParent,
-  postFileViewerSearchChange,
-  postFileViewerZoomChange,
   reportFileViewerLifecycleHookError,
   reportFileViewerOperationError,
   resolveFileViewerBeforeOperationErrorMessage,
@@ -62,6 +52,7 @@ import {
   runFileViewerLifecycleHook,
   runFileViewerToolbarAvailabilitySync,
   runFileViewerToolbarZoomSync,
+  serializeFileViewerContext,
   type FileViewerLifecycleComponentEmit,
   type FileViewerOperationType,
 } from '../packages/core/src';
@@ -342,7 +333,7 @@ describe('@file-viewer/core operation helpers', () => {
     expect(resolveFileViewerLifecycleFallbackSource()).toEqual({ source: 'empty' });
   });
 
-  it('serializes postMessage contexts without leaking File objects', () => {
+  it('serializes contexts without leaking File objects', () => {
     const file = new File(['demo'], 'demo.docx');
     const context = buildFileViewerLifecycleContext({
       phase: 'load-start',
@@ -352,115 +343,23 @@ describe('@file-viewer/core operation helpers', () => {
       timestamp: 10,
     });
 
-    expect(createFileViewerPostMessagePayload('flyfish-viewer:lifecycle', 'load-start', context)).toEqual({
-      type: 'flyfish-viewer:lifecycle',
-      event: 'load-start',
-      payload: {
-        phase: 'load-start',
-        type: 'docx',
-        filename: 'demo.docx',
-        source: 'file',
-        url: undefined,
-        size: 4,
-        version: 1,
-        timestamp: 10,
-        duration: undefined,
-        reason: undefined,
-        hasFile: true,
-      },
-    });
-  });
-
-  it('posts raw viewer payloads to parent windows through the core bridge', () => {
-    const parent = {
-      postMessage: vi.fn(),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
-    const payload = createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', {
-      query: 'pdf',
-    });
-
-    expect(postFileViewerMessageToParent(payload, 'https://host.example', child)).toBe(true);
-    expect(parent.postMessage).toHaveBeenCalledWith(payload, 'https://host.example');
-
-    const topWindow = {} as Window & { parent: Window };
-    topWindow.parent = topWindow;
-    expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
-  });
-
-  it('posts lifecycle and operation context events through named core helpers', () => {
-    const parent = {
-      postMessage: vi.fn(),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
-    const lifecycleContext = buildFileViewerLifecycleContext({
-      phase: 'load-complete',
+    expect(serializeFileViewerContext(context)).toEqual({
+      phase: 'load-start',
+      type: 'docx',
+      filename: 'demo.docx',
       source: 'file',
-      file: new File(['demo'], 'demo.pdf'),
-      version: 2,
-      timestamp: 200,
+      url: undefined,
+      size: 4,
+      version: 1,
+      timestamp: 10,
+      duration: undefined,
+      reason: undefined,
+      hasFile: true,
     });
-    const operationContext = buildFileViewerOperationContext('download', lifecycleContext, 220);
-
-    expect(postFileViewerLifecycleEvent(lifecycleContext, 'https://host.example', child)).toBe(true);
-    expect(postFileViewerOperationContextEvent(
-      'operation-before',
-      operationContext,
-      'https://host.example',
-      child
-    )).toBe(true);
-
-    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
-      type: 'flyfish-viewer:lifecycle',
-      event: 'load-complete',
-      payload: {
-        phase: 'load-complete',
-        type: 'pdf',
-        filename: 'demo.pdf',
-        source: 'file',
-        url: undefined,
-        size: 4,
-        version: 2,
-        timestamp: 200,
-        duration: undefined,
-        reason: undefined,
-        hasFile: true,
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
-      type: 'flyfish-viewer:operation',
-      event: 'operation-before',
-      payload: {
-        type: 'pdf',
-        filename: 'demo.pdf',
-        source: 'file',
-        url: undefined,
-        size: 4,
-        version: 2,
-        timestamp: 220,
-        duration: undefined,
-        reason: undefined,
-        operation: 'download',
-        label: '下载原始文件',
-        hasFile: true,
-      },
-    }, 'https://host.example');
   });
 
   it('dispatches lifecycle and operation context events in wrapper event order', () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const lifecycleContext = buildFileViewerLifecycleContext({
       phase: 'load-complete',
       source: 'url',
@@ -473,8 +372,6 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(dispatchFileViewerLifecycleEvent({
       context: lifecycleContext,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       hooks: {
         onLoadComplete: context => {
           events.push(`hook:${context.phase}`);
@@ -487,8 +384,6 @@ describe('@file-viewer/core operation helpers', () => {
     expect(dispatchFileViewerOperationContextEvent({
       event: 'operation-before',
       context: operationContext,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       onChange: context => {
         events.push(`emit:${context.operation}`);
       },
@@ -497,57 +392,12 @@ describe('@file-viewer/core operation helpers', () => {
     expect(events).toEqual([
       'emit:load-complete:dispatch.pdf',
       'hook:load-complete',
-      'post:load-complete',
       'emit:print',
-      'post:operation-before',
     ]);
-    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
-      type: 'flyfish-viewer:lifecycle',
-      event: 'load-complete',
-      payload: {
-        phase: 'load-complete',
-        type: 'pdf',
-        filename: 'dispatch.pdf',
-        source: 'url',
-        url: '/docs/dispatch.pdf',
-        size: undefined,
-        version: 3,
-        timestamp: 300,
-        duration: undefined,
-        reason: undefined,
-        hasFile: false,
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
-      type: 'flyfish-viewer:operation',
-      event: 'operation-before',
-      payload: {
-        type: 'pdf',
-        filename: 'dispatch.pdf',
-        source: 'url',
-        url: '/docs/dispatch.pdf',
-        size: undefined,
-        version: 3,
-        timestamp: 320,
-        duration: undefined,
-        reason: undefined,
-        operation: 'print',
-        label: '打印完整渲染内容',
-        hasFile: false,
-      },
-    }, 'https://host.example');
   });
 
   it('creates lifecycle actions that reuse dispatch, unload and operation guards', async () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const lifecycleState = createFileViewerLifecycleStateController();
     const context = buildFileViewerLifecycleContext({
       phase: 'load-complete',
@@ -559,8 +409,6 @@ describe('@file-viewer/core operation helpers', () => {
     lifecycleState.setActiveDocumentContext(context);
     const actions = createFileViewerLifecycleActions({
       lifecycleState,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       getOptions: () => ({
         hooks: {
           onUnloadStart: nextContext => {
@@ -598,16 +446,11 @@ describe('@file-viewer/core operation helpers', () => {
     expect(events).toEqual([
       'emit:unload-start:actions.pdf',
       'hook:unload-start',
-      'post:unload-start',
       'emit:unload-complete:actions.pdf',
-      'post:unload-complete',
       'before:download',
-      'post:operation-before',
       'guard:download',
       'cancel:download',
-      'post:operation-cancel',
     ]);
-    expect(parent.postMessage).toHaveBeenCalledTimes(4);
   });
 
   it('creates lifecycle facades from wrapper state getters', async () => {
@@ -696,124 +539,8 @@ describe('@file-viewer/core operation helpers', () => {
     expect(errors).toEqual([]);
   });
 
-  it('posts operation, search and location changes through named core helpers', () => {
-    const parent = {
-      postMessage: vi.fn(),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
-
-    expect(postFileViewerOperationAvailabilityChange({
-      download: true,
-      print: false,
-      exportHtml: true,
-      zoom: true,
-      zoomIn: true,
-      zoomOut: false,
-      zoomReset: false,
-    }, 'https://host.example', child)).toBe(true);
-    expect(postFileViewerZoomChange({
-      scale: 1,
-      label: '100%',
-      canZoomIn: true,
-      canZoomOut: false,
-      canReset: false,
-    }, 'https://host.example', child)).toBe(true);
-    expect(postFileViewerSearchChange({
-      query: 'pdf',
-      total: 1,
-      currentIndex: 0,
-      current: {
-        id: 'match-1',
-        index: 0,
-        text: 'PDF',
-        anchor: null,
-        line: 3,
-      },
-      matches: [],
-    }, 'https://host.example', child)).toBe(true);
-    expect(postFileViewerLocationChange({
-      id: 'anchor-1',
-      index: 0,
-      line: 3,
-      type: 'line',
-      label: 'PDF intro',
-      text: 'PDF intro text',
-      top: 32,
-      left: 0,
-      width: 120,
-      height: 18,
-    }, 'https://host.example', child)).toBe(true);
-    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
-      type: 'flyfish-viewer:operation',
-      event: 'operation-availability-change',
-      payload: {
-        download: true,
-        print: false,
-        exportHtml: true,
-        zoom: true,
-        zoomIn: true,
-        zoomOut: false,
-        zoomReset: false,
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
-      type: 'flyfish-viewer:operation',
-      event: 'zoom-change',
-      payload: {
-        scale: 1,
-        label: '100%',
-        canZoomIn: true,
-        canZoomOut: false,
-        canReset: false,
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(3, {
-      type: 'flyfish-viewer:search',
-      event: 'search-change',
-      payload: {
-        query: 'pdf',
-        total: 1,
-        currentIndex: 0,
-        current: {
-          id: 'match-1',
-          index: 0,
-          text: 'PDF',
-          anchor: null,
-          line: 3,
-        },
-        matches: [],
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(4, {
-      type: 'flyfish-viewer:location',
-      event: 'location-change',
-      payload: {
-        id: 'anchor-1',
-        index: 0,
-        line: 3,
-        type: 'line',
-        label: 'PDF intro',
-        text: 'PDF intro text',
-        top: 32,
-        left: 0,
-        width: 120,
-        height: 18,
-      },
-    }, 'https://host.example');
-  });
-
   it('dispatches toolbar change notifications in wrapper event order', () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const availability = {
       download: true,
       print: false,
@@ -835,8 +562,6 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(dispatchFileViewerOperationAvailabilityChange({
       availability,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       onChange: payload => {
         events.push('emit:operation-availability-change');
         emittedAvailability = payload;
@@ -845,8 +570,6 @@ describe('@file-viewer/core operation helpers', () => {
     })).toBe(true);
     expect(dispatchFileViewerZoomChange({
       state: zoomState,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       onChange: payload => {
         events.push('emit:zoom-change');
         emittedZoomState = payload;
@@ -855,9 +578,7 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(events).toEqual([
       'emit:operation-availability-change',
-      'post:operation-availability-change',
       'emit:zoom-change',
-      'post:zoom-change',
     ]);
     expect(emittedAvailability).toEqual({
       ...availability,
@@ -866,31 +587,10 @@ describe('@file-viewer/core operation helpers', () => {
     expect(emittedAvailability).not.toBe(availability);
     expect(availability.download).toBe(true);
     expect(emittedZoomState).toBe(zoomState);
-    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
-      type: 'flyfish-viewer:operation',
-      event: 'operation-availability-change',
-      payload: {
-        ...availability,
-        download: false,
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
-      type: 'flyfish-viewer:operation',
-      event: 'zoom-change',
-      payload: zoomState,
-    }, 'https://host.example');
   });
 
   it('creates toolbar actions that reuse notification dispatch and zoom guard rules', () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const availability = {
       download: true,
       print: false,
@@ -909,8 +609,6 @@ describe('@file-viewer/core operation helpers', () => {
       canReset: true,
     };
     const actions = createFileViewerToolbarActions({
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       getOperationAvailability: () => availability,
       getToolbarDisabled: () => toolbarDisabled,
       getZoomState: () => zoomState,
@@ -932,11 +630,8 @@ describe('@file-viewer/core operation helpers', () => {
 
     expect(events).toEqual([
       'emit:availability:false',
-      'post:operation-availability-change',
       'emit:zoom:100%',
-      'post:zoom-change',
     ]);
-    expect(parent.postMessage).toHaveBeenCalledTimes(2);
   });
 
   it('runs toolbar sync notifications and keeps zoom sync snapshot fields stable', () => {
@@ -993,14 +688,6 @@ describe('@file-viewer/core operation helpers', () => {
 
   it('creates reusable toolbar controller action handlers for framework wrappers', () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const zoomState = {
       scale: 1,
       label: '100%',
@@ -1014,8 +701,6 @@ describe('@file-viewer/core operation helpers', () => {
     let hasError = false;
     let loading = false;
     const controller = createFileViewerToolbarControllerActionHandlers({
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       getAdapter: () => ({ exportHtml: true }),
       getBuffer: () => buffer,
       getExtension: () => 'pdf',
@@ -1071,12 +756,9 @@ describe('@file-viewer/core operation helpers', () => {
     expect(controller.isZoomButtonDisabled('canZoomOut')).toBe(true);
     expect(controller.syncOperationAvailability()).toBe(true);
     expect(controller.syncZoomChange()).toBe(true);
-    expect(parent.postMessage).toHaveBeenCalledTimes(2);
     expect(events).toEqual([
       'emit:availability:true:false',
-      'post:operation-availability-change',
       'emit:zoom:100%',
-      'post:zoom-change',
     ]);
 
     buffer = null;
@@ -1088,23 +770,6 @@ describe('@file-viewer/core operation helpers', () => {
     expect(disabledState.operationAvailability.exportHtml).toBe(false);
     expect(disabledState.toolbarDisabled).toBe(true);
     expect(controller.isZoomButtonDisabled('canZoomIn')).toBe(true);
-  });
-
-  it('guards iframe postMessage events through the core protocol', () => {
-    expect(isFileViewerFrameEvent(createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', {
-      query: 'pdf',
-    }))).toBe(true);
-    expect(isFileViewerFrameEvent(createFileViewerRawPostMessagePayload('flyfish-viewer:location', 'location-change', null))).toBe(true);
-    expect(isFileViewerFrameEvent({
-      type: 'flyfish-viewer:unknown',
-      event: 'search-change',
-      payload: {},
-    })).toBe(false);
-    expect(isFileViewerFrameEvent({
-      type: 'flyfish-viewer:search',
-      payload: {},
-    })).toBe(false);
-    expect(isFileViewerFrameEvent(null)).toBe(false);
   });
 
   it('runs lifecycle hooks and operation guards in deterministic order', async () => {

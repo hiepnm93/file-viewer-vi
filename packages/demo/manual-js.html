@@ -58,10 +58,10 @@
         color: #334155;
       }
 
-      iframe {
+      #viewer {
         width: 100%;
         height: 100%;
-        border: 0;
+        min-height: 0;
         background: #ffffff;
       }
     </style>
@@ -70,71 +70,68 @@
     <main>
       <header>
         <div>
-          <h1>Manual Pure JS iframe</h1>
-          <p>完整 viewer 目录位于 <code>/vendor/file-viewer</code>，文件通过 Blob + postMessage 推送。</p>
+          <h1>Manual Pure JS</h1>
+          <p>普通页面通过原生 JS 动态加载 <code>mountViewer</code> 浏览器包。</p>
         </div>
         <p id="status">loading</p>
       </header>
-      <iframe id="viewer" title="Flyfish Viewer manual iframe"></iframe>
+      <div id="viewer" data-testid="manual-js-viewer"></div>
     </main>
 
     <script>
-      (function () {
-        var viewerUrl = '/vendor/file-viewer/index.html'
-        var filename = 'word.docx'
-        var status = document.getElementById('status')
-        var frame = document.getElementById('viewer')
-        var sourceUrl = '/example/word.docx'
-        var blob = null
-        var sent = 0
-        var acknowledged = false
+      var statusNode = document.getElementById('status')
+      var host = document.getElementById('viewer')
+      var bundleUrl = '/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js'
 
-        function setStatus(value) {
-          status.textContent = value
+      function setStatus(value) {
+        document.body.setAttribute('data-viewer-status', value)
+        statusNode.textContent = value
+      }
+
+      function loadViewerApi() {
+        if (window.FlyfishFileViewerWeb) {
+          return Promise.resolve(window.FlyfishFileViewerWeb)
         }
-
-        function postFile() {
-          if (!blob || acknowledged || !frame.contentWindow) {
-            return
-          }
-          frame.contentWindow.postMessage(blob, window.location.origin)
-          sent += 1
-          if (sent < 8 && !acknowledged) {
-            window.setTimeout(postFile, 120)
-          }
-        }
-
-        window.addEventListener('message', function (event) {
-          if (event.source !== frame.contentWindow) {
-            return
-          }
-          if (event.data && event.data.type === 'flyfish-viewer:lifecycle') {
-            acknowledged = true
-            setStatus(event.data.event)
-          }
-        })
-
-        fetch(sourceUrl)
-          .then(function (response) {
-            if (!response.ok) {
-              throw new Error('文件加载失败: HTTP ' + response.status)
+        return new Promise(function (resolve, reject) {
+          var script = document.createElement('script')
+          script.src = bundleUrl
+          script.async = true
+          script.onload = function () {
+            if (window.FlyfishFileViewerWeb) {
+              resolve(window.FlyfishFileViewerWeb)
+            } else {
+              reject(new Error('FlyfishFileViewerWeb global is unavailable'))
             }
-            return response.blob()
+          }
+          script.onerror = function () {
+            reject(new Error('Failed to load ' + bundleUrl))
+          }
+          document.head.appendChild(script)
+        })
+      }
+
+      loadViewerApi()
+        .then(function (api) {
+          api.mountViewer(host, {
+            url: '/example/word.docx',
+            options: {
+              theme: 'light',
+              toolbar: {
+                position: 'bottom-right'
+              }
+            },
+            onEvent: function (event) {
+              if (event && (event.type === 'load-start' || event.type === 'load-complete')) {
+                setStatus(event.type)
+              }
+            }
           })
-          .then(function (value) {
-            blob = value
-            frame.addEventListener('load', postFile)
-            frame.src = viewerUrl +
-              '?name=' + encodeURIComponent(filename) +
-              '&from=' + encodeURIComponent(window.location.origin) +
-              '&__flyfish_viewer_version=manual-js-demo'
-            setStatus('iframe ready')
-          })
-          .catch(function (error) {
-            setStatus(error.message)
-            console.error(error)
-          })
-      })()
+          setStatus('mounted')
+        })
+        .catch(function (error) {
+          console.error(error)
+          setStatus('error')
+        })
     </script>
   </body>
 </html>

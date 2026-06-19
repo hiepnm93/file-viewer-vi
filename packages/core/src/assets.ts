@@ -1,19 +1,28 @@
 import type {
   FileViewerArchiveOptions,
   FileViewerCadOptions,
+  FileViewerDataOptions,
+  FileViewerDocxOptions,
   FileViewerOptions,
+  FileViewerSpreadsheetOptions,
   FileViewerTypstOptions,
 } from './types';
 
 export const DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH = 'vendor/libarchive/worker-bundle.js';
 export const DEFAULT_FILE_VIEWER_ARCHIVE_WASM_PATH = 'vendor/libarchive/libarchive.wasm';
+export const DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH = 'vendor/docx/docx.worker.js';
+export const DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH = 'vendor/xlsx/sheet.worker.js';
 export const DEFAULT_FILE_VIEWER_CAD_WASM_PATH = 'wasm/cad/';
 export const DEFAULT_FILE_VIEWER_CAD_WORKER_PATH = 'wasm/cad/dwg-worker.js';
 export const DEFAULT_FILE_VIEWER_CAD_DWF_WASM_PATH = 'wasm/cad/dwfv-render.wasm';
 export const DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL =
   'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm';
+export const DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL =
+  'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-renderer@0.7.0/pkg/typst_ts_renderer_bg.wasm';
 export const DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_PACKAGE_PATH =
   '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm';
+export const DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL =
+  'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm.wasm';
 
 export interface ResolveFileViewerAssetUrlOptions {
   baseUrl?: string;
@@ -42,7 +51,11 @@ export type FileViewerRendererAssetOptionPath =
   | 'cad.wasmPath'
   | 'cad.workerUrl'
   | 'cad.dwfWasmUrl'
-  | 'typst.compilerWasmUrl';
+  | 'data.sqlWasmUrl'
+  | 'docx.workerUrl'
+  | 'spreadsheet.workerUrl'
+  | 'typst.compilerWasmUrl'
+  | 'typst.rendererWasmUrl';
 
 export interface FileViewerRendererAssetDefinition {
   id: string;
@@ -134,6 +147,36 @@ export const DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS: readonly FileViewerRe
     ],
   },
   {
+    rendererId: 'office-word-openxml',
+    assets: [
+      {
+        id: 'docx-worker',
+        rendererId: 'office-word-openxml',
+        kind: 'worker',
+        target: 'public',
+        required: false,
+        defaultPath: DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH,
+        optionPath: 'docx.workerUrl',
+        description: 'Optional DOCX worker for off-main-thread docx-preview parsing and HTML assembly.',
+      },
+    ],
+  },
+  {
+    rendererId: 'spreadsheet-openxml',
+    assets: [
+      {
+        id: 'spreadsheet-worker',
+        rendererId: 'spreadsheet-openxml',
+        kind: 'worker',
+        target: 'public',
+        required: false,
+        defaultPath: DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH,
+        optionPath: 'spreadsheet.workerUrl',
+        description: 'Optional Spreadsheet worker for off-main-thread styled-exceljs workbook parsing.',
+      },
+    ],
+  },
+  {
     rendererId: 'typst',
     assets: [
       {
@@ -152,22 +195,31 @@ export const DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS: readonly FileViewerRe
         kind: 'bundled-wasm',
         target: 'bundled',
         required: true,
+        defaultUrl: DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL,
         packagePath: DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_PACKAGE_PATH,
+        optionPath: 'typst.rendererWasmUrl',
         description: 'Typst SVG renderer WebAssembly module bundled by the active frontend build tool.',
+      },
+    ],
+  },
+  {
+    rendererId: 'data-asset',
+    assets: [
+      {
+        id: 'data-sql-wasm',
+        rendererId: 'data-asset',
+        kind: 'wasm',
+        target: 'external',
+        required: false,
+        defaultUrl: DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL,
+        optionPath: 'data.sqlWasmUrl',
+        description: 'sql.js WebAssembly module used when previewing SQLite files.',
       },
     ],
   },
 ];
 
-const getDefaultDocumentBaseUrl = () => {
-  if (typeof document !== 'undefined' && document.baseURI) {
-    return document.baseURI;
-  }
-  if (typeof location !== 'undefined' && location.href) {
-    return location.href;
-  }
-  return 'http://localhost/';
-};
+const DEFAULT_FILE_VIEWER_DOCUMENT_BASE_URL = 'http://localhost/';
 
 export const resolveFileViewerAssetUrl = (
   value: string | URL | undefined,
@@ -175,11 +227,12 @@ export const resolveFileViewerAssetUrl = (
   options: ResolveFileViewerAssetUrlOptions = {}
 ) => {
   const raw = value ? String(value) : fallback;
+  const documentBaseUrl = options.documentBaseUrl || DEFAULT_FILE_VIEWER_DOCUMENT_BASE_URL;
   const baseUrl = options.baseUrl
     ? options.baseUrl.endsWith('/') ? options.baseUrl : `${options.baseUrl}/`
-    : options.documentBaseUrl || getDefaultDocumentBaseUrl();
+    : documentBaseUrl;
   const resolvedBase = options.baseUrl
-    ? new URL(baseUrl, options.documentBaseUrl || getDefaultDocumentBaseUrl()).href
+    ? new URL(baseUrl, documentBaseUrl).href
     : baseUrl;
   const resolved = new URL(raw, resolvedBase).href;
 
@@ -221,6 +274,24 @@ export const resolveFileViewerCadAssetUrls = (
   };
 };
 
+export const resolveFileViewerDocxWorkerUrl = (
+  options?: Pick<FileViewerDocxOptions, 'workerUrl'> | null,
+  documentBaseUrl?: string
+) => {
+  return resolveFileViewerAssetUrl(options?.workerUrl, DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH, {
+    documentBaseUrl,
+  });
+};
+
+export const resolveFileViewerSpreadsheetWorkerUrl = (
+  options?: Pick<FileViewerSpreadsheetOptions, 'workerUrl'> | null,
+  documentBaseUrl?: string
+) => {
+  return resolveFileViewerAssetUrl(options?.workerUrl, DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH, {
+    documentBaseUrl,
+  });
+};
+
 export const resolveFileViewerTypstCompilerWasmUrl = (
   options?: Pick<FileViewerTypstOptions, 'compilerWasmUrl'> | null,
   overrides: Array<string | undefined> = []
@@ -228,6 +299,24 @@ export const resolveFileViewerTypstCompilerWasmUrl = (
   return options?.compilerWasmUrl ||
     overrides.find(Boolean) ||
     DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL;
+};
+
+export const resolveFileViewerTypstRendererWasmUrl = (
+  options?: Pick<FileViewerTypstOptions, 'rendererWasmUrl'> | null,
+  overrides: Array<string | undefined> = []
+) => {
+  return options?.rendererWasmUrl ||
+    overrides.find(Boolean) ||
+    DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL;
+};
+
+export const resolveFileViewerDataSqlWasmUrl = (
+  options?: Pick<FileViewerDataOptions, 'sqlWasmUrl'> | null,
+  overrides: Array<string | undefined> = []
+) => {
+  return options?.sqlWasmUrl ||
+    overrides.find(Boolean) ||
+    DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL;
 };
 
 export const listFileViewerRendererAssetManifests = () => {
@@ -253,8 +342,16 @@ const getRendererAssetOptionValue = (
       return options?.cad?.workerUrl;
     case 'cad.dwfWasmUrl':
       return options?.cad?.dwfWasmUrl;
+    case 'data.sqlWasmUrl':
+      return options?.data?.sqlWasmUrl;
+    case 'docx.workerUrl':
+      return options?.docx?.workerUrl;
+    case 'spreadsheet.workerUrl':
+      return options?.spreadsheet?.workerUrl;
     case 'typst.compilerWasmUrl':
       return options?.typst?.compilerWasmUrl;
+    case 'typst.rendererWasmUrl':
+      return options?.typst?.rendererWasmUrl;
     default:
       return undefined;
   }

@@ -5,7 +5,7 @@ import {
   formatBytes,
   isArchiveExtension,
   isPreviewableArchiveEntry
-} from '@/package/vendors/archive/shared'
+} from './helpers/archiveShared'
 
 const mockFile = (name: string, size: number) => ({
   name,

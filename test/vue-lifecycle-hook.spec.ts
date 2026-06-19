@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useViewerLifecycle } from '../src/package/components/FileViewer/hooks/useViewerLifecycle'
+import { useViewerLifecycle } from '../packages/vue3/src/package/components/FileViewer/hooks/useViewerLifecycle'
 import type {
   FileViewerLifecycleContext,
   FileViewerLifecyclePhase,
   FileViewerOperationContext,
   FileViewerOptions
-} from '../src/package/common/type'
+} from '../packages/vue3/src/package/common/type'
 
 describe('Vue FileViewer lifecycle hook', () => {
   afterEach(() => {

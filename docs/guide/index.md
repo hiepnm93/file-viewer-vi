@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS 或 iframe 嵌入，最后了解安装、私有化部署和成品分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和成品分发。
 </p>
 
 <div class="doc-link-row">
@@ -52,11 +52,11 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue3 使用 <code>@flyfish-group/file-viewer3</code>，Vue2.7 使用 <code>@flyfish-group/file-viewer</code>，两个安装器都会自动带上样式；React 和纯 JS 包通过 iframe 复用 Vue3 基线产物，适合私有化部署和多系统复用。</p>
+    <p>Vue3 使用 <code>@file-viewer/vue3</code>，Vue2.7 使用 <code>@file-viewer/vue2.7</code> 或历史包 <code>@flyfish-group/file-viewer</code>；React 和纯 JS 包通过 core native engine 原生挂载，适合私有化部署和多系统复用。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
-    <p>成品分发说明了 npm 包、私有化 viewer 静态产物、文档静态产物和公开成品仓库之间的交付关系。</p>
+    <p>成品分发说明了 npm 包、私有化 Worker/WASM viewer assets、文档静态产物和公开成品仓库之间的交付关系。</p>
   </div>
 </div>
 
@@ -90,10 +90,10 @@
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想在 React 中接入 | [React 集成](/guide/quickstart-react) |
 | 想在非框架页面中接入 | [纯 JS 集成](/guide/quickstart-web) |
-| 想让多个系统共用预览器 | [Iframe 嵌入](/guide/iframe) |
+| 想了解统一 options 和事件 | [组件用法](/guide/usage) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
 | 想下载成品或二开 | [发布与成品分发](/guide/distribution) |
 
 <div class="doc-note">
-  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件默认仍只加载你私有部署的 <code>/file-viewer/index.html</code>。
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件会在业务页面中原生挂载，不依赖官网 Demo。
 </div>

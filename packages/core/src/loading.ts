@@ -2,7 +2,7 @@ import type { FileViewerStateTheme } from './types';
 
 export type FileViewerLoadingTheme = FileViewerStateTheme;
 
-export interface FileViewerLoadingRuntimeState {
+export interface FileViewerLoadingState {
   loading: boolean;
   error: string;
   message: string;
@@ -10,33 +10,33 @@ export interface FileViewerLoadingRuntimeState {
   styleVars: Record<'--viewer-accent' | '--viewer-soft', string>;
 }
 
-export type MutableFileViewerLoadingRuntimeState = FileViewerLoadingRuntimeState;
+export type MutableFileViewerLoadingState = FileViewerLoadingState;
 
 export interface FileViewerLoadingController {
-  readonly state: FileViewerLoadingRuntimeState;
-  setExtension(nextExtend?: string): FileViewerLoadingRuntimeState;
-  startLoading(nextMessage: string): FileViewerLoadingRuntimeState;
-  setLoadingMessage(nextMessage: string): FileViewerLoadingRuntimeState;
-  stopLoading(): FileViewerLoadingRuntimeState;
-  showError(nextMessage: string): FileViewerLoadingRuntimeState;
-  clearError(): FileViewerLoadingRuntimeState;
-  resetLoading(): FileViewerLoadingRuntimeState;
-  getState(): FileViewerLoadingRuntimeState;
+  readonly state: FileViewerLoadingState;
+  setExtension(nextExtend?: string): FileViewerLoadingState;
+  startLoading(nextMessage: string): FileViewerLoadingState;
+  setLoadingMessage(nextMessage: string): FileViewerLoadingState;
+  stopLoading(): FileViewerLoadingState;
+  showError(nextMessage: string): FileViewerLoadingState;
+  clearError(): FileViewerLoadingState;
+  resetLoading(): FileViewerLoadingState;
+  getState(): FileViewerLoadingState;
 }
 
 export interface FileViewerLoadingControllerActionHandlers {
-  setExtension(nextExtend?: string): FileViewerLoadingRuntimeState;
-  startLoading(nextMessage: string): FileViewerLoadingRuntimeState;
-  setLoadingMessage(nextMessage: string): FileViewerLoadingRuntimeState;
-  stopLoading(): FileViewerLoadingRuntimeState;
-  showError(nextMessage: string): FileViewerLoadingRuntimeState;
-  clearError(): FileViewerLoadingRuntimeState;
-  resetLoading(): FileViewerLoadingRuntimeState;
-  syncLoadingState(): FileViewerLoadingRuntimeState;
+  setExtension(nextExtend?: string): FileViewerLoadingState;
+  startLoading(nextMessage: string): FileViewerLoadingState;
+  setLoadingMessage(nextMessage: string): FileViewerLoadingState;
+  stopLoading(): FileViewerLoadingState;
+  showError(nextMessage: string): FileViewerLoadingState;
+  clearError(): FileViewerLoadingState;
+  resetLoading(): FileViewerLoadingState;
+  syncLoadingState(): FileViewerLoadingState;
 }
 
 export interface RunFileViewerLoadingExtensionSyncInput<
-  Target extends MutableFileViewerLoadingRuntimeState = MutableFileViewerLoadingRuntimeState,
+  Target extends MutableFileViewerLoadingState = MutableFileViewerLoadingState,
 > {
   target: Target;
   controller: Pick<FileViewerLoadingController, 'setExtension'>;
@@ -418,7 +418,7 @@ export const createFileViewerLoadingStyleVars = (theme: FileViewerLoadingTheme) 
   '--viewer-soft': theme.soft,
 });
 
-export const createFileViewerLoadingRuntimeState = (extend = ''): FileViewerLoadingRuntimeState => {
+export const createFileViewerLoadingState = (extend = ''): FileViewerLoadingState => {
   const theme = resolveFileViewerLoadingTheme(extend);
   return {
     loading: false,
@@ -429,9 +429,9 @@ export const createFileViewerLoadingRuntimeState = (extend = ''): FileViewerLoad
   };
 };
 
-export const cloneFileViewerLoadingRuntimeState = (
-  state: FileViewerLoadingRuntimeState
-): FileViewerLoadingRuntimeState => ({
+export const cloneFileViewerLoadingState = (
+  state: FileViewerLoadingState
+): FileViewerLoadingState => ({
   loading: state.loading,
   error: state.error,
   message: state.message,
@@ -439,9 +439,9 @@ export const cloneFileViewerLoadingRuntimeState = (
   styleVars: { ...state.styleVars },
 });
 
-export const applyFileViewerLoadingRuntimeState = <Target extends MutableFileViewerLoadingRuntimeState>(
+export const applyFileViewerLoadingState = <Target extends MutableFileViewerLoadingState>(
   target: Target,
-  source: FileViewerLoadingRuntimeState
+  source: FileViewerLoadingState
 ) => {
   target.loading = source.loading;
   target.error = source.error;
@@ -452,22 +452,22 @@ export const applyFileViewerLoadingRuntimeState = <Target extends MutableFileVie
   return target;
 };
 
-export const syncFileViewerLoadingControllerState = <Target extends MutableFileViewerLoadingRuntimeState>(
+export const syncFileViewerLoadingControllerState = <Target extends MutableFileViewerLoadingState>(
   target: Target,
   controller: Pick<FileViewerLoadingController, 'getState'>,
   source = controller.getState()
 ) => {
-  return applyFileViewerLoadingRuntimeState(target, source);
+  return applyFileViewerLoadingState(target, source);
 };
 
-export const runFileViewerLoadingControllerAction = <Target extends MutableFileViewerLoadingRuntimeState>(
+export const runFileViewerLoadingControllerAction = <Target extends MutableFileViewerLoadingState>(
   target: Target,
-  action: () => FileViewerLoadingRuntimeState
+  action: () => FileViewerLoadingState
 ) => {
-  return applyFileViewerLoadingRuntimeState(target, action());
+  return applyFileViewerLoadingState(target, action());
 };
 
-export const runFileViewerLoadingExtensionSync = <Target extends MutableFileViewerLoadingRuntimeState>({
+export const runFileViewerLoadingExtensionSync = <Target extends MutableFileViewerLoadingState>({
   target,
   controller,
   extension,
@@ -476,7 +476,7 @@ export const runFileViewerLoadingExtensionSync = <Target extends MutableFileView
 };
 
 export const createFileViewerLoadingControllerActionHandlers = <
-  Target extends MutableFileViewerLoadingRuntimeState,
+  Target extends MutableFileViewerLoadingState,
 >(
   target: Target,
   controller: FileViewerLoadingController
@@ -515,10 +515,10 @@ export const createFileViewerLoadingControllerActionHandlers = <
 
 /**
  * 统一管理加载、错误、文案和主题色。
- * wrapper 只负责把这个运行态映射到各自框架的响应式系统。
+ * wrapper 只负责把这个加载状态映射到各自框架的响应式系统。
  */
 export const createFileViewerLoadingController = (extend = ''): FileViewerLoadingController => {
-  const state = createFileViewerLoadingRuntimeState(extend);
+  const state = createFileViewerLoadingState(extend);
 
   const updateTheme = (nextExtend: string) => {
     state.theme = resolveFileViewerLoadingTheme(nextExtend);
@@ -529,41 +529,41 @@ export const createFileViewerLoadingController = (extend = ''): FileViewerLoadin
     state,
     setExtension(nextExtend = '') {
       updateTheme(nextExtend);
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     startLoading(nextMessage: string) {
       state.loading = true;
       state.message = nextMessage;
       state.error = '';
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     setLoadingMessage(nextMessage: string) {
       state.message = nextMessage;
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     stopLoading() {
       state.loading = false;
       state.message = '';
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     showError(nextMessage: string) {
       state.loading = false;
       state.message = '';
       state.error = nextMessage;
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     clearError() {
       state.error = '';
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     resetLoading() {
       state.loading = false;
       state.message = '';
       state.error = '';
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
     getState() {
-      return cloneFileViewerLoadingRuntimeState(state);
+      return cloneFileViewerLoadingState(state);
     },
   };
 };

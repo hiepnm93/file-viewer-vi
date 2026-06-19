@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 152 个扩展名和 Vue3、Vue2、React、纯 JS、iframe 多种接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 194 个扩展名和 Vue3、Vue2、React、纯 JS、jQuery、Svelte 原生接入方式',
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -50,7 +50,6 @@ export default defineConfig({
             { text: 'Vue2 集成', link: '/guide/quickstart-vue2' },
             { text: 'React 集成', link: '/guide/quickstart-react' },
             { text: '纯 JS 集成', link: '/guide/quickstart-web' },
-            { text: 'Iframe 嵌入', link: '/guide/iframe' },
             { text: '组件用法', link: '/guide/usage' }
           ]
         },

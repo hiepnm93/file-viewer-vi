@@ -1,1 +1,0 @@
-async function e(e){return new Promise((t,n)=>{let r=new FileReader;r.onload=e=>{let n=e.target?.result;typeof n==`string`&&t(n)},r.onerror=e=>n(e),r.readAsText(new Blob([e]),`utf-8`)})}export{e as t};

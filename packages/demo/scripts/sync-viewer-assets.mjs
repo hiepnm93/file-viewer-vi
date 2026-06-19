@@ -12,12 +12,12 @@ const targetDirs = [
 ]
 const helperSourceDir = resolve(repoDir, 'packages/web/dist')
 const helperTargetDir = resolve(demoDir, 'public/vendor/file-viewer-web')
-const helperFiles = ['index.js', 'flyfish-file-viewer-web.iife.js']
+const helperFiles = ['flyfish-file-viewer-web.iife.js']
 const exampleSourceDir = resolve(repoDir, 'public/example')
 const exampleTargetDir = resolve(demoDir, 'public/example')
 
-if (!existsSync(resolve(sourceDir, 'index.html'))) {
-  throw new Error('缺少 packages/web/viewer/index.html，请先运行 pnpm build:viewer-assets')
+if (!existsSync(resolve(sourceDir, 'flyfish-viewer-assets.json'))) {
+  throw new Error('缺少 packages/web/viewer/flyfish-viewer-assets.json，请先运行 pnpm build:viewer-assets')
 }
 
 const removeMacMetadata = async dir => {
@@ -40,6 +40,22 @@ for (const targetDir of targetDirs) {
   await cp(sourceDir, targetDir, { recursive: true })
   await removeMacMetadata(targetDir)
   console.log(`[file-viewer-demo] viewer assets copied to ${targetDir}`)
+}
+
+for (const assetRoot of ['vendor', 'wasm']) {
+  const sourceAssetRoot = resolve(sourceDir, assetRoot)
+  if (!existsSync(sourceAssetRoot)) {
+    continue
+  }
+
+  const targetAssetRoot = resolve(demoDir, 'public', assetRoot)
+  await mkdir(targetAssetRoot, { recursive: true })
+
+  const entries = await readdir(sourceAssetRoot, { withFileTypes: true })
+  await Promise.all(entries.map(entry => rm(resolve(targetAssetRoot, entry.name), { force: true, recursive: true })))
+  await cp(sourceAssetRoot, targetAssetRoot, { recursive: true })
+  await removeMacMetadata(targetAssetRoot)
+  console.log(`[file-viewer-demo] viewer root ${assetRoot} assets copied to ${targetAssetRoot}`)
 }
 
 await rm(helperTargetDir, { force: true, recursive: true })

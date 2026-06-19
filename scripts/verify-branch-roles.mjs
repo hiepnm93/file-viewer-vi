@@ -48,6 +48,7 @@ function assertPublicRepository(url, expectedOrg, label) {
 }
 
 assert(branchRoles.schemaVersion === 1, 'branch-roles.json schemaVersion must be 1')
+assert(branchRoles.currentSourceBranch, 'branch-roles.json must declare currentSourceBranch')
 assert(branchRoles.sourceRemote?.name === 'origin', 'Private source remote must be named origin')
 assert(branchRoles.sourceRemote?.visibility === 'private', 'Source remote must be marked private')
 assert(
@@ -81,6 +82,12 @@ assert(
 )
 
 const wrappersById = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.id, wrapper]))
+const compatibilityPackagesByName = new Map(
+  (wrapperManifest.compatibilityPackages || []).map(compatibilityPackage => [
+    compatibilityPackage.packageName,
+    compatibilityPackage
+  ])
+)
 for (const branchName of ['v2', 'v3']) {
   const role = rolesByName.get(branchName)
   assert(role.wrapperId, `${branchName} branch must declare wrapperId`)
@@ -96,12 +103,46 @@ for (const branchName of ['v2', 'v3']) {
       wrapper.historicalPackages.includes(compatibilityPackage),
       `${branchName} compatibility package ${compatibilityPackage} must be declared in wrappers.json`
     )
+    const compatibilityPackageEntry = compatibilityPackagesByName.get(compatibilityPackage)
+    assert(
+      compatibilityPackageEntry,
+      `${branchName} compatibility package ${compatibilityPackage} must have a compatibilityPackages entry`
+    )
+    assert(
+      compatibilityPackageEntry.targetPackage === wrapper.packageName,
+      `${branchName} compatibility package ${compatibilityPackage} must target ${wrapper.packageName}`
+    )
+    assert(
+      compatibilityPackageEntry.packageDir,
+      `${branchName} compatibility package ${compatibilityPackage} must declare packageDir`
+    )
+  }
+}
+
+for (const wrapper of wrapperManifest.wrappers) {
+  for (const historicalPackage of wrapper.historicalPackages || []) {
+    assert(
+      compatibilityPackagesByName.has(historicalPackage),
+      `Historical package ${historicalPackage} must have a compatibilityPackages entry`
+    )
   }
 }
 
 assert(
-  wrapperManifest.sourceBranch === 'v3',
-  'wrappers.json sourceBranch must remain v3 while Vue 3 is the baseline wrapper source'
+  wrapperManifest.sourceBranch === branchRoles.currentSourceBranch,
+  `wrappers.json sourceBranch must match branch-roles currentSourceBranch ${branchRoles.currentSourceBranch}`
+)
+assert(
+  branchRoles.targetBranchModel?.main === mainRole.role,
+  'targetBranchModel.main must match the declared main branch role'
+)
+assert(
+  branchRoles.targetBranchModel?.v2 === rolesByName.get('v2')?.role,
+  'targetBranchModel.v2 must match the declared v2 branch role'
+)
+assert(
+  branchRoles.targetBranchModel?.v3 === rolesByName.get('v3')?.role,
+  'targetBranchModel.v3 must match the declared v3 branch role'
 )
 assert(branchRoles.publicOrganization === wrapperManifest.organization, 'Public organization must match wrappers.json')
 assert(branchRoles.publicArtifactRepository?.sourcePolicy === 'artifacts-only', 'Public artifact repository must be artifacts-only')

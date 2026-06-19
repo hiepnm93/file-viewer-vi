@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/react",
-  "version": "1.0.26",
+  "version": "2.0.0",
   "private": false,
   "type": "module",
   "description": "Standard React wrapper for Flyfish File Viewer",
@@ -8,7 +8,7 @@
     "file-viewer",
     "document-preview",
     "react",
-    "iframe",
+    "native-viewer",
     "office-preview"
   ],
   "publishConfig": {
@@ -52,7 +52,7 @@
     "react": ">=17 <20"
   },
   "dependencies": {
-    "@file-viewer/web": "workspace:^1.0.26"
+    "@file-viewer/core": "workspace:^2.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

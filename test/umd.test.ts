@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parseUmdBook } from '../src/package/vendors/umd/parser'
+import { parseUmdBook } from './helpers/umdParser'
 
 function loadFixture(name: string): ArrayBuffer {
   const buffer = readFileSync(join(__dirname, '..', 'public', 'example', name))

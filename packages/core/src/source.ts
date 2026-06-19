@@ -153,7 +153,7 @@ const toFileViewerBlob = (source: Blob | ArrayBuffer) => {
     return source;
   }
   if (typeof Blob === 'undefined') {
-    throw new Error('Blob is not available in the current runtime.');
+    throw new Error('Blob is not available in the current execution environment.');
   }
   return new Blob([source]);
 };

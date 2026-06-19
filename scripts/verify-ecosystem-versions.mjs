@@ -14,6 +14,8 @@ const entryById = new Map()
 const entryByDir = new Map()
 const historicalPackageNames = new Set()
 const standardPackageByHistoricalName = new Map()
+const compatibilityPackageByName = new Map()
+const standardWrapperPackageNames = new Set(wrapperManifest.wrappers.map(wrapper => wrapper.packageName))
 
 function assert(condition, message) {
   if (!condition) {
@@ -21,7 +23,7 @@ function assert(condition, message) {
   }
 }
 
-function runtimeDependencies(packageJson) {
+function installDependencies(packageJson) {
   return {
     ...packageJson.dependencies,
     ...packageJson.optionalDependencies
@@ -78,6 +80,45 @@ for (const wrapper of wrapperManifest.wrappers) {
   }
 }
 
+for (const compatibilityPackage of wrapperManifest.compatibilityPackages || []) {
+  assert(
+    compatibilityPackage.id,
+    `Compatibility package ${compatibilityPackage.packageName || '(unnamed)'} must declare id`
+  )
+  assert(
+    compatibilityPackage.packageName,
+    `Compatibility package ${compatibilityPackage.id} must declare packageName`
+  )
+  assert(
+    compatibilityPackage.targetPackage,
+    `Compatibility package ${compatibilityPackage.packageName} must declare targetPackage`
+  )
+  assert(
+    compatibilityPackage.packageDir,
+    `Compatibility package ${compatibilityPackage.packageName} must declare packageDir`
+  )
+  assert(
+    historicalPackageNames.has(compatibilityPackage.packageName),
+    `${compatibilityPackage.packageName} compatibility package is not declared in wrappers.json historicalPackages`
+  )
+  assert(
+    standardPackageByHistoricalName.get(compatibilityPackage.packageName) === compatibilityPackage.targetPackage,
+    `${compatibilityPackage.packageName} targetPackage must match its wrapper historical package owner`
+  )
+  assert(
+    !compatibilityPackageByName.has(compatibilityPackage.packageName),
+    `Duplicate compatibility package manifest entry ${compatibilityPackage.packageName}`
+  )
+  compatibilityPackageByName.set(compatibilityPackage.packageName, compatibilityPackage)
+}
+
+for (const historicalPackageName of historicalPackageNames) {
+  assert(
+    compatibilityPackageByName.has(historicalPackageName),
+    `${historicalPackageName} is declared as historical package but has no compatibilityPackages entry`
+  )
+}
+
 for (const entry of entries) {
   assertUnique(entryByName, entry.packageName, 'package name', entry.packageName)
   assertUnique(entryById, entry.id, 'package id', entry.packageName)
@@ -128,42 +169,75 @@ for (const entry of entries) {
   }
 
   if (entry.kind === 'standard-wrapper') {
-    const dependencies = runtimeDependencies(entry.packageJson)
+    const dependencies = installDependencies(entry.packageJson)
     for (const packageName of Object.keys(dependencies)) {
       assert(
         !historicalPackageNames.has(packageName),
         `${entry.packageName} must not depend on historical compatibility package ${packageName}`
       )
-    }
-
-    if (entry.packageName === '@file-viewer/web') {
       assert(
-        dependencies[corePackageName] === expectedWorkspaceRange,
-        `${entry.packageName} must depend on ${corePackageName}@${expectedWorkspaceRange}`
+        !standardWrapperPackageNames.has(packageName) || packageName === entry.packageName,
+        `${entry.packageName} must not depend on another standard wrapper package ${packageName}`
       )
-    } else {
+    }
+    assert(
+      dependencies[corePackageName] === expectedWorkspaceRange,
+      `${entry.packageName} must depend on ${corePackageName}@${expectedWorkspaceRange}`
+    )
+  }
+
+  if (entry.kind === 'compatibility') {
+    const compatibilityPackage = compatibilityPackageByName.get(entry.packageName)
+    assert(
+      compatibilityPackage,
+      `${entry.packageName} compatibility package is not declared in ecosystem/wrappers.json compatibilityPackages`
+    )
+    assert(
+      entry.id === compatibilityPackage.id,
+      `${entry.packageName} release entry id ${entry.id} must match compatibilityPackages id ${compatibilityPackage.id}`
+    )
+    assert(
+      entry.packageDir === compatibilityPackage.packageDir,
+      `${entry.packageName} packageDir must match compatibilityPackages.packageDir`
+    )
+    const standardPackageName = standardPackageByHistoricalName.get(entry.packageName)
+    assert(
+      standardPackageName === compatibilityPackage.targetPackage,
+      `${entry.packageName} target package must be ${standardPackageName}`
+    )
+    const dependencies = installDependencies(entry.packageJson)
+    if (standardPackageName === '@file-viewer/react') {
+      assert(
+        !dependencies[corePackageName] && !dependencies['@file-viewer/web'],
+        `${entry.packageName} must remain a thin React alias instead of depending on core/web directly`
+      )
+      assert(
+        dependencies['@file-viewer/react'] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on @file-viewer/react@${expectedWorkspaceRange}`
+      )
+    }
+    if (standardPackageName === '@file-viewer/web') {
       assert(
         dependencies['@file-viewer/web'] === expectedWorkspaceRange,
         `${entry.packageName} must depend on @file-viewer/web@${expectedWorkspaceRange}`
       )
     }
-  }
-
-  if (entry.kind === 'compatibility') {
-    assert(
-      historicalPackageNames.has(entry.packageName),
-      `${entry.packageName} compatibility package is not declared in ecosystem/wrappers.json historicalPackages`
-    )
-    const standardPackageName = standardPackageByHistoricalName.get(entry.packageName)
-    const dependencies = runtimeDependencies(entry.packageJson)
-    if (standardPackageName === '@file-viewer/react') {
+    if (standardPackageName === '@file-viewer/vue2.7') {
       assert(
-        !dependencies[corePackageName],
-        `${entry.packageName} must consume the web compatibility facade instead of depending on ${corePackageName}`
+        dependencies['@file-viewer/vue2.7'] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on @file-viewer/vue2.7@${expectedWorkspaceRange}`
       )
+    }
+    if (standardPackageName === '@file-viewer/vue3') {
       assert(
-        dependencies['@flyfish-group/file-viewer-web'] === expectedWorkspaceRange,
-        `${entry.packageName} must depend on @flyfish-group/file-viewer-web@${expectedWorkspaceRange}`
+        dependencies['@file-viewer/vue3'] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on @file-viewer/vue3@${expectedWorkspaceRange}`
+      )
+    }
+    if (entry.packageName === 'file-viewer3') {
+      assert(
+        !dependencies['@flyfish-group/file-viewer3'],
+        `${entry.packageName} must alias @file-viewer/vue3 directly instead of chaining through @flyfish-group/file-viewer3`
       )
     }
   }

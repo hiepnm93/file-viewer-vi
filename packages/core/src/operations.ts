@@ -109,32 +109,6 @@ export type SerializedFileViewerContext<
   hasFile: boolean;
 };
 
-export type FileViewerPostMessageType =
-  | 'flyfish-viewer:lifecycle'
-  | 'flyfish-viewer:operation'
-  | 'flyfish-viewer:search'
-  | 'flyfish-viewer:location';
-
-const FILE_VIEWER_POST_MESSAGE_TYPES: readonly FileViewerPostMessageType[] = [
-  'flyfish-viewer:lifecycle',
-  'flyfish-viewer:operation',
-  'flyfish-viewer:search',
-  'flyfish-viewer:location',
-];
-
-export interface FileViewerPostMessagePayload<Payload = unknown> {
-  type: FileViewerPostMessageType;
-  event: string;
-  payload: Payload;
-}
-
-export type FileViewerFrameEventPayload<Payload = unknown> = FileViewerPostMessagePayload<Payload>;
-
-export type FileViewerFrameEventHandler<Payload = unknown> = (
-  event: FileViewerFrameEventPayload<Payload>,
-  rawEvent: MessageEvent
-) => void;
-
 export interface ResolveFileViewerOperationAvailabilityInput {
   extension: string;
   hasOriginalSource?: boolean;
@@ -213,8 +187,6 @@ export interface CreateFileViewerLifecycleActionsInput<
   onOperationBefore?: (context: OperationContext) => void;
   onOperationCancel?: (context: OperationContext) => void;
   onOperationError?: (error: unknown, context: OperationContext) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface FileViewerLifecycleActions<
@@ -236,8 +208,6 @@ export interface DispatchFileViewerLifecycleEventInput<
   hooks?: FileViewerLifecycleHooks;
   onChange?: (event: FileViewerLifecyclePhase, context: Context) => void;
   onError?: (error: unknown, context: Context) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface DispatchFileViewerOperationContextEventInput<
@@ -246,22 +216,16 @@ export interface DispatchFileViewerOperationContextEventInput<
   event: 'operation-before' | 'operation-cancel';
   context: Context;
   onChange?: (context: Context) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface DispatchFileViewerOperationAvailabilityChangeInput {
   availability: FileViewerOperationAvailability;
   onChange?: (availability: FileViewerOperationAvailability) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface DispatchFileViewerZoomChangeInput {
   state: FileViewerZoomState;
   onChange?: (state: FileViewerZoomState) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export type FileViewerZoomButtonAction = keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>;
@@ -272,8 +236,6 @@ export interface CreateFileViewerToolbarActionsInput {
   getZoomState: () => FileViewerZoomState;
   onOperationAvailabilityChange?: (availability: FileViewerOperationAvailability) => void;
   onZoomChange?: (state: FileViewerZoomState) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface FileViewerToolbarActions {
@@ -327,8 +289,6 @@ export interface CreateFileViewerToolbarControllerActionHandlersInput {
   zoomSyncState?: FileViewerZoomState;
   onOperationAvailabilityChange?: (availability: FileViewerOperationAvailability) => void;
   onZoomChange?: (state: FileViewerZoomState) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface FileViewerLifecycleStateController {
@@ -730,85 +690,6 @@ export const serializeFileViewerContext = <
   } as SerializedFileViewerContext<Context>;
 };
 
-export const createFileViewerPostMessagePayload = <
-  Context extends FileViewerLifecycleContext | FileViewerOperationContext,
->(
-  type: 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation',
-  event: string,
-  context: Context
-): FileViewerPostMessagePayload<SerializedFileViewerContext<Context>> => {
-  return {
-    type,
-    event,
-    payload: serializeFileViewerContext(context),
-  };
-};
-
-export const createFileViewerRawPostMessagePayload = <Payload>(
-  type: FileViewerPostMessageType,
-  event: string,
-  payload: Payload
-): FileViewerPostMessagePayload<Payload> => {
-  return {
-    type,
-    event,
-    payload,
-  };
-};
-
-export const isFileViewerFrameEvent = (value: unknown): value is FileViewerFrameEventPayload => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const candidate = value as Partial<FileViewerPostMessagePayload>;
-  return typeof candidate.event === 'string' &&
-    typeof candidate.type === 'string' &&
-    FILE_VIEWER_POST_MESSAGE_TYPES.includes(candidate.type as FileViewerPostMessageType);
-};
-
-export const postFileViewerMessageToParent = <Payload>(
-  payload: FileViewerPostMessagePayload<Payload>,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  if (!targetWindow || targetWindow.parent === targetWindow) {
-    return false;
-  }
-
-  targetWindow.parent.postMessage(payload, targetOrigin);
-  return true;
-};
-
-export const postFileViewerLifecycleEvent = <
-  Context extends FileViewerLifecycleContext,
->(
-  context: Context,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerPostMessagePayload('flyfish-viewer:lifecycle', context.phase, context),
-    targetOrigin,
-    targetWindow
-  );
-};
-
-export const postFileViewerOperationContextEvent = <
-  Context extends FileViewerOperationContext,
->(
-  event: 'operation-before' | 'operation-cancel',
-  context: Context,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerPostMessagePayload('flyfish-viewer:operation', event, context),
-    targetOrigin,
-    targetWindow
-  );
-};
-
 export const dispatchFileViewerLifecycleEvent = <
   Context extends FileViewerLifecycleContext,
 >({
@@ -816,12 +697,10 @@ export const dispatchFileViewerLifecycleEvent = <
   hooks,
   onChange,
   onError,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerLifecycleEventInput<Context>) => {
   onChange?.(context.phase, context);
   void runFileViewerLifecycleHook(context, hooks, onError);
-  return postFileViewerLifecycleEvent(context, targetOrigin, targetWindow);
+  return true;
 };
 
 export const dispatchFileViewerOperationContextEvent = <
@@ -830,11 +709,9 @@ export const dispatchFileViewerOperationContextEvent = <
   event,
   context,
   onChange,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerOperationContextEventInput<Context>) => {
   onChange?.(context);
-  return postFileViewerOperationContextEvent(event, context, targetOrigin, targetWindow);
+  return true;
 };
 
 export const createFileViewerLifecycleActions = <
@@ -847,8 +724,6 @@ export const createFileViewerLifecycleActions = <
   onOperationBefore,
   onOperationCancel,
   onOperationError,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerLifecycleActionsInput<OperationContext>): FileViewerLifecycleActions<OperationContext> => {
   const notifyLifecycle = (context: FileViewerLifecycleContext) => {
     return dispatchFileViewerLifecycleEvent({
@@ -856,8 +731,6 @@ export const createFileViewerLifecycleActions = <
       hooks: getOptions()?.hooks,
       onChange: onLifecycleChange,
       onError: onLifecycleError,
-      targetOrigin,
-      targetWindow,
     });
   };
 
@@ -887,8 +760,6 @@ export const createFileViewerLifecycleActions = <
             event: 'operation-before',
             context: nextContext,
             onChange: onOperationBefore,
-            targetOrigin,
-            targetWindow,
           });
         },
         onCancel: nextContext => {
@@ -896,8 +767,6 @@ export const createFileViewerLifecycleActions = <
             event: 'operation-cancel',
             context: nextContext,
             onChange: onOperationCancel,
-            targetOrigin,
-            targetWindow,
           });
         },
         onError: onOperationError,
@@ -906,49 +775,21 @@ export const createFileViewerLifecycleActions = <
   };
 };
 
-export const postFileViewerOperationAvailabilityChange = (
-  availability: FileViewerOperationAvailability,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability),
-    targetOrigin,
-    targetWindow
-  );
-};
-
-export const postFileViewerZoomChange = (
-  state: FileViewerZoomState,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state),
-    targetOrigin,
-    targetWindow
-  );
-};
-
 export const dispatchFileViewerOperationAvailabilityChange = ({
   availability,
   onChange,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerOperationAvailabilityChangeInput) => {
   const payload = cloneFileViewerOperationAvailability(availability);
   onChange?.(payload);
-  return postFileViewerOperationAvailabilityChange(payload, targetOrigin, targetWindow);
+  return true;
 };
 
 export const dispatchFileViewerZoomChange = ({
   state,
   onChange,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerZoomChangeInput) => {
   onChange?.(state);
-  return postFileViewerZoomChange(state, targetOrigin, targetWindow);
+  return true;
 };
 
 export const createFileViewerToolbarActions = ({
@@ -957,24 +798,18 @@ export const createFileViewerToolbarActions = ({
   getZoomState,
   onOperationAvailabilityChange,
   onZoomChange,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerToolbarActionsInput): FileViewerToolbarActions => {
   return {
     notifyOperationAvailabilityChange(availability = getOperationAvailability()) {
       return dispatchFileViewerOperationAvailabilityChange({
         availability,
         onChange: onOperationAvailabilityChange,
-        targetOrigin,
-        targetWindow,
       });
     },
     notifyZoomChange(state = getZoomState()) {
       return dispatchFileViewerZoomChange({
         state,
         onChange: onZoomChange,
-        targetOrigin,
-        targetWindow,
       });
     },
     isZoomButtonDisabled(action) {
@@ -1037,8 +872,6 @@ export const createFileViewerToolbarControllerActionHandlers = ({
   zoomSyncState,
   onOperationAvailabilityChange,
   onZoomChange,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerToolbarControllerActionHandlersInput): FileViewerToolbarControllerActionHandlers => {
   let currentToolbarState: FileViewerToolbarState | null = null;
 
@@ -1069,8 +902,6 @@ export const createFileViewerToolbarControllerActionHandlers = ({
     getZoomState,
     onOperationAvailabilityChange,
     onZoomChange,
-    targetOrigin,
-    targetWindow,
   });
 
   return {
@@ -1086,30 +917,6 @@ export const createFileViewerToolbarControllerActionHandlers = ({
     }),
     isZoomButtonDisabled: toolbarActions.isZoomButtonDisabled,
   };
-};
-
-export const postFileViewerSearchChange = (
-  state: FileViewerSearchState,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', state),
-    targetOrigin,
-    targetWindow
-  );
-};
-
-export const postFileViewerLocationChange = (
-  anchor: FileViewerDocumentAnchor | null,
-  targetOrigin = '*',
-  targetWindow: Window | undefined = typeof window !== 'undefined' ? window : undefined
-) => {
-  return postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:location', 'location-change', anchor),
-    targetOrigin,
-    targetWindow
-  );
 };
 
 export const normalizeFileViewerToolbar = (

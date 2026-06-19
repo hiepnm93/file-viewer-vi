@@ -8,7 +8,6 @@ if (!host) {
 }
 
 fileViewer(host, {
-  viewerUrl: '/vendor/file-viewer/index.html',
   url: '/example/preview.md',
   options: {
     theme: 'light',
@@ -18,4 +17,4 @@ fileViewer(host, {
   }
 })
 
-document.body.setAttribute('data-adapter', 'svelte-action')
+document.body.setAttribute('data-wrapper', 'svelte-action')

@@ -74,7 +74,7 @@ const sanitizeJsonValue = (value: unknown): JsonValue | undefined => {
   return Object.keys(output).length ? output : undefined;
 };
 
-const stripRuntimeOnlyOptions = (value: Record<string, unknown>) => {
+const stripExecutionOnlyOptions = (value: Record<string, unknown>) => {
   const {
     beforeOperation: _beforeOperation,
     hooks: _hooks,
@@ -108,7 +108,7 @@ export const sanitizeFileViewerOptions = (
     return undefined;
   }
 
-  const sanitized = sanitizeJsonValue(stripRuntimeOnlyOptions(options));
+  const sanitized = sanitizeJsonValue(stripExecutionOnlyOptions(options));
   if (!isRecord(sanitized)) {
     return undefined;
   }

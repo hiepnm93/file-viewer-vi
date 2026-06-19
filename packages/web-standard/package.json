@@ -1,13 +1,13 @@
 {
   "name": "@file-viewer/web",
-  "version": "1.0.26",
+  "version": "2.0.0",
   "private": false,
   "type": "module",
   "description": "Standard pure web wrapper for Flyfish File Viewer",
   "keywords": [
     "file-viewer",
     "document-preview",
-    "iframe",
+    "native-viewer",
     "vanilla-js",
     "web"
   ],
@@ -63,7 +63,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:^1.0.26"
+    "@file-viewer/core": "workspace:^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

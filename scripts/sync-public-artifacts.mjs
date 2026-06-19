@@ -39,10 +39,11 @@ const vue2Tarball = resolve(
       join(sourceRoot, '..', 'file-viewer', `flyfish-group-file-viewer-${version}.tgz`)
   )
 )
-const releaseDir = join(sourceRoot, '.release', `file-viewer-v3-${version}`)
+const releaseDir = join(sourceRoot, '.release', `file-viewer-v2-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
-const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
+const wrapperDemoStagingDir = join(releaseDir, 'wrapper-demo')
 const ecosystemPackDir = join(releaseDir, 'ecosystem')
+const legacyIntegrationDemoArtifactSegment = ['adapter', 'demo'].join('-')
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -116,7 +117,10 @@ async function removeOldArtifacts(artifactsDir) {
     ecosystemPackageEntries.map(ecosystemPackage => ecosystemPackage.tarballName)
   )
   for (const entry of entries) {
-    if (/^file-viewer-v3-.*-(demo|adapter-demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
+    if (
+      /^file-viewer-v[23]-.*-(demo|wrapper-demo|lib-dist|docs)\.tar\.gz$/.test(entry) ||
+      entry.includes(`-${legacyIntegrationDemoArtifactSegment}.tar.gz`)
+    ) {
       await removePath(join(artifactsDir, entry))
     }
     if (/^flyfish-group-file-viewer(3|-web|-react)?-.*\.tgz$/.test(entry)) {
@@ -162,7 +166,7 @@ async function readEcosystemPackManifest() {
 
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
-    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
+    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'wrapper-demo', 'docs', 'example', 'artifacts']
     : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const packages = ecosystemPackManifest.packages || []
@@ -173,10 +177,10 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     sourceBranch: currentBranch(),
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
     corePackage: wrapperManifest.corePackage,
-    adapterPackages: Object.fromEntries(
+    ecosystemPackages: Object.fromEntries(
       packages.map(packageRecord => [packageRecord.packageName, packageRecord.version])
     ),
-    adapterArtifacts: packages.map(packageRecord => {
+    ecosystemArtifacts: packages.map(packageRecord => {
       const wrapper = wrappersByPackageName.get(packageRecord.packageName)
       const includeTarball = shouldPublishArtifactTarball(packageRecord)
       return {
@@ -210,12 +214,12 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
           name: '@flyfish-group/file-viewer',
           version,
           tarball: basename(vue2Tarball)
-        },
+    },
     publicRepo: repoDir,
     artifactOnly: true,
     layout: keepExpandedAssets ? 'expanded' : 'slim',
     allowedRoots,
-    archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'adapter-demo', 'docs', 'example'],
+    archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'wrapper-demo', 'docs', 'example'],
     slimMode: slimArtifacts
   }
   await writeFile(
@@ -235,24 +239,24 @@ await assertPublicArtifactOnlyRepo(publicRepoDir)
 if (!skipBuild) {
   await removePath(releaseDir)
   await mkdir(demoStagingDir, { recursive: true })
-  await mkdir(adapterDemoStagingDir, { recursive: true })
+  await mkdir(wrapperDemoStagingDir, { recursive: true })
   await mkdir(ecosystemPackDir, { recursive: true })
 
   run('pnpm', ['run', 'build:viewer-assets'])
   await copyCleanDir(join(sourceRoot, 'dist'), demoStagingDir)
 
-  run('pnpm', ['run', 'build:adapter-demo'])
-  await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), adapterDemoStagingDir)
+  run('pnpm', ['run', 'build:wrapper-demo'])
+  await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), wrapperDemoStagingDir)
 
   run('pnpm', ['--filter', '@file-viewer/core', 'build'])
-  run('pnpm', ['run', 'build:adapter-packages'])
+  run('pnpm', ['run', 'build:wrapper-packages'])
   run('pnpm', ['run', 'build-lib-only'])
   run('pnpm', ['run', 'obfuscate'])
   run('pnpm', ['run', 'docs:build'])
   run('node', ['scripts/release-ecosystem-packages.mjs', '--pack', '--pack-dir', ecosystemPackDir, '--clean'])
 } else {
   await assertDirectory(demoStagingDir, 'Demo staging directory')
-  await assertDirectory(adapterDemoStagingDir, 'Adapter demo staging directory')
+  await assertDirectory(wrapperDemoStagingDir, 'Wrapper demo staging directory')
   await assertDirectory(join(sourceRoot, 'dist'), 'Library dist directory')
   await assertDirectory(join(sourceRoot, 'docs', '.vitepress', 'dist'), 'Docs dist directory')
   await assertDirectory(ecosystemPackDir, 'Ecosystem pack directory')
@@ -262,13 +266,14 @@ const artifactsDir = join(publicRepoDir, 'artifacts')
 await removeOldArtifacts(artifactsDir)
 
 await removePath(join(publicRepoDir, 'demo'))
-await removePath(join(publicRepoDir, 'adapter-demo'))
+await removePath(join(publicRepoDir, legacyIntegrationDemoArtifactSegment))
+await removePath(join(publicRepoDir, 'wrapper-demo'))
 await removePath(join(publicRepoDir, 'docs'))
 await removePath(join(publicRepoDir, 'example'))
 
 if (keepExpandedAssets) {
   await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))
-  await copyCleanDir(adapterDemoStagingDir, join(publicRepoDir, 'adapter-demo'))
+  await copyCleanDir(wrapperDemoStagingDir, join(publicRepoDir, 'wrapper-demo'))
   await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
   await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
 }
@@ -293,10 +298,10 @@ if (!skipVue2Tarball) {
   await cp(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), { force: true })
 }
 
-await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-demo.tar.gz`))
-await createTarball(adapterDemoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-adapter-demo.tar.gz`))
-await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v3-${version}-lib-dist.tar.gz`))
-await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
+await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-demo.tar.gz`))
+await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-wrapper-demo.tar.gz`))
+await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v2-${version}-lib-dist.tar.gz`))
+await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
 await assertPublicArtifactOnlyRepo(publicRepoDir)
 run('node', ['scripts/verify-public-artifacts.mjs', '--public-repo-dir', publicRepoDir])

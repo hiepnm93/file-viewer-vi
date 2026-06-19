@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { dirname, extname, join, resolve } from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
+import { TextDecoder, TextEncoder } from 'node:util'
 import vm from 'node:vm'
 import {
   collectExportEntrypoints,
@@ -21,6 +22,12 @@ const webGlobalPackages = new Set([
 ])
 const webGlobalBundle = 'dist/flyfish-file-viewer-web.iife.js'
 const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
+const BrowserCustomEvent = globalThis.CustomEvent ?? class CustomEvent extends Event {
+  constructor(type, init = {}) {
+    super(type, init)
+    this.detail = init.detail
+  }
+}
 
 async function assertFile(path, label = path) {
   if (!existsSync(path)) {
@@ -86,14 +93,11 @@ async function assertViewerStaticEntrypoints(entry) {
   const viewerDir = join(entry.absoluteDir, 'viewer')
   await assertDirectory(viewerDir, `${entry.packageName} viewer/`)
   for (const file of [
-    'index.html',
-    'compare.html',
     'flyfish-viewer-assets.json',
     'flyfish-viewer-manifest.json'
   ]) {
     await assertFile(join(viewerDir, file), `${entry.packageName} viewer/${file}`)
   }
-  await assertDirectory(join(viewerDir, 'assets'), `${entry.packageName} viewer/assets/`)
   await assertDirectory(join(viewerDir, 'wasm'), `${entry.packageName} viewer/wasm/`)
 }
 
@@ -115,16 +119,33 @@ async function assertWebGlobalEntrypoint(entry) {
     const bundlePath = join(entry.absoluteDir, normalizedEntrypoint)
     await assertFile(bundlePath, `${entry.packageName} ${bundleEntrypoint}`)
 
-    const context = { window: {} }
+    const navigator = { userAgent: 'Mozilla/5.0 (FileViewerEntrypointCheck)' }
+    const browserGlobals = {
+      Blob,
+      DOMException,
+      Event,
+      EventTarget,
+      CustomEvent: BrowserCustomEvent,
+      navigator,
+      requestAnimationFrame: callback => setTimeout(() => callback(Date.now()), 0),
+      cancelAnimationFrame: id => clearTimeout(id),
+      TextDecoder,
+      TextEncoder,
+      URL,
+      URLSearchParams
+    }
+    const context = {
+      ...browserGlobals,
+      self: browserGlobals,
+      window: browserGlobals
+    }
     vm.runInNewContext(await readFile(bundlePath, 'utf8'), context, {
       filename: `${entry.packageName}/${normalizedEntrypoint}`
     })
     const globalApi = context.window.FlyfishFileViewerWeb || context.FlyfishFileViewerWeb
     for (const exportName of [
-      'mountViewerFrame',
       'mountViewer',
-      'buildViewerSrc',
-      'createViewerFrameFilePostController'
+      'createViewerControllerHandle'
     ]) {
       if (typeof globalApi?.[exportName] !== 'function') {
         throw new Error(`${entry.packageName} browser global bundle ${bundleEntrypoint} is missing ${exportName}`)

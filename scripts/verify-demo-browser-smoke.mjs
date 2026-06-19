@@ -48,15 +48,15 @@ const importPlaywright = async () => {
 
     for (const candidatePath of candidatePaths) {
       try {
-        const runtimeEntry = require.resolve('playwright', { paths: [candidatePath] })
-        return await import(pathToFileURL(runtimeEntry).href)
+        const playwrightEntry = require.resolve('playwright', { paths: [candidatePath] })
+        return await import(pathToFileURL(playwrightEntry).href)
       } catch {
         // Keep probing package roots injected by npm exec / npx.
       }
     }
 
     fail([
-      'Missing playwright runtime.',
+      'Missing playwright module.',
       'Run with: npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs',
       `Original error: ${error instanceof Error ? error.message : String(error)}`
     ].join('\n'))
@@ -222,8 +222,8 @@ const verifyCompareDemo = async (page, baseUrl, failures) => {
 }
 
 const run = async () => {
-  const playwrightRuntime = await importPlaywright()
-  const { chromium } = playwrightRuntime.chromium ? playwrightRuntime : playwrightRuntime.default
+  const playwrightModule = await importPlaywright()
+  const { chromium } = playwrightModule.chromium ? playwrightModule : playwrightModule.default
   const serverHandle = externalUrl
     ? { server: null, url: externalUrl.replace(/\/$/, '') }
     : await startStaticServer()

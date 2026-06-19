@@ -13,8 +13,7 @@
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
 | 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位 |
-| iframe 示例页 | `/example/embedded.html` | 验证独立部署与二进制推送协议 |
-| 适配层 Demo | `packages/demo` | 同时验证 React 组件和纯 JS helper 的私有化 iframe 集成 |
+| wrapper Demo | `packages/demo` | 同时验证 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入 |
 
 ## 主示例页
 
@@ -97,33 +96,22 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
   <p class="doc-caption">Word 文件会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近真实文档。</p>
 </div>
 
-## iframe 示例页
+## React / 纯 JS wrapper Demo
 
-`public/example/embedded.html` 演示了宿主页面如何下载文件，再把 `Blob` 推送给预览器。
-
-<div class="doc-shot">
-  <img src="/_images/demo-iframe.png" alt="Iframe 示例页截图" />
-  <p class="doc-caption">iframe 示例适合验证跨系统集成路径，尤其适合做带鉴权文件的联调。</p>
-</div>
-
-## React / 纯 JS 适配层 Demo
-
-仓库中的 `packages/demo` 会把 `packages/web/viewer` 同步到自己的 `public/file-viewer` 和 `public/vendor/file-viewer`，页面上同时挂载 React 组件和纯 JS helper，并使用 `/vendor/file-viewer/index.html` 验证自定义子路径下的 DOCX 预览。调试时运行:
+仓库中的 `packages/demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery wrapper、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 wrapper 原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
 
 ```bash
-pnpm dev:adapters
+pnpm dev:wrappers
 ```
 
 构建上线前运行:
 
 ```bash
-pnpm build:adapter-demo
+pnpm build:wrapper-demo
 pnpm --filter @flyfish-group/file-viewer-demo preview
 ```
 
-如果开发服务和 build preview 中两个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS `mountViewerFrame`、自定义 `viewerUrl`、完整静态目录复制和 iframe 资源加载都可用。
-
-确实不能使用 npm helper 的项目，可以访问 `/manual-js.html` 查看纯手写 iframe 示例。这个页面不引入 React，也不调用 `mountViewerFrame`，只演示标准 iframe 协议和完整 viewer 静态目录要求。
+如果开发服务和 build preview 中各个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS `mountViewer`、jQuery、Svelte 和 script 标签全局包都可用。
 
 ## 示例文件清单
 
@@ -244,7 +232,7 @@ pnpm --filter @flyfish-group/file-viewer-demo preview
 
 ## 完整覆盖与绘图说明
 
-上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer 静态目录下 `wasm/cad/` 中的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
+上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer assets 中 `wasm/cad/` 下的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
 
 3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，建议用客户真实模型补充回归。
 

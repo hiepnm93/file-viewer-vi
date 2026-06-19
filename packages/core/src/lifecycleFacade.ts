@@ -52,8 +52,6 @@ export interface CreateFileViewerLifecycleFacadeInput {
   handleLifecycleError: (error: unknown, context: FileViewerLifecycleContext) => void;
   handleOperationError?: (error: unknown, context: FileViewerOperationContext) => void;
   onOperationErrorMessage?: (message: string, context: FileViewerOperationContext) => void;
-  targetOrigin?: string;
-  targetWindow?: Window;
 }
 
 export interface FileViewerLifecycleFacade {
@@ -88,15 +86,11 @@ export const createFileViewerLifecycleFacade = ({
   handleLifecycleError,
   handleOperationError,
   onOperationErrorMessage,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerLifecycleFacadeInput): FileViewerLifecycleFacade => {
   const lifecycleState = createFileViewerLifecycleStateController();
   const lifecycleActions = createFileViewerLifecycleActions({
     lifecycleState,
     getOptions,
-    targetOrigin,
-    targetWindow,
     onLifecycleChange: (_event, context) => {
       emitFileViewerComponentLifecycleEvent(emitLifecycle, context);
     },

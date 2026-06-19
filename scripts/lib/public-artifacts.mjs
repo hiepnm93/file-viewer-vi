@@ -25,7 +25,7 @@ export const publicArtifactDefaultRoots = [
   'package.json',
   'dist',
   'demo',
-  'adapter-demo',
+  'wrapper-demo',
   'docs',
   'example',
   'artifacts'

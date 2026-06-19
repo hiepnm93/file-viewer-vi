@@ -2,11 +2,13 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   buildExportHtmlDocument,
   buildFileViewerRenderedHtmlDocument,
-  buildPrintPageStyle,
-  formatCssPixels,
   resolveFileViewerPrintStyle,
   waitForFileViewerNextPaint,
 } from '../packages/core/src'
+import {
+  buildPrintPageStyle,
+  formatCssPixels,
+} from '../packages/core/src/printLayout'
 
 describe('print layout helpers', () => {
   it('builds a fixed-size print page from CSS pixels', () => {

@@ -1,9 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import rootPackage from '../package.json' with { type: 'json' }
+import viewerPackage from '../packages/web-standard/package.json' with { type: 'json' }
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const source = resolve(root, 'dist')
@@ -134,6 +134,23 @@ const toManifestValidation = validation => ({
   missingOptional: validation.missingOptional.map(toManifestValidationItem)
 })
 
+const copyDeclaredViewerAssets = async target => {
+  const declaredAssets = listFileViewerRendererAssetManifests()
+    .flatMap(manifest => manifest.assets)
+    .filter(asset => asset.target === 'public' && asset.defaultPath)
+
+  for (const asset of declaredAssets) {
+    const sourcePath = resolve(source, asset.defaultPath)
+    if (!existsSync(sourcePath)) {
+      continue
+    }
+
+    const targetPath = resolve(target, asset.defaultPath)
+    await mkdir(dirname(targetPath), { recursive: true })
+    await cp(sourcePath, targetPath, { recursive: true })
+  }
+}
+
 for (const target of targets) {
   const previousAssetManifest = await readExistingJson(
     resolve(target, viewerAssetManifestFilename)
@@ -141,16 +158,16 @@ for (const target of targets) {
 
   await rm(target, { force: true, recursive: true })
   await mkdir(target, { recursive: true })
-  await cp(source, target, { recursive: true })
-  await rm(resolve(target, 'example'), { force: true, recursive: true })
+  await copyDeclaredViewerAssets(target)
   await removeMacMetadata(target)
 
   await writeFile(
     resolve(target, 'flyfish-viewer-manifest.json'),
     `${JSON.stringify({
-      name: rootPackage.name,
-      version: rootPackage.version,
-      entry: 'index.html'
+      name: viewerPackage.name,
+      version: viewerPackage.version,
+      kind: 'viewer-assets',
+      assets: viewerAssetManifestFilename
     }, null, 2)}\n`
   )
 
@@ -178,5 +195,5 @@ for (const target of targets) {
     )
   }
 
-  console.log(`已同步 Vue 基线构建产物到 ${target}`)
+  console.log(`已同步 viewer 资源到 ${target}`)
 }

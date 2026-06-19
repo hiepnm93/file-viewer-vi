@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { parseEdaFile } from '@/package/vendors/eda/parser'
+import { parseEdaFile } from '../packages/core/src'
 
 describe('EDA parser', () => {
   it('parses generated OLB CFB fixtures into symbol entities and properties', async () => {

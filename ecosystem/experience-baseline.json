@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "description": "Vue 3 baseline experience contract used while the viewer is being split into a pure TypeScript core and public framework wrappers.",
+  "description": "Native wrapper experience contract used while the viewer is being split into a pure TypeScript core and public framework wrappers.",
   "baseline": {
     "sourceBranch": "v3",
-    "rootPackage": "@flyfish-group/file-viewer3",
+    "rootPackage": "@flyfish-group/file-viewer-workspace",
     "versionSource": "package.json",
     "formatMatrixSource": "packages/core/src/formats.ts",
     "wrapperManifestSource": "ecosystem/wrappers.json",
@@ -11,7 +11,7 @@
   },
   "requiredScripts": [
     "verify:demo-browser-smoke",
-    "verify:adapter-browser-smoke",
+    "verify:wrapper-browser-smoke",
     "verify:browser-smoke",
     "verify:smoke-matrix",
     "verify:wrapper-api",
@@ -32,7 +32,7 @@
     },
     {
       "id": "lifecycle-events",
-      "evidence": ["event-callback", "load-start", "load-complete", "unload-start", "unload-complete", "iframe-post-message"]
+      "evidence": ["event-callback", "native-wrapper-event", "load-start", "load-complete", "unload-start", "unload-complete"]
     },
     {
       "id": "document-navigation",
@@ -54,12 +54,12 @@
   "surfaces": [
     {
       "id": "vue3-current-component",
-      "label": "Vue 3 baseline component",
+      "label": "Vue 3 wrapper component",
       "kind": "baseline-component",
       "packageName": "@flyfish-group/file-viewer3",
       "entryFiles": [
-        "src/package/components/FileViewer/FileViewer.vue",
-        "src/package/index.ts",
+        "packages/vue3/src/package/components/FileViewer/FileViewer.vue",
+        "packages/vue3/src/package/index.ts",
         "src/main.ts"
       ],
       "smokeScripts": ["verify:demo-browser-smoke"],
@@ -79,36 +79,36 @@
       "preserves": ["source-loading", "document-navigation", "layout-visual"]
     },
     {
-      "id": "iframe-runtime",
-      "label": "Shared iframe runtime",
-      "kind": "iframe",
+      "id": "pure-web-native-viewer",
+      "label": "Shared pure Web native viewer",
+      "kind": "native-viewer",
       "packageName": "@file-viewer/web",
       "entryFiles": [
         "packages/web-standard/src/index.ts",
         "packages/web-standard/src/global.ts",
-        "packages/web-standard/viewer/index.html"
+        "packages/web-standard/package.json"
       ],
-      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
-      "id": "react-current-adapter",
-      "label": "Historical React adapter",
-      "kind": "current-adapter",
+      "id": "react-native-wrapper",
+      "label": "React native wrapper",
+      "kind": "native-wrapper",
       "wrapperId": "react",
       "packageName": "@flyfish-group/file-viewer-react",
       "entryFiles": ["packages/react/src/index.tsx", "packages/demo/src/main.tsx"],
-      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
-      "id": "pure-js-current-adapter",
-      "label": "Historical pure JS adapter",
-      "kind": "current-adapter",
+      "id": "pure-js-native-wrapper",
+      "label": "Pure JS native wrapper",
+      "kind": "native-wrapper",
       "wrapperId": "web",
       "packageName": "@flyfish-group/file-viewer-web",
       "entryFiles": ["packages/web/src/index.ts", "packages/demo/manual-js.html"],
-      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
@@ -118,7 +118,7 @@
       "wrapperId": "web",
       "packageName": "@file-viewer/web",
       "entryFiles": ["packages/web-standard/src/global.ts", "packages/demo/manual-iife.html"],
-      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "wrapper-contract"]
     }
   ],
@@ -160,40 +160,40 @@
       "assertions": ["dual-panel", "synchronized-scroll", "shortcut-search", "line-location"]
     },
     {
-      "id": "iframe-runtime-docx",
-      "surface": "iframe-runtime",
+      "id": "pure-web-native-viewer-docx",
+      "surface": "pure-web-native-viewer",
       "smokeCaseId": "word-openxml-docx",
       "sample": "word.docx",
-      "scripts": ["verify:adapter-browser-smoke"],
+      "scripts": ["verify:wrapper-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
-      "assertions": ["iframe-src", "post-file", "load-complete", "lifecycle-events"]
+      "assertions": ["mount-viewer", "shared-controller-handle", "load-complete", "lifecycle-events"]
     },
     {
-      "id": "react-current-adapter-docx",
-      "surface": "react-current-adapter",
+      "id": "react-native-wrapper-docx",
+      "surface": "react-native-wrapper",
       "wrapperId": "react",
       "sample": "word.docx",
-      "scripts": ["verify:adapter-browser-smoke"],
+      "scripts": ["verify:wrapper-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
-      "assertions": ["iframe-src", "shared-controller-handle", "load-complete"]
+      "assertions": ["native-mount", "shared-controller-handle", "load-complete"]
     },
     {
-      "id": "pure-js-current-adapter-docx",
-      "surface": "pure-js-current-adapter",
+      "id": "pure-js-native-wrapper-docx",
+      "surface": "pure-js-native-wrapper",
       "wrapperId": "web",
       "sample": "word.docx",
-      "scripts": ["verify:adapter-browser-smoke"],
+      "scripts": ["verify:wrapper-browser-smoke"],
       "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
-      "assertions": ["iframe-src", "post-file", "load-complete"]
+      "assertions": ["native-mount", "mount-viewer", "load-complete"]
     },
     {
       "id": "script-tag-iife-markdown",
       "surface": "script-tag-iife",
       "wrapperId": "web",
       "sample": "preview.md",
-      "scripts": ["verify:adapter-browser-smoke"],
+      "scripts": ["verify:wrapper-browser-smoke"],
       "features": ["source-loading", "options", "wrapper-contract"],
-      "assertions": ["global-api", "mount-viewer", "iframe-src", "load-complete"]
+      "assertions": ["global-api", "mount-viewer", "load-complete"]
     }
   ],
   "requiredEvidence": [

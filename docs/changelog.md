@@ -4,6 +4,14 @@
 
 ## 当前主线
 
+### `v2.0.0` 架构重构与全生态 2.x 起始版本
+
+- 全线 npm 包、workspace 依赖、Docker 镜像和公开成品包从 `2.0.0` 重新起步，用大版本号明确标识 core / wrapper 架构重构带来的兼容边界变化
+- `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等 wrapper 只依赖 core，各自提供原生集成体验
+- 清理旧 iframe adapter 和 runtime 包口径，对外文档统一强调 iframe 只是独立参考方案，不再作为核心集成路径
+- 公开成品仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Wrapper Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
+- 文档、README、分发说明、Docker 部署说明和生态验收清单同步刷新到 2.x 版本口径，后续新增能力都在 2.x 线上连续演进
+
 ### 当前主线 统一缩放工具栏
 
 - `options.toolbar.zoom` 新增统一缩放按钮显示控制，默认开启；按钮是否真正展示仍由当前渲染链路的内部缩放 provider 决定，避免对虚拟表格、canvas、PDF 文本层和 CAD 交互做宿主级 CSS 强缩放
@@ -20,17 +28,17 @@
 ### `v1.0.25` 移动端压缩包与表格体验修复版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.25`、Vue2 包 `@flyfish-group/file-viewer@1.0.25`、React 包 `@flyfish-group/file-viewer-react@1.0.25` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.25` 继续保持连续版本
-- 压缩包预览增加 Worker 探测、初始化超时、内置 Worker 兜底和 ZIP/TAR/GZIP 兼容模式；手机 WebView、本地临时服务器、MIME 或 CSP 导致 `libarchive.js` Worker 卡住时，会自动降级，避免一直停留在 loading
+- 压缩包预览迁移为 core 共享 archive renderer，并保留 Worker 探测、初始化超时、静态 Worker/WASM 路径和 ZIP/TAR/GZIP 兼容模式；手机 WebView、本地临时服务器、MIME 或 CSP 导致 `libarchive.js` Worker 卡住时，会自动降级，避免一直停留在 loading
 - `options.archive` 新增 `wasmUrl` 和 `workerTimeoutMs` 说明；普通私有化部署不再需要写死 `workerUrl`，只有静态目录或 CDN 路径特殊时才需要显式指定
 - 移动端 Excel / XLS 预览把工作表名称移到表格上方的横向可滚动标签栏，当前工作表自动滚入可见区域，解决手机上 sheet 名称藏在底部角落、需要技巧才能看到的问题
-- README、文档站、iframe / React / 纯 JS 接入文档、公开成品包和 workspace 依赖同步刷新到 `1.0.25`
+- README、文档站、React / 纯 JS 接入文档、公开成品包和 workspace 依赖同步刷新到 `1.0.25`
 
 ### 当前主线 Demo 富样式公开样例升级
 
-- DOCX 渲染链路移除临时轻量预览分支，默认通过 Web Worker 运行 `docx-preview` 解析和 HTML 构建，并把同一份 docx-preview 页面按批次渐进挂载，主线程只负责挂载、缩放和打印适配；CSP 或低版本浏览器不兼容时可通过 `options.docx.worker: false` 回退原生主线程渲染
-- DOCX Worker 新增 `options.docx.workerTimeout` 超时兜底，默认 15000ms。少量复杂 Word 文件如果在 Worker DOM 环境中无法及时返回，会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
+- DOCX 渲染链路下沉到 `@file-viewer/core`，移除 Vue3 本地 Word vendor 入口；所有 wrapper 共享同一套 `docx-preview` 页面渲染、渐进挂载、缩放 provider、打印和 HTML 导出适配器
+- DOCX Worker 新增 `options.docx.workerUrl` 与 `options.docx.workerTimeout` 兜底，默认尝试当前部署 base 下的 `vendor/docx/docx.worker.js`，静态资源不可用、CSP/MIME 不兼容或超时后会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
 - CAD 渲染器保持在 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 native renderer 渲染 W2D/W3D/XPS 图形
-- 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer 静态目录下的 `wasm/cad/`
+- 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer assets 的 `wasm/cad/`
 - Demo 补充 Apache Tika `blocks_and_tables.dwf` 与 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，用于分别验证 DWF、DWFx/XPS、W2D/W3D native renderer 和大图纸按需加载体验
 - 入口组件在挂载重型渲染器前先释放浏览器绘制帧，确保 Loading 先显示，减少用户误以为页面无响应
 - `word.docx` 保持 Basel Convention 公开中文正式文档，覆盖长正文、标题层级、表格、图示、白色纸张和完整打印回归，避免默认 Demo 使用临时生成或过度病态的样例文件
@@ -55,7 +63,7 @@
 - 构建脚本新增复制 `dwfv-render.wasm`，与 `libredwg-web.js`、`libredwg-web.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 一起进入 `wasm/cad/`，私有化部署可通过 `options.cad.dwfWasmUrl` 覆盖路径
 - 压缩包和邮件附件的嵌套预览同步识别 `dwf`、`dwfx`、`xps`，避免主入口支持 CAD 五类格式而附件链路覆盖不足
 - Demo 图纸分组补充 Apache Tika `blocks_and_tables.dwf` 以及 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，便于验证 DWF、DWFx/XPS、多页结构、W2D/W3D 图形、视图适配和按需加载体验
-- README、文档站、React / 纯 JS README、iframe cache key、公开成品包和 workspace 依赖同步刷新到 `1.0.24`
+- README、文档站、React / 纯 JS README、入口缓存策略、公开成品包和 workspace 依赖同步刷新到 `1.0.24`
 
 ### `v1.0.22` PPTX 兼容性修复与连续发布版本
 
@@ -63,7 +71,7 @@
 - 修复部分客户 PPTX 无法打开的问题，兼容缺少 `docProps/app.xml` 的演示文稿，默认按现代 Office 版本降级解析
 - PPTX OpenXML 关系解析改为通用路径解析，支持 relationship 单对象 / 数组 / 缺失三种形态，并按 `presentation.xml` 真实 slide 顺序渲染
 - 增强 slide / layout / master / theme / diagram 关系读取容错，缺失可选部件时降级渲染当前页内容，不再因空指针导致整份 PPTX 白屏
-- README、文档站、React / 纯 JS README、iframe cache key、公开成品包和 workspace 依赖同步刷新到 `1.0.22`
+- README、文档站、React / 纯 JS README、入口缓存策略、公开成品包和 workspace 依赖同步刷新到 `1.0.22`
 
 ### `v1.0.21` Docker Hub 仓库与格式边界校准版本
 
@@ -73,13 +81,13 @@
 - 新增 Docker Hub 仓库创建脚本，支持用 Docker Hub API 创建 `flyfishdev/file-viewer` 公开仓库，并在异常时输出更明确的安全诊断信息
 - 文档站补全文档比对页使用说明，明确 `/compare.html`、`left` / `right` 预置参数、内置示例、URL、本地上传、同步滚动、私有化部署路径和视觉比对边界
 - 公开成品仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
-- Demo 输出校验继续覆盖 `compare.html`、主入口资源、适配层 viewer 静态目录和示例资源，避免上线缺少独立比对入口
+- Demo 输出校验继续覆盖 `compare.html`、主入口资源、viewer 资源目录和示例资源，避免上线缺少独立比对入口
 - 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.flyfish.dev` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
 - 新增 `options.theme`，支持 `light`、`dark`、`system`；显式主题优先于浏览器 `prefers-color-scheme`，固定浅色业务 UI 可以传 `light` 避免 Markdown、代码、Typst 等预览区域被系统暗色模式带偏
 - 新增 `toolbar.position`，支持 `auto`、`top`、`bottom-right`；默认 `auto` 下 PDF 通用下载/打印/HTML 操作栏会悬浮到右下角，避免和 PDF 页码、缩放、目录导航栏形成双顶部导航
 - 升级 Vue、Vite、PDF.js、Axios、Marked、React 适配层等第三方依赖到当前 npm latest；`docx-preview` 已确认 npm latest 仍为 `0.3.7`，同步刷新 DOCX 构建 chunk
 - DOCX 渲染关闭生产调试告警，兼容 Word 写入的 `autoSpaceDN` / `autoSpaceDE` 等段落属性，避免控制台被 `DOCX: Unknown document element` warning 刷屏
-- README、文档站、React / 纯 JS README、iframe cache key 和 workspace 依赖同步刷新到 `1.0.21`
+- README、文档站、React / 纯 JS README、入口缓存策略和 workspace 依赖同步刷新到 `1.0.21`
 
 ### `v1.0.20` Typst 直读源文件与边缘部署优化版本
 
@@ -119,7 +127,7 @@
 - Word、DOC 和 PDF 预览统一增强打印 / HTML 导出，专属导出适配器会移除预览缩放、滚动容器和 Demo 全局布局样式，避免只打印一页或页面被截断
 - 新增打印能力动态判断，表格、压缩包、邮件、EPUB、音视频、3D 等不适合直接打印的渲染链路会自动隐藏打印按钮，避免用户进入错误打印流程
 - 优化 Demo 暗色模式和 Markdown 阅读面，Markdown / 代码跟随系统主题，PDF / Word / Excel 等原始版式内容保持独立显示；同时替换更丰富的 DOCX / PDF / Markdown 示例并同步压缩包样例
-- 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，iframe 适配器同步透出事件和操作能力变化
+- 新增文档加载、卸载生命周期钩子，以及下载、打印、导出 HTML 的按钮前置校验钩子，历史适配层同步透出事件和操作能力变化
 - 文档站、README、集成说明、分发说明和公开成品包说明同步刷新到 `1.0.17`
 
 ### `v1.0.15` 预览交互、打印与集成钩子增强版本
@@ -128,7 +136,7 @@
 - 增强 Word 和通用文档打印导出，`.docx` / `.doc` 会使用专属导出适配器清理预览缩放、绝对定位和滚动容器，避免只打印一页或页面被截断
 - 新增 `options.hooks` 生命周期钩子，覆盖文档开始加载、加载完成、开始卸载和卸载完成，并提供文件类型、文件名、来源、URL、大小、版本和耗时上下文
 - 新增 `options.beforeOperation` 与 toolbar 级前置操作钩子，下载、打印、导出 HTML 前都可以返回 `false` 取消，便于接入权限校验、审计确认和业务二次弹窗
-- React / 纯 JS iframe 适配层新增 viewer 事件监听入口，基线预览器会通过 `postMessage` 向宿主同步生命周期和操作事件
+- React / 纯 JS 适配层新增 viewer 事件监听入口，基线预览器会向宿主同步生命周期和操作事件
 - 文档、README 和四条 npm 包线版本说明同步刷新到 `1.0.15`
 
 ### `v1.0.14` 最新发布与文档站同步版本
@@ -156,10 +164,10 @@
 ### `v1.0.9` 媒体、绘图与电子书预览增强版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.9` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.9` 同步发布到 npm `latest`
-- 新增 React 包 `@flyfish-group/file-viewer-react@1.0.9` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.9`，通过 iframe 复用 Vue3 基线 viewer 静态产物
-- 新增适配层 Demo，覆盖 React 组件和纯 JS helper 两种入口，构建后可直接作为私有化静态站点部署
+- 新增 React 包 `@flyfish-group/file-viewer-react@1.0.9` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.9`，复用 Vue3 基线资源
+- 新增原生 wrapper Demo，覆盖 React 组件和纯 JS helper 两种入口，构建后可直接作为私有化静态站点部署
 - 增强 PPTX 渲染，补齐组合图形坐标映射、旋转/翻转、主题背景、图片裁剪和 EMF 转 SVG 预览
-- 新增 `.epub` 预览，使用 `epubjs` 按需解析 EPUB 包、目录和滚动阅读，并避开部分浏览器超宽分页 iframe 白板问题
+- 新增 `.epub` 预览，使用 `epubjs` 按需解析 EPUB 包、目录和滚动阅读，并避开部分浏览器超宽分页白板问题
 - 新增 `.umd` 电子书预览，按 UMD 文件结构解析元数据、章节目录和 zlib 压缩正文
 - 新增 `.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 音频入口，使用浏览器原生播放器
 - 新增 `.excalidraw` 预览，使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 能力按需生成只读 SVG
@@ -171,7 +179,7 @@
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.8` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.8` 同步发布到 npm `latest`
 - 修复 PDF worker 生命周期，快速切换 PDF / OFD / PDF 时不再触发 worker 销毁告警
 - 稳定 OFD 渲染状态，避免反复闪动“正在解析 OFD”
-- 刷新文档站截图、主题配色和 iframe 示例页视觉
+- 刷新文档站截图、主题配色和集成示例页视觉
 
 ### `v1.0.7` PDF 自适应修复版本
 
@@ -205,7 +213,7 @@
 ### 示例与工程体验
 
 - 提供更清晰的本地 Demo 入口说明
-- 支持将预览器独立部署并通过 iframe 集成
+- 支持将预览器独立部署并通过静态入口集成
 - 本地构建、文档站构建与 npm 打包链路持续收敛
 
 ## 历史版本

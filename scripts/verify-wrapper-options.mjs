@@ -9,18 +9,46 @@ const sourceRoot = resolve(scriptDir, '..')
 const { wrapperManifest } = await loadEcosystemReleaseContext(sourceRoot)
 
 const requiredViewerTypeExports = [
-  'CreateViewerFrameOptions',
   'FileRef',
   'ViewerAiOptions',
   'ViewerArchiveOptions',
   'ViewerCadOptions',
+  'ViewerController',
+  'ViewerControllerAccessor',
+  'ViewerControllerHandle',
   'ViewerDocxOptions',
+  'ViewerEvent',
+  'ViewerEventHandler',
+  'ViewerEventType',
+  'ViewerFetchFile',
+  'ViewerFetchInput',
+  'ViewerMountOptions',
+  'ViewerOptions',
+  'ViewerPdfOptions',
+  'ViewerSpreadsheetOptions',
+  'ViewerCoreOptions',
+  'ViewerSearchOptions',
+  'ViewerSourceInput',
+  'ViewerThemeMode',
+  'ViewerToolbarOptions',
+  'ViewerToolbarPosition',
+  'ViewerTypstOptions',
+  'ViewerWatermarkOptions'
+]
+
+const requiredVue3TypeExports = [
+  'FileViewerVue3PluginOptions',
+  'FileViewerVue3Handle'
+]
+
+const forbiddenLegacyOptionTypes = [
+  'CreateViewerFrameOptions',
   'ViewerDirectFrameHandle',
   'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
-  'ViewerFrameControllerAccessor',
   'ViewerFrameController',
+  'ViewerFrameControllerAccessor',
   'ViewerFrameControllerHandle',
   'ViewerFrameEventHandler',
   'ViewerFrameEventPayload',
@@ -31,29 +59,7 @@ const requiredViewerTypeExports = [
   'ViewerFrameIframeComponentProps',
   'ViewerFrameOptions',
   'ViewerFrameParamValue',
-  'ViewerMountedFrameHandle',
-  'ViewerPdfOptions',
-  'ViewerRuntimeOptions',
-  'ViewerSearchOptions',
-  'ViewerThemeMode',
-  'ViewerToolbarOptions',
-  'ViewerToolbarPosition',
-  'ViewerTypstOptions',
-  'ViewerWatermarkOptions'
-]
-
-const requiredWebCoreTypes = [
-  'FileViewerAiOptions',
-  'FileViewerArchiveOptions',
-  'FileViewerDocxOptions',
-  'FileViewerPdfOptions',
-  'FileViewerSearchOptions',
-  'FileViewerSerializableCadOptions',
-  'FileViewerSerializableOptions',
-  'FileViewerSerializableToolbarOptions',
-  'FileViewerThemeMode',
-  'FileViewerTypstOptions',
-  'FileViewerWatermarkOptions'
+  'ViewerMountedFrameHandle'
 ]
 
 const forbiddenDirectCoreOptionTypes = [
@@ -63,6 +69,7 @@ const forbiddenDirectCoreOptionTypes = [
   'FileViewerDocxOptions',
   'FileViewerOptions',
   'FileViewerPdfOptions',
+  'FileViewerSpreadsheetOptions',
   'FileViewerSearchOptions',
   'FileViewerSerializableCadOptions',
   'FileViewerSerializableOptions',
@@ -81,6 +88,7 @@ const forbiddenLocalOptionFields = [
   'cad',
   'docx',
   'pdf',
+  'spreadsheet',
   'search',
   'theme',
   'toolbar',
@@ -106,7 +114,8 @@ async function exists(path) {
 async function readWrapperSource(packageDir) {
   const candidates = [
     join(sourceRoot, packageDir, 'src', 'index.ts'),
-    join(sourceRoot, packageDir, 'src', 'index.tsx')
+    join(sourceRoot, packageDir, 'src', 'index.tsx'),
+    join(sourceRoot, packageDir, 'src', 'package', 'index.ts')
   ]
 
   for (const candidate of candidates) {
@@ -121,6 +130,24 @@ async function readWrapperSource(packageDir) {
   throw new Error(`${packageDir} must provide src/index.ts or src/index.tsx`)
 }
 
+async function readWrapperControllerSource(packageDir) {
+  const candidates = [
+    join(sourceRoot, packageDir, 'src', 'controller.ts'),
+    join(sourceRoot, packageDir, 'src', 'package', 'controller.ts')
+  ]
+
+  for (const candidate of candidates) {
+    if (await exists(candidate)) {
+      return {
+        path: candidate,
+        content: await readFile(candidate, 'utf8')
+      }
+    }
+  }
+
+  throw new Error(`${packageDir} must provide a local src/controller.ts wrapper controller`)
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -129,10 +156,10 @@ function hasTypeToken(source, typeName) {
   return new RegExp(`\\b${escapeRegExp(typeName)}\\b`).test(source)
 }
 
-function hasExportedViewerType(source, typeName) {
-  const directAlias = new RegExp(`export\\s+type\\s+${escapeRegExp(typeName)}\\b`)
+function hasExportedType(source, typeName, specifier) {
+  const directAlias = new RegExp(`export\\s+(?:interface|type)\\s+${escapeRegExp(typeName)}\\b`)
   const reexportBlock = new RegExp(
-    `export\\s+type\\s*{[\\s\\S]*\\b${escapeRegExp(typeName)}\\b[\\s\\S]*}\\s+from\\s+['"]@file-viewer/web['"]`
+    `export\\s+type\\s*{[\\s\\S]*\\b${escapeRegExp(typeName)}\\b[\\s\\S]*}\\s+from\\s+['"]${escapeRegExp(specifier)}['"]`
   )
   return directAlias.test(source) || reexportBlock.test(source)
 }
@@ -152,57 +179,88 @@ function hasForbiddenLocalOptionField(source, fieldName) {
   return fieldDeclaration.test(source)
 }
 
-const webWrapper = wrapperManifest.wrappers.find(wrapper => wrapper.packageName === '@file-viewer/web')
-assert(webWrapper, 'Missing @file-viewer/web wrapper in ecosystem/wrappers.json')
-
 let checked = 0
 for (const wrapper of wrapperManifest.wrappers) {
   const { content, path } = await readWrapperSource(wrapper.packageDir)
+  const { content: controllerContent, path: controllerPath } = await readWrapperControllerSource(wrapper.packageDir)
 
-  if (wrapper.packageName === '@file-viewer/web') {
-    for (const coreType of requiredWebCoreTypes) {
-      assert(
-        hasTypeToken(content, coreType),
-        `${path} must bridge ${coreType} from @file-viewer/core`
-      )
-    }
-    for (const typeName of requiredViewerTypeExports) {
-      assert(
+  for (const legacyType of forbiddenLegacyOptionTypes) {
+    assert(!hasTypeToken(content, legacyType), `${path} must not expose legacy iframe option type ${legacyType}`)
+    assert(!hasTypeToken(controllerContent, legacyType), `${controllerPath} must not expose legacy iframe option type ${legacyType}`)
+  }
+
+  assert(
+    controllerContent.includes('from \'@file-viewer/core\'') || controllerContent.includes('from "@file-viewer/core"'),
+    `${controllerPath} must consume the shared @file-viewer/core low-level contract`
+  )
+  for (const forbiddenToken of [
+    'createFileViewerNativeController',
+    'resolveFileViewerNativeLoadSource',
+    'FileViewerNativeController',
+    'FileViewerNativeFetchFile',
+    'FileViewerNativeFetchInput',
+    'FileViewerNativeSource'
+  ]) {
+    assert(
+      !controllerContent.includes(forbiddenToken),
+      `${controllerPath} must keep browser mount/source orchestration inside the wrapper instead of importing ${forbiddenToken} from core`
+    )
+  }
+  assert(
+    !content.includes('from \'@file-viewer/web\'') && !content.includes('from "@file-viewer/web"'),
+    `${path} must not consume another wrapper package`
+  )
+  assert(
+    !controllerContent.includes('from \'@file-viewer/web\'') && !controllerContent.includes('from "@file-viewer/web"'),
+    `${controllerPath} must not consume another wrapper package`
+  )
+  assert(
+    content.includes('from \'./controller\'') ||
+      content.includes('from "./controller"') ||
+      content.includes('from \'./controller.js\'') ||
+      content.includes('from "./controller.js"'),
+    `${path} must consume its local wrapper controller instead of core mount helpers`
+  )
+
+  if (wrapper.packageName !== '@file-viewer/vue3') {
+    assert(
+      content.includes('from \'@file-viewer/core\'') || content.includes('from "@file-viewer/core"'),
+      `${path} must inject the shared core renderer registry explicitly`
+    )
+  }
+
+  for (const typeName of requiredViewerTypeExports) {
+    assert(
+      hasExportedType(content, typeName, './controller') ||
+        hasExportedType(content, typeName, './controller.js') ||
         hasTypeToken(content, typeName),
-        `${path} must export ${typeName} for the shared wrapper option surface`
-      )
+      `${path} must re-export ${typeName} from the local wrapper controller`
+    )
+  }
+
+  if (wrapper.packageName === '@file-viewer/vue3') {
+    for (const typeName of requiredVue3TypeExports) {
+      assert(hasTypeToken(content, typeName), `${path} must expose Vue 3 type ${typeName}`)
     }
     checked += 1
     continue
   }
 
-  assert(
-    content.includes('from \'@file-viewer/web\'') || content.includes('from "@file-viewer/web"'),
-    `${path} must consume the shared @file-viewer/web wrapper contract`
-  )
-
-  for (const typeName of requiredViewerTypeExports) {
-    assert(
-      hasExportedViewerType(content, typeName),
-      `${path} must re-export ${typeName} from @file-viewer/web`
-    )
-  }
-
   for (const typeName of forbiddenDirectCoreOptionTypes) {
     assert(
       !hasForbiddenCoreOptionImport(content, typeName),
-      `${path} must not import ${typeName} directly from @file-viewer/core; use @file-viewer/web`
+      `${path} must not import ${typeName} directly from @file-viewer/core; use shared Viewer* aliases`
     )
   }
 
   for (const fieldName of forbiddenLocalOptionFields) {
     assert(
       !hasForbiddenLocalOptionField(content, fieldName),
-      `${path} must not redeclare option field "${fieldName}"; pass it through ViewerRuntimeOptions`
+      `${path} must not redeclare option field "${fieldName}"; pass it through ViewerMountOptions`
     )
   }
 
   checked += 1
 }
 
-console.log(`Verified ${checked} standard wrapper option surfaces against @file-viewer/web.`)
+console.log(`Verified ${checked} standard wrapper option surfaces against the shared core contracts.`)

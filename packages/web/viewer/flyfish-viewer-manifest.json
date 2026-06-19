@@ -1,5 +1,6 @@
 {
-  "name": "@flyfish-group/file-viewer3",
-  "version": "1.0.26",
-  "entry": "index.html"
+  "name": "@file-viewer/web",
+  "version": "2.0.0",
+  "kind": "viewer-assets",
+  "assets": "flyfish-viewer-assets.json"
 }

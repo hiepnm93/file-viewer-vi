@@ -67,7 +67,7 @@ if (matrix.schemaVersion !== 1) {
 }
 
 const surfaces = new Set(matrix.surfaces || [])
-for (const surface of ['main-demo', 'compare-page', 'iframe', 'script-tag']) {
+for (const surface of ['main-demo', 'compare-page', 'script-tag']) {
   if (!surfaces.has(surface)) {
     fail(`Missing required smoke surface ${surface}`)
   }

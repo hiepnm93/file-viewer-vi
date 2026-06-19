@@ -19,6 +19,10 @@ await build({
   configFile: false,
   publicDir: false,
   logLevel: 'warn',
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env': JSON.stringify({ NODE_ENV: 'production' })
+  },
   resolve: {
     dedupe: ['@file-viewer/core']
   },

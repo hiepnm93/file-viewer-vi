@@ -589,6 +589,7 @@ export interface CreateFileViewerSourceLoadingActionHandlersInput<Session = unkn
   getUrl: () => string | null | undefined;
   getCurrentFilename?: () => string | undefined;
   getPdfStreaming?: () => FileViewerPdfOptions['streaming'] | undefined;
+  getPageHref?: () => string | undefined;
   previewTarget: MutableFileViewerPreviewState;
   requestController: FileViewerRequestController;
   downloadFile: (input: FileViewerRemoteFileDownloadInput) => Promise<FileViewerFileRef | null | undefined>;
@@ -1264,7 +1265,7 @@ export const runFileViewerLocalFilePreview = async <Session = unknown>({
 export const runFileViewerRemoteFilePreview = async <Session = unknown>({
   url,
   version,
-  pageHref = resolveFileViewerRuntimePageHref(),
+  pageHref,
   streaming,
   previewTarget,
   requestController,
@@ -1475,6 +1476,7 @@ export const createFileViewerSourceLoadingActionHandlers = <Session = unknown>({
   getUrl,
   getCurrentFilename,
   getPdfStreaming,
+  getPageHref,
   previewTarget,
   requestController,
   downloadFile,
@@ -1545,6 +1547,7 @@ export const createFileViewerSourceLoadingActionHandlers = <Session = unknown>({
     return await runFileViewerRemoteFilePreview<Session>({
       url,
       version,
+      pageHref: getPageHref?.(),
       streaming: getPdfStreaming?.(),
       previewTarget,
       requestController,
@@ -1820,9 +1823,8 @@ export interface FileViewerLocationLike {
   href?: string | null;
 }
 
-export const resolveFileViewerRuntimePageHref = (
-  locationLike: FileViewerLocationLike | undefined =
-    typeof location !== 'undefined' ? location : undefined
+export const resolveFileViewerPageHref = (
+  locationLike?: FileViewerLocationLike
 ) => {
   return locationLike?.href || undefined;
 };
@@ -1899,7 +1901,7 @@ export const commitFileViewerRemoteDownloadState = ({
 
 export const createFileViewerStreamingPdfPlaceholderFile = (filename?: string) => {
   if (typeof Blob === 'undefined') {
-    throw new Error('Blob is not available in the current runtime.');
+    throw new Error('Blob is not available in the current execution environment.');
   }
 
   return wrapFileViewerFileRef(

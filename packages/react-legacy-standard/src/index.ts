@@ -8,56 +8,47 @@ import React, {
   type HTMLAttributes
 } from 'react'
 import {
-  createViewerFrameControllerHandle,
-  mountViewerFrame,
-  toViewerFrameOptions,
-  type CreateViewerFrameOptions,
-  type ViewerFrameComponentProps,
-  type ViewerFrameIframeComponentProps,
-  type ViewerFrameControllerHandle,
-  type ViewerFrameController,
-} from '@file-viewer/web'
+  createViewerControllerHandle,
+  mountViewer,
+  type ViewerController,
+  type ViewerControllerHandle,
+  type ViewerMountOptions,
+  type ViewerCoreOptions
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
-  CreateViewerFrameOptions,
   FileRef,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
   ViewerDocxOptions,
-  ViewerDirectFrameHandle,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerFrameControllerHandle,
-  ViewerFrameController,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameOptions,
-  ViewerFrameParamValue,
-  ViewerMountedFrameHandle,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
   ViewerPdfOptions,
-  ViewerRuntimeOptions,
+  ViewerSpreadsheetOptions,
   ViewerSearchOptions,
+  ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
   ViewerWatermarkOptions
-} from '@file-viewer/web'
+} from './controller.js'
 
-export interface FileViewerLegacyHandle extends ViewerFrameControllerHandle {}
+export interface FileViewerLegacyHandle extends ViewerControllerHandle {}
 
 export interface FileViewerLegacyProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
-    ViewerFrameComponentProps,
-    ViewerFrameIframeComponentProps {}
+    ViewerMountOptions {}
 
 const defaultContainerStyle: CSSProperties = {
   width: '100%',
@@ -65,8 +56,12 @@ const defaultContainerStyle: CSSProperties = {
   minHeight: 0
 }
 
+const viewerCoreOptions: ViewerCoreOptions = {
+  registry: fileViewerCoreRendererRegistry
+}
+
 const destroyController = (
-  controllerRef: React.MutableRefObject<ViewerFrameController | null>,
+  controllerRef: React.MutableRefObject<ViewerController | null>,
   container: HTMLDivElement | null
 ) => {
   controllerRef.current?.destroy()
@@ -78,55 +73,33 @@ const destroyController = (
 
 export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLegacyProps>((props, ref) => {
   const {
-    viewerUrl,
     url,
     file,
+    buffer,
     name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
+    filename,
+    type,
+    size,
     options,
-    onViewerEvent,
-    iframeClassName,
-    iframeStyle,
-    iframeTitle,
+    onEvent,
     style,
     ...containerProps
   } = props
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const controllerRef = useRef<ViewerFrameController | null>(null)
+  const controllerRef = useRef<ViewerController | null>(null)
 
-  const frameOptions = useMemo<CreateViewerFrameOptions>(() => toViewerFrameOptions({
-    viewerUrl,
+  const viewerOptions = useMemo<ViewerMountOptions>(() => ({
     url,
     file,
+    buffer,
     name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
+    filename,
+    type,
+    size,
     options,
-    onViewerEvent,
-    iframeClassName,
-    iframeStyle,
-    iframeTitle
-  }), [
-    viewerUrl,
-    url,
-    file,
-    name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
-    options,
-    onViewerEvent,
-    iframeClassName,
-    iframeStyle,
-    iframeTitle
-  ])
+    onEvent
+  }), [url, file, buffer, name, filename, type, size, options, onEvent])
 
   useEffect(() => {
     const container = containerRef.current
@@ -134,15 +107,15 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
       return undefined
     }
 
-    controllerRef.current = mountViewerFrame(container, frameOptions)
+    controllerRef.current = mountViewer(container, viewerOptions, viewerCoreOptions)
     return () => destroyController(controllerRef, container)
   }, [])
 
   useEffect(() => {
-    controllerRef.current?.update(frameOptions)
-  }, [frameOptions])
+    void controllerRef.current?.update(viewerOptions)
+  }, [viewerOptions])
 
-  useImperativeHandle(ref, () => createViewerFrameControllerHandle(
+  useImperativeHandle(ref, () => createViewerControllerHandle(
     () => controllerRef.current,
     () => destroyController(controllerRef, containerRef.current)
   ), [])

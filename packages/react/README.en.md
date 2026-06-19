@@ -1,9 +1,9 @@
 # @flyfish-group/file-viewer-react
 
-Private-deploy React integration for Flyfish Viewer. The component uses the shared `@flyfish-group/file-viewer-web` iframe facade; the web package carries the Vue 3 baseline viewer assets and centralizes the underlying core protocol. New integrations should prefer the standard package name `@file-viewer/react`; this historical package remains synchronized for compatibility.
+React file preview component. This package is the historical alias of `@file-viewer/react` and now provides the same native React component experience: it mounts the shared core directly and exposes consistent props, events, and ref APIs.
 
 ```bash
-npm install @flyfish-group/file-viewer-react @flyfish-group/file-viewer-web
+npm install @flyfish-group/file-viewer-react
 ```
 
 ```tsx
@@ -16,7 +16,8 @@ export function Preview() {
         url="/files/demo.docx"
         options={{
           theme: 'light',
-          toolbar: { position: 'bottom-right' }
+          toolbar: { position: 'bottom-right' },
+          archive: { cache: true }
         }}
         onViewerEvent={(event) => {
           console.log(event.type, event.event, event.payload)
@@ -27,21 +28,12 @@ export function Preview() {
 }
 ```
 
-The default viewer entry is `/file-viewer/index.html`. If pnpm blocks the web package postinstall script, run:
-
-```bash
-pnpm approve-builds
-pnpm exec file-viewer-copy-assets ./public/file-viewer
-```
-
-For authenticated files, download the file in your host application first and pass a `Blob` plus a filename:
+`file` takes precedence over `url`. When passing a `Blob` or `ArrayBuffer`, also provide `name`, for example `contract.pdf`, so the viewer can detect the format:
 
 ```tsx
 <FileViewer file={blob} name="contract.pdf" />
 ```
 
-Official documentation: https://doc.flyfish.dev/
+`options` cover theme, watermarking, search, unified zoom, download, print, HTML export, beforeOperation guards, lifecycle hooks, and format-specific settings. Lifecycle, operation availability, search state, and document location updates are emitted through `onViewerEvent`.
 
-Online demo: https://viewer.flyfish.dev/
-
-License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution and contribute shared compatibility improvements where possible.
+New projects should prefer the standard package name `@file-viewer/react`. Official documentation: https://doc.flyfish.dev/

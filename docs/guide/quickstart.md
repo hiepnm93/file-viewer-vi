@@ -11,32 +11,28 @@
 
 | 方案 | 适合谁 | 优点 | 你应该看哪页 |
 | --- | --- | --- | --- |
-| Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 主推基线，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
-| Vue2 组件集成 | Vue2.7 项目内直接使用 | 保留旧业务栈，体验与 v3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
-| React 组件集成 | React 17 / 18 / 19 项目 | npm 安装即复制私有化 viewer，组件内用 iframe 加载 | [React 集成](/guide/quickstart-react) |
-| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | 用 helper 创建 iframe，部署和升级边界清楚 | [纯 JS 集成](/guide/quickstart-web) |
-| Iframe 嵌入 | 多系统复用、异构系统、需要隔离依赖 | 升级集中、宿主系统更轻、适合平台化 | [Iframe 嵌入](/guide/iframe) |
+| Vue3 组件集成 | Vue 3 项目 | 主推组件体验，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
+| Vue2 组件集成 | Vue2.7 项目 | 保留旧业务栈，体验与 Vue3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
+| React 组件集成 | React 17 / 18 / 19 项目 | 原生 React 组件，props、事件和 ref 都能直接调试 | [React 集成](/guide/quickstart-react) |
+| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | `mountViewer(container, options)` 直接挂载到 DOM | [纯 JS 集成](/guide/quickstart-web) |
+| jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 复用同一套 core native engine 和 options | [组件用法](/guide/usage) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> React、纯 JS 和后续其他框架都建议走私有化 iframe 适配层。Vue3 产物作为唯一预览基线，其他包只负责参数、iframe 和二进制推送协议。
+  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vue、React、纯 JS、jQuery、Svelte wrapper 负责各自生态的原生接入体验。所有标准 wrapper 都使用同一套 options、事件、搜索、缩放、打印和导出语义。
 </div>
 
 ## 运行环境
 
 - Node.js `>= 18`
 - Vue2 / Vue3 项目推荐使用 `pnpm`
-- React / 纯 JS 适配包推荐使用 `npm install`，pnpm 10 会默认审批依赖安装脚本
+- React / 纯 JS 项目可以使用 npm、pnpm、yarn 或业务项目已有包管理器
 - 浏览器需要支持现代前端能力，建议优先在最新版 Chrome 或 Edge 中联调
 
 ## Vue3 最短路径
 
-### 1. 安装
-
 ```bash
 pnpm add @file-viewer/vue3
 ```
-
-### 2. 注册插件
 
 ```ts
 import { createApp } from 'vue'
@@ -46,16 +42,10 @@ import FileViewer from '@file-viewer/vue3'
 createApp(App).use(FileViewer).mount('#app')
 ```
 
-Vue3 入口会自动带上样式，所以这里不需要再手动引 CSS。
-
-### 3. 放进页面
-
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const url = ref('https://example.com/demo.docx')
 const options = {
+  theme: 'light',
   toolbar: { position: 'bottom-right' },
   watermark: { text: '内部预览', opacity: 0.14 }
 }
@@ -63,14 +53,14 @@ const options = {
 
 <template>
   <div style="height: 100vh">
-    <file-viewer :url="url" :options="options" />
+    <file-viewer url="/files/demo.docx" :options="options" />
   </div>
 </template>
 ```
 
 ## Vue2 最短路径
 
-Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致，入口也会自动带上样式:
+Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致，入口会自动带上样式:
 
 ```bash
 pnpm add @flyfish-group/file-viewer
@@ -92,43 +82,43 @@ new Vue({
 
 ## React 最短路径
 
-React 17 / 18 / 19 项目安装:
-
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.26
+npm install @file-viewer/react@2.0.0
 ```
 
 ```tsx
-import FileViewer from '@flyfish-group/file-viewer-react'
+import FileViewer from '@file-viewer/react'
 
 export function Preview() {
   return (
     <div style={{ height: '100vh' }}>
-      <FileViewer url="/files/demo.docx" />
+      <FileViewer
+        url="/files/demo.docx"
+        options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
+      />
     </div>
   )
 }
 ```
 
-安装后依赖包会把 viewer 静态产物复制到 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。如果使用 pnpm 10，请按 [React 集成](/guide/quickstart-react) 中的说明允许 `@flyfish-group/file-viewer-web` 的安装脚本，或手动运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+完整步骤见 [React 集成](/guide/quickstart-react)。
 
 ## 纯 JS 最短路径
 
-不使用框架时安装:
-
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.26
+npm install @file-viewer/web@2.0.0
 ```
 
 ```html
 <div id="viewer" style="height: 100vh"></div>
 
 <script type="module">
-  import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
+  import { mountViewer } from '@file-viewer/web'
 
-  mountViewerFrame(document.getElementById('viewer'), {
+  mountViewer(document.getElementById('viewer'), {
     url: '/files/demo.pdf',
     options: {
+      theme: 'light',
       toolbar: { position: 'bottom-right' },
       archive: { cache: true, workerTimeoutMs: 30000 }
     }
@@ -136,22 +126,7 @@ npm install @flyfish-group/file-viewer-web@1.0.26
 </script>
 ```
 
-如果使用 pnpm 10，请按 [纯 JS 集成](/guide/quickstart-web) 中的说明允许 `@flyfish-group/file-viewer-web` 的安装脚本，或手动运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。完整步骤见 [纯 JS 集成](/guide/quickstart-web)。
-
-传统后台页面或无构建工具项目也可以直接通过 `<script type="module">` 引入 helper，或用 import map / 全局桥接方式接入；详细示例见 [纯 JS 集成 - 通过 script 标签引入](/guide/quickstart-web#通过-script-标签引入)。
-
-## Iframe 最短路径
-
-如果你希望把预览器独立部署出来，最简单的 URL 方案可以直接这样挂载:
-
-```html
-<iframe
-  src="/file-viewer/index.html?url=%2Ffiles%2Fdemo.pdf"
-  style="width: 100%; height: 100%; border: 0"
-></iframe>
-```
-
-如果文件需要鉴权、签名 URL 或由宿主系统完成下载，请直接阅读 [Iframe 嵌入](/guide/iframe)，使用二进制推送方案。
+传统后台页面或无构建工具项目请使用 IIFE 全局包接入；详细示例见 [纯 JS 集成](/guide/quickstart-web)。
 
 ## 下一步建议
 

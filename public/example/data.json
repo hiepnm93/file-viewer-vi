@@ -1,7 +1,7 @@
 {
   "name": "file-viewer",
   "version": "1.0.26",
-  "runtime": {
+  "environment": {
     "framework": "vue3",
     "viewerSite": "https://viewer.flyfish.dev",
     "docs": "https://doc.flyfish.dev"

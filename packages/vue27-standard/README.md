@@ -1,9 +1,9 @@
 # @file-viewer/vue2.7
 
-标准 Vue 2.7 wrapper 包，提供 `Vue.use()` 插件安装和局部组件两种方式。组件内部复用 `@file-viewer/web` 与 `@file-viewer/core` 的 iframe 协议、静态 viewer 产物和完整预览能力，不复制核心渲染逻辑。
+标准 Vue 2.7 native wrapper 包，提供 `Vue.use()` 插件安装和局部组件两种方式。组件内部通过本包本地 controller 调用 `@file-viewer/core` 与 core browser engine 挂载完整预览器，不依赖其他 wrapper。
 
 ```bash
-npm install vue@2.7 @file-viewer/vue2.7 @file-viewer/web
+npm install vue@2.7 @file-viewer/vue2.7
 ```
 
 ## 全局安装
@@ -31,12 +31,6 @@ Vue.use(FileViewerPlugin)
 </template>
 ```
 
-默认加载 `/file-viewer/index.html`。请通过 `@file-viewer/web` 提供的复制命令把 viewer 静态产物放入站点目录:
-
-```bash
-npx file-viewer-copy-assets ./public/file-viewer
-```
-
 ## 局部组件
 
 ```ts
@@ -52,7 +46,6 @@ export default {
 ```ts
 const viewer = this.$refs.viewer
 viewer.reload()
-viewer.postFile()
 viewer.update({ url: '/example/report.docx' })
 viewer.destroy()
 ```
@@ -68,7 +61,7 @@ English README: [README.en.md](./README.en.md)。
 <!-- FILE_VIEWER_GENERATED:START -->
 ## 生态包矩阵
 
-所有 wrapper 都复用同一个 `@file-viewer/core` / `@file-viewer/web` 底座。core 源码保留在私有 Gitea 仓库，wrapper 仓库面向 GitHub/Gitee 公开发布。
+所有标准 wrapper 都只共享 `@file-viewer/core` 这个总底座，不依赖其他 wrapper。core 内部负责格式矩阵、资源解析、browser/renderers、事件、操作 API、搜索、缩放、打印和导出；各框架 wrapper 自己维护本地 controller、组件生命周期、类型出口和生态交互。
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
@@ -77,13 +70,13 @@ English README: [README.en.md](./README.en.md)。
 | Vue 2.6 | `@file-viewer/vue2.6` | ESM, 类型声明 | [file-viewer-vue2.6](https://github.com/flyfish-dev/file-viewer-vue2.6) | [file-viewer-vue2.6](https://gitee.com/flyfish-dev/file-viewer-vue2.6) | 无 |
 | React 18/19 | `@file-viewer/react` | ESM, 类型声明 | [file-viewer-react](https://github.com/flyfish-dev/file-viewer-react) | [file-viewer-react](https://gitee.com/flyfish-dev/file-viewer-react) | `@flyfish-group/file-viewer-react` |
 | React 16.8/17 | `@file-viewer/react-legacy` | ESM, 类型声明 | [file-viewer-react-legacy](https://github.com/flyfish-dev/file-viewer-react-legacy) | [file-viewer-react-legacy](https://gitee.com/flyfish-dev/file-viewer-react-legacy) | 无 |
-| Pure Web | `@file-viewer/web` | ESM, 类型声明, script 标签 IIFE, 内置 viewer 静态产物, 复制静态资源 CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
+| Pure Web | `@file-viewer/web` | ESM, 类型声明, script 标签 IIFE, Worker/WASM viewer 资源, 复制静态资源 CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
 | jQuery | `@file-viewer/jquery` | ESM, 类型声明 | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | 无 |
 | Svelte | `@file-viewer/svelte` | Svelte 组件, ESM, 类型声明 | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | 无 |
 
 ## 格式支持矩阵
 
-当前共享底座覆盖 23 条预览链路、194 个扩展名。所有格式都按需异步加载，wrapper 层不重复打包渲染器。
+共享 core 当前覆盖 23 条预览链路、194 个扩展名。所有格式都按需异步加载，wrapper 层只做生态适配，不互相嵌套。
 
 | 预览链路 | 分类 | 扩展名 | 能力 | 加载 |
 | --- | --- | --- | --- | --- |

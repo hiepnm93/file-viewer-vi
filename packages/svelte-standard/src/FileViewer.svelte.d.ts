@@ -1,36 +1,31 @@
 import type { SvelteComponentTyped } from 'svelte'
 import type {
-  CreateViewerFrameOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameController,
-  ViewerFrameEventPayload,
-  ViewerFrameIframeComponentProps,
-  ViewerMountedFrameHandle,
-} from '@file-viewer/web'
+  ViewerController,
+  ViewerControllerHandle,
+  ViewerEvent,
+  ViewerMountOptions,
+} from './controller.js'
 
-export interface FileViewerSvelteProps extends ViewerFrameComponentProps, ViewerFrameIframeComponentProps {
+export interface FileViewerSvelteProps extends ViewerMountOptions {
   className?: string
   containerStyle?: string
 }
 
 export interface FileViewerSvelteEvents {
-  viewerEvent: CustomEvent<{
-    payload: ViewerFrameEventPayload
-    event: MessageEvent
-  }>
+  viewerEvent: CustomEvent<ViewerEvent>
 }
 
-export interface FileViewerSvelteHandle extends ViewerMountedFrameHandle {}
+export interface FileViewerSvelteHandle extends ViewerControllerHandle {}
 
 export default class FileViewer extends SvelteComponentTyped<
   FileViewerSvelteProps,
   FileViewerSvelteEvents,
   Record<string, never>
 > implements FileViewerSvelteHandle {
-  getController(): ViewerFrameController | null
-  getIframe(): HTMLIFrameElement | null
-  update(options: CreateViewerFrameOptions): string
-  postFile(): boolean
-  reload(): void
+  getController(): ViewerController | null
+  getApi(): ReturnType<ViewerController['getApi']>
+  load(options: ViewerMountOptions): Promise<void>
+  update(options?: ViewerMountOptions): Promise<void>
+  reload(): Promise<void>
   destroy(): void
 }

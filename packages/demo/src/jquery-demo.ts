@@ -2,7 +2,6 @@ import jquery from 'jquery'
 import { installJQueryFileViewer } from '@file-viewer/jquery'
 import './styles.css'
 
-const viewerUrl = '/vendor/file-viewer/index.html'
 const sampleUrl = '/example/preview.md'
 const host = document.getElementById('jquery-viewer')
 
@@ -14,7 +13,6 @@ const $ = jquery
 installJQueryFileViewer($)
 
 $(host).fileViewer({
-  viewerUrl,
   url: sampleUrl,
   options: {
     theme: 'light',
@@ -24,4 +22,4 @@ $(host).fileViewer({
   }
 })
 
-document.body.setAttribute('data-adapter', 'jquery')
+document.body.setAttribute('data-wrapper', 'jquery')

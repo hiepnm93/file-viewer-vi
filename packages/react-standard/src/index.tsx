@@ -1,167 +1,131 @@
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   type CSSProperties,
-  type IframeHTMLAttributes,
-  type SyntheticEvent
+  type HTMLAttributes,
+  type MutableRefObject
 } from 'react'
 import {
-  buildViewerSrc,
-  createViewerDirectFrameController,
-  createViewerDirectFrameHandle,
-  type ViewerDirectFrameHandle,
-  type ViewerFrameComponentProps,
-  type ViewerDirectFrameController,
-  type ViewerFrameOptions
-} from '@file-viewer/web'
+  createViewerControllerHandle,
+  mountViewer,
+  type ViewerController,
+  type ViewerControllerHandle,
+  type ViewerMountOptions,
+  type ViewerCoreOptions
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
-  CreateViewerFrameOptions,
   FileRef,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
   ViewerDocxOptions,
-  ViewerDirectFrameController,
-  ViewerDirectFrameControllerAccessor,
-  ViewerDirectFrameControllerOptions,
-  ViewerDirectFrameHandle,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameController,
-  ViewerFrameControllerHandle,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerFrameOptions,
-  ViewerFrameParamValue,
-  ViewerMountedFrameHandle,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
   ViewerPdfOptions,
-  ViewerRuntimeOptions,
+  ViewerSpreadsheetOptions,
   ViewerSearchOptions,
+  ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
   ViewerWatermarkOptions
-} from '@file-viewer/web'
+} from './controller.js'
 
-export interface FileViewerHandle extends ViewerDirectFrameHandle {}
+export interface FileViewerHandle extends ViewerControllerHandle {}
 
 export interface FileViewerProps
-  extends Omit<IframeHTMLAttributes<HTMLIFrameElement>, 'children' | 'src'>,
-    ViewerFrameComponentProps {}
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
+    ViewerMountOptions {}
 
 const defaultStyle: CSSProperties = {
   width: '100%',
   height: '100%',
-  border: 0,
-  display: 'block'
+  minHeight: 0
 }
 
-const buildReactViewerSrc = (options: ViewerFrameOptions) => {
-  return buildViewerSrc(options)
+const viewerCoreOptions: ViewerCoreOptions = {
+  registry: fileViewerCoreRendererRegistry
+}
+
+const destroyController = (
+  controllerRef: MutableRefObject<ViewerController | null>,
+  container: HTMLDivElement | null
+) => {
+  controllerRef.current?.destroy()
+  controllerRef.current = null
+  if (container) {
+    container.innerHTML = ''
+  }
 }
 
 export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, forwardedRef) => {
   const {
-    viewerUrl,
     url,
     file,
+    buffer,
     name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
+    filename,
+    type,
+    size,
     options,
-    onViewerEvent,
-    onLoad,
+    onEvent,
     style,
-    title = 'Flyfish Viewer 文件预览',
-    ...iframeProps
+    ...containerProps
   } = props
 
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const controllerRef = useRef<ViewerController | null>(null)
 
-  const frameOptions = useMemo<ViewerFrameOptions>(() => ({
-    viewerUrl,
+  const viewerOptions = useMemo<ViewerMountOptions>(() => ({
     url,
     file,
+    buffer,
     name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
-    options
-  }), [viewerUrl, url, file, name, from, targetOrigin, params, cacheKey, options])
-
-  const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
-  const frameOptionsRef = useRef<ViewerFrameOptions>(frameOptions)
-  const srcRef = useRef(src)
-  const onViewerEventRef = useRef(onViewerEvent)
-  frameOptionsRef.current = frameOptions
-  srcRef.current = src
-  onViewerEventRef.current = onViewerEvent
-
-  const directFrameControllerRef = useRef<ViewerDirectFrameController | null>(null)
-  if (!directFrameControllerRef.current) {
-    directFrameControllerRef.current = createViewerDirectFrameController({
-      getFrame: () => iframeRef.current,
-      getOptions: () => frameOptionsRef.current,
-      getSrc: () => srcRef.current,
-      getOnEvent: () => onViewerEventRef.current
-    })
-  }
-  const directFrameController = directFrameControllerRef.current
-
-  useImperativeHandle(forwardedRef, () => createViewerDirectFrameHandle(
-    () => iframeRef.current,
-    () => directFrameController
-  ), [directFrameController])
+    filename,
+    type,
+    size,
+    options,
+    onEvent
+  }), [url, file, buffer, name, filename, type, size, options, onEvent])
 
   useEffect(() => {
-    directFrameController.resetForSrcChange()
-  }, [directFrameController, src])
-
-  useEffect(() => {
-    directFrameController.syncOptions()
-  }, [directFrameController, frameOptions])
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      directFrameController.handleMessage(event)
+    const container = containerRef.current
+    if (!container || controllerRef.current) {
+      return undefined
     }
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [directFrameController])
+
+    controllerRef.current = mountViewer(container, viewerOptions, viewerCoreOptions)
+    return () => destroyController(controllerRef, container)
+  }, [])
 
   useEffect(() => {
-    return () => directFrameController.destroy()
-  }, [directFrameController])
+    void controllerRef.current?.update(viewerOptions)
+  }, [viewerOptions])
 
-  const handleLoad = useCallback((event: SyntheticEvent<HTMLIFrameElement>) => {
-    directFrameController.handleLoad()
-    onLoad?.(event)
-  }, [directFrameController, onLoad])
+  useImperativeHandle(forwardedRef, () => createViewerControllerHandle(
+    () => controllerRef.current,
+    () => destroyController(controllerRef, containerRef.current)
+  ), [])
 
   return (
-    <iframe
-      {...iframeProps}
-      ref={iframeRef}
-      src={src}
-      title={title}
+    <div
+      {...containerProps}
+      ref={containerRef}
       style={{ ...defaultStyle, ...style }}
-      onLoad={handleLoad}
     />
   )
 })

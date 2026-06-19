@@ -51,7 +51,7 @@ const createFileViewerStateDescriptor = ({
   recoverable,
 });
 
-export const createFileViewerLoadingState = (
+export const createFileViewerPreviewLoadingState = (
   extension = '',
   message = FILE_VIEWER_PREVIEW_MESSAGES.reading,
   theme: FileViewerStateTheme = DEFAULT_FILE_VIEWER_STATE_THEME

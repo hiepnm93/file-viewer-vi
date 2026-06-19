@@ -3,22 +3,27 @@
     "target": "ES2019",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["DOM", "ES2020"],
-    "types": ["node"],
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "composite": true,
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
-    "paths": {
-      "@file-viewer/core": ["../core/src/index.ts"],
-      "@file-viewer/core/assets": ["../core/src/assets.ts"]
-    }
+    "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../core" }
+    {
+      "path": "../core"
+    }
   ]
 }

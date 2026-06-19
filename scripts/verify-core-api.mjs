@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { readdir, readFile, stat } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,15 +9,42 @@ const coreDir = join(sourceRoot, 'packages', 'core')
 const coreSrcDir = join(coreDir, 'src')
 
 const requiredValueExports = [
-  'createViewer',
   'createRendererRegistry',
+  'coreBrowserRendererHandlers',
+  'createFileViewerCoreRendererRegistry',
+  'fileViewerCoreRendererDispatcher',
+  'fileViewerCoreRendererRegistry',
+  'fileViewerCoreRendererRegistryBridge',
+  'missingFileViewerCoreRendererHandlers',
+  'renderFileViewerArchive',
+  'renderFileViewerAudio',
+  'renderFileViewerCad',
+  'renderFileViewerCode',
+  'renderFileViewerDataAsset',
+  'renderFileViewerDrawing',
+  'renderFileViewerEda',
+  'renderFileViewerEmail',
+  'renderFileViewerEpub',
+  'renderFileViewerGeo',
+  'renderFileViewerImage',
+  'renderFileViewerMarkdown',
+  'renderFileViewerModel',
+  'renderFileViewerOfd',
+  'renderFileViewerOpenDocument',
+  'renderFileViewerPdf',
+  'parseEdaFile',
+  'renderFileViewerPptx',
+  'renderFileViewerSpreadsheet',
+  'renderFileViewerTypst',
+  'renderFileViewerUmd',
+  'renderFileViewerVideo',
+  'renderFileViewerWordDoc',
+  'renderFileViewerWordDocx',
   'createFileViewerRendererDispatcher',
   'createFileRenderHandlerRegistry',
   'normalizeSource',
   'resolveFileViewerRemoteSourcePlan',
   'resolveFileViewerSourceFilename',
-  'postFileViewerSearchChange',
-  'postFileViewerLocationChange',
   'readFileViewerBuffer',
   'readFileViewerDataUrl',
   'readFileViewerText',
@@ -25,13 +52,6 @@ const requiredValueExports = [
   'serializeFileViewerOptions',
   'parseFileViewerOptions',
   'normalizeFileViewerTheme',
-  'buildFileViewerFrameSrc',
-  'toFileViewerFrameOptions',
-  'createFileViewerDirectFrameController',
-  'createFileViewerDirectFrameHandle',
-  'createFileViewerMountedFrameHandle',
-  'createFileViewerFrameControllerHandle',
-  'mountFileViewerFrame',
   'resolveFileViewerPresentationState',
   'cancelFileViewerPreviewRequest',
   'DEFAULT_FILE_VIEWER_SOURCE_FILENAME',
@@ -66,7 +86,7 @@ const requiredValueExports = [
   'FILE_VIEWER_REMOTE_MISSING_DATA_ERROR_MESSAGE',
   'resolveFileViewerMissingRemoteDataErrorMessage',
   'resolveFileViewerPreviewLoadErrorMessage',
-  'resolveFileViewerRuntimePageHref',
+  'resolveFileViewerPageHref',
   'resolveFileViewerPreviewRequestReason',
   'reportFileViewerMissingRemoteData',
   'reportFileViewerPreviewLoadError',
@@ -80,6 +100,12 @@ const requiredValueExports = [
   'DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME',
   'DEFAULT_FILE_VIEWER_EXPORT_FILENAME',
   'DEFAULT_FILE_VIEWER_PREVIEW_TITLE',
+  'DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL',
+  'DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH',
+  'DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH',
+  'resolveFileViewerDataSqlWasmUrl',
+  'resolveFileViewerDocxWorkerUrl',
+  'resolveFileViewerSpreadsheetWorkerUrl',
   'createFileViewerOriginalSourceState',
   'createFileViewerOriginalSourceStateFromNormalizedSource',
   'resolveFileViewerDisplayFilename',
@@ -98,12 +124,8 @@ const requiredValueExports = [
   'createFileViewerToolbarActions',
   'createFileViewerToolbarControllerActionHandlers',
   'createFileViewerToolbarZoomSyncSnapshot',
-  'postFileViewerLifecycleEvent',
-  'postFileViewerOperationContextEvent',
   'dispatchFileViewerLifecycleEvent',
   'dispatchFileViewerOperationContextEvent',
-  'postFileViewerOperationAvailabilityChange',
-  'postFileViewerZoomChange',
   'dispatchFileViewerOperationAvailabilityChange',
   'dispatchFileViewerZoomChange',
   'emitFileViewerComponentLifecycleEvent',
@@ -123,65 +145,30 @@ const requiredValueExports = [
   'runFileViewerToolbarAvailabilitySync',
   'runFileViewerToolbarZoomSync',
   'resolveFileViewerLifecycleFallbackSource',
-  'applyFileViewerLoadingRuntimeState',
+  'applyFileViewerLoadingState',
   'syncFileViewerLoadingControllerState',
   'runFileViewerLoadingControllerAction',
   'runFileViewerLoadingExtensionSync',
   'createFileViewerLoadingControllerActionHandlers',
-  'executeFileViewerDownloadOperation',
-  'executeFileViewerExportHtmlOperation',
-  'executeFileViewerPrintOperation',
   'FILE_VIEWER_OPERATION_ACTION_ERROR_PREFIXES',
-  'createFileViewerOperationActionHandlers',
-  'createFileViewerPublicOperationActionHandlers',
   'resolveFileViewerOperationActionErrorMessage',
-  'DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS',
-  'applyFileViewerRenderSurfaceState',
-  'clearFileViewerRenderSurface',
   'createFileViewerRenderReadinessTarget',
-  'createFileViewerRenderSurfaceActionHandlers',
   'createFileViewerRenderSurfaceState',
   'createFileViewerRenderSurfaceStateTarget',
-  'createFileViewerRenderTarget',
   'disposeActiveFileViewerRendererSession',
   'disposeFileViewerRendererSession',
   'DEFAULT_FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_LOGGER',
   'FILE_VIEWER_RENDER_SESSION_DISPOSE_ERROR_MESSAGE',
   'reportFileViewerRenderSessionDisposeError',
   'resolveFileViewerRenderSessionDisposeErrorMessage',
-  'resetFileViewerRenderSurface',
-  'runFileViewerRenderSurfaceClear',
-  'runFileViewerRenderSurfaceMount',
-  'removeFileViewerRenderTarget',
-  'waitForFileViewerNextPaint',
-  'collectFileViewerDocumentAnchors',
   'applyFileViewerSearchState',
   'cloneFileViewerSearchState',
   'createFileViewerSearchChangeState',
-  'createFileViewerDocumentFeatureActions',
-  'createFileViewerDocumentFeatureControllerActionHandlers',
-  'resolveFileViewerLocationChangeAnchor',
-  'createFileViewerDocumentChangeSnapshot',
   'dispatchFileViewerSearchChange',
   'dispatchFileViewerLocationChange',
-  'resolveFileViewerScrollContainer',
-  'createFileViewerDomSearchController',
-  'createFileViewerDomSearchControllerActionHandlers',
-  'syncFileViewerDomSearchControllerState',
-  'observeFileViewerDomSearchController',
-  'runFileViewerDomSearchControllerAction',
-  'destroyFileViewerDomSearchController',
   'applyFileViewerZoomState',
   'createFileViewerZoomChangeState',
-  'syncFileViewerZoomControllerState',
-  'refreshFileViewerZoomControllerProvider',
-  'observeFileViewerZoomController',
-  'clearFileViewerZoomControllerProvider',
-  'destroyFileViewerZoomController',
-  'runFileViewerZoomControllerAction',
   'createFileViewerZoomChangeEmitter',
-  'createFileViewerZoomController',
-  'createFileViewerZoomControllerActionHandlers',
   'buildFileViewerWatermarkStyle',
   'resolveFileViewerWatermarkPresentationState',
   'createFileViewerWorkerController',
@@ -196,22 +183,15 @@ const requiredTypeExports = [
   'FileViewerReadResult',
   'FileViewerSource',
   'FileViewerLocationLike',
-  'FileViewerDocumentFeatureActions',
-  'FileViewerDocumentFeatureSearchController',
-  'FileViewerDomSearchControllerActionHandlers',
   'FileViewerFileRefSourcePlan',
   'FileViewerFileOperationType',
   'FileViewerOperationActionErrorContext',
   'FileViewerOperationActionErrorFormatter',
   'FileViewerOperationActionErrorPrefixes',
-  'FileViewerOperationActionHandlers',
-  'FileViewerPublicOperationActionHandlers',
-  'FileViewerZoomControllerActionHandlers',
   'FileViewerLoadingControllerActionHandlers',
   'FileViewerLifecycleFacade',
   'FileViewerLocalFilePreviewState',
   'ResolveFileViewerFileRefSourcePlanInput',
-  'CreateFileViewerOperationActionHandlersInput',
   'FileViewerOriginalSourceState',
   'FileViewerInstance',
   'FileViewerLifecycleContext',
@@ -321,32 +301,17 @@ const requiredTypeExports = [
   'RendererSession',
   'RendererRegistry',
   'RendererLoadContext',
-  'RenderSurface',
   'ViewerCapabilityState',
   'ViewerLifecycleContext',
   'ViewerOperationContext',
   'FileRenderContext',
   'FileRenderExportAdapter',
-  'FileViewerFrameController',
-  'FileViewerFrameControllerAccessor',
   'FileViewerSerializableOptions',
-  'CreateViewerOptions',
   'FileViewerRenderedInstance',
   'FileViewerComponentProps',
   'FileViewerComponentEmits',
   'FileViewerComponentEventMap',
   'FileViewerPublicApi',
-  'FileViewerDirectFrameController',
-  'FileViewerDirectFrameControllerAccessor',
-  'FileViewerDirectFrameControllerOptions',
-  'FileViewerFrameComponentBridgeOptions',
-  'FileViewerFrameComponentProps',
-  'FileViewerFrameContainerComponentProps',
-  'FileViewerFrameHostComponentProps',
-  'FileViewerFrameIframeComponentProps',
-  'FileViewerDirectFrameHandle',
-  'FileViewerMountedFrameHandle',
-  'FileViewerFrameControllerHandle',
   'BuildFileViewerLifecycleContextFromNormalizedSourceInput',
   'BuildFileViewerOperationContextFromLifecycleStateInput',
   'BuildFileViewerLifecycleFacadeLoadStartStateInput',
@@ -361,13 +326,25 @@ const requiredTypeExports = [
   'FileViewerPresentationState',
   'ResolveFileViewerPresentationStateInput',
   'FileViewerWorkerController',
-  'FileViewerLoadingRuntimeState',
-  'MutableFileViewerLoadingRuntimeState',
+  'FileViewerLoadingState',
+  'MutableFileViewerLoadingState',
   'RunFileViewerLoadingExtensionSyncInput',
   'MutableFileViewerSearchState',
   'MutableFileViewerZoomState',
   'FileViewerWatermarkPresentationState',
-  'FileViewerWatermarkStyle'
+  'FileViewerWatermarkStyle',
+  'EdaDiagnostic',
+  'EdaDiagnosticLevel',
+  'EdaDomainRole',
+  'EdaEntity',
+  'EdaFileType',
+  'EdaParseResult',
+  'EdaParserMode',
+  'EdaProperty',
+  'EdaStats',
+  'EdaStreamKind',
+  'EdaStreamView',
+  'EdaTreeNode'
 ]
 
 const requiredInstanceMethods = [
@@ -396,8 +373,103 @@ const requiredInstanceMethods = [
   'getDocumentTextChunks'
 ]
 
+const requiredHeadlessValueExports = [
+  'DEFAULT_RENDERER_DEFINITIONS',
+  'DEFAULT_SUPPORTED_EXTENSIONS',
+  'normalizeSource',
+  'readFileViewerBuffer',
+  'sanitizeFileViewerOptions',
+  'serializeFileViewerOptions',
+  'parseFileViewerOptions',
+  'resolveFileViewerOperationAvailability',
+  'buildFileViewerDocumentTextChunks',
+  'createRendererRegistry',
+  'createFileViewerRendererDispatcher',
+  'createFileRenderHandlerRegistry'
+]
+
+const requiredHeadlessTypeExports = [
+  'FileViewerOptions',
+  'FileViewerSource',
+  'RendererDefinition',
+  'RendererRegistry',
+  'RendererSession',
+  'FileViewerOperationAvailability',
+  'FileViewerLifecycleContext',
+  'FileViewerSearchState',
+  'FileViewerZoomState'
+]
+
+const forbiddenHeadlessApiTokens = [
+  'createViewer',
+  'coreBrowserRendererHandlers',
+  'fileViewerCoreRendererDispatcher',
+  'renderFileViewer',
+  'createFileViewerDomSearchController',
+  'createFileViewerZoomController',
+  'collectFileViewerDocumentAnchors',
+  'buildFileViewerRenderedHtmlDocument',
+  'triggerFileViewerBlobDownload',
+  'waitForFileViewerPrintWindowReady'
+]
+
+const requiredBrowserApiTokens = [
+  'createViewer',
+  'coreBrowserRendererHandlers',
+  'renderFileViewerPdf',
+  'renderFileViewerWordDocx',
+  'renderFileViewerSpreadsheet',
+  'createFileViewerDomSearchController',
+  'createFileViewerZoomController',
+  'buildFileViewerRenderedHtmlDocument'
+]
+
 const forbiddenCoreSourceExtensions = new Set(['.jsx', '.tsx', '.vue', '.svelte'])
-const allowedCoreDevDependencies = new Set(['typescript'])
+const allowedCoreDevDependencies = new Set(['typescript', '@types/three', '@types/tinycolor2'])
+const forbiddenCoreDependencyPrefixes = [
+  'vue',
+  '@vue/',
+  '@vitejs/plugin-vue',
+  'vue-tsc',
+  '@lucide/vue',
+  'react',
+  'react-dom',
+  'svelte',
+  '@file-viewer/',
+  '@flyfish-group/',
+  'file-viewer3'
+]
+const forbiddenCoreApiTokens = [
+  'mountViewer',
+  'ViewerMountOptions',
+  'ViewerController',
+  'ViewerControllerHandle',
+  'createViewerControllerHandle',
+  'createFileViewerNativeController',
+  'resolveFileViewerNativeLoadSource',
+  'FileViewerNativeController',
+  'FileViewerNativeFetchFile',
+  'FileViewerNativeFetchInput',
+  'FileViewerNativeSource'
+]
+
+function isForbiddenCoreDependency(name) {
+  return forbiddenCoreDependencyPrefixes.some(prefix =>
+    prefix.endsWith('/')
+      ? name.startsWith(prefix)
+      : name === prefix
+  )
+}
+const forbiddenCoreFilenames = new Set([
+  'nativeController.ts',
+  'frame.ts'
+])
+const forbiddenCoreBrowserGlobalPatterns = [
+  /document\.baseURI/,
+  /location\.href/,
+  /typeof\s+location/,
+  /typeof\s+document/,
+]
 
 function assert(condition, message) {
   if (!condition) {
@@ -439,9 +511,18 @@ function assertCorePackageMetadata(packageJson) {
   assert(packageJson.exports?.['.']?.import === './dist/index.js', 'Core package exports["."].import drifted')
   assert(packageJson.exports?.['.']?.types === './dist/index.d.ts', 'Core package exports["."].types drifted')
   assert(packageJson.exports?.['./assets']?.import === './dist/assets.js', 'Core package exports["./assets"].import drifted')
-  assert(!packageJson.dependencies, 'Core package must not have runtime dependencies')
+  assert(packageJson.exports?.['./headless']?.import === './dist/headless.js', 'Core package exports["./headless"].import drifted')
+  assert(packageJson.exports?.['./headless']?.types === './dist/headless.d.ts', 'Core package exports["./headless"].types drifted')
+  assert(packageJson.exports?.['./browser']?.import === './dist/browser.js', 'Core package exports["./browser"].import drifted')
+  assert(packageJson.exports?.['./browser']?.types === './dist/browser.d.ts', 'Core package exports["./browser"].types drifted')
   assert(!packageJson.peerDependencies, 'Core package must not have peer dependencies')
   assert(!packageJson.optionalDependencies, 'Core package must not have optional dependencies')
+  for (const dependencyName of Object.keys(packageJson.dependencies || {})) {
+    assert(
+      !isForbiddenCoreDependency(dependencyName),
+      `Core package dependencies must stay framework-neutral; unexpected ${dependencyName}`
+    )
+  }
   for (const dependencyName of Object.keys(packageJson.devDependencies || {})) {
     assert(
       allowedCoreDevDependencies.has(dependencyName),
@@ -459,6 +540,10 @@ function assertCoreTsConfig(tsconfig) {
     (tsconfig.include || []).includes('src/**/*.ts'),
     'Core tsconfig must include src/**/*.ts'
   )
+  assert(
+    (tsconfig.include || []).includes('src/**/*.d.ts'),
+    'Core tsconfig must include src/**/*.d.ts for renderer ambient module declarations'
+  )
 }
 
 function assertCoreEntrypoint(indexSource) {
@@ -470,6 +555,31 @@ function assertCoreEntrypoint(indexSource) {
   }
 }
 
+function assertCoreHeadlessEntrypoint(headlessSource) {
+  for (const exportName of requiredHeadlessValueExports) {
+    assert(hasToken(headlessSource, exportName), `Core headless entrypoint must export ${exportName}`)
+  }
+  for (const typeName of requiredHeadlessTypeExports) {
+    assert(hasToken(headlessSource, typeName), `Core headless entrypoint must export type ${typeName}`)
+  }
+  for (const token of forbiddenHeadlessApiTokens) {
+    assert(
+      !hasToken(headlessSource, token),
+      `Core headless entrypoint must not expose browser renderer token ${token}`
+    )
+  }
+}
+
+function assertCoreBrowserEntrypoint(browserSource, indexSource) {
+  assert(
+    /export\s+\*\s+from\s+['"]\.\/index['"]/.test(browserSource),
+    'Core browser entrypoint must explicitly re-export the browser-capable root API'
+  )
+  for (const token of requiredBrowserApiTokens) {
+    assert(hasToken(indexSource, token), `Core browser entrypoint must expose ${token} through the root API`)
+  }
+}
+
 function assertCoreInstanceContract(typesSource) {
   const match = /export\s+interface\s+FileViewerInstance\s*{([\s\S]*?)\n}/.exec(typesSource)
   assert(match, 'Core types must declare FileViewerInstance')
@@ -478,132 +588,6 @@ function assertCoreInstanceContract(typesSource) {
     assert(
       new RegExp(`\\b${methodName}\\s*\\(`).test(instanceContract),
       `FileViewerInstance must expose ${methodName}()`
-    )
-  }
-}
-
-function assertCoreViewerSurfaceState(viewerSource) {
-  for (const token of [
-    'createFileViewerRenderSurfaceState',
-    'applyFileViewerRenderSurfaceState',
-    'renderSurfaceState.session',
-    'renderSurfaceState.exportAdapter'
-  ]) {
-    assert(
-      viewerSource.includes(token),
-      `createViewer must reuse core render surface state via ${token}`
-    )
-  }
-
-  for (const forbiddenToken of [
-    'let currentSession',
-    'let activeExportAdapter',
-    'currentSession =',
-    'activeExportAdapter ='
-  ]) {
-    assert(
-      !viewerSource.includes(forbiddenToken),
-      `createViewer must not keep duplicate render surface state: ${forbiddenToken}`
-    )
-  }
-}
-
-function assertCoreViewerOperationSourceState(viewerSource) {
-  for (const token of [
-    'createFileViewerOriginalSourceStateFromNormalizedSource',
-    'resolveFileViewerDisplayFilename'
-  ]) {
-    assert(
-      viewerSource.includes(token),
-      `createViewer must reuse core operation source helpers via ${token}`
-    )
-  }
-
-  for (const forbiddenToken of [
-    'const getDisplayFilename',
-    "currentSource?.filename || 'preview'",
-    'createFileViewerOriginalSourceState({'
-  ]) {
-    assert(
-      !viewerSource.includes(forbiddenToken),
-      `createViewer must not keep duplicate operation source state: ${forbiddenToken}`
-    )
-  }
-}
-
-function assertCoreViewerLifecycleSourceState(viewerSource) {
-  assert(
-    viewerSource.includes('buildFileViewerLifecycleContextFromNormalizedSource'),
-    'createViewer must build lifecycle contexts from normalized source through core helper'
-  )
-
-  for (const forbiddenToken of [
-    'buildFileViewerLifecycleContext({',
-    "typeof File !== 'undefined' && source.file instanceof File",
-    "phase.endsWith('complete')",
-    'filename: source.filename',
-    'source: source.kind'
-  ]) {
-    assert(
-      !viewerSource.includes(forbiddenToken),
-      `createViewer must not keep duplicate lifecycle source state: ${forbiddenToken}`
-    )
-  }
-}
-
-function assertCoreViewerRequestScope(viewerSource) {
-  for (const token of [
-    'createFileViewerRequestScope',
-    'requestScope.getCurrentVersion()',
-    'requestScope.requestController.createVersion()'
-  ]) {
-    assert(
-      viewerSource.includes(token),
-      `createViewer must reuse core request scope via ${token}`
-    )
-  }
-
-  for (const forbiddenToken of [
-    'let version = 0',
-    'version += 1',
-    'requestController.version',
-    'createFileViewerRequestController()'
-  ]) {
-    assert(
-      !viewerSource.includes(forbiddenToken),
-      `createViewer must not keep duplicate request version state: ${forbiddenToken}`
-    )
-  }
-}
-
-function assertCoreViewerDocumentFeatureActions(viewerSource) {
-  for (const token of [
-    'createFileViewerDocumentFeatureControllerActionHandlers',
-    'documentActions.refreshDocumentIndex',
-    'documentActions.clearDocumentState',
-    'documentActions.searchDocument',
-    'documentActions.getCurrentDocumentAnchor',
-    'documentActions.getDocumentTextChunks'
-  ]) {
-    assert(
-      viewerSource.includes(token),
-      `createViewer must reuse core document feature actions via ${token}`
-    )
-  }
-
-  for (const forbiddenToken of [
-    'createFileViewerDomSearchController',
-    'let anchors',
-    'searchController.clear',
-    'searchController.search',
-    'collectFileViewerDocumentAnchors(container)',
-    'scrollToFileViewerDocumentAnchor(container',
-    'buildFileViewerDocumentTextChunks(anchors',
-    'createFileViewerSearchChangeState(searchController.state)'
-  ]) {
-    assert(
-      !viewerSource.includes(forbiddenToken),
-      `createViewer must not keep duplicate document feature logic: ${forbiddenToken}`
     )
   }
 }
@@ -631,10 +615,21 @@ function collectBareImportSpecifiers(source) {
   return [...imports]
 }
 
+function packageNameFromSpecifier(specifier) {
+  if (specifier.startsWith('@')) {
+    return specifier.split('/').slice(0, 2).join('/')
+  }
+  return specifier.split('/')[0]
+}
+
 async function assertCoreSourceBoundary(files) {
   for (const file of files) {
     const extension = extname(file)
     const relativePath = file.slice(coreDir.length + 1)
+    assert(
+      !forbiddenCoreFilenames.has(relativePath),
+      `Core source must not include wrapper or iframe orchestration file ${relativePath}`
+    )
     assert(
       !forbiddenCoreSourceExtensions.has(extension),
       `Core source must remain pure TypeScript; unexpected ${relativePath}`
@@ -643,8 +638,29 @@ async function assertCoreSourceBoundary(files) {
       continue
     }
     const source = await readFile(file, 'utf8')
+    for (const token of forbiddenCoreApiTokens) {
+      assert(
+        !hasToken(source, token),
+        `Core source must not expose wrapper/browser mount API token ${token}: ${relativePath}`
+      )
+    }
+    for (const pattern of forbiddenCoreBrowserGlobalPatterns) {
+      assert(
+        !pattern.test(source),
+        `Core source must not read browser document/location globals: ${relativePath}`
+      )
+    }
+    const declaredDependencies = new Set(Object.keys(packageJson.dependencies || {}))
     for (const specifier of collectBareImportSpecifiers(source)) {
-      throw new Error(`Core source must not import runtime package ${specifier}: ${relativePath}`)
+      const packageName = packageNameFromSpecifier(specifier)
+      assert(
+        !isForbiddenCoreDependency(packageName),
+        `Core source must not import framework or wrapper package ${specifier}: ${relativePath}`
+      )
+      assert(
+        declaredDependencies.has(packageName),
+        `Core source imports ${specifier} but ${packageName} is not declared in core dependencies: ${relativePath}`
+      )
     }
   }
 }
@@ -655,23 +671,19 @@ assert(existsSync(coreSrcDir), 'Missing packages/core/src')
 const packageJson = await readJson(join(coreDir, 'package.json'))
 const tsconfig = await readJson(join(coreDir, 'tsconfig.json'))
 const indexSource = await readFile(join(coreSrcDir, 'index.ts'), 'utf8')
+const headlessSource = await readFile(join(coreSrcDir, 'headless.ts'), 'utf8')
+const browserSource = await readFile(join(coreSrcDir, 'browser.ts'), 'utf8')
 const typesSource = await readFile(join(coreSrcDir, 'types.ts'), 'utf8')
-const viewerSource = await readFile(join(coreSrcDir, 'viewer.ts'), 'utf8')
 const sourceFiles = await readAllSourceFiles(coreSrcDir)
-
-await stat(join(coreSrcDir, 'viewer.ts'))
 
 assertCorePackageMetadata(packageJson)
 assertCoreTsConfig(tsconfig)
 assertCoreEntrypoint(indexSource)
+assertCoreHeadlessEntrypoint(headlessSource)
+assertCoreBrowserEntrypoint(browserSource, indexSource)
 assertCoreInstanceContract(typesSource)
-assertCoreViewerSurfaceState(viewerSource)
-assertCoreViewerOperationSourceState(viewerSource)
-assertCoreViewerLifecycleSourceState(viewerSource)
-assertCoreViewerRequestScope(viewerSource)
-assertCoreViewerDocumentFeatureActions(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(
-  `[core-api] Verified ${requiredValueExports.length} value exports, ${requiredTypeExports.length} type exports, ${requiredInstanceMethods.length} instance methods, and ${sourceFiles.length} pure TS core files.`
+  `[core-api] Verified ${requiredValueExports.length} root value exports, ${requiredTypeExports.length} root type exports, ${requiredHeadlessValueExports.length} headless value exports, ${requiredBrowserApiTokens.length} browser API tokens, ${requiredInstanceMethods.length} instance methods, and ${sourceFiles.length} pure TS core files.`
 )

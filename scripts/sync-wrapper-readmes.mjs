@@ -30,7 +30,7 @@ async function loadTypescriptModule(path) {
     exports: module.exports,
     module,
     require(specifier) {
-      throw new Error(`Unexpected runtime import while reading ${path}: ${specifier}`)
+      throw new Error(`Unexpected module import while reading ${path}: ${specifier}`)
     }
   }
   vm.runInNewContext(transpiled.outputText, sandbox, { filename: path })
@@ -130,7 +130,7 @@ function generatedWrapperBlock(locale) {
       wrapperMarkers.start,
       `## ${template.wrapperEcosystemHeading}`,
       '',
-      '所有 wrapper 都复用同一个 `@file-viewer/core` / `@file-viewer/web` 底座。core 源码保留在私有 Gitea 仓库，wrapper 仓库面向 GitHub/Gitee 公开发布。',
+      '所有标准 wrapper 都只共享 `@file-viewer/core` 这个总底座，不依赖其他 wrapper。core 内部负责格式矩阵、资源解析、browser/renderers、事件、操作 API、搜索、缩放、打印和导出；各框架 wrapper 自己维护本地 controller、组件生命周期、类型出口和生态交互。',
       '',
       markdownTable(
         template.wrapperMatrixHeaders,
@@ -139,7 +139,7 @@ function generatedWrapperBlock(locale) {
       '',
       `## ${template.wrapperFormatHeading}`,
       '',
-      `当前共享底座覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，wrapper 层不重复打包渲染器。`,
+      `共享 core 当前覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，wrapper 层只做生态适配，不互相嵌套。`,
       '',
       markdownTable(
         template.formatMatrixHeaders,
@@ -157,7 +157,7 @@ function generatedWrapperBlock(locale) {
     wrapperMarkers.start,
     `## ${template.wrapperEcosystemHeading}`,
     '',
-    'Every wrapper reuses the same `@file-viewer/core` / `@file-viewer/web` foundation. Core source stays in the private Gitea repository, while wrappers are prepared for public GitHub/Gitee distribution.',
+    'Every standard wrapper shares `@file-viewer/core` as the only common foundation, and no wrapper depends on another wrapper. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework wrapper owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.',
     '',
     markdownTable(
       template.wrapperMatrixHeaders,
@@ -166,7 +166,7 @@ function generatedWrapperBlock(locale) {
     '',
     `## ${template.wrapperFormatHeading}`,
     '',
-    `The shared runtime currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, so wrapper packages do not duplicate heavy preview logic.`,
+    `The shared core currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, and wrapper packages only adapt their own ecosystem without nesting through another wrapper.`,
     '',
     markdownTable(
       template.formatMatrixHeaders,

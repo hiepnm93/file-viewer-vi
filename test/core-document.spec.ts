@@ -158,14 +158,6 @@ describe('@file-viewer/core document helpers', () => {
 
   it('dispatches document search and location notifications in wrapper event order', () => {
     const events: string[] = [];
-    const parent = {
-      postMessage: vi.fn((payload: unknown) => {
-        events.push(`post:${(payload as { event: string }).event}`);
-      }),
-    };
-    const child = {
-      parent,
-    } as unknown as Window;
     const source = createEmptyFileViewerSearchState('PDF');
     const currentAnchor = anchor('intro', 'PDF intro', 2);
     source.total = 1;
@@ -184,8 +176,6 @@ describe('@file-viewer/core document helpers', () => {
 
     expect(dispatchFileViewerSearchChange({
       state: source,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       onChange: state => {
         events.push('emit:search-change');
         emittedSearchState = state;
@@ -194,8 +184,6 @@ describe('@file-viewer/core document helpers', () => {
     })).toBe(true);
     expect(dispatchFileViewerLocationChange({
       anchor: locationAnchor,
-      targetOrigin: 'https://host.example',
-      targetWindow: child,
       onChange: nextAnchor => {
         events.push('emit:location-change');
         emittedLocationAnchor = nextAnchor;
@@ -204,43 +192,13 @@ describe('@file-viewer/core document helpers', () => {
 
     expect(events).toEqual([
       'emit:search-change',
-      'post:search-change',
       'emit:location-change',
-      'post:location-change',
     ]);
     expect(emittedSearchState).not.toBe(source);
     expect(emittedSearchState?.current).not.toBe(source.current);
     expect(emittedSearchState?.current?.anchor).not.toBe(source.current.anchor);
     expect(source.query).toBe('PDF');
     expect(emittedLocationAnchor).toBe(locationAnchor);
-    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
-      type: 'flyfish-viewer:search',
-      event: 'search-change',
-      payload: {
-        query: 'mutated',
-        total: 1,
-        currentIndex: 0,
-        current: {
-          id: 'match-1',
-          index: 0,
-          text: 'PDF',
-          anchor: currentAnchor,
-          line: 2,
-        },
-        matches: [{
-          id: 'match-1',
-          index: 0,
-          text: 'PDF',
-          anchor: currentAnchor,
-          line: 2,
-        }],
-      },
-    }, 'https://host.example');
-    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
-      type: 'flyfish-viewer:location',
-      event: 'location-change',
-      payload: locationAnchor,
-    }, 'https://host.example');
   });
 
   it('creates framework-neutral document feature actions for wrappers', async () => {

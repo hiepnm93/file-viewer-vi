@@ -2,13 +2,53 @@
 
 Framework-neutral TypeScript foundation for Flyfish File Viewer.
 
-This package is the migration base for the next architecture: one pure TypeScript core, multiple thin wrappers for Vue, React, pure JavaScript, jQuery, and Svelte. It owns the shared format matrix, source detection, renderer registry, capability calculation, lifecycle context, operation guards, iframe protocol, search/location/zoom contracts, print/export helpers, heavy renderer asset manifests, and runtime option normalization.
+This package is the migration base for the next architecture: one pure TypeScript core package with internal `headless`, `browser`, and `renderers` layers, plus multiple native wrappers for Vue, React, pure JavaScript, jQuery, and Svelte. Core owns the shared format matrix, source detection, renderer protocol, capability calculation, lifecycle context, operation guards, operation/event/search/location/zoom/print/export contracts, heavy renderer asset manifests, option normalization, pure state models, and framework-neutral browser rendering engine.
 
-The current production renderer is still provided by the Vue 3 baseline package while core extraction continues. Core source remains in the private Gitea repository; public distribution should use compiled npm artifacts and public wrapper repositories only.
+Browser execution belongs inside core only when it remains framework-neutral TypeScript. DOM mounting, `HTMLElement` traversal, search highlights, zoom provider discovery, print windows, download triggers, Canvas, Worker, and WASM renderers must not depend on Vue, React, Svelte, or any wrapper package. Framework wrappers keep their own local controller, component lifecycle, toolbar/search/loading UI, and ecosystem interaction layer while depending on `@file-viewer/core` as the only shared base.
+
+`@file-viewer/core` is the only shared foundation package. It owns the headless contracts plus browser/renderers layers for the direct `createViewer(container, options)` engine, renderer registry, DOM provider registry, print layout helpers, browser asset resolution, and framework-neutral DOM/Canvas/Worker/WASM rendering contracts. Core source remains in the private Gitea repository; public distribution should use compiled npm artifacts and public wrapper repositories only.
+
+Migrated browser renderers currently include media, code, Markdown, images, UMD, geospatial data, Word DOCX/DOC, Excel/Spreadsheet, OpenDocument/RTF, PDF, OFD, email, EDA, CAD, Typst, PPTX, EPUB, 3D models, drawing files, data assets, and archives. Wrapper packages should reuse these handlers instead of carrying framework-specific renderer copies.
 
 ```bash
 npm install @file-viewer/core
 ```
+
+## Entry points
+
+Use `@file-viewer/core/headless` when a wrapper, server-side helper, or build script only needs framework-neutral contracts: format support, source normalization, renderer capability metadata, lifecycle/operation context, option normalization, state helpers, and static asset resolution. This entry intentionally does not expose the DOM viewer engine or browser renderers.
+
+```ts
+import {
+  DEFAULT_SUPPORTED_EXTENSIONS,
+  normalizeSource,
+  resolveFileViewerRendererAssets
+} from '@file-viewer/core/headless'
+
+const source = normalizeSource({ url: '/files/report.pdf' })
+const pdfAssets = resolveFileViewerRendererAssets('pdf', {
+  baseUrl: '/file-viewer/'
+})
+```
+
+Use `@file-viewer/core/browser` when a native wrapper or pure browser integration needs the direct DOM engine, renderer registry, search/zoom providers, print/export adapters, and framework-neutral Canvas/Worker/WASM renderers.
+
+```ts
+import {
+  createViewer,
+  coreBrowserRendererHandlers
+} from '@file-viewer/core/browser'
+
+const viewer = createViewer(document.querySelector('#viewer')!, {
+  options: {
+    toolbar: true
+  }
+})
+
+await viewer.load({ url: '/files/report.pdf' })
+```
+
+The root `@file-viewer/core` entry remains the complete compatibility entry for existing integrations. New wrappers should prefer the narrowest explicit entry point they need: `headless` for contracts and build-time helpers, `browser` for real browser preview.
 
 ```ts
 import {
@@ -22,7 +62,7 @@ const archiveAssets = resolveFileViewerRendererAssets('archive', {
 })
 ```
 
-The manifest API lets wrappers and deployment scripts discover archive, CAD, and Typst worker/WASM resources from the same core contract instead of hard-coding per-framework paths.
+The manifest API lets wrappers and deployment scripts discover archive, DOCX, Spreadsheet, CAD, Typst, and data-asset worker/WASM resources from the same core contract instead of hard-coding per-framework paths.
 
 Official documentation: https://doc.flyfish.dev/
 

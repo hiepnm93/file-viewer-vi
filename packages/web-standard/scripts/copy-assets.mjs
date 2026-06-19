@@ -27,8 +27,8 @@ if (isPostinstall && !packageDir.includes('node_modules')) {
   process.exit(0)
 }
 
-if (!existsSync(resolve(sourceDir, 'index.html'))) {
-  const message = `[file-viewer-web] Missing viewer build output: ${sourceDir}`
+if (!existsSync(sourceDir)) {
+  const message = `[file-viewer-web] Missing viewer asset output: ${sourceDir}`
   if (isPostinstall) {
     console.warn(message)
     process.exit(0)

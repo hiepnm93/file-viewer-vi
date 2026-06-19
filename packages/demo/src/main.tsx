@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import FileViewer from '@file-viewer/react'
-import { mountViewerFrame, type ViewerFrameController } from '@file-viewer/web'
+import { mountViewer, type ViewerController } from '@file-viewer/web'
 import './styles.css'
 
 const docxPreviewUrl = '/example/word.docx'
-const nestedViewerUrl = '/vendor/file-viewer/index.html'
-const directViewerUrl = `${nestedViewerUrl}?url=${encodeURIComponent(docxPreviewUrl)}`
 
 function WebViewerPanel() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -16,8 +14,7 @@ function WebViewerPanel() {
       return
     }
 
-    const controller: ViewerFrameController = mountViewerFrame(containerRef.current, {
-      viewerUrl: nestedViewerUrl,
+    const controller: ViewerController = mountViewer(containerRef.current, {
       url: docxPreviewUrl
     })
 
@@ -35,12 +32,9 @@ function App() {
       <header className="topbar">
         <div>
           <h1>Flyfish Viewer</h1>
-          <p>Private adapter smoke test</p>
+          <p>Native wrapper smoke test</p>
         </div>
         <nav className="topbar-actions" aria-label="Demo links">
-          <a href={directViewerUrl} target="_blank" rel="noreferrer">
-            Open viewer
-          </a>
           <a href="/manual-js.html" target="_blank" rel="noreferrer">
             Manual JS
           </a>
@@ -59,11 +53,11 @@ function App() {
         </nav>
       </header>
 
-      <section className="viewer-grid" aria-label="Adapter preview">
+      <section className="viewer-grid" aria-label="Wrapper preview">
         <article className="viewer-panel">
           <h2>React</h2>
           <div className="viewer-frame">
-            <FileViewer viewerUrl={nestedViewerUrl} url={docxPreviewUrl} data-testid="react-viewer" />
+            <FileViewer url={docxPreviewUrl} data-testid="react-viewer" />
           </div>
         </article>
 

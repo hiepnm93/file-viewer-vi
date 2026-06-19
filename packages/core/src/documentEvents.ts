@@ -10,10 +10,6 @@ import {
   createFileViewerDomSearchControllerActionHandlers,
   type FileViewerDomSearchControllerStateTarget,
 } from './documentSearch';
-import {
-  postFileViewerLocationChange,
-  postFileViewerSearchChange,
-} from './operations';
 import type {
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
@@ -40,15 +36,11 @@ export interface FileViewerDocumentChangeSnapshot {
 export interface DispatchFileViewerSearchChangeInput {
   state: FileViewerSearchState;
   onChange?: (state: FileViewerSearchState) => void;
-  targetOrigin?: string;
-  targetWindow?: Window | null;
 }
 
 export interface DispatchFileViewerLocationChangeInput {
   anchor: FileViewerDocumentAnchor | null;
   onChange?: (anchor: FileViewerDocumentAnchor | null) => void;
-  targetOrigin?: string;
-  targetWindow?: Window | null;
 }
 
 export interface FileViewerDocumentFeatureActionOptions {
@@ -72,8 +64,6 @@ export interface CreateFileViewerDocumentFeatureActionsInput {
   getAiOptions?: () => boolean | FileViewerAiOptions | undefined;
   onSearchChange?: (state: FileViewerSearchState) => void;
   onLocationChange?: (anchor: FileViewerDocumentAnchor | null) => void;
-  targetOrigin?: string;
-  targetWindow?: Window | null;
 }
 
 export interface FileViewerDocumentFeatureActions {
@@ -144,8 +134,6 @@ export const createFileViewerDocumentFeatureControllerActionHandlers = ({
   getAiOptions,
   onSearchChange,
   onLocationChange,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerDocumentFeatureControllerActionHandlersInput): FileViewerDocumentFeatureControllerActionHandlers => {
   let documentActions: FileViewerDocumentFeatureActions | null = null;
   const searchController = createFileViewerDomSearchController({
@@ -171,8 +159,6 @@ export const createFileViewerDocumentFeatureControllerActionHandlers = ({
     getAiOptions,
     onSearchChange,
     onLocationChange,
-    targetOrigin,
-    targetWindow,
   });
 
   return {
@@ -184,28 +170,18 @@ export const createFileViewerDocumentFeatureControllerActionHandlers = ({
 export const dispatchFileViewerSearchChange = ({
   state,
   onChange,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerSearchChangeInput) => {
   const payload = createFileViewerSearchChangeState(state);
   onChange?.(payload);
-  if (!targetWindow) {
-    return false;
-  }
-  return postFileViewerSearchChange(payload, targetOrigin, targetWindow);
+  return true;
 };
 
 export const dispatchFileViewerLocationChange = ({
   anchor,
   onChange,
-  targetOrigin = '*',
-  targetWindow = typeof window !== 'undefined' ? window : undefined,
 }: DispatchFileViewerLocationChangeInput) => {
   onChange?.(anchor);
-  if (!targetWindow) {
-    return false;
-  }
-  return postFileViewerLocationChange(anchor, targetOrigin, targetWindow);
+  return true;
 };
 
 export const createFileViewerDocumentFeatureActions = ({
@@ -214,8 +190,6 @@ export const createFileViewerDocumentFeatureActions = ({
   getAiOptions,
   onSearchChange,
   onLocationChange,
-  targetOrigin,
-  targetWindow,
 }: CreateFileViewerDocumentFeatureActionsInput): FileViewerDocumentFeatureActions => {
   const getRoot = () => root() || null;
   const getAnchors = () => searchController.getAnchors();
@@ -227,8 +201,6 @@ export const createFileViewerDocumentFeatureActions = ({
     dispatchFileViewerSearchChange({
       state,
       onChange: onSearchChange,
-      targetOrigin,
-      targetWindow,
     });
     return state;
   };
@@ -245,8 +217,6 @@ export const createFileViewerDocumentFeatureActions = ({
     dispatchFileViewerLocationChange({
       anchor,
       onChange: onLocationChange,
-      targetOrigin,
-      targetWindow,
     });
     return anchor;
   };

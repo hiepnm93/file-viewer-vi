@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Migration smoke coverage matrix for preserving the Vue 3 baseline experience while moving renderer logic into the shared TypeScript core.",
+  "description": "Migration smoke coverage matrix for preserving the v3 feature experience while moving shared logic into the TypeScript core browser renderer engine.",
   "coverage": {
     "requireAllRendererIds": true,
     "requiredFormatFamilies": [
@@ -27,7 +27,6 @@
   "surfaces": [
     "main-demo",
     "compare-page",
-    "iframe",
     "script-tag",
     "vue3",
     "vue2.7",
@@ -155,7 +154,7 @@
       "rendererId": "office-word-openxml",
       "extension": "docx",
       "sample": "word.docx",
-      "surfaces": ["main-demo", "iframe"],
+      "surfaces": ["main-demo", "script-tag"],
       "assertions": ["load-complete", "paper-layout", "search", "zoom", "print-capability", "export-html"]
     },
     {
@@ -200,7 +199,7 @@
       "rendererId": "pdf",
       "extension": "pdf",
       "sample": "pdf.pdf",
-      "surfaces": ["main-demo", "compare-page", "iframe"],
+      "surfaces": ["main-demo", "compare-page", "script-tag"],
       "assertions": ["load-complete", "page-navigation", "outline-or-thumbnails", "search", "zoom", "print-capability"]
     },
     {

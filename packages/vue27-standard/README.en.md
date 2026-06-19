@@ -1,9 +1,9 @@
 # @file-viewer/vue2.7
 
-The standard Vue 2.7 wrapper for Flyfish File Viewer. It supports both `Vue.use()` plugin installation and local component registration. Internally it reuses the `@file-viewer/web` iframe protocol, the shared `@file-viewer/core` runtime, and the same production viewer assets.
+The standard Vue 2.7 native wrapper for Flyfish File Viewer. It supports both `Vue.use()` plugin installation and local component registration. Internally it mounts the complete viewer through its local controller on top of `@file-viewer/core` and the core browser engine, without depending on another wrapper.
 
 ```bash
-npm install vue@2.7 @file-viewer/vue2.7 @file-viewer/web
+npm install vue@2.7 @file-viewer/vue2.7
 ```
 
 ## Global Installation
@@ -31,12 +31,6 @@ Vue.use(FileViewerPlugin)
 </template>
 ```
 
-The default viewer entry is `/file-viewer/index.html`. Copy the viewer assets into your public directory with the command provided by `@file-viewer/web`:
-
-```bash
-npx file-viewer-copy-assets ./public/file-viewer
-```
-
 ## Local Component
 
 ```ts
@@ -52,14 +46,13 @@ export default {
 ```ts
 const viewer = this.$refs.viewer
 viewer.reload()
-viewer.postFile()
 viewer.update({ url: '/example/report.docx' })
 viewer.destroy()
 ```
 
 ## Capabilities
 
-`@file-viewer/vue2.7` shares the same `@file-viewer/core` capabilities and baseline viewer as the pure web and Vue 3 wrappers, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets.
+`@file-viewer/vue2.7` shares the same `@file-viewer/core` capabilities, core browser engine, and format matrix as the other standard wrappers, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets.
 
 See the official documentation for the full format matrix, options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish.dev/
 
@@ -68,7 +61,7 @@ Chinese README: [README.md](./README.md).
 <!-- FILE_VIEWER_GENERATED:START -->
 ## Ecosystem Matrix
 
-Every wrapper reuses the same `@file-viewer/core` / `@file-viewer/web` foundation. Core source stays in the private Gitea repository, while wrappers are prepared for public GitHub/Gitee distribution.
+Every standard wrapper shares `@file-viewer/core` as the only common foundation, and no wrapper depends on another wrapper. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework wrapper owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.
 
 | Framework | Standard npm package | Entrypoints | GitHub | Gitee | Historical aliases |
 | --- | --- | --- | --- | --- | --- |
@@ -77,13 +70,13 @@ Every wrapper reuses the same `@file-viewer/core` / `@file-viewer/web` foundatio
 | Vue 2.6 | `@file-viewer/vue2.6` | ESM, type declarations | [file-viewer-vue2.6](https://github.com/flyfish-dev/file-viewer-vue2.6) | [file-viewer-vue2.6](https://gitee.com/flyfish-dev/file-viewer-vue2.6) | none |
 | React 18/19 | `@file-viewer/react` | ESM, type declarations | [file-viewer-react](https://github.com/flyfish-dev/file-viewer-react) | [file-viewer-react](https://gitee.com/flyfish-dev/file-viewer-react) | `@flyfish-group/file-viewer-react` |
 | React 16.8/17 | `@file-viewer/react-legacy` | ESM, type declarations | [file-viewer-react-legacy](https://github.com/flyfish-dev/file-viewer-react-legacy) | [file-viewer-react-legacy](https://gitee.com/flyfish-dev/file-viewer-react-legacy) | none |
-| Pure Web | `@file-viewer/web` | ESM, type declarations, script tag IIFE, bundled viewer assets, asset copy CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
+| Pure Web | `@file-viewer/web` | ESM, type declarations, script tag IIFE, worker/WASM viewer assets, asset copy CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
 | jQuery | `@file-viewer/jquery` | ESM, type declarations | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | none |
 | Svelte | `@file-viewer/svelte` | Svelte component, ESM, type declarations | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | none |
 
 ## Format Support Matrix
 
-The shared runtime currently covers 23 preview pipelines and 194 file extensions. Renderers stay lazy-loaded, so wrapper packages do not duplicate heavy preview logic.
+The shared core currently covers 23 preview pipelines and 194 file extensions. Renderers stay lazy-loaded, and wrapper packages only adapt their own ecosystem without nesting through another wrapper.
 
 | Preview pipeline | Category | Extensions | Capabilities | Loading |
 | --- | --- | --- | --- | --- |

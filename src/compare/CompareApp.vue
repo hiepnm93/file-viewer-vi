@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
-import { FileViewer } from '@/package'
+import { FileViewer } from '@file-viewer/vue3'
 import type {
   FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,

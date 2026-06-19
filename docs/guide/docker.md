@@ -16,7 +16,7 @@ docker run -d \
   --name flyfish-viewer \
   --restart unless-stopped \
   -p 8080:80 \
-  flyfishdev/file-viewer:1.0.26
+  flyfishdev/file-viewer:2.0.0
 ```
 
 打开:
@@ -40,7 +40,7 @@ docker run -d \
 ```yaml
 services:
   flyfish-viewer:
-    image: flyfishdev/file-viewer:1.0.26
+    image: flyfishdev/file-viewer:2.0.0
     container_name: flyfish-viewer
     restart: unless-stopped
     ports:
@@ -75,7 +75,7 @@ DOCKER_IMAGE=your-org/file-viewer pnpm docker:build
 本地运行:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.26
+docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.0
 ```
 
 ## 通过 Docker Hub API 创建仓库
@@ -107,7 +107,7 @@ DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
 
 脚本默认推送两个标签:
 
-- `flyfishdev/file-viewer:1.0.26`
+- `flyfishdev/file-viewer:2.0.0`
 - `flyfishdev/file-viewer:latest`
 
 如需覆盖平台或标签:
@@ -115,7 +115,7 @@ DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
 ```bash
 DOCKER_IMAGE=flyfishdev/file-viewer \
 DOCKER_PLATFORMS=linux/amd64,linux/arm64 \
-DOCKER_TAGS=1.0.26,latest \
+DOCKER_TAGS=2.0.0,latest \
 pnpm docker:publish
 ```
 
@@ -127,7 +127,7 @@ Docker 镜像只包含构建后的静态产物，不包含源码目录:
 - `/usr/share/nginx/html/compare.html`: 文档比对入口
 - `/usr/share/nginx/html/assets/*`: Vite hash 资源
 - `/usr/share/nginx/html/example/*`: 示例文件
-- `/usr/share/nginx/html/vendor/*`: Worker / WASM 等静态运行时资源
+- `/usr/share/nginx/html/vendor/*`: Worker / WASM 等静态资源
 
 nginx 配置会对 HTML 使用 `max-age=0, must-revalidate`，对 hash 资源和 vendor 资源使用长缓存，避免旧入口页引用已经不存在的异步 chunk。
 

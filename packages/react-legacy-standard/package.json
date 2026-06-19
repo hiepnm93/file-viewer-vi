@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/react-legacy",
-  "version": "1.0.26",
+  "version": "2.0.0",
   "private": false,
   "type": "module",
   "description": "Standard React 16/17 legacy wrapper for Flyfish File Viewer",
@@ -9,7 +9,7 @@
     "document-preview",
     "react",
     "react-legacy",
-    "iframe",
+    "native-viewer",
     "office-preview"
   ],
   "publishConfig": {
@@ -53,7 +53,7 @@
     "react": ">=16.8 <18"
   },
   "dependencies": {
-    "@file-viewer/web": "workspace:^1.0.26"
+    "@file-viewer/core": "workspace:^2.0.0"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",

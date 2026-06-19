@@ -12,7 +12,6 @@ if (!host) {
 createApp({
   render() {
     return h(FileViewer, {
-      viewerUrl: '/vendor/file-viewer/index.html',
       url: '/example/preview.md',
       options: {
         theme: 'light',
@@ -24,4 +23,4 @@ createApp({
   }
 }).use(FileViewerPlugin).mount(host)
 
-document.body.setAttribute('data-adapter', 'vue3')
+document.body.setAttribute('data-wrapper', 'vue3')

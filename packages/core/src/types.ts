@@ -74,12 +74,19 @@ export interface FileViewerPdfOptions {
   streaming?: boolean | 'same-origin';
   rangeChunkSize?: number;
   withCredentials?: boolean;
+  workerUrl?: string;
 }
 
 export interface FileViewerDocxOptions {
   worker?: boolean;
+  workerUrl?: string;
   progressive?: boolean;
   workerTimeout?: number;
+}
+
+export interface FileViewerSpreadsheetOptions {
+  worker?: boolean;
+  workerUrl?: string;
 }
 
 export type FileRenderExportMode = 'export' | 'print';
@@ -105,6 +112,12 @@ export interface FileRenderContext {
   options?: FileViewerOptions;
   registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
   onProgressiveRender?: () => void;
+  renderNestedBuffer?: (
+    buffer: ArrayBuffer,
+    type: string,
+    target: HTMLDivElement,
+    context?: FileRenderContext
+  ) => Promise<FileViewerRenderedInstance | undefined>;
 }
 
 export type FileRenderHandler<
@@ -148,6 +161,11 @@ export type FileViewerRenderedInstance =
 
 export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
+  rendererWasmUrl?: string;
+}
+
+export interface FileViewerDataOptions {
+  sqlWasmUrl?: string;
 }
 
 export type FileViewerCadRenderer = 'auto' | 'webgl' | 'canvas2d';
@@ -208,7 +226,9 @@ export interface FileViewerOptions {
   archive?: FileViewerArchiveOptions;
   pdf?: FileViewerPdfOptions;
   docx?: FileViewerDocxOptions;
+  spreadsheet?: FileViewerSpreadsheetOptions;
   typst?: FileViewerTypstOptions;
+  data?: FileViewerDataOptions;
   cad?: FileViewerCadOptions;
   hooks?: FileViewerLifecycleHooks;
   beforeOperation?: FileViewerBeforeOperation;
@@ -356,6 +376,17 @@ export interface FileViewerComponentEventMap {
   'location-change': FileViewerDocumentAnchor | null;
   'zoom-change': FileViewerZoomState;
 }
+
+export type FileViewerEventType = keyof FileViewerComponentEventMap;
+
+export type FileViewerEvent = {
+  [EventType in FileViewerEventType]: {
+    type: EventType;
+    payload: FileViewerComponentEventMap[EventType];
+  };
+}[FileViewerEventType];
+
+export type FileViewerEventHandler = (event: FileViewerEvent) => void;
 
 export interface FileViewerComponentEmits {
   (event: 'load-start', context: FileViewerComponentEventMap['load-start']): void;

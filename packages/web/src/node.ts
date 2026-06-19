@@ -14,7 +14,7 @@ export interface CopyViewerAssetsOptions {
    */
   targetDir?: string
   /**
-   * 覆盖默认 viewer 源目录，主要用于测试或内部发布流程。
+   * 覆盖默认静态资源源目录，主要用于测试或内部发布流程。
    */
   sourceDir?: string
   /**
@@ -25,7 +25,7 @@ export interface CopyViewerAssetsOptions {
 
 export interface ValidateViewerAssetsOptions {
   /**
-   * viewer 静态目录。默认使用当前包随带的 `viewer/`。
+   * 静态资源目录。默认使用当前包随带的 `viewer/`。
    */
   sourceDir?: string
 }
@@ -74,7 +74,7 @@ export interface ViewerAssetManifestFile {
 export interface CopyViewerAssetsResult {
   sourceDir: string
   targetDir: string
-  viewerUrl: string
+  assetBaseUrl: string
   assetManifestPath: string
   validation: ViewerAssetValidationResult
 }
@@ -83,7 +83,7 @@ const distDir = dirname(fileURLToPath(import.meta.url))
 const packageDir = resolve(distDir, '..')
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = 'public/file-viewer'
-export const DEFAULT_VIEWER_PUBLIC_URL = '/file-viewer/index.html'
+export const DEFAULT_VIEWER_ASSET_BASE_URL = '/file-viewer/'
 export const VIEWER_ASSET_MANIFEST_FILENAME = 'flyfish-viewer-assets.json'
 
 export const getViewerAssetDir = () => resolve(packageDir, 'viewer')
@@ -203,8 +203,8 @@ export const copyViewerAssets = async (
   const sourceDir = resolve(options.sourceDir || getViewerAssetDir())
   const targetDir = resolve(options.targetDir || getDefaultViewerTargetDir())
 
-  if (!existsSync(resolve(sourceDir, 'index.html'))) {
-    throw new Error(`缺少 viewer 构建产物: ${sourceDir}`)
+  if (!existsSync(sourceDir)) {
+    throw new Error(`缺少 viewer 静态资源产物: ${sourceDir}`)
   }
 
   if (options.clean !== false) {
@@ -224,13 +224,13 @@ export const copyViewerAssets = async (
     const missing = validation.missingRequired
       .map(asset => `${asset.rendererId}:${asset.relativePath}`)
       .join(', ')
-    throw new Error(`viewer 静态产物缺少必要资源: ${missing}`)
+    throw new Error(`viewer 静态资源缺少必要文件: ${missing}`)
   }
 
   return {
     sourceDir,
     targetDir,
-    viewerUrl: DEFAULT_VIEWER_PUBLIC_URL,
+    assetBaseUrl: DEFAULT_VIEWER_ASSET_BASE_URL,
     assetManifestPath,
     validation
   }

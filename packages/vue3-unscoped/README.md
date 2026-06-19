@@ -1,6 +1,6 @@
 # file-viewer3
 
-`file-viewer3` 是历史非 scoped 兼容包，内部仅 re-export `@flyfish-group/file-viewer3`。新项目建议优先使用标准包名 `@file-viewer/vue3`。
+`file-viewer3` 是历史非 scoped 兼容包，内部仅 re-export `@file-viewer/vue3`。新项目建议优先使用标准包名 `@file-viewer/vue3`。
 
 ```bash
 npm install file-viewer3

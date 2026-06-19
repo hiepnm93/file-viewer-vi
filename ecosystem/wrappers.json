@@ -6,14 +6,69 @@
     "packageName": "@file-viewer/core",
     "visibility": "private-source",
     "sourceRepository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
-    "note": "Core source remains in the private Gitea repository. Public wrapper repositories depend on the published package and generated artifacts only."
+    "corePolicy": "framework-neutral-low-level-core-only",
+    "note": "Core source remains in the private Gitea repository and exposes low-level TypeScript contracts, controllers, operations, source loading, registry, search, zoom, print, export and format metadata. Public wrappers own their framework lifecycle and never depend on another wrapper implementation."
   },
+  "compatibilityPackages": [
+    {
+      "id": "vue3-compat-scoped",
+      "packageName": "@flyfish-group/file-viewer3",
+      "targetPackage": "@file-viewer/vue3",
+      "packageDir": "packages/vue3-compat",
+      "publicSource": false,
+      "publicArtifact": {
+        "includeTarball": true
+      }
+    },
+    {
+      "id": "vue3-compat-unscoped",
+      "packageName": "file-viewer3",
+      "targetPackage": "@file-viewer/vue3",
+      "packageDir": "packages/vue3-unscoped",
+      "publicSource": false,
+      "publicArtifact": {
+        "includeTarball": false,
+        "duplicateOf": "@flyfish-group/file-viewer3",
+        "reason": "The public artifact repository keeps one Vue 3 compatibility tarball to avoid duplicate package bodies; the unscoped alias is still published to npm."
+      }
+    },
+    {
+      "id": "vue27-compat-scoped",
+      "packageName": "@flyfish-group/file-viewer",
+      "targetPackage": "@file-viewer/vue2.7",
+      "packageDir": "packages/vue27-compat",
+      "publicSource": false,
+      "publicArtifact": {
+        "includeTarball": true
+      }
+    },
+    {
+      "id": "web-compat",
+      "packageName": "@flyfish-group/file-viewer-web",
+      "targetPackage": "@file-viewer/web",
+      "packageDir": "packages/web",
+      "publicSource": false,
+      "publicArtifact": {
+        "includeTarball": true
+      }
+    },
+    {
+      "id": "react-compat",
+      "packageName": "@flyfish-group/file-viewer-react",
+      "targetPackage": "@file-viewer/react",
+      "packageDir": "packages/react",
+      "publicSource": false,
+      "publicArtifact": {
+        "includeTarball": true
+      }
+    }
+  ],
   "wrappers": [
     {
       "id": "vue3",
       "framework": "Vue 3",
       "packageName": "@file-viewer/vue3",
-      "packageDir": "packages/vue3-standard",
+      "packageDir": "packages/vue3",
       "repository": "file-viewer-vue3",
       "github": "https://github.com/flyfish-dev/file-viewer-vue3",
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue3",

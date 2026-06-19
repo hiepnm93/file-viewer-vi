@@ -16,7 +16,7 @@ describe('@file-viewer/core option serialization helpers', () => {
     expect(normalizeFileViewerTheme(undefined)).toBe('system')
   })
 
-  it('serializes iframe-safe options without runtime-only hooks', () => {
+  it('serializes execution-safe options without hook-only hooks', () => {
     const serialized = serializeFileViewerOptions({
       theme: 'light',
       toolbar: {
@@ -93,7 +93,7 @@ describe('@file-viewer/core option serialization helpers', () => {
     expect(params.has('options')).toBe(false)
   })
 
-  it('returns undefined for empty or runtime-only option objects', () => {
+  it('returns undefined for empty or hook-only option objects', () => {
     expect(sanitizeFileViewerOptions(undefined)).toBeUndefined()
     expect(sanitizeFileViewerOptions({
       hooks: {

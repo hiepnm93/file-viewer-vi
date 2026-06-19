@@ -1,47 +1,41 @@
 import {
-  mountViewerFrame,
-  type CreateViewerFrameOptions,
-  type ViewerFrameController,
-  type ViewerFrameOptions
-} from '@file-viewer/web'
+  type ViewerController,
+  type ViewerMountOptions,
+  type ViewerCoreOptions,
+  mountViewer as mountCoreViewer
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
-  CreateViewerFrameOptions,
   FileRef,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
   ViewerDocxOptions,
-  ViewerDirectFrameHandle,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerMountedFrameHandle,
-  ViewerFrameController,
-  ViewerFrameControllerHandle,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameOptions,
-  ViewerFrameParamValue,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
   ViewerPdfOptions,
-  ViewerRuntimeOptions,
+  ViewerSpreadsheetOptions,
   ViewerSearchOptions,
+  ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
   ViewerWatermarkOptions
-} from '@file-viewer/web'
+} from './controller.js'
 
-export interface FileViewerSvelteActionOptions extends CreateViewerFrameOptions {
+export interface FileViewerSvelteActionOptions extends ViewerMountOptions {
   /**
-   * Clear the container before mounting a fresh iframe. Enabled by default.
+   * Clear the container before mounting a fresh native viewer. Enabled by default.
    */
   replace?: boolean
 }
@@ -57,12 +51,21 @@ const clearContainer = (node: HTMLElement) => {
   node.innerHTML = ''
 }
 
+export const mountViewer = (
+  container: HTMLElement,
+  options: ViewerMountOptions = {},
+  coreOptions: ViewerCoreOptions = {}
+) => mountCoreViewer(container, options, {
+  registry: fileViewerCoreRendererRegistry,
+  ...coreOptions
+})
+
 export const fileViewer = (
   node: HTMLElement,
   initialOptions: FileViewerSvelteActionOptions = {}
 ): FileViewerSvelteActionReturn => {
   let options = initialOptions
-  let controller: ViewerFrameController | null = null
+  let controller: ViewerController | null = null
 
   const mount = () => {
     if (!canUseDom()) {
@@ -84,7 +87,7 @@ export const fileViewer = (
     }
 
     const { replace: _replace, ...viewerOptions } = options
-    controller = mountViewerFrame(node, viewerOptions)
+    controller = mountViewer(node, viewerOptions)
   }
 
   mount()
@@ -94,7 +97,7 @@ export const fileViewer = (
       options = { ...options, ...nextOptions }
       if (controller) {
         const { replace: _replace, ...viewerOptions } = options
-        controller.update(viewerOptions as ViewerFrameOptions)
+        controller.update(viewerOptions)
         return
       }
       mount()
@@ -109,5 +112,4 @@ export const fileViewer = (
   }
 }
 
-export { mountViewerFrame }
 export default fileViewer

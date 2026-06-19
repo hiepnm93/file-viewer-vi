@@ -1,79 +1,74 @@
 <script>
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { createViewerMountedFrameHandle, mountViewerFrame, toViewerFrameOptions } from '@file-viewer/web'
+  import { createViewerControllerHandle, mountViewer as mountCoreViewer } from './controller.js'
+  import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
-  export let viewerUrl = undefined
   export let url = undefined
   export let file = undefined
+  export let buffer = undefined
   export let name = undefined
-  export let from = undefined
-  export let targetOrigin = undefined
-  export let params = undefined
-  export let cacheKey = undefined
+  export let filename = undefined
+  export let type = undefined
+  export let size = undefined
   export let options = undefined
-  export let onViewerEvent = undefined
+  export let onEvent = undefined
   export let className = ''
   export let containerStyle = ''
-  export let iframeClassName = undefined
-  export let iframeStyle = undefined
-  export let iframeTitle = undefined
 
   const dispatch = createEventDispatcher()
   let container
   let controller = null
+  const viewerCoreOptions = {
+    registry: fileViewerCoreRendererRegistry
+  }
 
-  $: frameOptions = toViewerFrameOptions({
-    viewerUrl,
+  $: viewerOptions = {
     url,
     file,
+    buffer,
     name,
-    from,
-    targetOrigin,
-    params,
-    cacheKey,
+    filename,
+    type,
+    size,
     options,
-    onViewerEvent,
-    iframeClassName,
-    iframeStyle,
-    iframeTitle
-  }, {
-    onEvent(payload, event) {
-      dispatch('viewerEvent', { payload, event })
+    onEvent(event) {
+      onEvent?.(event)
+      dispatch('viewerEvent', event)
     }
-  })
+  }
 
   const dispose = () => {
     controller?.destroy()
     controller = null
   }
 
-  const handle = createViewerMountedFrameHandle(() => controller, dispose)
+  const handle = createViewerControllerHandle(() => controller, dispose)
 
   onMount(() => {
-    controller = mountViewerFrame(container, frameOptions)
+    controller = mountCoreViewer(container, viewerOptions, viewerCoreOptions)
     return dispose
   })
 
   onDestroy(dispose)
 
   $: if (controller) {
-    controller.update(frameOptions)
+    controller.update(viewerOptions)
   }
 
   export function getController() {
     return handle.getController()
   }
 
-  export function getIframe() {
-    return handle.getIframe()
+  export function getApi() {
+    return handle.getApi()
+  }
+
+  export function load(nextOptions) {
+    return handle.load(nextOptions)
   }
 
   export function update(nextOptions) {
     return handle.update(nextOptions)
-  }
-
-  export function postFile() {
-    return handle.postFile()
   }
 
   export function reload() {

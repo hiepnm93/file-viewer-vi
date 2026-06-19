@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL,
+  DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH,
   DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL,
+  DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL,
   resolveFileViewerArchiveWasmUrl,
   resolveFileViewerArchiveWorkerUrl,
   resolveFileViewerAssetUrl,
   resolveFileViewerCadAssetUrls,
-  resolveFileViewerTypstCompilerWasmUrl
+  resolveFileViewerDataSqlWasmUrl,
+  resolveFileViewerDocxWorkerUrl,
+  resolveFileViewerSpreadsheetWorkerUrl,
+  resolveFileViewerTypstCompilerWasmUrl,
+  resolveFileViewerTypstRendererWasmUrl
 } from '../packages/core/src'
 
 describe('@file-viewer/core asset URL helpers', () => {
@@ -52,9 +60,43 @@ describe('@file-viewer/core asset URL helpers', () => {
     })
   })
 
+  it('resolves optional DOCX worker URLs', () => {
+    expect(resolveFileViewerDocxWorkerUrl(undefined, 'https://viewer.example.com/app/index.html')).toBe(
+      `https://viewer.example.com/app/${DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH}`
+    )
+    expect(resolveFileViewerDocxWorkerUrl({
+      workerUrl: 'https://cdn.example.com/file-viewer/docx.worker.js'
+    }, 'https://viewer.example.com/app/index.html')).toBe(
+      'https://cdn.example.com/file-viewer/docx.worker.js'
+    )
+  })
+
+  it('resolves optional Spreadsheet worker URLs', () => {
+    expect(resolveFileViewerSpreadsheetWorkerUrl(undefined, 'https://viewer.example.com/app/index.html')).toBe(
+      `https://viewer.example.com/app/${DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH}`
+    )
+    expect(resolveFileViewerSpreadsheetWorkerUrl({
+      workerUrl: 'https://cdn.example.com/file-viewer/sheet.worker.js'
+    }, 'https://viewer.example.com/app/index.html')).toBe(
+      'https://cdn.example.com/file-viewer/sheet.worker.js'
+    )
+  })
+
   it('resolves Typst compiler WASM URL from explicit, override, then default sources', () => {
     expect(resolveFileViewerTypstCompilerWasmUrl({ compilerWasmUrl: '/typst/compiler.wasm' })).toBe('/typst/compiler.wasm')
     expect(resolveFileViewerTypstCompilerWasmUrl(undefined, [undefined, '/env/compiler.wasm'])).toBe('/env/compiler.wasm')
     expect(resolveFileViewerTypstCompilerWasmUrl()).toBe(DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL)
+  })
+
+  it('resolves Typst renderer WASM URL from explicit, override, then default sources', () => {
+    expect(resolveFileViewerTypstRendererWasmUrl({ rendererWasmUrl: '/typst/renderer.wasm' })).toBe('/typst/renderer.wasm')
+    expect(resolveFileViewerTypstRendererWasmUrl(undefined, [undefined, '/env/renderer.wasm'])).toBe('/env/renderer.wasm')
+    expect(resolveFileViewerTypstRendererWasmUrl()).toBe(DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL)
+  })
+
+  it('resolves data asset SQL WASM URL from explicit, override, then default sources', () => {
+    expect(resolveFileViewerDataSqlWasmUrl({ sqlWasmUrl: '/sql/sql-wasm.wasm' })).toBe('/sql/sql-wasm.wasm')
+    expect(resolveFileViewerDataSqlWasmUrl(undefined, [undefined, '/env/sql-wasm.wasm'])).toBe('/env/sql-wasm.wasm')
+    expect(resolveFileViewerDataSqlWasmUrl()).toBe(DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL)
   })
 })

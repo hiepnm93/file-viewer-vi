@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 标准 npm 包是 `@file-viewer/vue3@1.0.26`，历史包名 `@flyfish-group/file-viewer3@1.0.26` 会继续同步维护。Vue3 构建产物也是 React、纯 JS 和 iframe 私有化方案的统一预览基线。
+当前 Vue3 标准 npm 包是 `@file-viewer/vue3@2.0.0`，历史包名 `@flyfish-group/file-viewer3@2.0.0` 会继续同步维护。Vue3 wrapper 直接使用共享 core 能力，并提供 Vue 插件、组件 props、ref API 和类型出口。
 
 ## 安装
 
@@ -161,7 +161,7 @@ file.value = new File([blob], 'contract.pdf', { type: blob.type })
 
 ### URL 方案要注意 CORS
 
-如果你使用 `url` 参数，本质上是在浏览器里请求目标文件。只要文件地址不可直接访问，或者服务端没有返回正确的跨域头，预览就会失败。这种场景建议切换到 `file` 参数，或者直接使用 iframe 独立部署方案。
+如果你使用 `url` 参数，本质上是在浏览器里请求目标文件。只要文件地址不可直接访问，或者服务端没有返回正确的跨域头，预览就会失败。这种场景建议由业务侧先完成鉴权下载，再切换到 `file` 参数。
 
 ### 局部注册也可以
 
@@ -173,8 +173,8 @@ import { FileViewer } from '@file-viewer/vue3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.26`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@file-viewer/vue2.7@2.0.0` 或历史包名 `@flyfish-group/file-viewer@2.0.0`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和运行参数保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 
-如果你正在做的是统一附件中心、多个系统共用一套预览器，或者担心解析依赖进入业务包后带来维护成本，建议直接看 [Iframe 嵌入](/guide/iframe)。
+如果你正在做的是统一附件中心或多个系统共用预览能力，建议先统一到 core + wrapper 的包线管理: Vue、React、纯 JS、jQuery、Svelte 使用同一套 options、事件和文件输入语义，业务侧只需要按技术栈选择对应 wrapper。

@@ -1,63 +1,58 @@
 import Vue from 'vue'
 import type { CreateElement, PluginObject, VueConstructor, VNode } from 'vue'
 import {
-  createViewerMountedFrameHandle,
-  mountViewerFrame,
-  toViewerFrameOptions,
-  type CreateViewerFrameOptions,
-  type ViewerFrameHostComponentProps,
-  type ViewerMountedFrameHandle,
-  type ViewerFrameController,
-  type ViewerFrameEventPayload,
-  type ViewerFrameOptions,
-} from '@file-viewer/web'
+  createViewerControllerHandle,
+  mountViewer,
+  type ViewerController,
+  type ViewerControllerHandle,
+  type ViewerEvent,
+  type ViewerMountOptions,
+  type ViewerCoreOptions,
+} from './controller.js'
+import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
-  CreateViewerFrameOptions,
   FileRef,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
+  ViewerController,
+  ViewerControllerAccessor,
+  ViewerControllerHandle,
   ViewerDocxOptions,
-  ViewerDirectFrameHandle,
-  ViewerFrameComponentBridgeOptions,
-  ViewerFrameComponentProps,
-  ViewerFrameContainerComponentProps,
-  ViewerFrameControllerAccessor,
-  ViewerFrameHostComponentProps,
-  ViewerFrameIframeComponentProps,
-  ViewerMountedFrameHandle,
-  ViewerFrameController,
-  ViewerFrameControllerHandle,
-  ViewerFrameEventHandler,
-  ViewerFrameEventPayload,
-  ViewerFrameEventType,
-  ViewerFrameFilePostController,
-  ViewerFrameFilePostControllerOptions,
-  ViewerFrameOptions,
-  ViewerFrameParamValue,
+  ViewerEvent,
+  ViewerEventHandler,
+  ViewerEventType,
+  ViewerFetchFile,
+  ViewerFetchInput,
+  ViewerMountOptions,
+  ViewerOptions,
   ViewerPdfOptions,
-  ViewerRuntimeOptions,
+  ViewerSpreadsheetOptions,
   ViewerSearchOptions,
+  ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
   ViewerWatermarkOptions
-} from '@file-viewer/web'
+} from './controller.js'
 
 export interface FileViewerVue26PluginOptions {
   componentName?: string
 }
 
-export interface FileViewerVue26PublicInstance extends Vue, ViewerMountedFrameHandle {}
+export interface FileViewerVue26PublicInstance extends Vue, ViewerControllerHandle {}
 
-interface FileViewerVue26Props extends ViewerFrameHostComponentProps {}
+interface FileViewerVue26Props extends ViewerMountOptions {
+  containerClass?: unknown
+  containerStyle?: unknown
+}
 
 type FileViewerVue26Vm = Vue & FileViewerVue26Props & {
-  controller: ViewerFrameController | null
-  getFrameOptions(): CreateViewerFrameOptions
-  handleViewerEvent(payload: ViewerFrameEventPayload, event: MessageEvent): void
+  controller: ViewerController | null
+  getViewerOptions(): ViewerMountOptions
+  handleViewerEvent(event: ViewerEvent): void
   mountViewer(): void
   updateViewer(): void
   disposeViewer(): void
@@ -69,33 +64,33 @@ const defaultContainerStyle = {
   minHeight: '0'
 }
 
+const viewerCoreOptions: ViewerCoreOptions = {
+  registry: fileViewerCoreRendererRegistry
+}
+
 const toVm = (value: Vue) => value as FileViewerVue26Vm
-const getVmHandle = (vm: FileViewerVue26Vm): ViewerMountedFrameHandle => {
-  return createViewerMountedFrameHandle(() => vm.controller, () => vm.disposeViewer())
+const getVmHandle = (vm: FileViewerVue26Vm): ViewerControllerHandle => {
+  return createViewerControllerHandle(() => vm.controller, () => vm.disposeViewer())
 }
 
 export const FileViewer = Vue.extend({
   name: 'FileViewer',
   props: {
-    viewerUrl: String,
     url: String,
     file: null,
+    buffer: null,
     name: String,
-    from: String,
-    targetOrigin: String,
-    params: Object,
-    cacheKey: [String, Boolean],
+    filename: String,
+    type: String,
+    size: Number,
     options: Object,
-    onViewerEvent: Function,
-    iframeClassName: String,
-    iframeStyle: Object,
-    iframeTitle: String,
+    onEvent: Function,
     containerClass: [String, Array, Object],
     containerStyle: [String, Array, Object]
   } as any,
   data() {
     return {
-      controller: null as ViewerFrameController | null
+      controller: null as ViewerController | null
     }
   },
   mounted() {
@@ -105,38 +100,36 @@ export const FileViewer = Vue.extend({
     toVm(this).disposeViewer()
   },
   watch: {
-    viewerUrl: 'updateViewer',
     url: 'updateViewer',
     file: 'updateViewer',
+    buffer: 'updateViewer',
     name: 'updateViewer',
-    from: 'updateViewer',
-    targetOrigin: 'updateViewer',
-    cacheKey: 'updateViewer',
-    iframeClassName: 'updateViewer',
-    iframeTitle: 'updateViewer',
-    params: {
-      handler: 'updateViewer',
-      deep: true
-    },
+    filename: 'updateViewer',
+    type: 'updateViewer',
+    size: 'updateViewer',
     options: {
-      handler: 'updateViewer',
-      deep: true
-    },
-    iframeStyle: {
       handler: 'updateViewer',
       deep: true
     }
   },
   methods: {
-    getFrameOptions(): CreateViewerFrameOptions {
+    getViewerOptions(): ViewerMountOptions {
       const vm = toVm(this)
-      return toViewerFrameOptions(vm, {
-        onEvent: (payload, event) => vm.handleViewerEvent(payload, event)
-      })
+      return {
+        url: vm.url,
+        file: vm.file,
+        buffer: vm.buffer,
+        name: vm.name,
+        filename: vm.filename,
+        type: vm.type,
+        size: vm.size,
+        options: vm.options,
+        onEvent: event => vm.handleViewerEvent(event)
+      }
     },
-    handleViewerEvent(payload: ViewerFrameEventPayload, event: MessageEvent) {
-      this.$emit('viewer-event', { payload, event })
-      this.$emit('viewerEvent', payload, event)
+    handleViewerEvent(event: ViewerEvent) {
+      this.$emit('viewer-event', event)
+      this.$emit('viewerEvent', event)
     },
     mountViewer() {
       const vm = toVm(this)
@@ -144,12 +137,12 @@ export const FileViewer = Vue.extend({
       if (!container || vm.controller) {
         return
       }
-      vm.controller = mountViewerFrame(container, vm.getFrameOptions())
+      vm.controller = mountViewer(container, vm.getViewerOptions(), viewerCoreOptions)
     },
     updateViewer() {
       const vm = toVm(this)
       if (vm.controller) {
-        vm.controller.update(vm.getFrameOptions())
+        vm.controller.update(vm.getViewerOptions())
         return
       }
       vm.mountViewer()
@@ -162,17 +155,17 @@ export const FileViewer = Vue.extend({
     getController() {
       return getVmHandle(toVm(this)).getController()
     },
-    getIframe() {
-      return getVmHandle(toVm(this)).getIframe()
+    getApi() {
+      return getVmHandle(toVm(this)).getApi()
     },
-    update(options: ViewerFrameOptions) {
+    load(options: ViewerMountOptions) {
+      return getVmHandle(toVm(this)).load(options)
+    },
+    update(options: ViewerMountOptions) {
       return getVmHandle(toVm(this)).update(options)
     },
-    postFile() {
-      return getVmHandle(toVm(this)).postFile()
-    },
     reload() {
-      getVmHandle(toVm(this)).reload()
+      return getVmHandle(toVm(this)).reload()
     },
     destroy() {
       getVmHandle(toVm(this)).destroy()

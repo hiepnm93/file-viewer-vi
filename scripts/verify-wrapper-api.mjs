@@ -1,62 +1,86 @@
 import { constants } from 'node:fs'
-import { access, readFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { access, readFile, readdir } from 'node:fs/promises'
+import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext } from './lib/ecosystem-packages.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 const { wrapperManifest } = await loadEcosystemReleaseContext(sourceRoot)
+const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs', '.svelte'])
+const standardWrapperPackageNames = new Set(wrapperManifest.wrappers.map(wrapper => wrapper.packageName))
 
-const sharedFrameProps = [
-  'viewerUrl',
-  'url',
-  'file',
-  'name',
-  'from',
-  'targetOrigin',
-  'params',
-  'cacheKey',
-  'options',
-  'onViewerEvent'
-]
-
-const sharedControllerMethods = [
-  'getController',
+const forbiddenLegacyTokens = [
+  'buildViewerSrc',
+  'createViewerFrame',
+  'createViewerFrameControllerHandle',
+  'createViewerFrameFilePostController',
   'getIframe',
-  'update',
+  'isViewerFrameEvent',
+  'mountViewerFrame',
   'postFile',
-  'reload',
-  'destroy'
-]
-
-const sharedFrameComponentTypes = [
+  'postFileToViewer',
+  'syncViewerFrame',
+  'targetOrigin',
+  'toViewerFrameOptions',
+  'viewerUrl',
   'ViewerFrameComponentBridgeOptions',
   'ViewerFrameComponentProps',
   'ViewerFrameContainerComponentProps',
   'ViewerFrameControllerAccessor',
   'ViewerFrameHostComponentProps',
-  'ViewerFrameIframeComponentProps'
+  'ViewerFrameIframeComponentProps',
+  'ViewerFrameOptions'
 ]
 
-const webHelperExports = [
-  'buildViewerSrc',
-  'createViewerDirectFrameController',
-  'createViewerDirectFrameHandle',
-  'createViewerFrame',
-  'createViewerFrameControllerHandle',
-  'createViewerFrameFilePostController',
-  'createViewerMountedFrameHandle',
-  'mountViewerFrame',
-  'mountViewer',
-  'syncViewerFrame',
-  'postFileToViewer',
-  'toMessageBlob',
-  'toViewerFrameOptions',
-  'isViewerFrameEvent',
-  'getViewerUrl',
-  'getViewerOrigin',
-  'getSourceFilename'
+const sharedOptionTypeExports = [
+  'FileRef',
+  'ViewerAiOptions',
+  'ViewerArchiveOptions',
+  'ViewerCadOptions',
+  'ViewerController',
+  'ViewerControllerAccessor',
+  'ViewerControllerHandle',
+  'ViewerDocxOptions',
+  'ViewerEvent',
+  'ViewerEventHandler',
+  'ViewerEventType',
+  'ViewerFetchFile',
+  'ViewerFetchInput',
+  'ViewerMountOptions',
+  'ViewerOptions',
+  'ViewerPdfOptions',
+  'ViewerCoreOptions',
+  'ViewerSearchOptions',
+  'ViewerSourceInput',
+  'ViewerThemeMode',
+  'ViewerToolbarOptions',
+  'ViewerToolbarPosition',
+  'ViewerTypstOptions',
+  'ViewerWatermarkOptions'
+]
+
+const webControllerMethods = [
+  'load',
+  'update',
+  'reload',
+  'destroy',
+  'getApi',
+  'downloadOriginalFile',
+  'printRenderedHtml',
+  'exportRenderedHtml',
+  'zoomIn',
+  'zoomOut',
+  'resetZoom',
+  'searchDocument',
+  'clearDocumentSearch',
+  'nextSearchResult',
+  'previousSearchResult',
+  'collectDocumentAnchors',
+  'scrollToAnchor',
+  'scrollToLine',
+  'getDocumentTextChunks',
+  'getOperationAvailability'
 ]
 
 function assert(condition, message) {
@@ -77,7 +101,8 @@ async function exists(path) {
 async function readWrapperSource(wrapper) {
   const candidates = [
     join(sourceRoot, wrapper.packageDir, 'src', 'index.ts'),
-    join(sourceRoot, wrapper.packageDir, 'src', 'index.tsx')
+    join(sourceRoot, wrapper.packageDir, 'src', 'index.tsx'),
+    join(sourceRoot, wrapper.packageDir, 'src', 'package', 'index.ts')
   ]
   for (const candidate of candidates) {
     if (await exists(candidate)) {
@@ -88,6 +113,25 @@ async function readWrapperSource(wrapper) {
     }
   }
   throw new Error(`${wrapper.packageName} must provide src/index.ts or src/index.tsx`)
+}
+
+async function readAllSourceFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true })
+  const files = []
+  for (const entry of entries) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (['dist', 'node_modules', 'viewer'].includes(entry.name)) {
+        continue
+      }
+      files.push(...await readAllSourceFiles(path))
+      continue
+    }
+    if (entry.isFile() && sourceFileExtensions.has(extname(entry.name))) {
+      files.push(path)
+    }
+  }
+  return files
 }
 
 function escapeRegExp(value) {
@@ -104,10 +148,25 @@ function assertTokens(source, tokens, label) {
   }
 }
 
+function assertNoLegacyIframeApi(source, label) {
+  for (const token of forbiddenLegacyTokens) {
+    assert(!hasToken(source, token), `${label} must not expose legacy iframe API token ${token}`)
+  }
+}
+
 function assertImportsFrom(source, packageName, label) {
   assert(
     source.includes(`from '${packageName}'`) || source.includes(`from "${packageName}"`),
     `${label} must import from ${packageName}`
+  )
+}
+
+function assertImportsFromAny(source, packageNames, label) {
+  assert(
+    packageNames.some(packageName =>
+      source.includes(`from '${packageName}'`) || source.includes(`from "${packageName}"`)
+    ),
+    `${label} must import from ${packageNames.join(' or ')}`
   )
 }
 
@@ -118,45 +177,79 @@ function assertNotImportsFrom(source, packageName, label) {
   )
 }
 
-function assertSharedFrameProps(source, label) {
-  assertTokens(source, sharedFrameProps, label)
+function importsFromPackage(source, packageName) {
+  return source.includes(`from '${packageName}'`) ||
+    source.includes(`from "${packageName}"`) ||
+    source.includes(`import('${packageName}')`) ||
+    source.includes(`import("${packageName}")`)
 }
 
-function assertSharedControllerMethods(source, label) {
-  if (
-    source.includes('createViewerMountedFrameHandle') ||
-    source.includes('createViewerFrameControllerHandle')
-  ) {
+async function assertNoWrapperToWrapperImports(wrapper) {
+  const sourceDir = join(sourceRoot, wrapper.packageDir, 'src')
+  if (!(await exists(sourceDir))) {
     return
   }
-  assertTokens(source, sharedControllerMethods, label)
+  const forbiddenPackages = [...standardWrapperPackageNames].filter(packageName => packageName !== wrapper.packageName)
+  for (const file of await readAllSourceFiles(sourceDir)) {
+    const source = await readFile(file, 'utf8')
+    const label = `${wrapper.packageName} ${relative(sourceDir, file)}`
+    for (const packageName of forbiddenPackages) {
+      assert(
+        !importsFromPackage(source, packageName),
+        `${label} must not import another standard wrapper package ${packageName}`
+      )
+    }
+  }
+}
+
+function assertReexportsLocalControllerTypes(source, label) {
+  const reExportPattern = /export\s+type\s*{[\s\S]*}\s+from\s+['"]\.\/controller(?:\.js)?['"]/
+  assert(reExportPattern.test(source), `${label} must re-export its local wrapper controller types`)
+  assertTokens(source, sharedOptionTypeExports, label)
+}
+
+function assertConsumesCore(source, label) {
+  assertImportsFromAny(source, ['./controller', './controller.js'], label)
+  assertImportsFrom(source, '@file-viewer/core', label)
+  assertNotImportsFrom(source, '@file-viewer/web', label)
+  assertTokens(source, [
+    'mountViewer',
+    'fileViewerCoreRendererRegistry',
+    'ViewerMountOptions',
+    'ViewerController'
+  ], label)
 }
 
 function verifyWebWrapper(source, label) {
-  assertImportsFrom(source, '@file-viewer/core', label)
-  assertTokens(source, webHelperExports, label)
+  assertConsumesCore(source, label)
   assertTokens(source, [
-    'DEFAULT_VIEWER_PUBLIC_DIR',
-    'DEFAULT_VIEWER_URL',
-    'VIEWER_FRAME_CACHE_KEY',
-    'ViewerRuntimeOptions',
-    ...sharedFrameComponentTypes,
-    'ViewerFrameController',
-    'ViewerDirectFrameHandle',
-    'ViewerMountedFrameHandle',
-    'ViewerFrameControllerHandle'
+    'ViewerCoreOptions',
+    'FlyfishFileViewerWeb'
   ], label)
-  assert(
-    /export\s+const\s+mountViewer\s*=\s*mountViewerFrame/.test(source),
-    `${label} must expose mountViewer as a mountViewerFrame alias`
-  )
+  assertReexportsLocalControllerTypes(source, label)
+  assertNoLegacyIframeApi(source, label)
 }
 
-function verifyVueWrapper(source, label, version) {
+function verifyVue3Wrapper(source, label) {
   assertImportsFrom(source, 'vue', label)
-  assertImportsFrom(source, '@file-viewer/web', label)
-  assertSharedFrameProps(source, label)
-  assertSharedControllerMethods(source, label)
+  assertImportsFromAny(source, ['./controller', './controller.js'], label)
+  assertNotImportsFrom(source, '@file-viewer/web', label)
+  assertTokens(source, [
+    'FileViewer',
+    'createFlyfishFileViewer',
+    'mountFlyfishFileViewer',
+    'FileViewerVue3PluginOptions',
+    'FileViewerVue3Handle',
+    'ViewerMountOptions'
+  ], label)
+  assertReexportsLocalControllerTypes(source, label)
+  assertNoLegacyIframeApi(source, label)
+}
+
+function verifyVue2Wrapper(source, label) {
+  assertImportsFrom(source, 'vue', label)
+  assertConsumesCore(source, label)
+  assertReexportsLocalControllerTypes(source, label)
   assertTokens(source, [
     'FileViewer',
     'install',
@@ -164,82 +257,56 @@ function verifyVueWrapper(source, label, version) {
     'componentName',
     'viewer-event',
     'viewerEvent',
-    'ViewerRuntimeOptions',
-    ...sharedFrameComponentTypes,
-    'ViewerMountedFrameHandle'
+    'createViewerControllerHandle',
+    'mountViewer',
+    'getApi',
+    'load',
+    'update',
+    'reload',
+    'destroy'
   ], label)
-  if (version === 'vue3') {
-    assertTokens(source, ['defineComponent', 'onMounted', 'onBeforeUnmount', 'watch', 'expose'], label)
-    assert(/export\s+default\s+FileViewerPlugin/.test(source), `${label} must default-export FileViewerPlugin`)
-  } else {
-    assertTokens(source, ['Vue.extend', 'PluginObject', 'beforeDestroy', 'render'], label)
-    assert(/export\s+default\s+FileViewerPlugin/.test(source), `${label} must default-export FileViewerPlugin`)
-  }
+  assertNoLegacyIframeApi(source, label)
 }
 
 function verifyReactWrapper(source, label) {
   assertImportsFrom(source, 'react', label)
-  assertImportsFrom(source, '@file-viewer/web', label)
-  assertNotImportsFrom(source, '@file-viewer/core', label)
-  assertSharedFrameProps(source, label)
+  assertConsumesCore(source, label)
+  assertReexportsLocalControllerTypes(source, label)
   assertTokens(source, [
     'FileViewerHandle',
     'FileViewerProps',
     'forwardRef',
     'useImperativeHandle',
-    'buildViewerSrc',
-    'createViewerDirectFrameController',
-    'createViewerDirectFrameHandle',
-    'resetForSrcChange',
-    'syncOptions',
-    'handleLoad',
-    'handleMessage',
-    'onViewerEvent',
-    'ViewerFrameOptions',
-    'ViewerDirectFrameController',
-    ...sharedFrameComponentTypes,
-    'ViewerDirectFrameHandle'
+    'createViewerControllerHandle',
+    'mountViewer',
+    'ViewerMountOptions',
+    'ViewerController'
   ], label)
-  for (const forbiddenToken of [
-    'createViewerFrameFilePostController',
-    'isViewerFrameEvent',
-    'setFrameReady',
-    'frameReady'
-  ]) {
-    assert(
-      !source.includes(forbiddenToken),
-      `${label} must delegate direct iframe lifecycle to @file-viewer/web instead of ${forbiddenToken}`
-    )
-  }
+  assertNoLegacyIframeApi(source, label)
   assert(/export\s+default\s+FileViewer/.test(source), `${label} must default-export FileViewer`)
 }
 
 function verifyReactLegacyWrapper(source, label) {
   assertImportsFrom(source, 'react', label)
-  assertImportsFrom(source, '@file-viewer/web', label)
-  assertNotImportsFrom(source, '@file-viewer/core', label)
-  assertSharedFrameProps(source, label)
+  assertConsumesCore(source, label)
+  assertReexportsLocalControllerTypes(source, label)
   assertTokens(source, [
     'FileViewerLegacyHandle',
     'FileViewerLegacyProps',
     'forwardRef',
     'useImperativeHandle',
-    'React.createElement',
-    'mountViewerFrame',
-    ...sharedFrameComponentTypes,
-    'ViewerFrameControllerHandle'
+    'createViewerControllerHandle',
+    'mountViewer',
+    'ViewerMountOptions',
+    'ViewerController'
   ], label)
-  if (source.includes('createViewerFrameControllerHandle')) {
-    assertTokens(source, ['createViewerFrameControllerHandle'], label)
-  } else {
-    assertTokens(source, ['controller', 'iframe', 'update', 'postFile', 'reload', 'destroy'], label)
-  }
+  assertNoLegacyIframeApi(source, label)
   assert(/export\s+default\s+FileViewerLegacy/.test(source), `${label} must default-export FileViewerLegacy`)
 }
 
 function verifyJQueryWrapper(source, label) {
-  assertImportsFrom(source, '@file-viewer/web', label)
-  assertTokens(source, ['update', 'postFile', 'reload', 'destroy'], label)
+  assertConsumesCore(source, label)
+  assertReexportsLocalControllerTypes(source, label)
   assertTokens(source, [
     'JQueryFileViewerMethod',
     'JQueryFileViewerOptions',
@@ -247,35 +314,36 @@ function verifyJQueryWrapper(source, label) {
     'getFileViewerController',
     'destroyFileViewer',
     'fileViewer',
-    'mountViewerFrame',
-    ...sharedFrameComponentTypes
+    'mountViewer',
+    'load',
+    'update',
+    'reload',
+    'destroy'
   ], label)
-  for (const method of ['destroy', 'reload', 'postFile', 'update']) {
-    assert(source.includes(`'${method}'`), `${label} must support jQuery method "${method}"`)
-  }
+  assertNoLegacyIframeApi(source, label)
   assert(/export\s+default\s+installJQueryFileViewer/.test(source), `${label} must default-export installJQueryFileViewer`)
 }
 
 function verifySvelteWrapper(source, label) {
-  assertImportsFrom(source, '@file-viewer/web', label)
+  assertConsumesCore(source, label)
+  assertReexportsLocalControllerTypes(source, label)
   assertTokens(source, [
     'FileViewerSvelteActionOptions',
     'FileViewerSvelteActionReturn',
     'fileViewer',
-    'mountViewerFrame',
+    'mountViewer',
     'update',
     'destroy',
-    'replace',
-    ...sharedFrameComponentTypes,
-    'ViewerMountedFrameHandle'
+    'replace'
   ], label)
+  assertNoLegacyIframeApi(source, label)
   assert(/export\s+default\s+fileViewer/.test(source), `${label} must default-export fileViewer action`)
 }
 
 const verifiers = {
-  vue3: source => verifyVueWrapper(source, '@file-viewer/vue3', 'vue3'),
-  'vue2.7': source => verifyVueWrapper(source, '@file-viewer/vue2.7', 'vue2'),
-  'vue2.6': source => verifyVueWrapper(source, '@file-viewer/vue2.6', 'vue2'),
+  vue3: source => verifyVue3Wrapper(source, '@file-viewer/vue3'),
+  'vue2.7': source => verifyVue2Wrapper(source, '@file-viewer/vue2.7'),
+  'vue2.6': source => verifyVue2Wrapper(source, '@file-viewer/vue2.6'),
   react: source => verifyReactWrapper(source, '@file-viewer/react'),
   'react-legacy': source => verifyReactLegacyWrapper(source, '@file-viewer/react-legacy'),
   web: source => verifyWebWrapper(source, '@file-viewer/web'),
@@ -288,8 +356,9 @@ for (const wrapper of wrapperManifest.wrappers) {
   const verify = verifiers[wrapper.id]
   assert(verify, `Missing wrapper API verifier for ${wrapper.id}`)
   const { content } = await readWrapperSource(wrapper)
+  await assertNoWrapperToWrapperImports(wrapper)
   verify(content)
   checked += 1
 }
 
-console.log(`Verified ${checked} standard wrapper runtime API surfaces.`)
+console.log(`Verified ${checked} standard wrapper native core API surfaces.`)

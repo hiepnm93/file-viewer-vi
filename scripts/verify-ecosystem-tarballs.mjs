@@ -108,11 +108,15 @@ function isAllowedBinScript(entry, path) {
 }
 
 function sourceEntrypoints(entry) {
-  return new Set(
+  const allowed = new Set(
     collectPackageEntrypoints(entry.packageJson)
       .map(value => value.replace(/^\.\//, ''))
       .filter(value => value.startsWith('src/'))
   )
+  if (entry.wrapper?.entryFormats?.includes('svelte-component')) {
+    allowed.add('src/controller.ts')
+  }
+  return allowed
 }
 
 function assertNoForbiddenPackFiles(entry, files) {

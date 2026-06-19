@@ -34,14 +34,29 @@ async function fixFile(filePath) {
   return false
 }
 
-const entries = await readdir(coreDistDir, { withFileTypes: true })
+async function collectJsFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...await collectJsFiles(path))
+      continue
+    }
+    if (entry.isFile() && extname(entry.name) === '.js') {
+      files.push(path)
+    }
+  }
+
+  return files
+}
+
+const files = await collectJsFiles(coreDistDir)
 let changedCount = 0
 
-for (const entry of entries) {
-  if (!entry.isFile() || extname(entry.name) !== '.js') {
-    continue
-  }
-  const changed = await fixFile(join(coreDistDir, entry.name))
+for (const file of files) {
+  const changed = await fixFile(file)
   if (changed) {
     changedCount += 1
   }

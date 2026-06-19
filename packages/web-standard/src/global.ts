@@ -1,47 +1,11 @@
 import {
-  DEFAULT_VIEWER_PUBLIC_DIR,
-  DEFAULT_VIEWER_URL,
-  VIEWER_FRAME_CACHE_KEY,
-  buildViewerSrc,
-  createViewerDirectFrameController,
-  createViewerDirectFrameHandle,
-  createViewerFrame,
-  createViewerFrameControllerHandle,
-  createViewerFrameFilePostController,
-  createViewerMountedFrameHandle,
-  getCurrentOrigin,
-  getSourceFilename,
-  getViewerOrigin,
-  getViewerUrl,
-  isViewerFrameEvent,
-  mountViewer,
-  mountViewerFrame,
-  postFileToViewer,
-  syncViewerFrame,
-  toMessageBlob
+  createViewerControllerHandle,
+  mountViewer
 } from './index'
 
 const FlyfishFileViewerWeb = {
-  DEFAULT_VIEWER_PUBLIC_DIR,
-  DEFAULT_VIEWER_URL,
-  VIEWER_FRAME_CACHE_KEY,
-  buildViewerSrc,
-  createViewerDirectFrameController,
-  createViewerDirectFrameHandle,
-  createViewerFrame,
-  createViewerFrameControllerHandle,
-  createViewerFrameFilePostController,
-  createViewerMountedFrameHandle,
-  getCurrentOrigin,
-  getSourceFilename,
-  getViewerOrigin,
-  getViewerUrl,
-  isViewerFrameEvent,
-  mountViewer,
-  mountViewerFrame,
-  postFileToViewer,
-  syncViewerFrame,
-  toMessageBlob
+  createViewerControllerHandle,
+  mountViewer
 }
 
 type FlyfishFileViewerWebGlobal = typeof FlyfishFileViewerWeb
@@ -57,26 +21,8 @@ if (typeof window !== 'undefined') {
 }
 
 export {
-  DEFAULT_VIEWER_PUBLIC_DIR,
-  DEFAULT_VIEWER_URL,
-  VIEWER_FRAME_CACHE_KEY,
-  buildViewerSrc,
-  createViewerDirectFrameController,
-  createViewerDirectFrameHandle,
-  createViewerFrame,
-  createViewerFrameControllerHandle,
-  createViewerFrameFilePostController,
-  createViewerMountedFrameHandle,
-  getCurrentOrigin,
-  getSourceFilename,
-  getViewerOrigin,
-  getViewerUrl,
-  isViewerFrameEvent,
-  mountViewer,
-  mountViewerFrame,
-  postFileToViewer,
-  syncViewerFrame,
-  toMessageBlob
+  createViewerControllerHandle,
+  mountViewer
 }
 
 export default FlyfishFileViewerWeb

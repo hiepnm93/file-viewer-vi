@@ -37,7 +37,7 @@ import {
   resolveFileViewerPreviewLoadErrorMessage,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
-  resolveFileViewerRuntimePageHref,
+  resolveFileViewerPageHref,
   resolveFileViewerSourceFilename,
   reportFileViewerMissingRemoteData,
   reportFileViewerPreviewLoadError,
@@ -1898,9 +1898,9 @@ describe('remote source loading helpers', () => {
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {
-    expect(resolveFileViewerRuntimePageHref({ href: pageHref })).toBe(pageHref)
-    expect(resolveFileViewerRuntimePageHref({ href: '' })).toBeUndefined()
-    expect(resolveFileViewerRuntimePageHref(undefined)).toBeUndefined()
+    expect(resolveFileViewerPageHref({ href: pageHref })).toBe(pageHref)
+    expect(resolveFileViewerPageHref({ href: '' })).toBeUndefined()
+    expect(resolveFileViewerPageHref(undefined)).toBeUndefined()
     expect(normalizePdfStreamingMode(undefined)).toBe('same-origin')
     expect(shouldStreamPdfUrl({
       extension: 'pdf',

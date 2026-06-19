@@ -1,6 +1,6 @@
 # file-viewer3
 
-`file-viewer3` is the historical unscoped compatibility package. It only re-exports `@flyfish-group/file-viewer3`. New integrations should prefer the standard package name `@file-viewer/vue3`.
+`file-viewer3` is the historical unscoped compatibility package. It only re-exports `@file-viewer/vue3`. New integrations should prefer the standard package name `@file-viewer/vue3`.
 
 ```bash
 npm install file-viewer3

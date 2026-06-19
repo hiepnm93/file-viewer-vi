@@ -116,9 +116,9 @@ const surfaceIds = assertUnique(baseline.surfaces, 'surfaces')
 for (const requiredSurface of [
   'vue3-current-component',
   'compare-page',
-  'iframe-runtime',
-  'react-current-adapter',
-  'pure-js-current-adapter',
+  'pure-web-native-viewer',
+  'react-native-wrapper',
+  'pure-js-native-wrapper',
   'script-tag-iife'
 ]) {
   if (!surfaceIds.has(requiredSurface)) {

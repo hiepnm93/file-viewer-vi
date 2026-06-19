@@ -60,16 +60,16 @@ async function assertReleaseManifest(repoDir) {
   assert(manifest.corePackage?.packageName === wrapperManifest.corePackage.packageName, 'Core package metadata drifted')
   assert(manifest.corePackage?.visibility === wrapperManifest.corePackage.visibility, 'Core package visibility metadata drifted')
 
-  const artifactRecords = new Map((manifest.adapterArtifacts || []).map(record => [record.name, record]))
-  const adapterPackages = manifest.adapterPackages || {}
+  const artifactRecords = new Map((manifest.ecosystemArtifacts || []).map(record => [record.name, record]))
+  const ecosystemPackages = manifest.ecosystemPackages || {}
   for (const entry of ecosystemPackageEntries) {
-    assert(adapterPackages[entry.packageName] === entry.version, `${entry.packageName} adapter package version missing from manifest`)
+    assert(ecosystemPackages[entry.packageName] === entry.version, `${entry.packageName} ecosystem package version missing from manifest`)
     const record = artifactRecords.get(entry.packageName)
     assertPackageRecord(record, entry)
     if (entry.wrapper) {
       assert(
         JSON.stringify(record.entryFormats || []) === JSON.stringify(entry.wrapper.entryFormats || []),
-        `${entry.packageName} adapter artifact entry format mapping drifted`
+        `${entry.packageName} ecosystem artifact entry format mapping drifted`
       )
     }
     if (entry.publicArtifact?.includeTarball === false) {
@@ -105,10 +105,10 @@ async function assertReleaseManifest(repoDir) {
   }
 
   for (const requiredTarball of [
-    `file-viewer-v3-${version}-demo.tar.gz`,
-    `file-viewer-v3-${version}-adapter-demo.tar.gz`,
-    `file-viewer-v3-${version}-lib-dist.tar.gz`,
-    `file-viewer-v3-${version}-docs.tar.gz`
+    `file-viewer-v2-${version}-demo.tar.gz`,
+    `file-viewer-v2-${version}-wrapper-demo.tar.gz`,
+    `file-viewer-v2-${version}-lib-dist.tar.gz`,
+    `file-viewer-v2-${version}-docs.tar.gz`
   ]) {
     await assertFile(join(repoDir, 'artifacts', requiredTarball), requiredTarball)
   }

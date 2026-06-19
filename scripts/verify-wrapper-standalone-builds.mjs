@@ -38,6 +38,9 @@ const selectedIds = new Set(
 )
 const keepTemp = args.includes('--keep-temp')
 const packageManager = readArg('--package-manager', process.env.FILE_VIEWER_WRAPPER_STANDALONE_PM || 'npm')
+const commandTimeoutMs = Number(
+  readArg('--timeout-ms', process.env.FILE_VIEWER_WRAPPER_STANDALONE_TIMEOUT_MS || '300000')
+)
 
 const { wrapperManifest, entries } = await loadEcosystemReleaseContext(sourceRoot)
 const entryByPackageName = new Map(entries.map(entry => [entry.packageName, entry]))
@@ -47,8 +50,20 @@ const run = (command, commandArgs, cwd = sourceRoot, options = {}) => {
   const result = spawnSync(command, commandArgs, {
     cwd,
     encoding: 'utf8',
-    stdio: options.quiet ? 'pipe' : 'inherit'
+    stdio: options.quiet ? 'pipe' : 'inherit',
+    timeout: options.timeoutMs ?? commandTimeoutMs,
+    killSignal: 'SIGTERM'
   })
+  if (result.error) {
+    throw new Error(
+      [
+        `Command failed in ${cwd}: ${command} ${commandArgs.join(' ')}`,
+        result.error.message,
+        result.stdout,
+        result.stderr
+      ].filter(Boolean).join('\n')
+    )
+  }
   if (result.status !== 0) {
     throw new Error(
       [
@@ -144,7 +159,15 @@ const rewriteLocalDependencies = (packageJson, tarballByPackageName, repoDir, cl
 
 const installArgsFor = name => {
   if (name === 'npm') {
-    return ['install', '--ignore-scripts', '--no-audit', '--no-fund']
+    return [
+      'install',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--prefer-online',
+      '--legacy-peer-deps',
+      '--install-strategy=shallow'
+    ]
   }
   if (name === 'pnpm') {
     return ['install', '--ignore-scripts', '--prefer-offline']
