@@ -170,6 +170,24 @@ async function assertReleaseStatus(repoDir) {
   assert(status.version === version, `Release status version ${status.version} !== ${version}`)
   assert(status.sourcePolicy === 'private-complete-original-workspace', 'Release status source policy drifted')
   assert(status.openSourcePolicy === 'public-open-source-main-repository', 'Release status open-source policy drifted')
+  assert(status.sourceBaseline?.branch === 'main', 'Release status source baseline branch must be private main')
+  assert(
+    status.sourceBaseline?.policy === 'private-complete-original-workspace',
+    'Release status source baseline policy drifted'
+  )
+  assert(
+    typeof status.sourceBaseline?.note === 'string' &&
+      status.sourceBaseline.note.includes('complete original aggregate workspace'),
+    'Release status must document that private main is the complete original aggregate workspace'
+  )
+  assert(
+    status.sourceBaseline?.authoritativeCommit === status.sourceRemote?.hash,
+    'Release status source baseline commit must match source remote hash'
+  )
+  assert(
+    status.sourceBaseline?.localCommit === status.local?.commit,
+    'Release status source baseline local commit must match local commit'
+  )
   assert(
     typeof status.openSourceMain?.reportHashNote === 'string' && status.openSourceMain.reportHashNote.includes('metadata-only commit'),
     'Release status must document the self-referential open-source main hash caveat'

@@ -196,6 +196,8 @@ function localWorktree() {
 
 const sourceBranch = branchRoles.currentSourceBranch || 'main'
 const local = localWorktree()
+const sourceBaselineNote =
+  'Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover.'
 const componentTargets = [
   {
     id: 'core',
@@ -271,6 +273,16 @@ const report = {
   version: rootPackage.version,
   sourcePolicy: 'private-complete-original-workspace',
   openSourcePolicy: 'public-open-source-main-repository',
+  sourceBaseline: {
+    repository: branchRoles.sourceRemote.url,
+    branch: sourceBranch,
+    policy: 'private-complete-original-workspace',
+    authoritativeCommit: sourceRemote.hash || '',
+    localBranch: local.branch,
+    localCommit: local.commit,
+    inSync: sourceRemote.ok && local.commit === sourceRemote.hash,
+    note: sourceBaselineNote
+  },
   local,
   sourceRemote,
   openSourceMain: {
