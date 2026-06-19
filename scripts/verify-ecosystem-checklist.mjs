@@ -102,9 +102,11 @@ for (const requiredAuditItem of [
   '所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库',
   '所有 `@file-viewer/*` npm 包均发布成功',
   '所有标准组件包的 README 中英文完整',
-  '开源总仓库包含最新全渠道构建产物',
+  'GitHub 开源总仓库包含最新全渠道构建产物',
+  'Gitee 开源总仓库等待远端 push / 配额恢复后同步到与 GitHub 开源总仓库相同的文件树',
   '本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`',
-  '生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致'
+  '生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致',
+  '发布记录已经证明私有 Gitea `main`、GitHub 开源总仓库、GitHub Release、Demo 构建物和文档构建物的版本口径一致'
 ]) {
   assertIncludes(requiredAuditItem, 'completion audit requirement')
 }
