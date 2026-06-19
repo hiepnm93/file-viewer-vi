@@ -366,8 +366,8 @@ async function readEcosystemPackManifest() {
 
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
-    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
-    : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
+    ? ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
+    : ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const packages = ecosystemPackManifest.packages || []
   const manifest = {
@@ -490,6 +490,9 @@ if (keepExpandedAssets) {
 await copyCleanDir(vue3LibraryDistDir, join(publicRepoDir, 'dist'))
 await cp(join(sourceRoot, 'README.md'), join(publicRepoDir, 'README.md'), { force: true })
 await cp(join(sourceRoot, 'README.en.md'), join(publicRepoDir, 'README.en.md'), { force: true })
+await cp(join(sourceRoot, 'BRANCHES.md'), join(publicRepoDir, 'BRANCHES.md'), { force: true })
+await cp(join(sourceRoot, 'ECOSYSTEM_REFACTOR_CHECKLIST.md'), join(publicRepoDir, 'ECOSYSTEM_REFACTOR_CHECKLIST.md'), { force: true })
+await cp(join(sourceRoot, 'WRAPPER_ECOSYSTEM.md'), join(publicRepoDir, 'WRAPPER_ECOSYSTEM.md'), { force: true })
 await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
 
 const ecosystemPackManifest = await readEcosystemPackManifest()
