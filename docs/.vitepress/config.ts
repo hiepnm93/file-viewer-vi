@@ -65,7 +65,7 @@ export default defineConfig({
           items: [
             { text: '本地开发与打包', link: '/guide/development' },
             { text: 'Docker 部署', link: '/guide/docker' },
-            { text: '发布与成品分发', link: '/guide/distribution' }
+            { text: '发布与开源分发', link: '/guide/distribution' }
           ]
         },
         {
