@@ -81,6 +81,15 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   }
   return true
 })
+const renderers = (wrapperManifest.renderers || []).filter(renderer => {
+  if (selectedPackages.size && !selectedPackages.has(renderer.packageName)) {
+    return false
+  }
+  if (selectedIds.size && !selectedIds.has(renderer.id)) {
+    return false
+  }
+  return true
+})
 
 const targets = [
   ...(includeCore
@@ -92,6 +101,13 @@ const targets = [
         gitee: corePackage.gitee
       }]
     : []),
+  ...renderers.map(renderer => ({
+    kind: 'renderer',
+    packageName: renderer.packageName,
+    repository: renderer.repository,
+    github: renderer.github,
+    gitee: renderer.gitee
+  })),
   ...wrappers.map(wrapper => ({
     kind: 'component',
     packageName: wrapper.packageName,
@@ -102,7 +118,7 @@ const targets = [
 ]
 
 if (!targets.length) {
-  throw new Error('No core or component packages selected for publishing.')
+  throw new Error('No core, renderer, or component packages selected for publishing.')
 }
 
 const assertDirectory = async (path, label = path) => {
@@ -200,17 +216,32 @@ const ensureRemote = (cwd, name, url) => {
   }
 }
 
-const verifyWrapperRepos = () => {
-  console.log('Verifying component repositories before publishing...')
-  run(
-    'node',
-    ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
-    sourceRoot,
-    { mutates: false }
-  )
+const verifyPackageRepos = () => {
+  const hasCoreOrComponents = targets.some(target => target.kind === 'core' || target.kind === 'component')
+  const hasRenderers = targets.some(target => target.kind === 'renderer')
+
+  if (hasCoreOrComponents) {
+    console.log('Verifying core and component repositories before publishing...')
+    run(
+      'node',
+      ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
+      sourceRoot,
+      { mutates: false }
+    )
+  }
+
+  if (hasRenderers) {
+    console.log('Verifying renderer repositories before publishing...')
+    run(
+      'node',
+      ['scripts/verify-renderer-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
+      sourceRoot,
+      { mutates: false }
+    )
+  }
 }
 
-verifyWrapperRepos()
+verifyPackageRepos()
 
 for (const target of targets) {
   const repoDir = join(outputRoot, target.repository)
@@ -258,5 +289,5 @@ for (const target of targets) {
 }
 
 console.log(
-  `${push ? 'Published' : 'Prepared'} ${targets.length} core/component repos to ${hosts.join(', ')} from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
+  `${push ? 'Published' : 'Prepared'} ${targets.length} core/renderer/component repos to ${hosts.join(', ')} from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
 )

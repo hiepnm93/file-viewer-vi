@@ -38,7 +38,7 @@ const readJson = async path => JSON.parse(await readFile(path, 'utf8'))
 const writeJson = async (path, value) => writeFile(path, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
 
 const rootPackage = await readJson(join(sourceRoot, 'package.json'))
-const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+const ecosystemManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
 
 const collectPackageDirs = async workspaceRoot => {
   if (!existsSync(workspaceRoot)) {
@@ -149,18 +149,18 @@ const normalizeDependencyBlock = block => {
   }
 }
 
-const normalizePackageJson = async (targetDir, wrapper) => {
+const normalizePackageJson = async (targetDir, renderer) => {
   const packagePath = join(targetDir, 'package.json')
   const packageJson = await readJson(packagePath)
   packageJson.packageManager = rootPackage.packageManager
   packageJson.private = false
   packageJson.repository = {
     type: 'git',
-    url: `git+${wrapper.github}.git`
+    url: `git+${renderer.github}.git`
   }
-  packageJson.homepage = wrapper.github
+  packageJson.homepage = renderer.github
   packageJson.bugs = {
-    url: `${wrapper.github}/issues`
+    url: `${renderer.github}/issues`
   }
   normalizeDependencyBlock(packageJson.dependencies)
   normalizeDependencyBlock(packageJson.devDependencies)
@@ -185,25 +185,6 @@ const normalizeStandaloneTsConfig = async targetDir => {
   await writeJson(tsconfigPath, tsconfig)
 }
 
-const ensureWebViewerAssets = async (targetDir, wrapper) => {
-  if (wrapper.id !== 'web') {
-    return
-  }
-
-  const targetViewerDir = join(targetDir, 'viewer')
-  if (existsSync(join(targetViewerDir, 'index.html'))) {
-    return
-  }
-
-  const sourceViewerDir = join(sourceRoot, 'packages/components/web/viewer')
-  const fallbackViewerDir = join(sourceRoot, 'packages/compat/web/viewer')
-  const viewerSource = existsSync(join(sourceViewerDir, 'index.html'))
-    ? sourceViewerDir
-    : fallbackViewerDir
-  await assertDirectory(viewerSource)
-  await cp(viewerSource, targetViewerDir, { recursive: true, force: true })
-}
-
 const writeGitignore = async targetDir => {
   await writeFile(
     join(targetDir, '.gitignore'),
@@ -221,77 +202,73 @@ const writeGitignore = async targetDir => {
   )
 }
 
-const writeStandaloneManifest = async (targetDir, wrapper, packageJson) => {
-  const manifest = {
+const writeStandaloneManifest = async (targetDir, renderer, packageJson) => {
+  await writeJson(join(targetDir, 'renderer-repo-manifest.json'), {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     sourceBranch: run('git', ['branch', '--show-current']),
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD']),
-    organization: wrapperManifest.organization,
-    framework: wrapper.framework,
-    packageName: wrapper.packageName,
+    organization: ecosystemManifest.organization,
+    rendererId: renderer.id,
+    packageName: renderer.packageName,
     packageVersion: packageJson.version,
-    repository: wrapper.repository,
-    github: wrapper.github,
-    gitee: wrapper.gitee,
-    entryFormats: wrapper.entryFormats,
-    historicalPackages: wrapper.historicalPackages,
-    sourcePackageDir: wrapper.packageDir,
-    corePackage: wrapperManifest.corePackage.packageName,
-    coreSourceVisibility: wrapperManifest.corePackage.visibility
-  }
-  await writeJson(join(targetDir, 'wrapper-repo-manifest.json'), manifest)
+    repository: renderer.repository,
+    github: renderer.github,
+    gitee: renderer.gitee,
+    entryFormats: renderer.entryFormats,
+    sourcePackageDir: renderer.packageDir,
+    publicSource: renderer.publicSource === true
+  })
 }
 
-const assertStandaloneRepo = async (targetDir, wrapper) => {
+const assertStandaloneRepo = async (targetDir, renderer) => {
   await assertFile(join(targetDir, 'package.json'))
   await assertFile(join(targetDir, 'README.md'))
   await assertFile(join(targetDir, 'README.en.md'))
   await assertFile(join(targetDir, 'LICENSE'))
   const packageJson = await readJson(join(targetDir, 'package.json'))
-  if (packageJson.name !== wrapper.packageName) {
-    throw new Error(`Package name mismatch in ${targetDir}: ${packageJson.name} !== ${wrapper.packageName}`)
+  if (packageJson.name !== renderer.packageName) {
+    throw new Error(`Package name mismatch in ${targetDir}: ${packageJson.name} !== ${renderer.packageName}`)
   }
   const serialized = JSON.stringify(packageJson)
   if (serialized.includes('workspace:')) {
-    throw new Error(`Workspace dependency leaked into standalone repo: ${targetDir}`)
+    throw new Error(`Workspace dependency leaked into standalone renderer repo: ${targetDir}`)
   }
   if (existsSync(join(targetDir, 'node_modules')) || existsSync(join(targetDir, 'dist'))) {
-    throw new Error(`Generated dependency/build output leaked into standalone repo: ${targetDir}`)
+    throw new Error(`Generated dependency/build output leaked into standalone renderer repo: ${targetDir}`)
   }
 }
 
-const wrappers = wrapperManifest.wrappers.filter(wrapper => {
-  if (selectedPackages.size && !selectedPackages.has(wrapper.packageName)) {
+const renderers = (ecosystemManifest.renderers || []).filter(renderer => {
+  if (selectedPackages.size && !selectedPackages.has(renderer.packageName)) {
     return false
   }
-  if (selectedIds.size && !selectedIds.has(wrapper.id)) {
+  if (selectedIds.size && !selectedIds.has(renderer.id)) {
     return false
   }
   return true
 })
 
-if (!wrappers.length) {
-  throw new Error('No component packages selected for export.')
+if (!renderers.length) {
+  throw new Error('No renderer packages selected for export.')
 }
 
 await mkdir(outputRoot, { recursive: true })
 await assertFile(join(sourceRoot, 'LICENSE'))
 
-for (const wrapper of wrappers) {
-  const sourcePackageDir = join(sourceRoot, wrapper.packageDir)
+for (const renderer of renderers) {
+  const sourcePackageDir = join(sourceRoot, renderer.packageDir)
   await assertDirectory(sourcePackageDir)
-  const targetDir = join(outputRoot, wrapper.repository)
+  const targetDir = join(outputRoot, renderer.repository)
   await copyPackage(sourcePackageDir, targetDir)
-  await ensureWebViewerAssets(targetDir, wrapper)
   await cp(join(sourceRoot, 'LICENSE'), join(targetDir, 'LICENSE'), { force: true })
   await writeGitignore(targetDir)
-  await normalizePackageJson(targetDir, wrapper)
+  await normalizePackageJson(targetDir, renderer)
   await normalizeStandaloneTsConfig(targetDir)
   const targetPackageJson = await readJson(join(targetDir, 'package.json'))
-  await writeStandaloneManifest(targetDir, wrapper, targetPackageJson)
-  await assertStandaloneRepo(targetDir, wrapper)
-  console.log(`Prepared ${wrapper.packageName} -> ${targetDir}`)
+  await writeStandaloneManifest(targetDir, renderer, targetPackageJson)
+  await assertStandaloneRepo(targetDir, renderer)
+  console.log(`Prepared ${renderer.packageName} -> ${targetDir}`)
 }
 
-console.log(`Prepared ${wrappers.length} component package repo${wrappers.length === 1 ? '' : 's'} in ${outputRoot}`)
+console.log(`Prepared ${renderers.length} renderer package repo${renderers.length === 1 ? '' : 's'} in ${outputRoot}`)

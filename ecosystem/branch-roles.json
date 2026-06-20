@@ -15,6 +15,7 @@
   "publicMainRepository": {
     "github": "https://github.com/flyfish-dev/file-viewer",
     "gitee": "https://gitee.com/flyfish-dev/file-viewer",
+    "description": "Open-source File Viewer ecosystem: TypeScript core, native renderers, Vue/React/Web/Svelte components, demo, docs, and release bundles.",
     "sourcePolicy": "public-open-source-main-repository",
     "role": "open-source-main-repository"
   },
