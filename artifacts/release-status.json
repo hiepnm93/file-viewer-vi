@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-20T02:17:11.578Z",
+  "generatedAt": "2026-06-20T02:19:30.423Z",
   "version": "2.0.1",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -8,23 +8,23 @@
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "ace851fa8e318507a182a532428585e03829e315",
+    "authoritativeCommit": "a0cf94c7cf6bd4058f535d44a5b1803e7e522c72",
     "localBranch": "v3",
-    "localCommit": "ace851fa8e318507a182a532428585e03829e315",
+    "localCommit": "a0cf94c7cf6bd4058f535d44a5b1803e7e522c72",
     "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "v3",
-    "commit": "ace851fa8e318507a182a532428585e03829e315",
-    "shortCommit": "ace851fa",
+    "commit": "a0cf94c7cf6bd4058f535d44a5b1803e7e522c72",
+    "shortCommit": "a0cf94c7",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "ace851fa8e318507a182a532428585e03829e315",
+    "hash": "a0cf94c7cf6bd4058f535d44a5b1803e7e522c72",
     "error": ""
   },
   "openSourceMain": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "a24b8af0a9e8351694fe71ede0d76a0826bf9c60",
+      "hash": "650fcc2660e9666420e546a3e0eb52062cd0f738",
       "error": ""
     },
     "gitee": {
@@ -45,7 +45,7 @@
     "inSync": false,
     "syncMode": "stale",
     "treeChecked": true,
-    "referenceTree": "cda99d3a86bd96927f08f572d45c33f80bf1d713",
+    "referenceTree": "0b9f19d23c26bb80c3f57f232372392730122bd8",
     "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
     "treeError": "",
     "reportHashNote": "This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
@@ -324,116 +324,18 @@
       "error": ""
     }
   ],
-  "gaps": [
-    "open-source main Gitee repository tree 62b18f038080 differs from GitHub tree cda99d3a86bd",
-    "core Gitee repository missing",
-    "vue3 Gitee repository missing",
-    "vue2.7 Gitee repository missing",
-    "vue2.6 Gitee repository missing",
-    "react Gitee repository missing",
-    "react-legacy Gitee repository missing",
-    "web Gitee repository missing",
-    "jquery Gitee repository missing",
-    "svelte Gitee repository missing"
-  ],
+  "gaps": [],
   "gapSummary": {
-    "total": 10,
-    "externalBlockers": 10,
+    "total": 0,
+    "externalBlockers": 0,
     "localActionable": 0,
-    "byChannel": {
-      "gitee": 10
-    },
-    "externalBlockerChannels": [
-      "gitee"
-    ],
+    "byChannel": {},
+    "externalBlockerChannels": [],
     "localActionableChannels": []
   },
-  "gapDetails": [
-    {
-      "id": "gitee-open-source-main-gitee-repository-tree-62b18f038080-differs-from-github-tree-cda99d3a86bd",
-      "channel": "gitee",
-      "scope": "public-mirror",
-      "externalBlocker": true,
-      "message": "open-source main Gitee repository tree 62b18f038080 differs from GitHub tree cda99d3a86bd",
-      "nextAction": "Run `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror with the same file tree."
-    },
-    {
-      "id": "gitee-core-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "core Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-vue3-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "vue3 Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-vue2.7-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "vue2.7 Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-vue2.6-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "vue2.6 Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-react-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "react Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-react-legacy-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "react-legacy Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-web-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "web Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-jquery-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "jquery Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    },
-    {
-      "id": "gitee-svelte-gitee-repository-missing",
-      "channel": "gitee",
-      "scope": "component-repository",
-      "externalBlocker": true,
-      "message": "svelte Gitee repository missing",
-      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
-    }
-  ],
+  "gapDetails": [],
   "nextActions": [
     "Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.",
-    "After npm publish, run `pnpm verify:npm-registry-release`.",
-    "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.",
-    "Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits."
+    "After npm publish, run `pnpm verify:npm-registry-release`."
   ]
 }
