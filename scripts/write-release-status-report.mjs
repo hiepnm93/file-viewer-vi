@@ -264,20 +264,12 @@ const gaps = [
     `local HEAD ${local.shortCommit} does not match ${branchRoles.sourceRemote.name}/${sourceBranch} ${sourceRemote.hash.slice(0, 12)}`,
   local.dirty && 'local source worktree has uncommitted changes',
   !publicGithub.ok && 'open-source main GitHub repository missing main',
-  !publicGitee.ok && 'open-source main Gitee repository missing main',
-  publicGithub.ok &&
-    publicGitee.ok &&
-    !publicMainInSync &&
-    (publicMainTreeStatus.checked
-      ? `open-source main Gitee repository tree ${publicMainTreeStatus.giteeTree.slice(0, 12)} differs from GitHub tree ${publicMainTreeStatus.referenceTree.slice(0, 12)}`
-      : `open-source main Gitee repository ${publicGitee.hash.slice(0, 12)} differs from GitHub ${publicGithub.hash.slice(0, 12)}${publicMainTreeStatus.error ? ` (${publicMainTreeStatus.error})` : ''}`),
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
   release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
   release.ok && !release.hasSchema && `GitHub Release v${rootPackage.version} missing release-status.schema.json`,
   ...componentRepositories.flatMap(row => [
-    !row.github.ok && `${row.id} GitHub repository missing`,
-    !row.gitee.ok && `${row.id} Gitee repository missing`
+    !row.github.ok && `${row.id} GitHub repository missing`
   ]),
   ...npmPackages.map(row => !row.ok && `${row.packageName} npm ${row.publishedVersion || 'unpublished'} !== ${row.expectedVersion}`)
 ].filter(Boolean)
@@ -321,9 +313,7 @@ const report = {
   gapDetails: gapReport.details,
   nextActions: [
     'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
-    'After npm publish, run `pnpm verify:npm-registry-release`.',
-    'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.',
-    'Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits.'
+    'After npm publish, run `pnpm verify:npm-registry-release`.'
   ]
 }
 

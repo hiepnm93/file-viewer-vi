@@ -277,20 +277,12 @@ const failures = [
     `local HEAD ${sourceHead.slice(0, 12)} does not match source ${sourceBranch} ${sourceRemoteHead.hash.slice(0, 12)}`,
   ...branchRows.map(row => !row.remote.ok && `source remote missing branch ${row.name}`),
   !publicGithubHead.ok && 'open-source main GitHub repository missing main',
-  !publicGiteeHead.ok && 'open-source main Gitee repository missing main',
-  publicGithubHead.ok &&
-    publicGiteeHead.ok &&
-    !publicMainInSync &&
-    (publicMainTreeStatus.checked
-      ? `open-source main Gitee repository tree ${publicMainTreeStatus.giteeTree.slice(0, 12)} differs from GitHub tree ${publicMainTreeStatus.referenceTree.slice(0, 12)}`
-      : `open-source main Gitee repository ${publicGiteeHead.hash.slice(0, 12)} differs from GitHub ${publicGithubHead.hash.slice(0, 12)}${publicMainTreeStatus.error ? ` (${publicMainTreeStatus.error})` : ''}`),
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
   release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
   release.ok && !release.hasSchema && `GitHub Release v${rootPackage.version} missing release-status.schema.json`,
   ...remoteRows.flatMap(row => [
-    !row.github.ok && `${row.id} GitHub repository missing`,
-    !row.gitee.ok && `${row.id} Gitee repository missing`
+    !row.github.ok && `${row.id} GitHub repository missing`
   ]),
   ...npmRows.map(row => {
     if (!row.npm.ok) {
@@ -307,11 +299,7 @@ const gapReport = describeReleaseGaps(failures)
 const nextActions = [
   failures.some(failure => failure.includes('npm')) &&
     'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
-  failures.some(failure => failure.includes('Gitee repository missing')) &&
-    'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.',
-  failures.some(failure => failure.includes('open-source main Gitee repository')) &&
-    'Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits.',
-  'Use `pnpm release:channels:preflight -- --skip-external` for a fast local release gate, or `pnpm release:channels:preflight` when npm/Gitee credentials are ready.'
+  'Use `pnpm release:channels:preflight -- --skip-external` for a fast local release gate.'
 ].filter(Boolean)
 
 console.log(`# File Viewer Ecosystem Status\n`)
