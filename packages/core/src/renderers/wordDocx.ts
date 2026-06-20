@@ -1,25 +1,25 @@
 import type { Options, renderAsync } from 'docx-preview'
 import type JSZip from 'jszip'
-import { resolveFileViewerDocxWorkerUrl } from '../assets'
+import { resolveFileViewerDocxWorkerUrl } from '../platform/assets'
 import {
   applyPrintPageSize,
   buildPrintPageStyle,
   formatCssPixels,
   getElementPrintPageSize,
   type PrintPageSize
-} from '../printLayout'
+} from '../output/printLayout'
 import {
   createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
-} from '../documentZoom'
+} from '../features/document/zoom'
 import type {
   FileRenderContext,
   FileViewerRenderedInstance as AppWrapper,
   FileViewerZoomState
-} from '../types'
+} from '../contracts/types'
 import {
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider
-} from '../documentDom'
+} from '../features/document/dom'
 
 const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   width: 794,

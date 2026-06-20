@@ -13,6 +13,18 @@
     "corePolicy": "framework-neutral-low-level-core-only",
     "note": "Core source is public. The private Gitea repository remains the complete aggregate workspace with release automation, integration history, and priority support for sponsors."
   },
+  "renderers": [
+    {
+      "id": "pptx",
+      "packageName": "@file-viewer/pptx",
+      "packageDir": "packages/renderers/pptx",
+      "repository": "pptxjs",
+      "github": "https://github.com/flyfish-dev/pptxjs",
+      "gitee": "https://gitee.com/flyfish-dev/pptxjs",
+      "entryFormats": ["esm", "types", "worker"],
+      "publicSource": true
+    }
+  ],
   "compatibilityPackages": [
     {
       "id": "vue3-compat-scoped",

@@ -95,11 +95,11 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音视频、字体、PSD、SQLite、WASM、Parquet、Avro 和 WebArchive；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音视频、字体、PSD、SQLite、WASM、Parquet、Avro 和 WebArchive；PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>
-<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、页面/目录导航和宽度自适应，PPTX 会尽量保留模板背景、组合元素和矢量插图。</p>
+<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、页面/目录导航和宽度自适应，PPTX 通过 <code>@file-viewer/pptx</code> 尽量保留模板背景、组合元素和矢量插图。</p>
 </article>
 <article class="doc-card">
 <h3>接入边界清晰</h3>
@@ -126,19 +126,19 @@ titleTemplate: false
 <div class="doc-path-grid">
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
-<span>安装 @flyfish-group/file-viewer3@2.0.1，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
+<span>安装 @flyfish-group/file-viewer3，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-vue2">
 <strong>Vue2.7 项目</strong>
-<span>安装 @flyfish-group/file-viewer@2.0.1，使用 Vue.use(FileViewer)，安装器会自动带上样式。</span>
+<span>安装 @flyfish-group/file-viewer，使用 Vue.use(FileViewer)，安装器会自动带上样式。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
-<span>安装 @file-viewer/react@2.0.1，使用原生 React 组件挂载完整预览器。</span>
+<span>安装 @file-viewer/react，使用原生 React 组件挂载完整预览器。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @file-viewer/web@2.0.1，用 mountViewer 直接挂载到目标 DOM。</span>
+<span>安装 @file-viewer/web，用 mountViewer 直接挂载到目标 DOM。</span>
 </a>
 <a class="doc-path-card" href="/guide/usage">
 <strong>统一 API</strong>

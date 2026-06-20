@@ -4,11 +4,11 @@
 
 Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
-`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
+`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Independent renderer packages such as `@file-viewer/pptx` own heavy format engines that can evolve separately. Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
-- Standard npm packages: `@file-viewer/core`, `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`, `@file-viewer/react`, `@file-viewer/react-legacy`, `@file-viewer/web`, `@file-viewer/jquery`, `@file-viewer/svelte`
+- Standard npm packages: `@file-viewer/core`, `@file-viewer/pptx`, `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`, `@file-viewer/react`, `@file-viewer/react-legacy`, `@file-viewer/web`, `@file-viewer/jquery`, `@file-viewer/svelte`
 - Historical compatibility packages: `@flyfish-group/file-viewer3`, `file-viewer3`, `@flyfish-group/file-viewer`, `@flyfish-group/file-viewer-react`, `@flyfish-group/file-viewer-web`
 - Official website: [file-viewer.app](https://file-viewer.app)
 - Official documentation: [doc.file-viewer.app](https://doc.file-viewer.app)
@@ -19,21 +19,37 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - Sponsorship and priority support: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
+## Support, Sponsorship, and Commercial Edition
+
+Flyfish Viewer remains Apache-2.0 open source. The open-source edition is designed for general Web preview, intranet deployment, attachment centers, and lightweight integration. If you need higher fidelity, stronger performance, private delivery, custom compatibility work, or priority support, you can sponsor the project and learn about the commercial native document engine through the links below.
+
+- Sponsorship and priority support: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- Commercial edition: [product.flyfish.group](https://product.flyfish.group/)
+- Commercial demo: [office.flyfish.dev](https://office.flyfish.dev/)
+- Flyfish Open Source Studio: [flyfish.dev](https://flyfish.dev/)
+
+| WeChat reward | WeChat Pay | Alipay collection | Official account / customer support |
+| --- | --- | --- | --- |
+| <img src="docs/_media/support/wechat-reward.jpg" width="160" alt="WeChat reward QR code" /> | <img src="docs/_media/support/wechat-pay.jpg" width="160" alt="WeChat Pay sponsorship QR code" /> | <img src="docs/_media/support/alipay.jpg" width="160" alt="Alipay collection QR code" /> | <img src="docs/_media/support/wechat-mp.png" width="220" alt="Flyfish Open Source WorkShop official account and customer support entry" /> |
+
+The commercial edition comes from the Flyfish Office product line. It provides a self-developed native Office document engine for serious enterprise Word, Excel, and PowerPoint scenarios, with stronger fidelity for complex layout, large files, pagination, high-quality rendering, and stable performance. The open-source edition will continue to evolve; commercial support is mainly for faster maintainer response, private deployment evaluation, and custom delivery.
+
 ## Current npm Ecosystem
 
-The current latest version is `2.0.1`. The ecosystem publishes 14 npm targets: 9 standard packages and 5 historical aliases. New integrations should prefer the `@file-viewer/*` standard package names; existing applications using `@flyfish-group/*` or `file-viewer3` continue to receive the same versioned capability set.
+The current version follows the npm registry `latest` dist-tag. The ecosystem publishes 15 npm targets: 10 standard/engine packages and 5 historical aliases. New integrations should prefer the `@file-viewer/*` standard package names; existing applications using `@flyfish-group/*` or `file-viewer3` continue to receive the same versioned capability set.
 
-| Scenario | Recommended package | Historical alias | Latest | Notes |
+| Scenario | Recommended package | Historical alias | Version policy | Notes |
 | --- | --- | --- | --- | --- |
-| Core foundation | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | none | `2.0.1` | Framework-neutral format matrix, preview capability, source loading, lifecycle events, search, zoom, print, export, and operation APIs |
-| Vue 3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3), [`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `2.0.1` | Native Vue 3 component, plugin installation, props, events, refs/controllers, and complete types |
-| Vue 2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `2.0.1` | Native Vue 2.7 component with the same capability set as Vue 3 |
-| Vue 2.6 | [`@file-viewer/vue2.6`](https://www.npmjs.com/package/@file-viewer/vue2.6) | none | `2.0.1` | Dedicated line for applications that still run Vue 2.6 |
-| React 18/19 | [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react) | [`@flyfish-group/file-viewer-react`](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | `2.0.1` | Native React component and hooks/controller, without Vue or iframe indirection |
-| React 16.8/17 | [`@file-viewer/react-legacy`](https://www.npmjs.com/package/@file-viewer/react-legacy) | none | `2.0.1` | Compatibility component package for older React projects |
-| Pure Web / script tag | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `2.0.1` | `mountViewer(container, options)`, IIFE, asset copy CLI, and Worker/WASM self-hosting tools |
-| jQuery | [`@file-viewer/jquery`](https://www.npmjs.com/package/@file-viewer/jquery) | none | `2.0.1` | jQuery-style plugin integration for traditional admin systems |
-| Svelte | [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte) | none | `2.0.1` | Svelte component, action, and type entrypoints |
+| Core foundation | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | none | `latest` | Framework-neutral format matrix, preview capability, source loading, lifecycle events, search, zoom, print, export, and operation APIs |
+| Native PPTX engine | [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx) | none | `latest` | Standalone PPTX renderer extracted from Flyfish's stable native implementation, with Worker based progressive slide output |
+| Vue 3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3), [`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Native Vue 3 component, plugin installation, props, events, refs/controllers, and complete types |
+| Vue 2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `latest` | Native Vue 2.7 component with the same capability set as Vue 3 |
+| Vue 2.6 | [`@file-viewer/vue2.6`](https://www.npmjs.com/package/@file-viewer/vue2.6) | none | `latest` | Dedicated line for applications that still run Vue 2.6 |
+| React 18/19 | [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react) | [`@flyfish-group/file-viewer-react`](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | `latest` | Native React component and hooks/controller, without Vue or iframe indirection |
+| React 16.8/17 | [`@file-viewer/react-legacy`](https://www.npmjs.com/package/@file-viewer/react-legacy) | none | `latest` | Compatibility component package for older React projects |
+| Pure Web / script tag | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`, IIFE, asset copy CLI, and Worker/WASM self-hosting tools |
+| jQuery | [`@file-viewer/jquery`](https://www.npmjs.com/package/@file-viewer/jquery) | none | `latest` | jQuery-style plugin integration for traditional admin systems |
+| Svelte | [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte) | none | `latest` | Svelte component, action, and type entrypoints |
 
 The boundary is intentional: `@file-viewer/core` owns low-level preview capability and APIs; every standard component package depends only on core plus its own ecosystem dependencies; historical aliases keep old package names working and are not the recommended first choice for new projects.
 
@@ -44,27 +60,29 @@ pnpm add @file-viewer/vue3
 pnpm add @file-viewer/react
 pnpm add @file-viewer/web
 pnpm add @file-viewer/core
+pnpm add @file-viewer/pptx
 ```
 
 For intranet or offline environments, the open-source main repository also ships release tarballs under `artifacts/`:
 
 ```bash
-npm install ./artifacts/file-viewer-core-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue3-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue2.7-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue2.6-2.0.1.tgz
-npm install ./artifacts/file-viewer-react-2.0.1.tgz
-npm install ./artifacts/file-viewer-react-legacy-2.0.1.tgz
-npm install ./artifacts/file-viewer-web-2.0.1.tgz
-npm install ./artifacts/file-viewer-jquery-2.0.1.tgz
-npm install ./artifacts/file-viewer-svelte-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer3-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-2.0.1.tgz
+npm install ./artifacts/file-viewer-core-*.tgz
+npm install ./artifacts/file-viewer-pptx-*.tgz
+npm install ./artifacts/file-viewer-vue3-*.tgz
+npm install ./artifacts/file-viewer-vue2.7-*.tgz
+npm install ./artifacts/file-viewer-vue2.6-*.tgz
+npm install ./artifacts/file-viewer-react-*.tgz
+npm install ./artifacts/file-viewer-react-legacy-*.tgz
+npm install ./artifacts/file-viewer-web-*.tgz
+npm install ./artifacts/file-viewer-jquery-*.tgz
+npm install ./artifacts/file-viewer-svelte-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-*.tgz
 ```
 
-The open-source main repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
+The open-source main repository ships tarballs for core, the native PPTX engine, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
 
 If you use pnpm 10 and see `Ignored build scripts: @flyfish-group/file-viewer-web`, run:
 
@@ -87,6 +105,7 @@ GitHub Releases provide all distribution downloads:
 | `file-viewer-v2-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
 | `file-viewer-v2-*-docs.tar.gz` | Documentation site static output |
 | `file-viewer-core-*.tgz` | `@file-viewer/core` pure TypeScript foundation tarball |
+| `file-viewer-pptx-*.tgz` | `@file-viewer/pptx` native PPTX renderer tarball |
 | `file-viewer-vue3-*.tgz` | Vue 3 standard package tarball |
 | `file-viewer-vue2.7-*.tgz` | Vue 2.7 standard component package tarball |
 | `file-viewer-vue2.6-*.tgz` | Vue 2.6 standard component package tarball |
@@ -105,7 +124,7 @@ The unscoped `file-viewer3` historical alias remains part of the npm release flo
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## Standard Ecosystem Packages and Public Repositories
 
-This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.
+This section is generated from `ecosystem/wrappers.json` and `packages/core/src/registry/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.
 
 Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. The open-source aggregate repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; private Gitea `main` is the complete original aggregate workspace for unified automation, integration history, sponsorship, and priority support, and is not the same as the GitHub open-source aggregate.
 
@@ -137,7 +156,7 @@ The shared core currently declares 23 preview pipelines and 194 file extensions.
 - **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
 - **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
 - **Consistent native component package experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
-- **Open-source main distribution.** The open-source main repository contains core, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
+- **Open-source main distribution.** The open-source main repository contains core, standalone renderer packages, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
 
 ## Supported Formats
 
@@ -150,7 +169,7 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
 | Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
 | Excel-compatible | `xlsm`, `xlsb`, `xls`, `xlt`, `xltm`, `csv`, `ods`, `fods`, `numbers` | Progressive spreadsheet parsing and virtual rendering through the same default main-thread path, with Worker opt-in when deployment allows it | Legacy spreadsheets and lightweight data preview |
-| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Open-source `@aiden0z/pptx-renderer` slide preview with lazy loading and windowed slide lists; ODP uses OpenDocument slide text extraction | Presentations, training decks, proposals |
+| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Native open-source `@file-viewer/pptx` engine with Worker based progressive slide output; ODP uses OpenDocument slide text extraction | Presentations, training decks, proposals |
 | PDF | `pdf` | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export | Contracts, invoices, official layout documents |
 | OFD | `ofd` | Browser-side OFD preview based on `DLTech21/ofd.js` source | Chinese e-invoices, government documents, archives |
 | Typst | `typ`, `typst` | Direct Typst source rendering with browser WASM compiler and SVG pages | Technical reports, papers, engineering documents |
@@ -397,7 +416,7 @@ The open-source main repository also contains:
 The project provides a static nginx static image and build scripts for `linux/amd64` and `linux/arm64`. A typical deployment can serve the demo and comparison page directly:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.1
+docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 ```
 
 Then open:

@@ -1,6 +1,6 @@
 # Public Sample Sources
 
-本目录中的 PDF、DOCX、PPTX、CAD、3D 模型、绘图、音视频、EPUB 和 MSG 示例文件使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；RTF、ODT、ODP、地理数据、MIDI、SQLite、WASM、UMD、EML、MBOX、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库、国际组织公开文档或项目方明确授权的资料，并同步更新本文件与 `README.md`。
+本目录中的 PDF、DOCX、PPTX、CAD、OpenDocument、3D 模型、绘图、音视频、EPUB 和 MSG 示例文件使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；RTF、FODS、地理数据、MIDI、SQLite、WASM、UMD、EML、MBOX、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库、国际组织公开文档或项目方明确授权的资料，并同步更新本文件与 `README.md`。
 
 | Local file | Source | License | Purpose |
 | --- | --- | --- | --- |
@@ -9,7 +9,7 @@
 | `template.dot` | Copied from project `test.doc` fixture and saved with the Word 97-2003 template extension | Apache-2.0 | DOT extension routing smoke test for legacy Word template preview |
 | `ppt.pptx` | `https://github.com/hcp4715/R4Psy/blob/main/slides/chapter_1.pptx` | CC-BY-4.0 | Rich Chinese presentation smoke test for slide layout, images, theme styling and media-heavy PPTX rendering |
 | `pdf.pdf` | Project-owner provided `PDF沉浸式翻译技术说明.pdf` | Demo distribution authorized by project owner | 13-page PDF toolbar, scale, page/tree sidebar, print, export and dark-shell isolation smoke tests |
-| `sample.dwg` | `https://github.com/dshn06/cad-webviewer-unity/blob/main/cad-webview/public/cad-data/data/baseline-sample.dwg` | MIT | Real DWG sample for Worker + LibreDWG WASM geometry smoke tests |
+| `sample.dwg` | `https://download.autodesk.com/us/samplefiles/acad/blocks_and_tables_-_imperial.dwg` | Autodesk public AutoCAD sample file | Official Autodesk DWG sample for Worker + LibreDWG WASM geometry, blocks and table smoke tests |
 | `samples/apache/blocks_and_tables.dwf` | `https://issues.apache.org/jira/browse/TIKA-1823` attachment `blocks_and_tables.dwf` | Apache Software Foundation Jira attachment | Native DWF 6 container smoke test for blocks, tables, W2D graphics and MIME/header handling |
 | `samples/autodesk/house.dwfx` | `https://github.com/Developer-Autodesk/viewer-javascript-tutorial/blob/master/Sample%20files/House.dwfx` | MIT | Official Autodesk Viewer tutorial DWFx sample for native DWFx/XPS rendering, multi-page structure and CAD viewport smoke tests |
 | `samples/autodesk/robot-arm.dwfx` | `https://github.com/Developer-Autodesk/viewer-javascript-tutorial/blob/master/Sample%20files/RobotArm1.dwfx` | MIT | Official Autodesk Viewer tutorial DWFx sample for W2D/W3D native rendering and assembly drawing smoke tests |
@@ -17,7 +17,11 @@
 | `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for official restore/export smoke tests |
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
-| `sample.rtf` / `document.odt` / `slides.odp` | Project-generated compatible document fixtures | Apache-2.0 | RTF, ODT and ODP route smoke tests |
+| `document.odt` | `https://wiki.documentfoundation.org/File:Book-template-0-2.odt` | CC-BY-SA-3.0 / LGPL-3.0+ / MPL-1.1 | Real The Document Foundation ODT template for OpenDocument text route smoke tests |
+| `excel.ods` | `https://wiki.documentfoundation.org/File:Fixture_Copa_del_Mundo_2014.ods` | CC-BY-SA-3.0 | Real The Document Foundation ODS spreadsheet for OpenDocument sheet tabs, data and style smoke tests |
+| `slides.odp` | `https://wiki.documentfoundation.org/File:QA_Impress_Example_01_ODP_File.odp` | CC-BY-SA-3.0 via The Document Foundation Wiki default contribution license | Real The Document Foundation ODP presentation for OpenDocument slide outline smoke tests |
+| `excel.fods` | Project-authored Flat ODS XML fixture | Apache-2.0 | Standards-conforming Flat OpenDocument spreadsheet route smoke test |
+| `sample.rtf` | Project-generated compatible document fixture | Apache-2.0 | RTF route smoke test |
 | `map.geojson` / `route.kml` / `track.gpx` | Project-generated lightweight geospatial fixtures | Apache-2.0 | GeoJSON, KML and GPX normalization plus offline SVG map smoke tests |
 | `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Direct Typst source preview and browser WASM smoke tests |
 | `archive.zip` / `archive.tar.gz` | Project-packaged PDF, public DOCX, Markdown, TypeScript and JSON sample set | See bundled file sources | Archive directory, lazy extraction, cache and nested preview smoke tests |
@@ -33,7 +37,7 @@
 
 运行时说明:
 
-- `sample.dwg` 是真实 DWG 文件；运行时通过 `@flyfish-dev/cad-viewer` 按需加载 DWG Worker 和 LibreDWG WASM，验证浏览器本地 DWG 几何预览链路。
+- `sample.dwg` 来自 Autodesk 官方 AutoCAD sample files 的 `blocks_and_tables_-_imperial.dwg`；运行时通过 `@flyfish-dev/cad-viewer` 按需加载 DWG Worker 和 LibreDWG WASM，验证浏览器本地 DWG 几何、块和表格预览链路。
 - `samples/apache/blocks_and_tables.dwf` 来自 Apache Tika `TIKA-1823` 的公开 Jira 附件，保留 `(DWF V06.00)PK` 文件头，用于验证原生 DWF 6 ZIP 容器、块、表格、W2D 图形和 MIME/header 识别。
 - `samples/autodesk/house.dwfx` 来自 Autodesk 官方 Viewer 教程仓库，用于验证 DWFx / XPS native renderer、图形、多页结构和视图适配；该文件约 17MB，但只在用户选择样例时按需加载。
 - `samples/autodesk/robot-arm.dwfx` 同样来自 Autodesk 官方 Viewer 教程仓库，用于验证 W2D/W3D native renderer 和复杂装配图形。
@@ -54,6 +58,7 @@
 - `sample.msg` 来自 `HiraokaHyperTools/msgreader` 测试样例，用于验证 Outlook MSG 解析。
 - `sample.mbox` 是项目内生成的邮件归档 fixture，用于验证 MBOX 归档识别和首封邮件预览。
 - `sample.olb` 与 `sample.dra` 是项目内生成的 CFB 夹具，用于验证 OLB / DRA 结构树、对象候选、属性和可读字符串索引。
-- `sample.rtf`、`document.odt` 和 `slides.odp` 是项目内生成的兼容文档 fixture，用于验证 RTFJS 与 OpenDocument 包结构读取。
+- `document.odt`、`excel.ods` 和 `slides.odp` 均来自 The Document Foundation Wiki 的真实公开 OpenDocument 文件，用于验证 ODT 正文、ODS 工作表和 ODP 幻灯片包结构读取；`excel.fods` 是标准 Flat ODS XML 夹具，用于验证平面 OpenDocument 表格入口。
+- `sample.rtf` 是项目内生成的兼容文档 fixture，用于验证 RTFJS 读取。
 - `map.geojson`、`route.kml` 和 `track.gpx` 是项目内生成的轻量地理数据 fixture，用于验证 GeoJSON/KML/GPX 标准化和离线 SVG 地图预览。
 - `sample.sqlite`、`module.wasm` 和 `icon.ico` 用于验证结构化数据、WASM 模块摘要和 ICO 图标预览；`data.jsonc` 等工程文本 fixture 用于验证新增 highlight.js 扩展名映射。

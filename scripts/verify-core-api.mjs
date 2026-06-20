@@ -431,6 +431,9 @@ const allowedCoreDevDependencies = new Set([
   '@types/tinycolor2',
   '@types/pako'
 ])
+const allowedCoreRendererDependencies = new Set([
+  '@file-viewer/pptx'
+])
 const forbiddenCoreDependencyPrefixes = [
   'vue',
   '@vue/',
@@ -459,6 +462,9 @@ const forbiddenCoreApiTokens = [
 ]
 
 function isForbiddenCoreDependency(name) {
+  if (allowedCoreRendererDependencies.has(name)) {
+    return false
+  }
   return forbiddenCoreDependencyPrefixes.some(prefix =>
     prefix.endsWith('/')
       ? name.startsWith(prefix)
@@ -678,7 +684,7 @@ const tsconfig = await readJson(join(coreDir, 'tsconfig.json'))
 const indexSource = await readFile(join(coreSrcDir, 'index.ts'), 'utf8')
 const headlessSource = await readFile(join(coreSrcDir, 'headless.ts'), 'utf8')
 const browserSource = await readFile(join(coreSrcDir, 'browser.ts'), 'utf8')
-const typesSource = await readFile(join(coreSrcDir, 'types.ts'), 'utf8')
+const typesSource = await readFile(join(coreSrcDir, 'contracts', 'types.ts'), 'utf8')
 const sourceFiles = await readAllSourceFiles(coreSrcDir)
 
 assertCorePackageMetadata(packageJson)

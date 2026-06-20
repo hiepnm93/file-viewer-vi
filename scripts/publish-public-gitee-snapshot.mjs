@@ -135,6 +135,7 @@ async function listPackageDirs(section) {
 async function packageDirs() {
   return [
     'packages/core',
+    ...(await listPackageDirs('renderers')),
     ...(await listPackageDirs('components')),
     ...(await listPackageDirs('compat'))
   ]

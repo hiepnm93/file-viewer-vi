@@ -337,6 +337,7 @@ async function writePublicWorkspace(repoDir) {
     [
       'packages:',
       '  - packages/core',
+      '  - packages/renderers/*',
       '  - packages/components/*',
       '  - packages/compat/*',
       '  - apps/*',
@@ -366,7 +367,7 @@ async function writePublicRootPackage(repoDir) {
     private: true,
     type: 'module',
     packageManager: packageJson.packageManager,
-    description: 'Flyfish File Viewer open source official site, demo, core, standard component packages, compatibility aliases, and documentation.',
+    description: 'Flyfish File Viewer open source official site, demo, core, renderer engines, standard component packages, compatibility aliases, and documentation.',
     scripts: {
       dev: 'pnpm --filter @flyfish-group/file-viewer-demo dev',
       'site:dev': 'pnpm --filter @flyfish-group/file-viewer-site dev',
@@ -375,10 +376,11 @@ async function writePublicRootPackage(repoDir) {
       build: 'pnpm build:components && pnpm build:demo',
       'build:demo': 'pnpm --filter @flyfish-group/file-viewer-demo build',
       'build:component-demo': 'pnpm --filter @flyfish-group/file-viewer-component-demo build',
-      'build:core': 'pnpm --filter @file-viewer/core build',
+      'build:pptx': 'pnpm --filter @file-viewer/pptx build',
+      'build:core': 'pnpm build:pptx && pnpm --filter @file-viewer/core build',
       'build:components': 'pnpm build:core && pnpm --filter @file-viewer/web build && pnpm --filter @file-viewer/react build && pnpm --filter @file-viewer/react-legacy build && pnpm --filter @file-viewer/vue3 build && pnpm --filter @file-viewer/vue2.7 build && pnpm --filter @file-viewer/vue2.6 build && pnpm --filter @file-viewer/jquery build && pnpm --filter @file-viewer/svelte build',
       'type-check': 'pnpm --filter @flyfish-group/file-viewer-demo type-check && pnpm type-check:core && pnpm type-check:components',
-      'type-check:core': 'pnpm --filter @file-viewer/core type-check',
+      'type-check:core': 'pnpm --filter @file-viewer/pptx type-check && pnpm --filter @file-viewer/core type-check',
       'type-check:components': 'pnpm --filter @file-viewer/web type-check && pnpm --filter @file-viewer/react type-check && pnpm --filter @file-viewer/react-legacy type-check && pnpm --filter @file-viewer/vue3 type-check && pnpm --filter @file-viewer/vue2.7 type-check && pnpm --filter @file-viewer/vue2.6 type-check && pnpm --filter @file-viewer/jquery type-check && pnpm --filter @file-viewer/svelte type-check',
       'docs:dev': 'vitepress dev docs',
       'docs:build': 'vitepress build docs',
@@ -405,6 +407,7 @@ async function copyPublicSourceTree(repoDir) {
   })
   await mkdir(join(repoDir, 'packages'), { recursive: true })
   await copySourceDir(join(sourceRoot, 'packages', 'core'), join(repoDir, 'packages', 'core'))
+  await copySourceDir(join(sourceRoot, 'packages', 'renderers'), join(repoDir, 'packages', 'renderers'))
   await copySourceDir(join(sourceRoot, 'packages', 'components'), join(repoDir, 'packages', 'components'))
   await copySourceDir(join(sourceRoot, 'packages', 'compat'), join(repoDir, 'packages', 'compat'))
   await copySourceDir(join(sourceRoot, 'docs'), join(repoDir, 'docs'), {
@@ -497,6 +500,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     ? ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
     : ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
+  const renderersByPackageName = new Map((wrapperManifest.renderers || []).map(renderer => [renderer.packageName, renderer]))
   const packages = ecosystemPackManifest.packages || []
   const metadataAssets = [
     {
@@ -531,6 +535,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     metadataAssets,
     ecosystemArtifacts: packages.map(packageRecord => {
       const wrapper = wrappersByPackageName.get(packageRecord.packageName)
+      const renderer = renderersByPackageName.get(packageRecord.packageName)
       const includeTarball = shouldPublishArtifactTarball(packageRecord)
       return {
         name: packageRecord.packageName,
@@ -544,10 +549,17 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
         artifactNote: packageRecord.releaseArtifact?.reason ?? null,
         github: packageRecord.github ?? null,
         gitee: packageRecord.gitee ?? null,
-        entryFormats: wrapper?.entryFormats ?? [],
+        entryFormats: wrapper?.entryFormats ?? renderer?.entryFormats ?? [],
         historicalPackages: wrapper?.historicalPackages ?? []
       }
     }),
+    rendererRepositories: (wrapperManifest.renderers || []).map(renderer => ({
+      packageName: renderer.packageName,
+      repository: renderer.repository,
+      github: renderer.github,
+      gitee: renderer.gitee,
+      entryFormats: renderer.entryFormats
+    })),
     wrapperRepositories: wrapperManifest.wrappers.map(wrapper => ({
       framework: wrapper.framework,
       packageName: wrapper.packageName,

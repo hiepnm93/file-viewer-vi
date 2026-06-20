@@ -18,6 +18,13 @@ export function ecosystemPackageSpecs(wrapperManifest) {
       publicSource: true,
       corePackage: wrapperManifest.corePackage
     },
+    ...(wrapperManifest.renderers || []).map(renderer => ({
+      id: `renderer-${renderer.id}`,
+      kind: 'renderer',
+      packageDir: renderer.packageDir,
+      renderer,
+      publicSource: renderer.publicSource !== false
+    })),
     ...(wrapperManifest.compatibilityPackages || []).map(compatibilityPackage => ({
       id: compatibilityPackage.id,
       kind: 'compatibility',
@@ -125,8 +132,8 @@ export function ecosystemPackageManifestEntry(entry) {
     publicSource: entry.publicSource,
     releaseArtifact: entry.releaseArtifact,
     targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
-    github: entry.wrapper?.github ?? null,
-    gitee: entry.wrapper?.gitee ?? null,
+    github: entry.wrapper?.github ?? entry.renderer?.github ?? null,
+    gitee: entry.wrapper?.gitee ?? entry.renderer?.gitee ?? null,
     sourceRepository: entry.corePackage?.sourceRepository ?? null
   }
 }

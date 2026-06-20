@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/svelte",
-  "version": "2.0.1",
+  "version": "2.0.6",
   "private": false,
   "type": "module",
   "description": "Standard Svelte component package for Flyfish File Viewer",
@@ -13,8 +13,8 @@
     "office-preview"
   ],
   "svelte": "./src/FileViewer.svelte",
-  "main": "./src/FileViewer.svelte",
-  "module": "./src/FileViewer.svelte",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -37,8 +37,8 @@
     ".": {
       "types": "./src/FileViewer.svelte.d.ts",
       "svelte": "./src/FileViewer.svelte",
-      "import": "./src/FileViewer.svelte",
-      "default": "./src/FileViewer.svelte"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./action": {
       "types": "./dist/index.d.ts",
@@ -68,7 +68,7 @@
     "svelte": ">=3.59 <6"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:^2.0.1"
+    "@file-viewer/core": "workspace:^2.0.6"
   },
   "devDependencies": {
     "svelte": "^5.46.0",

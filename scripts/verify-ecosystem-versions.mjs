@@ -80,6 +80,19 @@ for (const wrapper of wrapperManifest.wrappers) {
   }
 }
 
+for (const renderer of wrapperManifest.renderers || []) {
+  const entry = entries.find(candidate => candidate.id === `renderer-${renderer.id}`)
+  assert(entry, `Missing renderer release entry for ${renderer.id}`)
+  assert(entry.kind === 'renderer', `${renderer.packageName} must be a renderer release entry`)
+  assert(entry.packageName === renderer.packageName, `${renderer.id} package name drifted from wrappers.json`)
+  assert(entry.packageDir === renderer.packageDir, `${renderer.id} packageDir drifted from wrappers.json`)
+  assertRepositoryMetadata(entry, renderer.github, renderer.packageDir)
+  assert(
+    entry.packageJson.bugs?.url === `${renderer.github}/issues`,
+    `${entry.packageName} bugs.url must be ${renderer.github}/issues`
+  )
+}
+
 for (const compatibilityPackage of wrapperManifest.compatibilityPackages || []) {
   assert(
     compatibilityPackage.id,

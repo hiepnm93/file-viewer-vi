@@ -5,7 +5,7 @@
     "sourceBranch": "main",
     "rootPackage": "@flyfish-group/file-viewer-workspace",
     "versionSource": "package.json",
-    "formatMatrixSource": "packages/core/src/formats.ts",
+    "formatMatrixSource": "packages/core/src/registry/formats.ts",
     "wrapperManifestSource": "ecosystem/wrappers.json",
     "smokeMatrixSource": "ecosystem/smoke-matrix.json"
   },

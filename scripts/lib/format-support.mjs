@@ -6,7 +6,7 @@ export function quotedValues(text) {
 }
 
 export async function readCoreRendererDefinitions(sourceRoot) {
-  const formatSourcePath = join(sourceRoot, 'packages', 'core', 'src', 'formats.ts')
+  const formatSourcePath = join(sourceRoot, 'packages', 'core', 'src', 'registry', 'formats.ts')
   const source = await readFile(formatSourcePath, 'utf8')
   const constants = new Map()
   const constantPattern = /export const ([A-Z0-9_]+) = \[([\s\S]*?)\] as const;/g

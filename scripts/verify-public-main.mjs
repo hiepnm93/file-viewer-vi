@@ -268,6 +268,7 @@ for (const requiredDirectory of ['apps', 'packages', 'docs', 'dist', 'artifacts'
   await assertDirectory(join(publicRepoDir, requiredDirectory), requiredDirectory)
 }
 await assertDirectory(join(publicRepoDir, 'packages', 'core'), 'packages/core')
+await assertDirectory(join(publicRepoDir, 'packages', 'renderers'), 'packages/renderers')
 await assertFile(join(publicRepoDir, 'pnpm-workspace.yaml'), 'pnpm-workspace.yaml')
 
 const manifest = await assertReleaseManifest(publicRepoDir)

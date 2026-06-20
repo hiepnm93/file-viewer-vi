@@ -8,7 +8,7 @@ const sourceRoot = process.cwd()
 const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
 const readmeTemplate = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrapper-readme-template.json'), 'utf8'))
 
-const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
+const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/registry/formats.ts'))
 const rendererDefinitions = [...formatModule.DEFAULT_RENDERER_DEFINITIONS]
 const supportedExtensions = [...formatModule.DEFAULT_SUPPORTED_EXTENSIONS]
 
@@ -364,7 +364,7 @@ function generatedPublicBlock(locale) {
       publicMarkers.start,
       `## ${template.publicEcosystemHeading}`,
       '',
-      '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。',
+      '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/registry/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。',
       '',
       `核心底座包: \`${core.packageName}\`。core 源码已公开，GitHub: ${core.github}，Gitee: ${core.gitee}。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea \`main\` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。`,
       '',
@@ -382,7 +382,7 @@ function generatedPublicBlock(locale) {
     publicMarkers.start,
     `## ${template.publicEcosystemHeading}`,
     '',
-    'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.',
+    'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/registry/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.',
     '',
     `Core foundation package: \`${core.packageName}\`. Core source is public: ${core.github} and ${core.gitee}. The open-source aggregate repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; private Gitea \`main\` is the complete original aggregate workspace for unified automation, integration history, sponsorship, and priority support, and is not the same as the GitHub open-source aggregate.`,
     '',

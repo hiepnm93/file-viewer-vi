@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.0.1",
+  "version": "2.0.6",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -10,10 +10,7 @@
     "vue3",
     "doc-preview"
   ],
-  "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
-  },
+  "author": "Wangyu <wybaby168@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/flyfish-dev/file-viewer.git"
@@ -35,18 +32,18 @@
     "build:component-packages": "pnpm build:vue3 && pnpm --filter @flyfish-group/file-viewer3 build && pnpm --filter file-viewer3 build && pnpm --filter @file-viewer/web build && pnpm --filter @flyfish-group/file-viewer-web build && pnpm --filter @file-viewer/react build && pnpm --filter @flyfish-group/file-viewer-react build && pnpm --filter @file-viewer/react-legacy build && pnpm --filter @file-viewer/vue2.7 build && pnpm --filter @flyfish-group/file-viewer build && pnpm --filter @file-viewer/vue2.6 build && pnpm --filter @file-viewer/jquery build && pnpm --filter @file-viewer/svelte build",
     "build:components": "pnpm build:viewer-assets && pnpm build:component-packages",
     "type-check": "pnpm --filter @flyfish-group/file-viewer-demo type-check",
-    "type-check:core": "pnpm --filter @file-viewer/core type-check",
+    "type-check:core": "pnpm --filter @file-viewer/pptx type-check && pnpm --filter @file-viewer/core type-check",
     "type-check:components": "pnpm --filter @flyfish-group/file-viewer-web type-check && pnpm --filter @flyfish-group/file-viewer-react type-check && pnpm --filter @flyfish-group/file-viewer type-check && pnpm --filter file-viewer3 type-check && pnpm --filter @file-viewer/web type-check && pnpm --filter @file-viewer/react type-check && pnpm --filter @file-viewer/react-legacy type-check && pnpm --filter @file-viewer/vue3 type-check && pnpm --filter @file-viewer/vue2.7 type-check && pnpm --filter @file-viewer/vue2.6 type-check && pnpm --filter @file-viewer/jquery type-check && pnpm --filter @file-viewer/svelte type-check",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write apps packages scripts test docs *.md",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:deploy:cloudflare": "pnpm docs:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-docs CLOUDFLARE_PAGES_OUTPUT_DIR=docs/.vitepress/dist CLOUDFLARE_PAGES_BRANCH=main node scripts/deploy-cloudflare-pages.mjs",
+    "docs:deploy:cloudflare": "pnpm docs:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-docs CLOUDFLARE_PAGES_OUTPUT_DIR=docs/.vitepress/dist node scripts/deploy-cloudflare-pages.mjs",
     "site:dev": "pnpm --filter @flyfish-group/file-viewer-site dev",
     "site:build": "pnpm --filter @flyfish-group/file-viewer-site build",
     "site:preview": "pnpm --filter @flyfish-group/file-viewer-site preview",
-    "site:deploy:cloudflare": "pnpm site:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-site CLOUDFLARE_PAGES_OUTPUT_DIR=apps/official-site/dist CLOUDFLARE_PAGES_BRANCH=main node scripts/deploy-cloudflare-pages.mjs",
+    "site:deploy:cloudflare": "pnpm site:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-site CLOUDFLARE_PAGES_OUTPUT_DIR=apps/official-site/dist node scripts/deploy-cloudflare-pages.mjs",
     "dev:components": "pnpm --filter @flyfish-group/file-viewer-component-demo dev",
     "build:component-demo": "pnpm --filter @flyfish-group/file-viewer-component-demo build && pnpm verify:component-demo-output",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",
@@ -89,7 +86,7 @@
     "release:components:pack": "pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --pack --pack-dir .release/components",
     "release:components:publish": "pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --publish",
     "release:ecosystem:list": "node scripts/release-ecosystem-packages.mjs --list",
-    "release:ecosystem:build": "pnpm --filter @file-viewer/core build && pnpm build:viewer-assets && pnpm build:component-packages && pnpm obfuscate && pnpm components:export && pnpm verify:production-entrypoints",
+    "release:ecosystem:build": "pnpm --filter @file-viewer/pptx build && pnpm --filter @file-viewer/core build && pnpm build:viewer-assets && pnpm build:component-packages && pnpm obfuscate && pnpm components:export && pnpm verify:production-entrypoints",
     "release:ecosystem:pack": "pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --pack --clean",
     "release:ecosystem:publish:preflight": "node scripts/release-ecosystem-packages.mjs --publish --preflight",
     "release:ecosystem:publish:dry-run": "pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --publish --dry-run",
@@ -126,5 +123,10 @@
     "vitepress": "^1.6.4",
     "vitest": "^4.1.8"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  }
 }

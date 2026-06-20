@@ -28,6 +28,16 @@ const ecosystemManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers
 const coreMetadata = ecosystemManifest.corePackage
 const targetDir = join(outputRoot, coreMetadata.repository)
 
+const workspaceVersions = new Map([
+  [rootPackage.name, rootPackage.version],
+  [corePackage.name, corePackage.version]
+])
+
+for (const renderer of ecosystemManifest.renderers || []) {
+  const rendererPackage = await readJson(join(sourceRoot, renderer.packageDir, 'package.json'))
+  workspaceVersions.set(rendererPackage.name, rendererPackage.version)
+}
+
 function run(command, commandArgs) {
   const result = spawnSync(command, commandArgs, {
     cwd: sourceRoot,
@@ -46,6 +56,27 @@ async function readJson(path) {
 
 async function writeJson(path, value) {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
+}
+
+function normalizeWorkspaceRange(dependencyName, range) {
+  if (!range?.startsWith?.('workspace:')) {
+    return range
+  }
+  const workspaceRange = range.slice('workspace:'.length)
+  if (workspaceRange === '*' || workspaceRange === '') {
+    const version = workspaceVersions.get(dependencyName)
+    return version ? `^${version}` : `^${rootPackage.version}`
+  }
+  return workspaceRange
+}
+
+function normalizeDependencyBlock(block) {
+  if (!block) {
+    return
+  }
+  for (const [dependencyName, range] of Object.entries(block)) {
+    block[dependencyName] = normalizeWorkspaceRange(dependencyName, range)
+  }
 }
 
 async function assertDirectory(path, label = path) {
@@ -112,6 +143,10 @@ async function normalizePackageJson() {
       build: 'node scripts/clean-dist.mjs && tsc -b tsconfig.json --force && node scripts/fix-core-esm-extensions.mjs'
     }
   }
+  normalizeDependencyBlock(packageJson.dependencies)
+  normalizeDependencyBlock(packageJson.devDependencies)
+  normalizeDependencyBlock(packageJson.peerDependencies)
+  normalizeDependencyBlock(packageJson.optionalDependencies)
   await writeJson(join(targetDir, 'package.json'), packageJson)
 }
 

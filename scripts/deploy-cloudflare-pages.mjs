@@ -1,7 +1,10 @@
 import { spawnSync } from 'node:child_process'
 
 const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'flyfish-file-viewer'
-const branch = process.env.CLOUDFLARE_PAGES_BRANCH || 'main'
+// Wrangler direct upload publishes to the production deployment when no branch
+// is supplied. Keep branch deployments explicit so custom domains are updated
+// by the default release commands.
+const branch = process.env.CLOUDFLARE_PAGES_BRANCH
 const outputDir = process.env.CLOUDFLARE_PAGES_OUTPUT_DIR || 'apps/viewer-demo/dist'
 
 function commandExists(command, args = ['--version']) {
@@ -24,10 +27,12 @@ const args = [
   'deploy',
   outputDir,
   '--project-name',
-  projectName,
-  '--branch',
-  branch
+  projectName
 ]
+
+if (branch) {
+  args.push('--branch', branch)
+}
 
 const result = spawnSync(command, args, {
   stdio: 'inherit',
