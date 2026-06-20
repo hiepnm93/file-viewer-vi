@@ -46,7 +46,7 @@
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | core 共享绘图渲染器按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
-| draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | core 共享绘图渲染器按需加载官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
+| draw.io | `drawio`、`dio` | 内置离线 SVG 预览；可选自托管 diagrams.net `GraphViewer` | core 共享绘图渲染器默认解析 mxGraphModel / mxfile 并输出安全 SVG，不访问公网；如需官方 viewer 可配置 `options.drawing.viewerScriptUrl` | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
@@ -95,17 +95,18 @@
 - 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。
 - `odp` 作为 OpenDocument 演示文稿兼容入口，会读取每页幻灯片文本和页面结构，用于快速确认内容和页数。需要完整动画、母版和复杂形状高保真时，仍建议导出为 PPTX 或 PDF。
 - `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态、旋转页兼容、可显隐导航窗格、页面/目录树切换和宽度自适应。同源 URL 会默认使用 PDF.js 的 URL 渐进读取；文件服务支持 Range 时会自动分片加载，避免大文件必须整包下载后才出现首屏。
+- PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，不会访问公共 CDN。静态目录特殊时可通过 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl` 和 `options.pdf.standardFontDataUrl` 指向自托管地址。
 - PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，也不会被导航窗格、预览容器或全局样式截断，适合正式归档和审批留痕。
 - `ofd` 走 core 内的 framework-neutral browser renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
 - `typ` / `typst` 始终按源文件直接预览，不会自动探测或替换为同名 PDF。组件会在命中 Typst 时按需加载 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译与 SVG 渲染链路。
-- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址；Cloudflare Pages 等静态平台如果限制单文件大小，部署脚本会跳过超限 compiler WASM，运行时自动回退到官方 npm CDN；`options.typst.renderTimeoutMs` 可控制浏览器端编译超时，超时后自动切换源码预览。
+- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址；运行时不会访问官方 npm CDN，本地 WASM 不可用或 `options.typst.renderTimeoutMs` 超时时会自动切换源码预览。
 - Typst 适合技术报告、论文草稿、工程文档模板和需要保留排版语言源文件的场景。如果文档引用本地图片或拆分文件，建议在业务侧先把资源打包进压缩包，保留完整项目结构。
 - 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf` / `ofd` 这类版式成品；如果你希望保留可编辑源文件和排版语义，Typst 是更轻量的工程文档入口。
 
 ### 压缩包、邮件与 EDA
 
 - 压缩包走 core 共享 archive renderer，目录读取优先在 `libarchive.js` Worker 中完成，只有用户点击内部文件时才按需解压对应条目，避免一次性把大包全量展开到主线程。私有化部署时一般不需要写死 Worker 路径；组件会先尝试当前 viewer base 下的 `vendor/libarchive/worker-bundle.js`。
-- 如果手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时，组件会继续降级到 ZIP/TAR/GZIP 兼容模式，优先保证常见压缩包能打开目录和内部文档。只有静态目录或 CDN 路径特殊时，才需要通过 `options.archive.workerUrl` / `options.archive.wasmUrl` 指定路径。
+- 如果手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时，组件会继续降级到 ZIP/TAR/GZIP 兼容模式，优先保证常见压缩包能打开目录和内部文档。只有静态目录或 WASM 路径特殊时，才需要通过 `options.archive.workerUrl` / `options.archive.wasmUrl` 指定路径。
 - 压缩包内文件会继续复用同一套文件预览器，所以包里的 PDF、Word、Markdown、代码、图片、邮件、地理数据、字体/数据资产或嵌套压缩包都能在体积限制内继续打开。
 - `options.archive.cache` 默认启用 IndexedDB 缓存，已解压的内部文件再次打开会更快；`maxArchiveSize` 和 `maxEntryPreviewSize` 用于限制压缩包和单个条目的内存风险。
 - EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。
@@ -116,7 +117,7 @@
 ### CAD 图纸
 
 - `dwg` / `dxf` / `dwf` / `dwfx` / `xps` 走 `@flyfish-dev/cad-viewer`，DWG/DXF 归一化为 CAD document 后使用 retained WebGL 渲染，浏览器不支持 WebGL 时回退 Canvas2D。
-- DWG 通过独立 Worker 加载 LibreDWG WASM，避免初始化和二进制解析阻塞主线程。项目构建会把 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm` 和 `dwg-worker.js` 复制到 viewer assets 的 `wasm/cad/` 下，也可以通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 指向私有 CDN。
+- DWG 通过独立 Worker 加载 LibreDWG WASM，避免初始化和二进制解析阻塞主线程。项目构建会把 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm` 和 `dwg-worker.js` 复制到 viewer assets 的 `wasm/cad/` 下，也可以通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 指向自托管静态资源。
 - DWF / DWFx / XPS 使用 `dwf-viewer` native renderer，支持 DWF 6+ ZIP 容器、WHIP/W2D 2D sheet、W3D/HSF eModel、DWFx/OPC/XPS 页面、嵌入字体、CAD 线宽适配和 WASM raster fallback。
 
 ### 地理数据
@@ -136,8 +137,8 @@
 ### 绘图文件
 
 - `excalidraw` 使用 core 共享绘图渲染器按需加载官方 `@excalidraw/excalidraw` 包的 `restore` 与 `exportToSvg` 能力，输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
-- `drawio` 和 `dio` 使用官方 diagrams.net `GraphViewer`，由官方 viewer 处理 mxGraphModel / mxfile、主题和图元兼容，组件只负责创建容器和传入 XML。
-- draw.io viewer 脚本来自 diagrams.net 官方静态地址，只有命中 `.drawio` / `.dio` 时才加载；需要内网私有化时，可以把该官方脚本镜像到自己的静态资源域名再替换加载地址。
+- `drawio` 和 `dio` 默认使用内置离线 SVG 预览，解析常见 mxGraphModel / mxfile 图元、连线和文本，不访问 diagrams.net 公网脚本。
+- 如果你需要官方 diagrams.net `GraphViewer` 的更完整兼容能力，可以把官方脚本部署到自己的静态目录，并通过 `options.drawing.viewerScriptUrl` 指定自托管地址；加载失败或超时时仍会回退到本地 SVG。
 
 ### 电子书
 
@@ -177,7 +178,7 @@
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先提供 `dwg`、`dxf`、`dwf` 或 `dwfx`；DWG 和 DWF native renderer 会按需加载 Worker/WASM，私有化部署时请确认 viewer assets 中的 `wasm/cad/` 资源可访问。
 - 你要预览 3D 模型：优先沉淀 `glb` / `gltf`，历史模型再用 OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ 等格式接入；STEP、IGES、IFC、3DM 建议先转换。
-- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者走官方 diagrams.net viewer。
+- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者默认走离线 SVG 预览并可选接入自托管 diagrams.net viewer。
 - 你要预览电子书或音视频：EPUB / UMD 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG，视频优先选择 MP4 / WEBM；需要流媒体体验时可以提供 M3U8。
 
 ## 不支持的格式会怎样

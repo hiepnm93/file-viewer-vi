@@ -152,7 +152,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 | `model.ply` | 使用项目内生成的 PLY 四面体验证 PLY 几何预览 | `ply` |
 | `model.step` | 使用项目内生成的最小 STEP 验证工程 CAD 格式转换原因提示 | `step` |
 | `flow.excalidraw` | 使用公开 Excalidraw 图纸验证官方恢复与 SVG 导出预览 | `excalidraw` |
-| `process.drawio` | 使用官方 draw.io 示例验证 diagrams.net Viewer 预览 | `drawio` |
+| `process.drawio` | 使用官方 draw.io 示例验证离线 SVG 预览和可选自托管 viewer 链路 | `drawio` |
 | `book.epub` | 使用 Project Gutenberg 公开 EPUB 验证电子书目录和滚动阅读 | `epub` |
 | `book.umd` | 使用项目内生成的 UMD 电子书验证元数据、目录和 zlib 正文解析 | `umd` |
 | `archive.zip` | 验证 ZIP 目录读取、按需解压、缓存和压缩包内文档预览 | `zip` |
@@ -236,7 +236,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，建议用客户真实模型补充回归。
 
-Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
+Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件默认使用内置离线 SVG 预览解析 mxGraphModel / mxfile。如需官方 `GraphViewer`，可把脚本部署到内网静态目录并通过 `options.drawing.viewerScriptUrl` 指定。
 
 压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG / MBOX 的头信息、正文切换、附件下载和附件预览。地理数据样例用于验证 GeoJSON/KML/GPX 到离线 SVG 地图的链路。OLB / DRA 样例是项目内生成的 CFB 容器，用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引。SQLite、WASM 和 ICO 样例用于验证资产/数据预览链路不会影响普通文档首屏。
 

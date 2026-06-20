@@ -9,8 +9,9 @@
 - 修复 3D 模型、OFD、EPUB、UMD、绘图和 CAD 等渲染器的隐藏 loading 状态在部分浏览器/CSS 组合下仍可见的问题，避免预览完成后继续显示“正在解析”
 - Draw.io 官方预览器加载超时后自动切换为本地 SVG 安全预览，保证 `drawio` / `dio` 样例不会因外部 viewer 初始化卡住而长期 loading
 - Typst compiler / renderer WASM 改为默认随 viewer assets 本地分发，并新增 `options.typst.renderTimeoutMs`；浏览器端编译超过阈值时自动降级为源码预览，避免用户只看到 loading
-- Cloudflare Pages 部署会自动过滤超过平台单文件限制的 Typst compiler WASM，并由运行时切换到官方 npm CDN fallback；npm 包和普通自托管部署仍保持本地 WASM 优先
-- SQLite 预览默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，构建脚本同步复制并校验 sql.js WASM，减少 CDN、移动端 WebView、本地服务器和 CSP 环境下的加载不确定性
+- 运行时不再提供公共 CDN 或第三方在线资源 fallback；Typst 本地 WASM 不可用时会直接切换源码预览，Draw.io 默认走内置离线 SVG 预览，适合企业内网和纯离线部署
+- PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，构建脚本会同步复制并校验，避免 PDF 预览隐式访问公网静态资源
+- SQLite 预览默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，构建脚本同步复制并校验 sql.js WASM，减少移动端 WebView、本地服务器和 CSP 环境下的加载不确定性
 - PDF 样式注入会去除 PDF.js 内置外部图片引用，避免静态产物部署时因 `images/shadow.png` / `loading-icon.gif` 缺失导致 404 或控制台噪声
 - 新增全量 demo sample matrix 浏览器冒烟，逐一打开 `example/` 下 107 个样例文件；本轮已在 dev server 和静态 dist 产物中完成真实浏览器验证
 
@@ -39,7 +40,7 @@
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.25`、Vue2 包 `@flyfish-group/file-viewer@1.0.25`、React 包 `@flyfish-group/file-viewer-react@1.0.25` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.25` 继续保持连续版本
 - 压缩包预览迁移为 core 共享 archive renderer，并保留 Worker 探测、初始化超时、静态 Worker/WASM 路径和 ZIP/TAR/GZIP 兼容模式；手机 WebView、本地临时服务器、MIME 或 CSP 导致 `libarchive.js` Worker 卡住时，会自动降级，避免一直停留在 loading
-- `options.archive` 新增 `wasmUrl` 和 `workerTimeoutMs` 说明；普通私有化部署不再需要写死 `workerUrl`，只有静态目录或 CDN 路径特殊时才需要显式指定
+- `options.archive` 新增 `wasmUrl` 和 `workerTimeoutMs` 说明；普通私有化部署不再需要写死 `workerUrl`，只有静态目录或 WASM 路径特殊时才需要显式指定
 - 移动端 Excel / XLS 预览把工作表名称移到表格上方的横向可滚动标签栏，当前工作表自动滚入可见区域，解决手机上 sheet 名称藏在底部角落、需要技巧才能看到的问题
 - Excel / XLS 多 sheet 场景下，工作表标签改为按内容宽度展示并横向滚动，避免按整体宽度平均压缩导致 sheet 名称完全看不清
 - Excel / XLS 静态 Worker 改为显式 opt-in，默认使用同一套主线程解析器，避免本地服务器、手机 WebView、MIME 或 CSP 环境下停在 Worker 初始化阶段
@@ -184,7 +185,7 @@
 - 新增 `.umd` 电子书预览，按 UMD 文件结构解析元数据、章节目录和 zlib 压缩正文
 - 新增 `.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 音频入口，使用浏览器原生播放器
 - 新增 `.excalidraw` 预览，使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 能力按需生成只读 SVG
-- 新增 `.drawio` / `.dio` 预览，使用官方 diagrams.net `GraphViewer` 处理 mxGraphModel / mxfile
+- 新增 `.drawio` / `.dio` 预览，默认使用内置离线 SVG 预览处理 mxGraphModel / mxfile；也可通过 `options.drawing.viewerScriptUrl` 接入自托管 diagrams.net `GraphViewer`
 - 补充 Demo 示例文件、格式矩阵、FAQ 和接入说明
 
 ### `v1.0.8` 文档视觉与预览稳定性版本

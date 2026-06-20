@@ -107,7 +107,7 @@ function rendererRows(locale) {
 function mountOptionRows(locale) {
   if (locale === 'zh') {
     return [
-      ['`url`', '远程文件地址，适合 CDN、对象存储和业务接口返回的文件链接。'],
+      ['`url`', '远程文件地址，适合对象存储、业务接口或内网文件服务返回的文件链接。'],
       ['`file`', '`File`、`Blob` 或 `ArrayBuffer`，适合上传、本地选择和业务接口已取回的二进制。'],
       ['`buffer`', '直接传入 `ArrayBuffer`，适合解密、鉴权或自定义下载后再预览。'],
       ['`name` / `filename`', '显示文件名并辅助推断扩展名；当 URL 不含扩展名时建议显式传入。'],
@@ -118,7 +118,7 @@ function mountOptionRows(locale) {
     ]
   }
   return [
-    ['`url`', 'Remote file URL for CDN, object storage, or business API file links.'],
+    ['`url`', 'Remote file URL from object storage, business APIs, or intranet file services.'],
     ['`file`', '`File`, `Blob`, or `ArrayBuffer` for uploads, local selection, or already-fetched binary data.'],
     ['`buffer`', 'Direct `ArrayBuffer` input after custom download, authorization, or decryption.'],
     ['`name` / `filename`', 'Display name and extension hint. Pass it explicitly when the URL has no useful extension.'],
@@ -213,16 +213,20 @@ function assetRows(locale) {
     return [
       ['通用 viewer assets', 'Pure Web 包提供 `file-viewer-copy-assets`，可把 Worker、WASM、vendor 和示例资源复制到业务静态目录。'],
       ['CAD / DWG / DXF / DWF', '按需配置 `options.cad.wasmPath`、`workerUrl`、`dwfWasmUrl`、`dxfEncoding`，支持自托管和内网部署。'],
-      ['PDF / DOCX / Excel', '按需配置 `options.pdf.workerUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`；DOCX 和 Excel Worker 均需显式开启，避免本地服务、手机 WebView、MIME/CSP 或复杂样式问题。'],
-      ['Typst / SQLite / Archive', '按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`。'],
+      ['PDF / DOCX / Excel', '按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`；DOCX 和 Excel Worker 均需显式开启。'],
+      ['Typst / SQLite / Archive', '按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；本地 Typst WASM 不可用时切换源码预览，不访问公共 CDN。'],
+      ['Drawing', 'Draw.io 默认使用内置离线 SVG 预览；如需官方 diagrams.net viewer，请通过 `options.drawing.viewerScriptUrl` 指向自托管脚本。'],
+      ['离线部署', '运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包和 Office worker/vendor 资产。'],
       ['部署原则', '默认只在命中特定格式时异步加载对应依赖；没有命中的格式不会拉取重型 Worker、WASM 或解析库。']
     ]
   }
   return [
     ['Shared viewer assets', 'The Pure Web package ships `file-viewer-copy-assets` to copy workers, WASM, vendor files, and examples into your static directory.'],
     ['CAD / DWG / DXF / DWF', 'Configure `options.cad.wasmPath`, `workerUrl`, `dwfWasmUrl`, and `dxfEncoding` for self-hosted or intranet deployment.'],
-    ['PDF / DOCX / Excel', 'Configure `options.pdf.workerUrl`, `options.docx.workerUrl`, and `options.spreadsheet.workerUrl`; DOCX and Excel Workers are explicit opt-in to avoid local-server, mobile WebView, MIME/CSP, or complex-style issues.'],
-    ['Typst / SQLite / Archive', 'Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed.'],
+    ['PDF / DOCX / Excel', 'Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, and `options.spreadsheet.workerUrl`; DOCX and Excel Workers are explicit opt-in.'],
+    ['Typst / SQLite / Archive', 'Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed; missing local Typst WASM falls back to source preview, not a public CDN.'],
+    ['Drawing', 'Draw.io uses the built-in offline SVG preview by default; point `options.drawing.viewerScriptUrl` to a self-hosted script if you need the official diagrams.net viewer.'],
+    ['Offline deployment', 'Runtime preview code does not depend on public CDN or third-party online assets; `file-viewer-copy-assets` copies PDF, CAD, Typst, SQLite, archive, and Office worker/vendor assets.'],
     ['Deployment principle', 'Heavy workers, WASM files, and parser libraries stay lazy-loaded and are only requested when the active file type needs them.']
   ]
 }

@@ -64,7 +64,9 @@ const validateViewerAssets = async dir => {
 
         try {
           const info = await stat(absolutePath)
-          exists = asset.kind === 'wasm-directory' ? info.isDirectory() : info.isFile()
+          exists = asset.kind === 'directory' || asset.kind === 'wasm-directory'
+            ? info.isDirectory()
+            : info.isFile()
         } catch {
           exists = false
         }

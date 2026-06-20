@@ -28,6 +28,11 @@ const steps = [
     command: ['node', 'scripts/verify-ecosystem-readmes.mjs']
   },
   {
+    name: 'offline runtime assets',
+    command: ['pnpm', 'verify:offline-assets'],
+    okDetail: 'runtime preview code has no public CDN or third-party online asset fallback'
+  },
+  {
     name: 'ecosystem package metadata',
     command: ['node', 'scripts/release-ecosystem-packages.mjs', '--list'],
     okDetail: 'release package metadata loaded'

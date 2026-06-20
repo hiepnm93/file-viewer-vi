@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { copyFile, mkdir, readdir, stat } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -50,6 +50,11 @@ const typstRendererWasm = join(
   'typst_ts_renderer_bg.wasm'
 )
 const dataSqlWasm = join(resolvePackageRoot('sql.js'), 'dist', 'sql-wasm.wasm')
+const pdfjsRoot = resolvePackageRoot('pdfjs-dist')
+const pdfWorker = join(pdfjsRoot, 'legacy', 'build', 'pdf.worker.mjs')
+const pdfCmapsDir = join(pdfjsRoot, 'cmaps')
+const pdfWasmDir = join(pdfjsRoot, 'wasm')
+const pdfStandardFontsDir = join(pdfjsRoot, 'standard_fonts')
 const rawArgs = process.argv.slice(2)
 const args = new Set(rawArgs)
 const readArgValue = name => {
@@ -75,6 +80,7 @@ const baseTargetRoots = [
 const cadTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'cad'))
 const typstTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'typst'))
 const dataTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'data'))
+const pdfTargetRoots = baseTargetRoots.map(root => join(root, 'vendor', 'pdf'))
 
 const copyWorkerChunks = async targetRoot => {
   const files = await readdir(wasmDir)
@@ -88,9 +94,19 @@ const copyWorkerChunks = async targetRoot => {
 const copyChecked = async (from, to) => {
   const info = await stat(from)
   if (!info.isFile() || info.size <= 0) {
-    throw new Error(`[file-viewer] Invalid CAD asset: ${from}`)
+    throw new Error(`[file-viewer] Invalid viewer asset: ${from}`)
   }
   await copyFile(from, to)
+}
+
+const copyDirectoryChecked = async (from, to) => {
+  const info = await stat(from)
+  if (!info.isDirectory()) {
+    throw new Error(`[file-viewer] Invalid viewer asset directory: ${from}`)
+  }
+  await rm(to, { recursive: true, force: true })
+  await mkdir(dirname(to), { recursive: true })
+  await cp(from, to, { recursive: true, force: true })
 }
 
 for (const targetRoot of cadTargetRoots) {
@@ -113,9 +129,17 @@ for (const targetRoot of dataTargetRoots) {
   await copyChecked(dataSqlWasm, join(targetRoot, 'sql-wasm.wasm'))
 }
 
+for (const targetRoot of pdfTargetRoots) {
+  await mkdir(targetRoot, { recursive: true })
+  await copyChecked(pdfWorker, join(targetRoot, 'pdf.worker.mjs'))
+  await copyDirectoryChecked(pdfCmapsDir, join(targetRoot, 'cmaps'))
+  await copyDirectoryChecked(pdfWasmDir, join(targetRoot, 'wasm'))
+  await copyDirectoryChecked(pdfStandardFontsDir, join(targetRoot, 'standard_fonts'))
+}
+
 console.log(
   `[file-viewer] Viewer WASM assets copied to ${
-    [...cadTargetRoots, ...typstTargetRoots, ...dataTargetRoots]
+    [...cadTargetRoots, ...typstTargetRoots, ...dataTargetRoots, ...pdfTargetRoots]
       .map(root => root.replace(`${projectRoot}/`, ''))
       .join(', ')
   }`

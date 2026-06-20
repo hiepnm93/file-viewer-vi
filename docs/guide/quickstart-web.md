@@ -91,13 +91,13 @@ cp ./node_modules/@file-viewer/web/dist/flyfish-file-viewer-web.iife.js ./public
 
 ## 自托管 Worker / WASM 资源
 
-大多数业务只需要安装包即可。只有在内网、CSP 严格、CDN 前缀特殊或希望固定重型资源路径时，才需要复制资源:
+大多数业务只需要安装包即可。内网、CSP 严格、静态资源前缀特殊或希望固定重型资源路径时，建议把 viewer assets 复制到业务自己的静态目录:
 
 ```bash
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-复制命令会写入 `flyfish-viewer-assets.json`，并校验 archive、DOCX、CAD、Typst、SQLite 等 worker/WASM 静态资源是否齐全。部署路径特殊时，可以在 `options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。
+复制命令会写入 `flyfish-viewer-assets.json`，并校验 PDF、archive、DOCX、Excel、CAD、Typst、SQLite 等 worker/WASM/vendor 静态资源是否齐全。预览运行时不会默认访问公共 CDN 或第三方在线资源；部署路径特殊时，可以在 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。Draw.io 默认使用内置离线 SVG 预览，如需官方 diagrams.net viewer，请自行部署脚本并配置 `options.drawing.viewerScriptUrl`。
 
 ## API
 

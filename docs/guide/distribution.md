@@ -124,6 +124,8 @@ npm install ./artifacts/flyfish-group-file-viewer-react-*.tgz
 
 Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库下载区只保留 `flyfish-group-file-viewer3-*.tgz` 这一份 Vue3 兼容 tarball。React tarball 依赖 web viewer 包，离线安装时请按 npm 依赖关系一起放入本地源或依次安装。
 
+纯离线部署时，除了 npm tarball，也要把 viewer assets 一起发布到业务静态目录。运行 `file-viewer-copy-assets` 会复制 PDF.js worker/CMap/WASM/standard fonts、CAD WASM、Typst WASM、SQLite WASM、压缩包 worker 和 Office worker，并生成 `flyfish-viewer-assets.json` 供验收。运行时默认不会访问公共 CDN 或第三方在线静态资源；路径特殊时通过各格式的 `options.*Url` 指向自托管地址。
+
 ## 开源总仓库内容
 
 GitHub / Gitee 的 `flyfish-dev/file-viewer` 是开源总仓库，用于分发开源源码、可直接运行的 Demo、文档源码和可直接使用的 release 产物。私有 Gitea 继续作为完整聚合仓、统一发布脚本、内部自动化和优先技术支持入口。仓库内容包括:

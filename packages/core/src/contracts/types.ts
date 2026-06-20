@@ -80,6 +80,9 @@ export interface FileViewerPdfOptions {
   rangeChunkSize?: number;
   withCredentials?: boolean;
   workerUrl?: string;
+  cMapUrl?: string;
+  wasmUrl?: string;
+  standardFontDataUrl?: string;
 }
 
 export interface FileViewerDocxOptions {
@@ -175,6 +178,17 @@ export interface FileViewerDataOptions {
   sqlWasmUrl?: string;
 }
 
+export interface FileViewerDrawingOptions {
+  /**
+   * Optional self-hosted diagrams.net viewer script.
+   *
+   * The core renderer never loads the public diagrams.net CDN by default. When
+   * this value is omitted, Draw.io files use the built-in offline SVG fallback.
+   */
+  viewerScriptUrl?: string;
+  preferOfficial?: boolean;
+}
+
 export type FileViewerCadRenderer = 'auto' | 'webgl' | 'canvas2d';
 export type FileViewerCadDwfLineWeightMode = 'adaptive' | 'physical' | 'hairline';
 
@@ -236,6 +250,7 @@ export interface FileViewerOptions {
   spreadsheet?: FileViewerSpreadsheetOptions;
   typst?: FileViewerTypstOptions;
   data?: FileViewerDataOptions;
+  drawing?: FileViewerDrawingOptions;
   cad?: FileViewerCadOptions;
   hooks?: FileViewerLifecycleHooks;
   beforeOperation?: FileViewerBeforeOperation;

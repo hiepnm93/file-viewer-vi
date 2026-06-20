@@ -72,7 +72,7 @@
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
 - 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
 - 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
-- Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
+- Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走内置离线 SVG 预览，也可接入自托管 diagrams.net viewer。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
 - 代码和文本使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。
 - 字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro 和 WebArchive 走资产/数据预览链路，优先展示结构摘要、字体样张、图层或数据预览，不执行不可信内容。

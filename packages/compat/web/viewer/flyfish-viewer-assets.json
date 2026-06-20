@@ -1,7 +1,52 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-20T16:03:13.881Z",
+  "generatedAt": "2026-06-20T17:57:50.975Z",
   "rendererAssetManifests": [
+    {
+      "rendererId": "pdf",
+      "assets": [
+        {
+          "id": "pdf-worker",
+          "rendererId": "pdf",
+          "kind": "worker",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/pdf/pdf.worker.mjs",
+          "optionPath": "pdf.workerUrl",
+          "description": "PDF.js module worker copied into viewer assets for offline PDF rendering."
+        },
+        {
+          "id": "pdf-cmaps",
+          "rendererId": "pdf",
+          "kind": "directory",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/pdf/cmaps/",
+          "optionPath": "pdf.cMapUrl",
+          "description": "PDF.js packed CMaps used for CJK and embedded text decoding."
+        },
+        {
+          "id": "pdf-wasm",
+          "rendererId": "pdf",
+          "kind": "wasm-directory",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/pdf/wasm/",
+          "optionPath": "pdf.wasmUrl",
+          "description": "PDF.js WebAssembly helper directory for fully self-hosted PDF rendering."
+        },
+        {
+          "id": "pdf-standard-fonts",
+          "rendererId": "pdf",
+          "kind": "directory",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/pdf/standard_fonts/",
+          "optionPath": "pdf.standardFontDataUrl",
+          "description": "PDF.js standard font data used when PDF files reference base fonts."
+        }
+      ]
+    },
     {
       "rendererId": "archive",
       "assets": [
@@ -138,8 +183,48 @@
   ],
   "validation": {
     "valid": true,
-    "checkedAt": "2026-06-20T16:03:13.881Z",
+    "checkedAt": "2026-06-20T17:57:50.975Z",
     "assets": [
+      {
+        "id": "pdf-worker",
+        "rendererId": "pdf",
+        "kind": "worker",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/pdf/pdf.worker.mjs",
+        "exists": true,
+        "description": "PDF.js module worker copied into viewer assets for offline PDF rendering."
+      },
+      {
+        "id": "pdf-cmaps",
+        "rendererId": "pdf",
+        "kind": "directory",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/pdf/cmaps/",
+        "exists": true,
+        "description": "PDF.js packed CMaps used for CJK and embedded text decoding."
+      },
+      {
+        "id": "pdf-wasm",
+        "rendererId": "pdf",
+        "kind": "wasm-directory",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/pdf/wasm/",
+        "exists": true,
+        "description": "PDF.js WebAssembly helper directory for fully self-hosted PDF rendering."
+      },
+      {
+        "id": "pdf-standard-fonts",
+        "rendererId": "pdf",
+        "kind": "directory",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/pdf/standard_fonts/",
+        "exists": true,
+        "description": "PDF.js standard font data used when PDF files reference base fonts."
+      },
       {
         "id": "libarchive-worker",
         "rendererId": "archive",

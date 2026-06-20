@@ -193,7 +193,7 @@ const options = {
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |
 | `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
 | `archive.workerUrl` | 自定义 libarchive.js Worker 地址。一般不需要配置；预览器会优先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`，失败后自动回退到 ZIP/TAR/GZIP 兼容模式 |
-| `archive.wasmUrl` | 静态 Worker 需要从非同目录加载 libarchive WASM 时使用。只有需要指向私有 CDN 或自定义 wasm 位置时才配置 |
+| `archive.wasmUrl` | 静态 Worker 需要从非同目录加载 libarchive WASM 时使用。只有需要指向自托管目录或自定义 wasm 位置时才配置 |
 | `archive.workerTimeoutMs` | Worker 初始化、加密检测和目录读取超时时间，默认 30000ms；超时后会自动尝试 ZIP/TAR/GZIP 兼容模式 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
@@ -209,8 +209,11 @@ const options = {
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
-| `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认使用与当前 `pdfjs-dist` 版本匹配的 CDN Worker；内网、离线或 CSP 较严的部署可显式指向自己的 `pdf.worker.mjs` |
-| `cad.wasmPath` | LibreDWG WASM 资源目录，默认相对 viewer 入口加载 `wasm/cad/`。私有化部署、CDN 或子路径部署时可以显式传绝对 URL |
+| `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认相对 viewer 入口加载 `vendor/pdf/pdf.worker.mjs`，适合内网和离线部署 |
+| `pdf.cMapUrl` | PDF.js CMap 目录，默认相对 viewer 入口加载 `vendor/pdf/cmaps/` |
+| `pdf.wasmUrl` | PDF.js WASM 目录，默认相对 viewer 入口加载 `vendor/pdf/wasm/` |
+| `pdf.standardFontDataUrl` | PDF.js standard fonts 目录，默认相对 viewer 入口加载 `vendor/pdf/standard_fonts/` |
+| `cad.wasmPath` | LibreDWG WASM 资源目录，默认相对 viewer 入口加载 `wasm/cad/`。私有化部署或子路径部署时可以显式传绝对 URL |
 | `cad.workerUrl` | DWG Worker 地址，默认相对 viewer 入口加载 `wasm/cad/dwg-worker.js`。如果网关或构建系统改写静态资源路径，应显式覆盖 |
 | `cad.dwfWasmUrl` | DWF/DWFx/XPS native renderer 的 raster fallback WASM，默认相对 viewer 入口加载 `wasm/cad/dwfv-render.wasm` |
 | `cad.renderer` | CAD 渲染后端，支持 `auto`、`webgl`、`canvas2d`，默认 `auto`，优先 retained WebGL 并自动回退 Canvas2D |
@@ -218,15 +221,15 @@ const options = {
 | `cad.dwfPreferWebgl` / `cad.dwfPreferWasm` | DWF/DWFx/XPS native renderer 的 WebGL 和 WASM backend 偏好，默认都启用 |
 | `cad.dwfLineWeightMode` | DWF/XPS 线宽策略，支持 `adaptive`、`physical`、`hairline` |
 
-图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
+图片水印可以传相对路径、业务内网 URL 或 data URL。开启图片水印时，文字水印不会重复绘制；纯离线部署建议使用随业务静态资源发布的图片或 data URL。
 
-Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；Cloudflare Pages 等静态平台如果限制单文件大小，部署脚本会跳过超限 compiler WASM，运行时自动回退到官方 npm CDN；浏览器端编译超出预期时间时会自动切换为源码预览，避免长期停留在 loading。
+Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，本地 WASM 不可用或浏览器端编译超出预期时间时会自动切换为源码预览，避免长期停留在 loading。
 
 ```ts
 const options = {
   typst: {
-    compilerWasmUrl: 'https://cdn.example.com/typst/typst_ts_web_compiler_bg.wasm',
-    rendererWasmUrl: 'https://cdn.example.com/typst/typst_ts_renderer_bg.wasm',
+    compilerWasmUrl: '/file-viewer/wasm/typst/typst_ts_web_compiler_bg.wasm',
+    rendererWasmUrl: '/file-viewer/wasm/typst/typst_ts_renderer_bg.wasm',
     renderTimeoutMs: 20000
   }
 }
@@ -356,7 +359,7 @@ React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 
     docx: {
       // 默认 false。开启后会在 Worker DOM 中生成 docx-preview HTML，适合结构简单的大文件。
       worker: false,
-      // 默认尝试当前部署 base 下的 vendor/docx/docx.worker.js；私有 CDN 或子路径部署可显式覆盖。
+      // 默认尝试当前部署 base 下的 vendor/docx/docx.worker.js；自托管子路径部署可显式覆盖。
       workerUrl: '/file-viewer/vendor/docx/docx.worker.js',
       // 默认 false。开启后按页面分批挂载 Worker 生成的 HTML。
       progressive: false,
@@ -369,7 +372,7 @@ React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 
 />
 ```
 
-浏览器 Worker 不能直接操作真实页面 DOM，因此 Worker 模式使用轻量 DOM 运行时生成 `docx-preview` HTML，再回到主线程挂载。这个模式可以降低主线程长任务，但目录、复杂制表符、页眉页脚、字段和样式继承会更容易触达 Worker DOM 兼容边界，所以默认关闭。私有化部署时如果确实开启 Worker，且静态目录或 CDN 前缀特殊，请配置 `docx.workerUrl`；结构复杂的 Word 文件建议保持默认主线程完整渲染，或由服务端转为 PDF/OFD 后再做稳定版式预览。
+浏览器 Worker 不能直接操作真实页面 DOM，因此 Worker 模式使用轻量 DOM 运行时生成 `docx-preview` HTML，再回到主线程挂载。这个模式可以降低主线程长任务，但目录、复杂制表符、页眉页脚、字段和样式继承会更容易触达 Worker DOM 兼容边界，所以默认关闭。私有化部署时如果确实开启 Worker，且静态目录前缀特殊，请配置 `docx.workerUrl`；结构复杂的 Word 文件建议保持默认主线程完整渲染，或由服务端转为 PDF/OFD 后再做稳定版式预览。
 
 ## 打印、导出和水印的交付行为
 
@@ -426,7 +429,7 @@ async function useLocal(blob: Blob) {
 
 `.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
-`.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署一般不需要手动配置 `archive.workerUrl`；如果静态目录或 CDN 路径特殊，可把 `worker-bundle.js` 与同目录的 `libarchive.wasm` 发布出来后配置 `options.archive.workerUrl`。当手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化失败时，组件会自动切换到 ZIP/TAR/GZIP 兼容模式，避免停留在 loading。
+`.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署一般不需要手动配置 `archive.workerUrl`；如果静态目录或资源前缀特殊，可把 `worker-bundle.js` 与同目录的 `libarchive.wasm` 发布出来后配置 `options.archive.workerUrl`。当手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化失败时，组件会自动切换到 ZIP/TAR/GZIP 兼容模式，避免停留在 loading。
 
 `.eml` 使用 `postal-mime`，`.msg` 使用 `@kenjiuno/msgreader`。邮件正文会在隔离沙箱文档中展示，附件可以下载，也可以继续在线预览。
 
@@ -438,7 +441,7 @@ async function useLocal(blob: Blob) {
 
 `geojson` 会直接按 GeoJSON 读取；`kml` 和 `gpx` 会按需加载 `@tmcw/togeojson` 转换；`shp` 会按需加载 `shpjs`。内置预览是离线 SVG 地图，不依赖在线瓦片服务，适合内网附件中心快速确认点线面、轨迹和边界。大量要素、投影转换或空间分析仍建议在业务 GIS 模块中处理。
 
-`.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 会使用官方 diagrams.net `GraphViewer` 渲染，不在组件里手写 mxGraphModel 解析逻辑。
+`.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 默认使用内置离线 SVG 预览。需要官方 diagrams.net `GraphViewer` 时，请自行部署 viewer 脚本并配置 `options.drawing.viewerScriptUrl`。
 
 `.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读滚动阅读。阅读器会默认打开第一个正文章节，避免停留在封面或空白包装页。
 
