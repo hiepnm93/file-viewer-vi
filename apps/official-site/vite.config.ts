@@ -17,6 +17,7 @@ export default defineConfig({
     host: '127.0.0.1'
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    chunkSizeWarningLimit: 900
   }
 })
