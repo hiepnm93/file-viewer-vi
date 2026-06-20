@@ -4,37 +4,53 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；Vue3、Vue2、React、纯 Web、jQuery、Svelte 等 标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
+`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vue3、Vue2、React、纯 Web、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
-- 标准 npm 包: `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/web`、`@file-viewer/jquery`、`@file-viewer/svelte`
+- 标准 npm 包: `@file-viewer/core`、`@file-viewer/pptx`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/web`、`@file-viewer/jquery`、`@file-viewer/svelte`
 - 历史兼容 npm 包: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`
 - 官方网站: [file-viewer.app](https://file-viewer.app)
 - 官方文档: [doc.file-viewer.app](https://doc.file-viewer.app)
 - 在线 Demo: [demo.file-viewer.app](https://demo.file-viewer.app)
 - 文档比对 Demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
-- Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.1`
+- Docker 镜像发布目标: `flyfishdev/file-viewer:latest`
 - 开源总仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 开源总仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - 打赏与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
+## 支持项目与商业版
+
+Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预览、内网部署、业务附件中心和轻量级集成；如果你需要更高还原度、更极致性能、私有化交付、定制适配或优先技术支持，可以通过下面入口请我们喝杯柠檬水，也可以了解商业版原生文档引擎。
+
+- 打赏与优先支持: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- 商业版介绍: [product.flyfish.group](https://product.flyfish.group/)
+- 商业版 Demo: [office.flyfish.dev](https://office.flyfish.dev/)
+- 飞鱼开源工作室: [flyfish.dev](https://flyfish.dev/)
+
+| 微信赞赏码 | 微信支付 | 支付宝收款码 | 微信公众号 / 客服微信二维码 |
+| --- | --- | --- | --- |
+| <img src="docs/_media/support/wechat-reward.jpg" width="160" alt="微信赞赏码" /> | <img src="docs/_media/support/wechat-pay.jpg" width="160" alt="微信支付赞助码" /> | <img src="docs/_media/support/alipay.jpg" width="160" alt="支付宝收款码" /> | <img src="docs/_media/support/wechat-mp.png" width="220" alt="飞鱼开源 WorkShop 微信公众号与客服微信入口" /> |
+
+商业版来自 Flyfish Office 产品线，面向严肃企业场景提供自研原生 Office 文档引擎，重点解决 Word、Excel、PowerPoint 在复杂版式、大文件、分页布局、高保真渲染和稳定性能上的更高要求。开源版会继续维护，商业支持主要用于更快响应、私有化评估和定制交付。
+
 ## 当前 npm 生态
 
-当前 latest 版本是 `2.0.1`，共维护 14 个 npm 发布目标: 9 个标准包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
+当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 15 个 npm 发布目标: 10 个标准/引擎包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
 
-| 场景 | 推荐 npm 包 | 历史兼容包 | 最新版本 | 说明 |
+| 场景 | 推荐 npm 包 | 历史兼容包 | 版本策略 | 说明 |
 | --- | --- | --- | --- | --- |
-| Core 底座 | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | 无 | `2.0.1` | 框架无关的格式矩阵、预览能力、资源加载、生命周期事件、搜索、缩放、打印、导出和操作 API |
-| Vue3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `2.0.1` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型 |
-| Vue2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `2.0.1` | Vue2.7 原生组件，能力和 Vue3 保持一致 |
-| Vue2.6 | [`@file-viewer/vue2.6`](https://www.npmjs.com/package/@file-viewer/vue2.6) | 无 | `2.0.1` | Vue2.6 专线，面向仍停留在 Vue 2.6 的老项目 |
-| React 18/19 | [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react) | [`@flyfish-group/file-viewer-react`](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | `2.0.1` | React 原生组件和 hooks/controller，不通过 Vue 或 iframe 转接 |
-| React 16.8/17 | [`@file-viewer/react-legacy`](https://www.npmjs.com/package/@file-viewer/react-legacy) | 无 | `2.0.1` | 面向旧 React 项目的兼容组件包 |
-| 纯 Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `2.0.1` | `mountViewer(container, options)`、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
-| jQuery | [`@file-viewer/jquery`](https://www.npmjs.com/package/@file-viewer/jquery) | 无 | `2.0.1` | jQuery 插件式接入，适合传统后台系统 |
-| Svelte | [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte) | 无 | `2.0.1` | Svelte 组件、action 和类型入口 |
+| Core 底座 | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | 无 | `latest` | 框架无关的格式矩阵、预览能力、资源加载、生命周期事件、搜索、缩放、打印、导出和操作 API |
+| PPTX 原生引擎 | [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx) | 无 | `latest` | 从 Flyfish 历史稳定实现拆出的独立 PPTX 渲染引擎，Worker 渐进解析并可由 core 按需加载 |
+| Vue3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型 |
+| Vue2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `latest` | Vue2.7 原生组件，能力和 Vue3 保持一致 |
+| Vue2.6 | [`@file-viewer/vue2.6`](https://www.npmjs.com/package/@file-viewer/vue2.6) | 无 | `latest` | Vue2.6 专线，面向仍停留在 Vue 2.6 的老项目 |
+| React 18/19 | [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react) | [`@flyfish-group/file-viewer-react`](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | `latest` | React 原生组件和 hooks/controller，不通过 Vue 或 iframe 转接 |
+| React 16.8/17 | [`@file-viewer/react-legacy`](https://www.npmjs.com/package/@file-viewer/react-legacy) | 无 | `latest` | 面向旧 React 项目的兼容组件包 |
+| 纯 Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
+| jQuery | [`@file-viewer/jquery`](https://www.npmjs.com/package/@file-viewer/jquery) | 无 | `latest` | jQuery 插件式接入，适合传统后台系统 |
+| Svelte | [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte) | 无 | `latest` | Svelte 组件、action 和类型入口 |
 
 生态边界很清楚: `@file-viewer/core` 只负责底层预览能力和 API；各标准组件包只依赖 core 和自己的框架依赖，不嵌套其他框架实现；历史兼容包只负责旧包名继续可用，不建议新项目优先选择。
 
@@ -45,27 +61,29 @@ pnpm add @file-viewer/vue3
 pnpm add @file-viewer/react
 pnpm add @file-viewer/web
 pnpm add @file-viewer/core
+pnpm add @file-viewer/pptx
 ```
 
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用开源总仓库 `artifacts/` 里的 release tarball。离线安装 React 包时请先安装同版本 web 包:
 
 ```bash
-npm install ./artifacts/file-viewer-core-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue3-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue2.7-2.0.1.tgz
-npm install ./artifacts/file-viewer-vue2.6-2.0.1.tgz
-npm install ./artifacts/file-viewer-react-2.0.1.tgz
-npm install ./artifacts/file-viewer-react-legacy-2.0.1.tgz
-npm install ./artifacts/file-viewer-web-2.0.1.tgz
-npm install ./artifacts/file-viewer-jquery-2.0.1.tgz
-npm install ./artifacts/file-viewer-svelte-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer3-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-2.0.1.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-2.0.1.tgz
+npm install ./artifacts/file-viewer-core-*.tgz
+npm install ./artifacts/file-viewer-pptx-*.tgz
+npm install ./artifacts/file-viewer-vue3-*.tgz
+npm install ./artifacts/file-viewer-vue2.7-*.tgz
+npm install ./artifacts/file-viewer-vue2.6-*.tgz
+npm install ./artifacts/file-viewer-react-*.tgz
+npm install ./artifacts/file-viewer-react-legacy-*.tgz
+npm install ./artifacts/file-viewer-web-*.tgz
+npm install ./artifacts/file-viewer-jquery-*.tgz
+npm install ./artifacts/file-viewer-svelte-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-*.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-*.tgz
 ```
 
-Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+Core、PPTX 原生引擎、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 GitHub Release 会同步提供完整下载项:
 
@@ -76,6 +94,7 @@ GitHub Release 会同步提供完整下载项:
 | `file-viewer-v2-*-lib-dist.tar.gz` | Vue3 组件库构建产物，适合离线检查 dist 内容 |
 | `file-viewer-v2-*-docs.tar.gz` | 文档站静态产物 |
 | `file-viewer-core-*.tgz` | `@file-viewer/core` 纯 TypeScript 底座本地 npm 安装包 |
+| `file-viewer-pptx-*.tgz` | `@file-viewer/pptx` 原生 PPTX 渲染引擎本地 npm 安装包 |
 | `file-viewer-vue3-*.tgz` | Vue3 标准包名本地 npm 安装包 |
 | `file-viewer-vue2.7-*.tgz` | Vue2.7 标准组件包 本地 npm 安装包 |
 | `file-viewer-vue2.6-*.tgz` | Vue2.6 标准组件包 本地 npm 安装包 |
@@ -94,7 +113,7 @@ GitHub Release 会同步提供完整下载项:
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## 标准生态包与公开仓库
 
-下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。
+下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/registry/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。
 
 核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea `main` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。
 
@@ -127,7 +146,7 @@ GitHub Release 会同步提供完整下载项:
 - **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
 - **各框架体验一致。** core 聚焦底层预览能力，Vue3、Vue2、React、纯 Web、jQuery 和 Svelte 标准组件包 各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
 - **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
-- **适合开源分发和二次接入。** 开源总仓库同时维护 core、标准组件包、兼容包、主 Demo 源码、文档源码、混淆压缩产物、npm tarball、静态部署产物和 release 下载物，便于下载、运行、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
+- **适合开源分发和二次接入。** 开源总仓库同时维护 core、独立渲染引擎包、标准组件包、兼容包、主 Demo 源码、文档源码、混淆压缩产物、npm tarball、静态部署产物和 release 下载物，便于下载、运行、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
 
 ## 支持格式
 
@@ -140,7 +159,7 @@ GitHub Release 会同步提供完整下载项:
 | 兼容文档 | `rtf`、`odt` | `rtf.js` / ODF `content.xml` 兼容预览 | RTF 富文本、OpenDocument 文本文档 |
 | Excel | `xlsx`、`xltx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色和 workbook drawing 图片；默认主线程解析，静态 Worker 需显式开启；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式；同样遵循虚拟表格打印边界 | 老表格、轻量数据查看 |
-| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | 基于开源 `@aiden0z/pptx-renderer` 浏览幻灯片内容，使用懒加载和窗口化列表优化首屏；ODP 走 OpenDocument 幻灯片文本预览 | 汇报材料、课件、方案、演示模板 |
+| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | 基于独立开源 `@file-viewer/pptx` 原生引擎浏览幻灯片内容，Worker 渐进解析并按页输出；ODP 走 OpenDocument 幻灯片文本预览 | 汇报材料、课件、方案、演示模板 |
 | PDF | `pdf` | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
 | Typst | `typ`、`typst` | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |
@@ -238,8 +257,8 @@ export default {
 React 与纯 Web 标准包都走 native controller，直接在业务页面挂载完整预览器。
 
 ```bash
-npm install @file-viewer/react@2.0.1
-npm install @file-viewer/web@2.0.1
+npm install @file-viewer/react
+npm install @file-viewer/web
 ```
 
 ```tsx
@@ -282,7 +301,7 @@ docker run -d \
   --name flyfish-viewer \
   --restart unless-stopped \
   -p 8080:80 \
-  flyfishdev/file-viewer:2.0.1
+  flyfishdev/file-viewer:latest
 ```
 
 访问:
@@ -294,7 +313,7 @@ docker run -d \
 
 ```bash
 pnpm docker:build
-docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.1
+docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 ```
 
 ## 使用说明
@@ -306,7 +325,7 @@ docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.1
 - 预览器会填满父容器，请为父容器提供稳定高度
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
-- PPTX 渲染器会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
+- PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
 - OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
 - `options.archive` 一般只需要配置 `cache`、`workerTimeoutMs` 和体积上限；预览器会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`。手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时时，会继续降级到 ZIP/TAR/GZIP 兼容模式，避免压缩包一直停在 loading。只有静态目录、CDN 路径或 WASM 位置特殊时，才需要显式传 `archive.workerUrl` / `archive.wasmUrl`
 - `options.theme` 支持 `light`、`dark`、`system`，默认继续跟随系统；DOCX 默认走真实浏览器 DOM 中的 `docx-preview` 完整渲染，优先保证目录、制表符、页眉页脚和样式继承稳定，`options.docx.worker`、`options.docx.progressive`、`options.docx.visualPagination` 都需要显式开启；Excel/XLSX 默认使用主线程解析，避免本地服务器、手机 WebView、MIME 或 CSP 导致 Worker 卡住，确实需要静态 Worker 时再传 `options.spreadsheet.worker: true` 和 `options.spreadsheet.workerUrl`；`options.pdf.workerUrl` 可覆盖 PDF.js Worker，适合内网、离线或 CSP 较严的私有化部署；`options.watermark` 支持文字或图片水印；`options.toolbar` 可控制下载原文件、打印完整渲染结果、导出 HTML、统一缩放按钮和操作栏位置，`toolbar.zoom` 可单独控制缩放按钮显示，`toolbar.position` 支持 `auto`、`top`、`bottom-right`，PDF 默认悬浮到右下角以避开自身导航栏；统一缩放通过渲染器内部 provider 适配 PDF、Word、PPTX、Excel 虚拟表格、图片、CAD、OFD、Typst、Markdown、代码和绘图等链路，避免业务侧外层 CSS 缩放造成表格坐标或 canvas 交互偏移；Excel 多 sheet 时标签栏按内容宽度展示并横向滚动，不会被平均压缩；`options.pdf.toolbar` 可隐藏 PDF 自身页码缩放工具栏；`options.search` 可控制搜索高亮、整词/大小写和命中数量；`options.ai` 可开启文本切片结构，返回行号、页码、锚点和 label 等溯源字段，便于业务侧做向量化、召回、AI 摘要、高亮回填和来源定位；`options.hooks` 可接收加载/卸载生命周期；`options.beforeOperation` 可在下载、打印、导出和缩放前做权限校验；打印按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Word / PDF 会生成完整页面，Excel 等虚拟表格会隐藏打印按钮，避免只打印当前视口或第一页
@@ -318,7 +337,7 @@ const file = new File([blob], 'contract.pdf', { type: blob.type })
 
 ## 本地开发
 
-下面的命令适用于开源总仓库和私有 Gitea 完整聚合仓。GitHub / Gitee 会公开 core、Demo、标准组件包、兼容包和文档站源码；私有 Gitea 提供完整聚合仓、统一发布脚本、内部自动化和优先技术支持。普通用户仍建议优先通过 npm、开源总仓库 `dist/` 或 `artifacts/` 里的 tarball 使用。
+下面的命令适用于开源总仓库和私有 Gitea 完整聚合仓。GitHub / Gitee 会公开 core、独立渲染引擎包、Demo、标准组件包、兼容包和文档站源码；私有 Gitea 提供完整聚合仓、统一发布脚本、内部自动化和优先技术支持。普通用户仍建议优先通过 npm、开源总仓库 `dist/` 或 `artifacts/` 里的 tarball 使用。
 
 ```bash
 pnpm install

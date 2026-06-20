@@ -35,7 +35,7 @@
 | 兼容文档 | `rtf`、`odt` | `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
 | Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
-| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@aiden0z/pptx-renderer` / OpenDocument 兼容预览 | PPTX 走 core framework-neutral DOM 渲染器，按需加载 slide 渲染链路，支持懒渲染、窗口化列表、统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
+| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/pptx` 原生引擎 / OpenDocument 兼容预览 | PPTX 走独立开源 native renderer，Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
@@ -89,7 +89,7 @@
 
 ### 演示文稿、PDF、OFD 与 Typst
 
-- `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与；当前由 core 内的纯 TypeScript browser renderer 按需加载 `@aiden0z/pptx-renderer`，各标准组件包 共享同一条链路。
+- `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与；当前由 core 按需加载独立开源的 `@file-viewer/pptx` / `flyfish-dev/pptxjs` 原生渲染引擎，各标准组件包共享同一条链路。
 - PPTX 渲染器现在会按 DrawingML 的组合图形坐标系处理 `chOff/chExt`，组合内元素在缩放、旋转、翻转时会更接近 PowerPoint 中的位置关系。
 - 主题背景支持从 `fillStyleLst` / `bgFillStyleLst` 解析纯色、渐变、图片和平铺图案；PPTX 内嵌的 EMF 图片会尽量转换为 SVG 数据图，避免只显示空白占位。
 - 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。

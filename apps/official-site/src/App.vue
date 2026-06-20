@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, type Component } from 'vue'
+import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, type Component } from 'vue'
+import type { Mesh, Object3D, Scene, WebGLRenderer } from 'three'
 import {
   ArrowRight,
   BadgeCheck,
@@ -7,13 +8,16 @@ import {
   Boxes,
   Building2,
   Cloud,
+  Cpu,
   Download,
+  ExternalLink,
   FileArchive,
   FileCode2,
   FileSpreadsheet,
   FileText,
-  FolderGit2,
+  Gem,
   HandCoins,
+  HeartHandshake,
   Languages,
   Layers3,
   LockKeyhole,
@@ -21,12 +25,15 @@ import {
   MonitorPlay,
   PackageCheck,
   PanelTop,
+  QrCode,
   Radar,
   Rocket,
   SearchCheck,
   ShieldCheck,
+  ShoppingCart,
   Sparkles,
-  Wrench
+  Wrench,
+  Zap
 } from '@lucide/vue'
 
 type Locale = 'zh' | 'en'
@@ -66,14 +73,28 @@ type Capability = {
   icon: Component
 }
 
+type QrItem = {
+  label: string
+  note: string
+  image: string
+}
+
 const docsUrl = 'https://doc.file-viewer.app/'
 const demoUrl = 'https://demo.file-viewer.app/'
 const compareUrl = 'https://demo.file-viewer.app/compare.html'
 const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
+const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
+const dockerDocsUrl = `${docsUrl}guide/docker`
 const shopUrl = 'https://dev.flyfish.group/shop'
 const studioUrl = 'https://flyfish.dev/'
+const commercialUrl = 'https://product.flyfish.group/'
+const commercialDemoUrl = 'https://office.flyfish.dev/'
 
 const locale = ref<Locale>('zh')
+const heroCanvas = ref<HTMLCanvasElement | null>(null)
+const demoReveal = ref<HTMLElement | null>(null)
+const demoRevealActive = ref(false)
+const demoFrameLoaded = ref(false)
 const isZh = computed(() => locale.value === 'zh')
 const nextLocaleLabel = computed(() => (isZh.value ? 'EN' : '中文'))
 
@@ -83,33 +104,45 @@ const copy = {
       formats: '支持矩阵',
       solutions: '应用落地',
       ecosystem: '生态组件',
+      commercial: '商业版',
       delivery: '部署分发',
+      support: '打赏支持',
       docs: '文档',
-      demo: '打开 Demo'
+      demo: '在线体验'
     },
     hero: {
       eyebrow: '浏览器原生文件预览超级组件',
-      title: '一个组件，预览业务系统里的每一种关键文件。',
+      title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
-        'Flyfish File Viewer 将 Office、PDF、OFD、CAD、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。它以纯 TypeScript core 为底座，提供 Vue、React、Web、jQuery、Svelte 等生产可用组件，并保持按需加载、高保真版式、搜索定位、缩放、打印、导出和私有化部署能力一致。',
+        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、CAD、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vue、React、Web、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
       primary: '立即体验',
       secondary: '阅读文档',
-      proof: ['194+ 扩展名', '23 条懒加载链路', '8 个生态组件包', 'Apache-2.0 开源']
+      commercial: '了解商业版',
+      proof: ['194+ 扩展名', '按需异步加载', '多框架原生组件', 'Apache-2.0 开源']
     },
     matrixTitle: '覆盖广，不等于粗糙。每条链路都面向真实业务。',
     matrixIntro:
-      '格式识别、资源加载、Worker/WASM、主题、水印、搜索、缩放、打印和导出都由预览器内部统一适配，业务侧只需要把文件交给组件。',
+      '格式识别、资源加载、Worker/WASM、主题、水印、搜索、缩放、打印和导出都由预览器内部统一适配；PPTX 已由独立开源的 @file-viewer/pptx 原生引擎承接，业务侧只需要把文件交给组件。',
     formatsTitle: '支持矩阵',
     solutionsTitle: '适合长期运行在企业系统里',
     solutionsIntro:
       '从 OA 审批到工程图纸，从客服工单到 AI 文档工作台，File Viewer 更关注真实文件、复杂网络、私有化部署和用户每天都会遇到的细节。',
-    ecosystemTitle: 'Core 负责底层预览能力，生态包负责原生体验。',
+    ecosystemTitle: 'Core 负责底层预览能力，标准组件负责原生体验。',
     ecosystemIntro:
-      '新的 2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
-    architectureTitle: '清晰架构，轻量首屏，复杂能力按需加载。',
-    architectureIntro:
-      '首屏只加载壳层与当前文件所需 renderer。Office、CAD、PDF、Typst、压缩包和媒体链路在命中格式后异步加载，避免业务系统被一次性大包拖慢。',
-    portalTitle: '一个入口，找到所有必备站点。',
+      '2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
+    demoTitle: '无需跳转，直接在官网体验完整 Demo。',
+    demoIntro:
+      'Demo 站与产品主页同属 file-viewer.app 域名体系，支持示例矩阵、上传预览、文档比对和生产构建验证。需要深入接入时，再进入文档站查看 API 与部署说明。',
+    docsTitle: '文档站与产品门户保持同一套信息架构。',
+    docsIntro:
+      'doc.file-viewer.app 覆盖快速开始、生态组件、格式支持、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。主页负责决策入口，文档负责落地细节。',
+    commercialTitle: '需要更高还原度和极致性能？选择商业版原生文档引擎。',
+    commercialIntro:
+      '商业版来自本地 office 产品线，采用自研原生文档引擎，面向严肃企业场景提供 Word、Excel、PowerPoint 的高还原渲染、Worker 解析、分页布局、虚拟滚动和更稳定的大文件体验。',
+    commercialCta: '查看商业版',
+    supportTitle: '喜欢这个项目，或者需要优先支持？请请我们喝杯柠檬水。',
+    supportIntro:
+      '开源版会持续维护；如果你需要更快响应、商业选型建议、私有化落地或定制能力，欢迎打赏后通过客服二维码联系我们。',
     releaseTitle: '从 npm 到静态部署，交付方式都准备好了。',
     footer:
       'Apache-2.0 开源。由 Flyfish Dev 持续维护，适合需要可靠浏览器原生文件预览的产品团队。'
@@ -119,33 +152,45 @@ const copy = {
       formats: 'Format Matrix',
       solutions: 'Use Cases',
       ecosystem: 'Components',
+      commercial: 'Commercial',
       delivery: 'Delivery',
+      support: 'Sponsor',
       docs: 'Docs',
-      demo: 'Open Demo'
+      demo: 'Live Demo'
     },
     hero: {
       eyebrow: 'Browser-native file preview super component',
-      title: 'One component for every critical business file.',
+      title: 'Turn complex files into instant product experiences.',
       subtitle:
-        'Flyfish File Viewer brings Office, PDF, OFD, CAD, archives, email, ebooks, code, media, 3D models, and data assets into the browser. A framework-neutral TypeScript core powers production-ready Vue, React, Web, jQuery, and Svelte components with lazy loading, high-fidelity layout, search, zoom, print, export, watermark, and self-hosted deployment built in.',
+        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, CAD, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vue, React, Web, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
-      proof: ['194+ extensions', '23 lazy pipelines', '8 component packages', 'Apache-2.0 open source']
+      commercial: 'Commercial Edition',
+      proof: ['194+ extensions', 'Lazy renderer loading', 'Native component packages', 'Apache-2.0 open source']
     },
     matrixTitle: 'Broad coverage, without treating fidelity as optional.',
     matrixIntro:
-      'Format detection, assets, Worker/WASM loading, themes, watermarking, search, zoom, print, and export are adapted inside the viewer so applications can hand over the file and keep moving.',
+      'Format detection, assets, Worker/WASM loading, themes, watermarking, search, zoom, print, and export are adapted inside the viewer. PPTX is now handled by the standalone open-source @file-viewer/pptx native engine, so applications can hand over the file and keep moving.',
     formatsTitle: 'Format matrix',
     solutionsTitle: 'Built for long-running enterprise workspaces',
     solutionsIntro:
       'From approvals to engineering drawings, support tickets, and AI document workflows, File Viewer focuses on real files, private networks, self-hosted delivery, and the details users meet every day.',
-    ecosystemTitle: 'Core owns preview capability. Components own native framework experience.',
+    ecosystemTitle: 'Core owns preview capability. Standard components own native framework experience.',
     ecosystemIntro:
       'The 2.x architecture no longer treats iframe integration as the primary path. Every standard component depends only on @file-viewer/core and exposes idiomatic props, hooks, refs/controllers, events, and complete types for its ecosystem.',
-    architectureTitle: 'Clear architecture, light first load, heavy renderers on demand.',
-    architectureIntro:
-      'The shell loads first, then only the renderer needed by the current file. Office, CAD, PDF, Typst, archives, and media pipelines are lazy-loaded when matched so host applications stay responsive.',
-    portalTitle: 'One portal for every essential destination.',
+    demoTitle: 'Try the complete demo without leaving the product site.',
+    demoIntro:
+      'The demo and product portal share the file-viewer.app domain family. It includes the sample matrix, upload preview, document comparison, and production build verification. Use the docs when you are ready to integrate deeply.',
+    docsTitle: 'The docs site and product portal share one information architecture.',
+    docsIntro:
+      'doc.file-viewer.app covers quick start, component packages, format support, themes, watermarking, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
+    commercialTitle: 'Need higher fidelity and extreme performance? Choose the commercial native document engine.',
+    commercialIntro:
+      'The commercial edition is powered by the local office product line: a self-developed native document engine for serious enterprise Word, Excel, and PowerPoint rendering, Worker parsing, pagination, virtual scrolling, and stable large-file performance.',
+    commercialCta: 'View Commercial Edition',
+    supportTitle: 'If File Viewer helps, sponsor the project and contact us for priority support.',
+    supportIntro:
+      'The open-source edition will keep moving. For faster response, commercial evaluation, private deployment, or custom work, sponsor the project and reach us through the support QR code.',
     releaseTitle: 'From npm to static deployment, distribution is ready.',
     footer:
       'Apache-2.0 open source. Maintained by Flyfish Dev for product teams that need reliable browser-native file preview.'
@@ -157,13 +202,13 @@ const metrics = computed<MetricItem[]>(() =>
     ? [
         { title: '文件扩展名', value: '194+', detail: '覆盖业务附件、工程资产、媒体与数据文件', tone: 'green' },
         { title: '预览链路', value: '23', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
-        { title: '生态组件', value: '8', detail: 'Vue、React、Web、jQuery、Svelte 全线可用', tone: 'violet' },
+        { title: '生态组件', value: '8+', detail: 'Vue、React、Web、jQuery、Svelte 全线可用', tone: 'violet' },
         { title: '分发形态', value: '4', detail: 'npm、Release、Docker、静态资源私有化', tone: 'amber' }
       ]
     : [
         { title: 'Extensions', value: '194+', detail: 'Business attachments, engineering files, media, and data assets', tone: 'green' },
         { title: 'Pipelines', value: '23', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
-        { title: 'Components', value: '8', detail: 'Vue, React, Web, jQuery, and Svelte packages', tone: 'violet' },
+        { title: 'Components', value: '8+', detail: 'Vue, React, Web, jQuery, and Svelte packages', tone: 'violet' },
         { title: 'Delivery paths', value: '4', detail: 'npm, GitHub Release, Docker, and static self-hosting', tone: 'amber' }
       ]
 )
@@ -322,9 +367,10 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: '在线 Demo', href: demoUrl, note: '体验主预览器、上传预览和完整样例矩阵', icon: MonitorPlay, featured: true },
         { label: '官方文档', href: docsUrl, note: 'doc.file-viewer.app，接入、格式、部署与 API', icon: BookOpen, featured: true },
         { label: '文档比对', href: compareUrl, note: '左右并排预览、同步滚动、搜索定位', icon: PanelTop, featured: true },
-        { label: 'GitHub 开源总仓', href: githubUrl, note: '源码、Release 下载、构建产物和 issue', icon: FolderGit2, featured: true },
+        { label: 'GitHub 开源总仓', href: githubUrl, note: '源码、Release 下载、构建产物和 issue', icon: GitHubMark, featured: true },
         { label: 'npm 生态包', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: '@file-viewer/* 标准组件与兼容包', icon: PackageCheck },
-        { label: 'Docker 部署', href: `${docsUrl}guide/docker`, note: 'amd64 / arm64 一键部署文档与示例', icon: Cloud },
+        { label: 'Docker 部署', href: dockerDocsUrl, note: 'amd64 / arm64 一键部署文档与示例', icon: Cloud },
+        { label: '商业版引擎', href: commercialUrl, note: '自研原生 Office 引擎，高还原与极致性能', icon: Gem },
         { label: '飞鱼小铺', href: shopUrl, note: '打赏项目，并获得优先技术支持', icon: HandCoins },
         { label: '飞鱼开源工作室', href: studioUrl, note: '了解 Flyfish Dev 的产品与服务', icon: Building2 }
       ]
@@ -332,9 +378,10 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: 'Live demo', href: demoUrl, note: 'Try the main viewer, uploads, and the full sample matrix', icon: MonitorPlay, featured: true },
         { label: 'Documentation', href: docsUrl, note: 'doc.file-viewer.app for integration, formats, deployment, and APIs', icon: BookOpen, featured: true },
         { label: 'Compare demo', href: compareUrl, note: 'Side-by-side preview with sync scroll, search, and anchors', icon: PanelTop, featured: true },
-        { label: 'GitHub monorepo', href: githubUrl, note: 'Source, releases, artifacts, and issues', icon: FolderGit2, featured: true },
+        { label: 'GitHub monorepo', href: githubUrl, note: 'Source, releases, artifacts, and issues', icon: GitHubMark, featured: true },
         { label: 'npm packages', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: '@file-viewer/* standard components and compatibility aliases', icon: PackageCheck },
-        { label: 'Docker deployment', href: `${docsUrl}guide/docker`, note: 'amd64 / arm64 deployment for docs and examples', icon: Cloud },
+        { label: 'Docker deployment', href: dockerDocsUrl, note: 'amd64 / arm64 deployment for docs and examples', icon: Cloud },
+        { label: 'Commercial engine', href: commercialUrl, note: 'Native Office engine for high fidelity and extreme performance', icon: Gem },
         { label: 'Support shop', href: shopUrl, note: 'Sponsor the project and receive priority technical support', icon: HandCoins },
         { label: 'Flyfish Dev', href: studioUrl, note: 'Explore Flyfish Dev products and services', icon: Building2 }
       ]
@@ -352,21 +399,38 @@ const ecosystem = [
   '@file-viewer/svelte'
 ]
 
-const codeSample = computed(() =>
+const commercialFeatures = computed<Capability[]>(() =>
   isZh.value
-    ? `import FileViewer from '@file-viewer/vue3'
+    ? [
+        { title: '自研原生版式引擎', detail: '面向 Word、Excel、PowerPoint 的结构解析、分页和绘制链路，不依赖系统 Office。', icon: Cpu },
+        { title: '大文件性能优先', detail: 'Worker 解析、异步渲染、虚拟滚动和窗口化数据链路，减少主线程卡顿。', icon: Zap },
+        { title: '严肃商用支持', detail: '适合合同归档、报表中心、知识库和需要更高还原度的企业产品。', icon: HeartHandshake }
+      ]
+    : [
+        { title: 'Self-developed native layout engine', detail: 'Structural parsing, pagination, and rendering for Word, Excel, and PowerPoint without relying on system Office.', icon: Cpu },
+        { title: 'Large-file performance first', detail: 'Worker parsing, asynchronous rendering, virtual scrolling, and windowed data paths reduce main-thread blocking.', icon: Zap },
+        { title: 'Serious commercial support', detail: 'For contract archives, report centers, knowledge bases, and enterprise products that demand stronger fidelity.', icon: HeartHandshake }
+      ]
+)
 
-app.use(FileViewer)
+const qrItems = computed<QrItem[]>(() =>
+  isZh.value
+    ? [
+        { label: '微信打赏', note: '请我们喝杯柠檬水', image: '/donate-wx.jpg' },
+        { label: '支付宝打赏', note: '支持开源持续迭代', image: '/donate-alipay.jpg' },
+        { label: '客服微信', note: '优先支持与商业沟通', image: '/contact.jpg' },
+        { label: '公众号', note: '关注更新与实践文章', image: '/wechat-mp.png' }
+      ]
+    : [
+        { label: 'WeChat Sponsor', note: 'Buy us a lemonade', image: '/donate-wx.jpg' },
+        { label: 'Alipay Sponsor', note: 'Support open-source work', image: '/donate-alipay.jpg' },
+        { label: 'Support Contact', note: 'Priority support and business inquiries', image: '/contact.jpg' },
+        { label: 'Official Account', note: 'Updates and engineering notes', image: '/wechat-mp.png' }
+      ]
+)
 
-<file-viewer
-  url="/contracts/demo.pdf"
-  :options="{
-    theme: 'light',
-    toolbar: { position: 'bottom-right', zoom: true },
-    watermark: { text: 'Internal Preview' }
-  }"
-/>`
-    : `import FileViewer from '@file-viewer/vue3'
+const codeSample = computed(() =>
+  `import FileViewer from '@file-viewer/vue3'
 
 app.use(FileViewer)
 
@@ -385,6 +449,259 @@ const currentCopy = computed(() => copy[locale.value])
 function toggleLocale() {
   locale.value = isZh.value ? 'en' : 'zh'
 }
+
+const GitHubMark = {
+  name: 'GitHubMark',
+  render: () =>
+    h(
+      'svg',
+      {
+        class: 'github-mark',
+        viewBox: '0 0 24 24',
+        'aria-hidden': 'true',
+        fill: 'currentColor'
+      },
+      [
+        h('path', {
+          d: 'M12 1.7C6.3 1.7 1.7 6.3 1.7 12c0 4.6 3 8.5 7.2 9.8.5.1.7-.2.7-.5v-1.8c-2.9.6-3.5-1.2-3.5-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 2.9.9.1-.7.4-1.1.7-1.3-2.3-.3-4.7-1.2-4.7-5.1 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.4.1-2.8 0 0 .9-.3 2.9 1.1.8-.2 1.7-.3 2.6-.3.9 0 1.8.1 2.6.3 2-1.4 2.9-1.1 2.9-1.1.6 1.4.2 2.5.1 2.8.7.8 1.1 1.7 1.1 2.8 0 4-2.4 4.8-4.7 5.1.4.3.8 1 .8 2v3c0 .3.2.6.8.5 4.2-1.3 7.2-5.2 7.2-9.8C22.3 6.3 17.7 1.7 12 1.7Z'
+        })
+      ]
+    )
+} satisfies Component
+
+function disposeScene(scene: Scene, renderer: WebGLRenderer) {
+  scene.traverse((child: Object3D) => {
+    const mesh = child as Mesh
+    if (mesh.geometry) {
+      mesh.geometry.dispose()
+    }
+
+    const material = mesh.material
+    if (Array.isArray(material)) {
+      material.forEach((item) => item.dispose())
+    } else if (material) {
+      material.dispose()
+    }
+  })
+  renderer.dispose()
+}
+
+async function initHeroScene() {
+  const THREE = await import('three')
+  const canvas = heroCanvas.value
+  const stage = canvas?.parentElement
+  if (!canvas || !stage) return () => {}
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true,
+    powerPreference: 'high-performance'
+  })
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+
+  const scene = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
+  camera.position.set(0, 0.7, 7.4)
+
+  const ambient = new THREE.AmbientLight(0xffffff, 1.5)
+  const key = new THREE.DirectionalLight(0xefffff, 3.2)
+  key.position.set(3.8, 4.8, 5.4)
+  const rim = new THREE.PointLight(0x22d3ee, 3.2, 14)
+  rim.position.set(-3.7, 1.6, 3.4)
+  const warm = new THREE.PointLight(0xffc766, 1.8, 12)
+  warm.position.set(2.8, -2.2, 2.8)
+  scene.add(ambient, key, rim, warm)
+
+  const rig = new THREE.Group()
+  scene.add(rig)
+
+  const pageGeometry = new THREE.BoxGeometry(2.78, 3.72, 0.032, 16, 16, 1)
+  const pageMaterials = [
+    new THREE.MeshPhysicalMaterial({ color: 0xf8fffb, roughness: 0.52, metalness: 0.04, transparent: true, opacity: 0.9 }),
+    new THREE.MeshPhysicalMaterial({ color: 0xe9f9ff, roughness: 0.5, metalness: 0.06, transparent: true, opacity: 0.86 }),
+    new THREE.MeshPhysicalMaterial({ color: 0xfaf6ff, roughness: 0.54, metalness: 0.05, transparent: true, opacity: 0.84 })
+  ]
+  const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x8ae6d0, transparent: true, opacity: 0.38 })
+  const pages: Mesh[] = []
+
+  for (let index = 0; index < 8; index += 1) {
+    const page = new THREE.Mesh(pageGeometry, pageMaterials[index % pageMaterials.length])
+    page.position.set((index - 3.5) * 0.13, 0.14 - index * 0.035, -index * 0.22)
+    page.rotation.set(-0.08 + index * 0.012, -0.38 + index * 0.02, -0.08)
+    pages.push(page)
+    rig.add(page)
+
+    const edge = new THREE.LineSegments(new THREE.EdgesGeometry(pageGeometry), edgeMaterial)
+    edge.position.copy(page.position)
+    edge.rotation.copy(page.rotation)
+    edge.scale.copy(page.scale)
+    rig.add(edge)
+  }
+
+  const panelMaterial = new THREE.MeshStandardMaterial({ color: 0x10243a, roughness: 0.42, metalness: 0.18 })
+  const glowMaterial = new THREE.MeshBasicMaterial({ color: 0x25d692, transparent: true, opacity: 0.58 })
+  const cyanMaterial = new THREE.MeshBasicMaterial({ color: 0x37d6f3, transparent: true, opacity: 0.62 })
+  const violetMaterial = new THREE.MeshBasicMaterial({ color: 0x8b7cf6, transparent: true, opacity: 0.52 })
+  const amberMaterial = new THREE.MeshBasicMaterial({ color: 0xf3b24f, transparent: true, opacity: 0.62 })
+  const panelItems = [
+    { x: -0.62, y: 0.82, z: 0.1, w: 0.92, h: 0.18, material: glowMaterial },
+    { x: 0.42, y: 0.36, z: 0.12, w: 1.18, h: 0.14, material: cyanMaterial },
+    { x: -0.35, y: -0.22, z: 0.14, w: 1.42, h: 0.16, material: violetMaterial },
+    { x: 0.58, y: -0.78, z: 0.16, w: 0.86, h: 0.16, material: amberMaterial }
+  ]
+
+  panelItems.forEach((item) => {
+    const block = new THREE.Mesh(new THREE.BoxGeometry(item.w, item.h, 0.04), item.material)
+    block.position.set(item.x, item.y, item.z)
+    block.rotation.set(-0.08, -0.35, -0.08)
+    rig.add(block)
+  })
+
+  const railGroup = new THREE.Group()
+  rig.add(railGroup)
+
+  const railMaterial = new THREE.LineBasicMaterial({ color: 0x6de5ff, transparent: true, opacity: 0.46 })
+  const railPoints = [
+    new THREE.Vector3(-2.3, -1.55, -0.22),
+    new THREE.Vector3(-1.5, -1.04, 0),
+    new THREE.Vector3(-0.6, -1.35, 0.16),
+    new THREE.Vector3(0.4, -1.08, 0.26),
+    new THREE.Vector3(1.58, -1.46, 0.02),
+    new THREE.Vector3(2.34, -0.92, -0.28)
+  ]
+  const rail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(railPoints), railMaterial)
+  railGroup.add(rail)
+
+  const nodeGeometry = new THREE.SphereGeometry(0.065, 20, 12)
+  const nodeMaterials = [
+    new THREE.MeshBasicMaterial({ color: 0x28d989 }),
+    new THREE.MeshBasicMaterial({ color: 0x39d8ff }),
+    new THREE.MeshBasicMaterial({ color: 0xf0bb45 })
+  ]
+  const nodes = railPoints.map((point, index) => {
+    const node = new THREE.Mesh(nodeGeometry, nodeMaterials[index % nodeMaterials.length])
+    node.position.copy(point)
+    railGroup.add(node)
+    return node
+  })
+
+  const ringGroup = new THREE.Group()
+  scene.add(ringGroup)
+  const ringOne = new THREE.Mesh(
+    new THREE.TorusGeometry(2.36, 0.012, 10, 120),
+    new THREE.MeshBasicMaterial({ color: 0x1fbf8a, transparent: true, opacity: 0.36 })
+  )
+  const ringTwo = new THREE.Mesh(
+    new THREE.TorusGeometry(3.06, 0.008, 10, 144),
+    new THREE.MeshBasicMaterial({ color: 0x55d7ff, transparent: true, opacity: 0.28 })
+  )
+  ringOne.rotation.set(1.08, 0.36, -0.44)
+  ringTwo.rotation.set(1.22, -0.28, 0.35)
+  ringGroup.add(ringOne, ringTwo)
+
+  const particles = new THREE.BufferGeometry()
+  const particleCount = 96
+  const positions = new Float32Array(particleCount * 3)
+  for (let index = 0; index < particleCount; index += 1) {
+    const angle = index * 1.618
+    const radius = 2.15 + ((index % 13) / 13) * 1.38
+    positions[index * 3] = Math.cos(angle) * radius
+    positions[index * 3 + 1] = -1.82 + ((index * 37) % 100) / 28
+    positions[index * 3 + 2] = Math.sin(angle) * radius * 0.42 - 0.6
+  }
+  particles.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  const particleField = new THREE.Points(
+    particles,
+    new THREE.PointsMaterial({ color: 0x8ee8d2, size: 0.022, transparent: true, opacity: 0.66 })
+  )
+  scene.add(particleField)
+
+  let frameId = 0
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  const resize = () => {
+    const width = Math.max(320, stage.clientWidth)
+    const height = Math.max(420, stage.clientHeight)
+    renderer.setSize(width, height, false)
+    camera.aspect = width / height
+    camera.updateProjectionMatrix()
+  }
+
+  const resizeObserver = new ResizeObserver(resize)
+  resizeObserver.observe(stage)
+  resize()
+
+  const animate = (time: number) => {
+    const speed = motionQuery.matches ? 0.16 : 1
+    const elapsed = time * 0.001 * speed
+    rig.rotation.y = Math.sin(elapsed * 0.45) * 0.12
+    rig.rotation.x = Math.sin(elapsed * 0.32) * 0.035
+    ringGroup.rotation.z = elapsed * 0.1
+    ringGroup.rotation.y = Math.sin(elapsed * 0.28) * 0.06
+    railGroup.position.y = Math.sin(elapsed * 1.1) * 0.045
+    particleField.rotation.y = elapsed * 0.06
+    particleField.rotation.z = Math.sin(elapsed * 0.25) * 0.045
+
+    pages.forEach((page, index) => {
+      page.position.z = -index * 0.22 + Math.sin(elapsed * 0.7 + index * 0.72) * 0.018
+      page.rotation.z = -0.08 + Math.sin(elapsed * 0.5 + index) * 0.012
+    })
+    nodes.forEach((node, index) => {
+      const pulse = 1 + Math.sin(elapsed * 2.2 + index * 0.7) * 0.18
+      node.scale.setScalar(pulse)
+    })
+
+    renderer.render(scene, camera)
+    frameId = window.requestAnimationFrame(animate)
+  }
+
+  frameId = window.requestAnimationFrame(animate)
+
+  return () => {
+    window.cancelAnimationFrame(frameId)
+    resizeObserver.disconnect()
+    disposeScene(scene, renderer)
+  }
+}
+
+let disposeHeroScene: (() => void) | undefined
+let heroSceneDisposed = false
+let demoRevealObserver: IntersectionObserver | undefined
+
+onMounted(async () => {
+  await nextTick()
+  if (demoReveal.value) {
+    demoRevealObserver = new IntersectionObserver(
+      ([entry]) => {
+        const active = entry.isIntersecting && entry.intersectionRatio > 0.18
+        demoRevealActive.value = active
+        if (active) {
+          demoFrameLoaded.value = true
+        }
+      },
+      {
+        rootMargin: '-12% 0px -18% 0px',
+        threshold: [0, 0.18, 0.4, 0.72]
+      }
+    )
+    demoRevealObserver.observe(demoReveal.value)
+  }
+
+  const dispose = await initHeroScene()
+  if (heroSceneDisposed) {
+    dispose()
+    return
+  }
+  disposeHeroScene = dispose
+})
+
+onBeforeUnmount(() => {
+  heroSceneDisposed = true
+  demoRevealObserver?.disconnect()
+  disposeHeroScene?.()
+})
 </script>
 
 <template>
@@ -398,10 +715,14 @@ function toggleLocale() {
         <a href="#formats">{{ currentCopy.nav.formats }}</a>
         <a href="#solutions">{{ currentCopy.nav.solutions }}</a>
         <a href="#ecosystem">{{ currentCopy.nav.ecosystem }}</a>
+        <a href="#commercial">{{ currentCopy.nav.commercial }}</a>
         <a href="#delivery">{{ currentCopy.nav.delivery }}</a>
-        <a :href="docsUrl" target="_blank" rel="noreferrer">{{ currentCopy.nav.docs }}</a>
+        <a href="#support">{{ currentCopy.nav.support }}</a>
       </div>
       <div class="topbar-actions">
+        <a class="nav-icon-button" :href="githubUrl" target="_blank" rel="noreferrer" aria-label="GitHub repository">
+          <GitHubMark />
+        </a>
         <button class="language-toggle" type="button" @click="toggleLocale">
           <Languages :size="16" />
           {{ nextLocaleLabel }}
@@ -419,16 +740,26 @@ function toggleLocale() {
           <Sparkles :size="17" />
           {{ currentCopy.hero.eyebrow }}
         </p>
-        <h1>{{ currentCopy.hero.title }}</h1>
+        <h1>
+          <template v-if="isZh">
+            <span class="hero-title-line">把复杂文件，</span>
+            <span class="hero-title-line">变成产品里的即时体验。</span>
+          </template>
+          <template v-else>{{ currentCopy.hero.title }}</template>
+        </h1>
         <p class="hero-subtitle">{{ currentCopy.hero.subtitle }}</p>
         <div class="hero-actions">
           <a class="button primary" :href="demoUrl" target="_blank" rel="noreferrer">
-            {{ currentCopy.hero.primary }}
+            <span>{{ currentCopy.hero.primary }}</span>
             <MonitorPlay :size="18" />
           </a>
           <a class="button secondary" :href="docsUrl" target="_blank" rel="noreferrer">
-            {{ currentCopy.hero.secondary }}
+            <span>{{ currentCopy.hero.secondary }}</span>
             <BookOpen :size="18" />
+          </a>
+          <a class="button tertiary" :href="commercialUrl" target="_blank" rel="noreferrer">
+            <span>{{ currentCopy.hero.commercial }}</span>
+            <Gem :size="18" />
           </a>
         </div>
         <div class="hero-badges" aria-label="Highlights">
@@ -439,16 +770,20 @@ function toggleLocale() {
         </div>
       </div>
 
-      <div class="hero-visual" aria-label="Flyfish File Viewer product preview">
-        <div class="visual-frame">
-          <img class="hero-media" src="/home-hero-premium.webp" alt="Business files previewed in layered browser panels" />
-          <div class="floating-panel panel-a">
+      <div class="hero-visual" aria-label="Flyfish File Viewer 3D product preview">
+        <div class="hero-stage">
+          <canvas ref="heroCanvas" class="three-canvas" aria-hidden="true"></canvas>
+          <div class="hero-signal hero-signal-top">
             <FileSpreadsheet :size="18" />
-            <span>{{ isZh ? '表格分页保持可读' : 'Readable spreadsheet tabs' }}</span>
+            <span>{{ isZh ? '统一预览链路' : 'Unified preview pipeline' }}</span>
           </div>
-          <div class="floating-panel panel-b">
+          <div class="hero-signal hero-signal-bottom">
             <Boxes :size="18" />
-            <span>{{ isZh ? 'CAD / 压缩包 / 邮件' : 'CAD / archives / email' }}</span>
+            <span>{{ isZh ? 'Worker / WASM 按需加载' : 'Worker / WASM on demand' }}</span>
+          </div>
+          <div class="hero-engine-card">
+            <strong>{{ isZh ? 'Core Renderer' : 'Core Renderer' }}</strong>
+            <span>{{ isZh ? '纯 TypeScript 底座' : 'framework-neutral TypeScript' }}</span>
           </div>
         </div>
       </div>
@@ -474,6 +809,61 @@ function toggleLocale() {
           <strong>{{ group.count }}</strong>
           <p>{{ group.examples }}</p>
         </article>
+      </div>
+    </section>
+
+    <section
+      ref="demoReveal"
+      class="demo-reveal-section"
+      :class="{ 'demo-reveal-active': demoRevealActive }"
+      aria-labelledby="demo-title"
+    >
+      <div class="demo-reveal-stage">
+        <div class="demo-reveal-copy">
+          <div>
+            <p class="section-kicker">Live workspace</p>
+            <h2 id="demo-title">{{ currentCopy.demoTitle }}</h2>
+            <p>{{ currentCopy.demoIntro }}</p>
+          </div>
+          <div class="inline-actions">
+            <a class="button primary" :href="demoUrl" target="_blank" rel="noreferrer">
+              <span>{{ currentCopy.nav.demo }}</span>
+              <MonitorPlay :size="18" />
+            </a>
+            <a class="button secondary" :href="docsUrl" target="_blank" rel="noreferrer">
+              <span>{{ currentCopy.nav.docs }}</span>
+              <BookOpen :size="18" />
+            </a>
+          </div>
+        </div>
+
+        <div class="demo-reveal-window">
+          <div class="demo-seam demo-seam-top">
+            <span>{{ isZh ? '官网门户' : 'product portal' }}</span>
+          </div>
+          <div class="demo-browser demo-browser-wide">
+            <div class="demo-browser-bar">
+              <span />
+              <span />
+              <span />
+              <strong>demo.file-viewer.app</strong>
+            </div>
+            <iframe
+              v-if="demoFrameLoaded"
+              :src="demoUrl"
+              title="Flyfish File Viewer live demo"
+              loading="lazy"
+            ></iframe>
+            <div v-else class="demo-frame-placeholder">
+              <MonitorPlay :size="28" />
+              <strong>{{ isZh ? '滚动到这里后加载完整 Demo' : 'Live demo loads when this section opens' }}</strong>
+              <span>{{ isZh ? '避免首屏被独立站点资源拖慢' : 'Keeping the first view fast and focused' }}</span>
+            </div>
+          </div>
+          <div class="demo-seam demo-seam-bottom">
+            <span>{{ isZh ? '完整预览工作台' : 'complete preview workspace' }}</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -515,8 +905,8 @@ function toggleLocale() {
     <section class="band architecture-section" aria-labelledby="architecture-title">
       <div class="section-heading compact">
         <p class="section-kicker">Architecture</p>
-        <h2 id="architecture-title">{{ currentCopy.architectureTitle }}</h2>
-        <p>{{ currentCopy.architectureIntro }}</p>
+        <h2 id="architecture-title">{{ currentCopy.docsTitle }}</h2>
+        <p>{{ currentCopy.docsIntro }}</p>
       </div>
       <div class="capability-grid">
         <article v-for="capability in capabilities" :key="capability.title" class="capability-card">
@@ -527,10 +917,35 @@ function toggleLocale() {
       </div>
     </section>
 
+    <section id="commercial" class="commercial-section" aria-labelledby="commercial-title">
+      <div class="commercial-copy">
+        <p class="section-kicker">Commercial edition</p>
+        <h2 id="commercial-title">{{ currentCopy.commercialTitle }}</h2>
+        <p>{{ currentCopy.commercialIntro }}</p>
+        <div class="inline-actions">
+          <a class="button primary" :href="commercialUrl" target="_blank" rel="noreferrer">
+            <span>{{ currentCopy.commercialCta }}</span>
+            <ShoppingCart :size="18" />
+          </a>
+          <a class="button secondary" :href="commercialDemoUrl" target="_blank" rel="noreferrer">
+            <span>{{ isZh ? '商业版 Demo' : 'Commercial Demo' }}</span>
+            <ExternalLink :size="18" />
+          </a>
+        </div>
+      </div>
+      <div class="commercial-grid">
+        <article v-for="item in commercialFeatures" :key="item.title" class="commercial-card">
+          <component :is="item.icon" :size="24" />
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.detail }}</p>
+        </article>
+      </div>
+    </section>
+
     <section id="delivery" class="band portal-section" aria-labelledby="portal-title">
       <div class="section-heading compact">
         <p class="section-kicker">Portal</p>
-        <h2 id="portal-title">{{ currentCopy.portalTitle }}</h2>
+        <h2 id="portal-title">{{ isZh ? '一个入口，找到所有必备站点。' : 'One portal for every essential destination.' }}</h2>
       </div>
       <div class="portal-grid">
         <a
@@ -555,31 +970,59 @@ function toggleLocale() {
         <h2>{{ currentCopy.releaseTitle }}</h2>
       </div>
       <div class="release-actions">
-        <a href="https://github.com/flyfish-dev/file-viewer/releases" target="_blank" rel="noreferrer">
-          <Download :size="18" />
-          Release
+        <a :href="releasesUrl" target="_blank" rel="noreferrer">
+          <Download :size="19" />
+          <span>Release</span>
         </a>
         <a :href="githubUrl" target="_blank" rel="noreferrer">
-          <FolderGit2 :size="18" />
-          GitHub
+          <GitHubMark />
+          <span>GitHub</span>
         </a>
-        <a :href="`${docsUrl}guide/docker`" target="_blank" rel="noreferrer">
-          <Wrench :size="18" />
-          Docker
+        <a :href="dockerDocsUrl" target="_blank" rel="noreferrer">
+          <Wrench :size="19" />
+          <span>Docker</span>
         </a>
       </div>
     </section>
 
-    <footer class="footer">
-      <div>
-        <img src="/logo.png" alt="" />
-        <strong>Flyfish File Viewer</strong>
+    <footer id="support" class="support-footer">
+      <div class="support-copy">
+        <div class="footer-brand">
+          <img src="/logo.png" alt="" />
+          <strong>Flyfish File Viewer</strong>
+        </div>
+        <h2>{{ currentCopy.supportTitle }}</h2>
+        <p>{{ currentCopy.supportIntro }}</p>
+        <div class="footer-links">
+          <a :href="shopUrl" target="_blank" rel="noreferrer">
+            <HandCoins :size="16" />
+            {{ isZh ? '飞鱼小铺' : 'Support shop' }}
+          </a>
+          <a :href="studioUrl" target="_blank" rel="noreferrer">
+            <Rocket :size="16" />
+            Flyfish Dev
+          </a>
+          <a :href="githubUrl" target="_blank" rel="noreferrer">
+            <GitHubMark />
+            GitHub
+          </a>
+        </div>
       </div>
-      <p>{{ currentCopy.footer }}</p>
-      <a :href="studioUrl" target="_blank" rel="noreferrer">
-        <Rocket :size="16" />
-        Flyfish Dev
-      </a>
+      <div class="qr-grid">
+        <article v-for="item in qrItems" :key="item.label" class="qr-card">
+          <div class="qr-image">
+            <img :src="item.image" :alt="item.label" />
+          </div>
+          <strong>
+            <QrCode :size="15" />
+            {{ item.label }}
+          </strong>
+          <span>{{ item.note }}</span>
+        </article>
+      </div>
+      <div class="footer-bottom">
+        <p>{{ currentCopy.footer }}</p>
+      </div>
     </footer>
   </main>
 </template>

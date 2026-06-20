@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3@2.0.1` / `@flyfish-group/file-viewer3@2.0.1`，Vue2.7 使用 `@file-viewer/vue2.7@2.0.1` / `@flyfish-group/file-viewer@2.0.1`，React 使用 `@file-viewer/react@2.0.1` / `@flyfish-group/file-viewer-react@2.0.1`，纯 JS 使用 `@file-viewer/web@2.0.1` / `@flyfish-group/file-viewer-web@2.0.1`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3` / `@flyfish-group/file-viewer3`，Vue2.7 使用 `@file-viewer/vue2.7` / `@flyfish-group/file-viewer`，React 使用 `@file-viewer/react` / `@flyfish-group/file-viewer-react`，纯 JS 使用 `@file-viewer/web` / `@flyfish-group/file-viewer-web`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -38,7 +38,7 @@ React、纯 JS、jQuery 和 Svelte 标准组件包 允许直接传 `Blob` 或 `A
 - 组件默认撑满父容器，因此父容器必须有稳定高度
 - 扩展名匹配会自动转成小写，所以 `PDF`、`DocX` 这类大小写差异不会影响命中
 - OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
-- PPTX 属于浏览器端近似渲染链路，已增强组合图形、主题背景、图片裁剪和 EMF 矢量图片；如果业务材料大量使用复杂动画或专有 Office 特效，建议把真实样本加入上线前回归。
+- PPTX 属于浏览器端近似渲染链路，当前由独立开源的 `@file-viewer/pptx` 原生引擎承接，已增强组合图形、主题背景、图片裁剪和 EMF 矢量图片；如果业务材料大量使用复杂动画或专有 Office 特效，建议把真实样本加入上线前回归。
 - `options` 可以配置内置操作栏、水印、压缩包 Worker、缓存和体积上限。
 
 ## URL 预览

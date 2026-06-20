@@ -12,13 +12,13 @@
 新项目优先使用标准包名:
 
 ```bash
-npm install @file-viewer/web@2.0.1
+npm install @file-viewer/web
 ```
 
 历史包名仍同步维护:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@2.0.1
+npm install @flyfish-group/file-viewer-web
 ```
 
 ```ts

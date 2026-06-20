@@ -1,6 +1,18 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ChevronDown, ChevronUp, RotateCcw, X, ZoomIn, ZoomOut } from '@lucide/vue'
+import {
+  ChevronDown,
+  ChevronUp,
+  FileSearch,
+  Link2,
+  MoreHorizontal,
+  RotateCcw,
+  Search,
+  Upload,
+  X,
+  ZoomIn,
+  ZoomOut
+} from '@lucide/vue'
 import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
 import { listenForFile } from '@/components/utils'
 import type {
@@ -22,10 +34,13 @@ const preview = ref('')
 const samplePickerOpen = ref(false)
 const expandedSampleGroupIndex = ref<number | null>(0)
 const samplePickerRef = ref<HTMLElement | null>(null)
+const controlPanelRef = ref<HTMLElement | null>(null)
 const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
 const runtimeOptions = ref<FileViewerOptions>({})
+const mobileControlsOpen = ref(false)
+const mobileActionsOpen = ref(false)
 const viewerSearchOpen = ref(false)
 const viewerSearchQuery = ref('')
 const viewerSearchInputRef = ref<HTMLInputElement | null>(null)
@@ -631,6 +646,7 @@ const viewerOptions = computed<FileViewerOptions>(() => ({
 }))
 
 function triggerViewerAction(action: ViewerAction) {
+  mobileActionsOpen.value = false
   if (action === 'download') {
     void fileViewerRef.value?.downloadOriginalFile()
     return
@@ -664,6 +680,7 @@ async function runViewerSearch() {
 }
 
 async function openViewerSearch() {
+  mobileActionsOpen.value = false
   viewerSearchOpen.value = true
   await nextTick()
   viewerSearchInputRef.value?.focus()
@@ -678,6 +695,37 @@ async function closeViewerSearch() {
 function resetViewerSearch() {
   viewerSearchQuery.value = ''
   void closeViewerSearch()
+}
+
+async function openMobileControls(mode: 'link' | 'upload' | 'samples' = 'link') {
+  input.value = mode !== 'upload'
+  mobileControlsOpen.value = true
+  mobileActionsOpen.value = false
+  if (mode === 'samples') {
+    samplePickerOpen.value = true
+    expandedSampleGroupIndex.value = activeSampleGroupIndex.value >= 0 ? activeSampleGroupIndex.value : 0
+    await nextTick()
+    updateSampleMenuGeometry()
+    return
+  }
+  samplePickerOpen.value = false
+}
+
+function closeMobileControls() {
+  mobileControlsOpen.value = false
+  samplePickerOpen.value = false
+}
+
+function toggleMobileActions() {
+  mobileActionsOpen.value = !mobileActionsOpen.value
+  if (mobileActionsOpen.value) {
+    mobileControlsOpen.value = false
+  }
+}
+
+function toggleWatermark() {
+  watermarkEnabled.value = !watermarkEnabled.value
+  mobileActionsOpen.value = false
 }
 
 async function nextViewerSearch() {
@@ -747,6 +795,8 @@ function openUrlPreview(nextUrl = url.value) {
   resetViewerSearch()
   preview.value = nextUrl
   samplePickerOpen.value = false
+  mobileControlsOpen.value = false
+  mobileActionsOpen.value = false
 }
 
 function setInputMode(nextMode: boolean) {
@@ -762,6 +812,8 @@ async function handleChange(e: Event) {
   }
   input.value = false
   samplePickerOpen.value = false
+  mobileControlsOpen.value = false
+  mobileActionsOpen.value = false
   resetViewerSearch()
   filename.value = value.name && decodeURIComponent(value.name) || ''
   file.value = value
@@ -787,6 +839,8 @@ function selectPreset(nextUrl: string) {
   url.value = nextUrl
   expandedSampleGroupIndex.value = nextGroupIndex >= 0 ? nextGroupIndex : expandedSampleGroupIndex.value
   samplePickerOpen.value = false
+  mobileControlsOpen.value = false
+  mobileActionsOpen.value = false
   openUrlPreview(nextUrl)
 }
 
@@ -799,6 +853,13 @@ function handleDocumentPointerDown(event: PointerEvent) {
     return
   }
   const target = event.target
+  if (
+    mobileControlsOpen.value &&
+    target instanceof Node &&
+    controlPanelRef.value?.contains(target)
+  ) {
+    return
+  }
   if (target instanceof Node && samplePickerRef.value?.contains(target)) {
     return
   }
@@ -820,6 +881,8 @@ function handleDocumentKeydown(event: KeyboardEvent) {
 
   if (event.key === 'Escape') {
     samplePickerOpen.value = false
+    mobileControlsOpen.value = false
+    mobileActionsOpen.value = false
     if (viewerSearchOpen.value) {
       void closeViewerSearch()
     }
@@ -836,6 +899,11 @@ function updateSampleMenuGeometry() {
     return
   }
   const rect = picker.getBoundingClientRect()
+  if (window.matchMedia('(max-width: 720px)').matches) {
+    sampleMenuPlacement.value = 'bottom'
+    sampleMenuMaxHeight.value = 'min(48dvh, 430px)'
+    return
+  }
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight
   const bottomRoom = viewportHeight - rect.bottom - 18
   const topRoom = rect.top - 18
@@ -847,10 +915,10 @@ function updateSampleMenuGeometry() {
 </script>
 
 <template>
-  <div class='demo-shell' :class='{ hidden }'>
+  <div class='demo-shell' :class="{ hidden, 'mobile-controls-open': mobileControlsOpen, 'mobile-actions-open': mobileActionsOpen }">
     <main class='workspace'>
       <div v-if='!hidden' class='layout-shell'>
-        <aside class='control-panel'>
+        <aside ref='controlPanelRef' class='control-panel'>
           <div class='brand-card'>
             <span class='brand-orbit' />
             <div class='brand-main'>
@@ -872,6 +940,10 @@ function updateSampleMenuGeometry() {
               <strong>{{ displayName }}</strong>
             </div>
           </div>
+
+          <button type='button' class='mobile-sheet-close' aria-label='关闭操作面板' @click='closeMobileControls'>
+            <X :size='18' :stroke-width='2.5' />
+          </button>
 
           <div class='panel-body'>
             <div class='mode-switch'>
@@ -1079,7 +1151,7 @@ function updateSampleMenuGeometry() {
                 class='viewer-tool-button'
                 :class='{ active: watermarkEnabled }'
                 title='切换水印'
-                @click='watermarkEnabled = !watermarkEnabled'
+                @click='toggleWatermark'
               >
                 水印
               </button>
@@ -1118,6 +1190,114 @@ function updateSampleMenuGeometry() {
             />
           </div>
         </section>
+
+        <button
+          v-if='mobileControlsOpen'
+          type='button'
+          class='mobile-control-backdrop'
+          aria-label='关闭移动端操作面板'
+          @click='closeMobileControls'
+        />
+
+        <nav class='mobile-action-dock' aria-label='移动端预览操作'>
+          <div v-if='visibleExternalToolbar.zoom' class='mobile-zoom-strip'>
+            <button
+              type='button'
+              :disabled='viewerActionDisabled || !viewerAvailability.zoomOut'
+              title='缩小预览'
+              aria-label='缩小预览'
+              @click='triggerViewerAction("zoomOut")'
+            >
+              <ZoomOut :size='18' :stroke-width='2.4' />
+            </button>
+            <button
+              type='button'
+              class='mobile-zoom-meter'
+              :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
+              title='还原比例'
+              @click='triggerViewerAction("resetZoom")'
+            >
+              {{ viewerZoomState.label }}
+            </button>
+            <button
+              type='button'
+              :disabled='viewerActionDisabled || !viewerAvailability.zoomIn'
+              title='放大预览'
+              aria-label='放大预览'
+              @click='triggerViewerAction("zoomIn")'
+            >
+              <ZoomIn :size='18' :stroke-width='2.4' />
+            </button>
+          </div>
+
+          <div v-if='mobileActionsOpen' class='mobile-action-panel'>
+            <button
+              v-if='visibleExternalToolbar.download'
+              type='button'
+              :disabled='viewerActionDisabled'
+              @click='triggerViewerAction("download")'
+            >
+              下载
+            </button>
+            <button
+              v-if='visibleExternalToolbar.print'
+              type='button'
+              :disabled='viewerActionDisabled'
+              @click='triggerViewerAction("print")'
+            >
+              打印
+            </button>
+            <button
+              v-if='visibleExternalToolbar.exportHtml'
+              type='button'
+              :disabled='viewerActionDisabled'
+              @click='triggerViewerAction("exportHtml")'
+            >
+              HTML
+            </button>
+            <button type='button' :class='{ active: watermarkEnabled }' @click='toggleWatermark'>
+              水印
+            </button>
+            <button
+              v-if='visibleExternalToolbar.zoom'
+              type='button'
+              :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
+              @click='triggerViewerAction("resetZoom")'
+            >
+              还原
+            </button>
+          </div>
+
+          <div class='mobile-quick-row'>
+            <button type='button' class='mobile-fab' aria-label='打开链接设置' @click='openMobileControls("link")'>
+              <Link2 :size='18' :stroke-width='2.4' />
+              <span>链接</span>
+            </button>
+            <button type='button' class='mobile-fab' aria-label='打开示例文件' @click='openMobileControls("samples")'>
+              <FileSearch :size='18' :stroke-width='2.4' />
+              <span>样例</span>
+            </button>
+            <button type='button' class='mobile-fab' aria-label='上传本地文件' @click='openMobileControls("upload")'>
+              <Upload :size='18' :stroke-width='2.4' />
+              <span>上传</span>
+            </button>
+            <button type='button' class='mobile-fab' aria-label='搜索当前文档' @click='openViewerSearch'>
+              <Search :size='18' :stroke-width='2.4' />
+              <span>搜索</span>
+            </button>
+            <button
+              type='button'
+              class='mobile-fab mobile-fab--primary'
+              :class='{ active: mobileActionsOpen }'
+              aria-label='打开更多操作'
+              :aria-expanded="mobileActionsOpen ? 'true' : 'false'"
+              @click='toggleMobileActions'
+            >
+              <MoreHorizontal :size='20' :stroke-width='2.6' />
+              <span>更多</span>
+            </button>
+          </div>
+        </nav>
       </div>
 
       <section v-else class='viewer-panel standalone'>
@@ -2098,6 +2278,12 @@ function updateSampleMenuGeometry() {
   box-shadow: none;
 }
 
+.mobile-control-backdrop,
+.mobile-action-dock,
+.mobile-sheet-close {
+  display: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .demo-shell {
     background:
@@ -2384,6 +2570,37 @@ function updateSampleMenuGeometry() {
     color: #61e5b4;
   }
 
+  .mobile-control-backdrop {
+    background: rgba(4, 9, 12, 0.46);
+  }
+
+  .mobile-quick-row,
+  .mobile-zoom-strip,
+  .mobile-action-panel {
+    border-color: rgba(188, 214, 220, 0.16);
+    background: rgba(12, 20, 27, 0.78);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+  }
+
+  .mobile-fab,
+  .mobile-zoom-strip button,
+  .mobile-action-panel button,
+  .mobile-sheet-close {
+    color: #d7e7ee;
+  }
+
+  .mobile-sheet-close {
+    border-color: rgba(188, 214, 220, 0.14);
+    background: rgba(12, 20, 27, 0.72);
+  }
+
+  .mobile-fab:hover,
+  .mobile-fab.active,
+  .mobile-action-panel button.active {
+    background: rgba(45, 212, 154, 0.16);
+    color: #61e5b4;
+  }
+
   .viewport :deep(.file-viewer) {
     box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.12);
   }
@@ -2416,58 +2633,371 @@ function updateSampleMenuGeometry() {
 }
 
 @media (max-width: 720px) {
+  .demo-shell {
+    height: 100dvh;
+    background: #eef5f1;
+  }
+
   .workspace {
-    padding: 12px;
+    height: 100dvh;
+    padding: 0;
+  }
+
+  .layout-shell {
+    position: relative;
+    height: 100%;
+    display: block;
+  }
+
+  .viewer-panel {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
   }
 
   .viewer-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    position: absolute;
+    z-index: 35;
+    top: max(8px, env(safe-area-inset-top));
+    right: 10px;
+    left: 10px;
+    min-height: 44px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(20, 35, 53, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: 0 16px 38px rgba(18, 35, 55, 0.12);
+    backdrop-filter: blur(18px);
   }
 
   .viewer-path {
-    width: 100%;
-  }
-
-  .viewer-tools {
-    width: 100%;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .viewer-search-popover {
-    top: 122px;
-    right: 14px;
-    grid-template-columns: minmax(120px, 1fr) auto auto auto auto;
-    width: calc(100% - 28px);
-  }
-
-  .control-panel {
-    display: flex;
-    max-height: 48vh;
-  }
-
-  .brand-card {
-    min-height: 96px;
-    padding: 14px;
-  }
-
-  .brand-copy h1 {
-    font-size: 23px;
-  }
-
-  .brand-pill {
     display: none;
   }
 
-  .panel-body {
+  .viewer-tools {
+    display: none;
+  }
+
+  .viewer-copy {
+    flex: 1;
+  }
+
+  .viewer-copy strong {
+    max-width: calc(100vw - 122px);
+    font-size: 13px;
+  }
+
+  .viewer-type {
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .viewer-search-popover {
+    z-index: 80;
+    top: calc(max(8px, env(safe-area-inset-top)) + 54px);
+    right: 10px;
+    left: 10px;
+    grid-template-columns: minmax(120px, 1fr) auto auto auto auto;
+    width: auto;
+    max-width: none;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .control-panel {
+    position: fixed;
+    z-index: 65;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
+    max-height: min(78dvh, 620px);
+    display: flex;
     gap: 10px;
+    padding: 10px;
+    border-radius: 24px;
+    overflow: hidden;
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.24s ease, opacity 0.2s ease;
+  }
+
+  .mobile-controls-open .control-panel {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .brand-card {
+    display: none;
+  }
+
+  .current-card {
+    display: flex;
+    flex-shrink: 0;
+    padding: 10px 48px 10px 10px;
+    border-radius: 18px;
+  }
+
+  .current-badge {
+    width: 44px;
+    height: 40px;
+    border-radius: 13px;
+  }
+
+  .mobile-sheet-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(20, 35, 53, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #526174;
+    box-shadow: 0 10px 24px rgba(18, 35, 55, 0.1);
+    backdrop-filter: blur(14px);
+  }
+
+  .panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    gap: 10px;
+    padding-right: 2px;
   }
 
   .compact-field,
   .primary-button {
     min-height: 42px;
+  }
+
+  .sample-trigger {
+    min-height: 64px;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 9px;
+  }
+
+  .sample-trigger .sample-file-icon {
+    width: 38px;
+    height: 46px;
+  }
+
+  .sample-menu {
+    position: static;
+    max-height: min(48dvh, 430px) !important;
+    margin-top: 8px;
+    border-radius: 18px;
+  }
+
+  .sample-menu--bottom,
+  .sample-menu--top {
+    top: auto;
+    bottom: auto;
+  }
+
+  .sample-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sample-card {
+    min-height: 62px;
+  }
+
+  .upload-card {
+    min-height: 168px;
+    justify-content: center;
+  }
+
+  .viewport {
+    height: 100%;
+    padding: 0;
+  }
+
+  .viewport :deep(.file-viewer) {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mobile-control-backdrop {
+    position: fixed;
+    z-index: 58;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgba(15, 31, 38, 0.24);
+    backdrop-filter: blur(4px);
+  }
+
+  .mobile-action-dock {
+    position: fixed;
+    z-index: 55;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .mobile-quick-row,
+  .mobile-zoom-strip,
+  .mobile-action-panel {
+    pointer-events: auto;
+    border: 1px solid rgba(20, 35, 53, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 18px 48px rgba(18, 35, 55, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-quick-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+    padding: 6px;
+    border-radius: 22px;
+  }
+
+  .mobile-fab,
+  .mobile-zoom-strip button,
+  .mobile-action-panel button {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: #34465a;
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .mobile-fab {
+    height: 50px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 17px;
+    font-size: 10px;
+  }
+
+  .mobile-fab:hover,
+  .mobile-fab.active,
+  .mobile-fab--primary {
+    background: rgba(33, 163, 102, 0.12);
+    color: #16804f;
+  }
+
+  .mobile-zoom-strip {
+    align-self: flex-end;
+    display: inline-grid;
+    grid-template-columns: 42px minmax(54px, auto) 42px;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 999px;
+  }
+
+  .mobile-zoom-strip button {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+  }
+
+  .mobile-zoom-meter {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .mobile-action-panel {
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: 6px;
+    padding: 8px;
+    border-radius: 20px;
+  }
+
+  .mobile-action-panel button {
+    height: 40px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+
+  .mobile-action-panel button:hover,
+  .mobile-action-panel button.active {
+    background: rgba(33, 163, 102, 0.12);
+    color: #16804f;
+  }
+
+  .mobile-action-panel button:disabled,
+  .mobile-zoom-strip button:disabled {
+    color: #9aa8b6;
+    cursor: not-allowed;
+    opacity: 0.66;
+  }
+}
+
+@media (max-width: 720px) and (prefers-color-scheme: dark) {
+  .demo-shell {
+    background: #0f171d;
+  }
+
+  .viewer-panel {
+    background: #0f171d;
+  }
+
+  .viewer-toolbar,
+  .viewer-search-popover {
+    border-color: rgba(188, 214, 220, 0.14);
+    background: rgba(12, 20, 27, 0.78);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
+  }
+
+  .mobile-control-backdrop {
+    background: rgba(4, 9, 12, 0.48);
+  }
+
+  .mobile-quick-row,
+  .mobile-zoom-strip,
+  .mobile-action-panel {
+    border-color: rgba(188, 214, 220, 0.16);
+    background: rgba(12, 20, 27, 0.78);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+  }
+
+  .mobile-fab,
+  .mobile-zoom-strip button,
+  .mobile-action-panel button,
+  .mobile-sheet-close {
+    color: #d7e7ee;
+  }
+
+  .mobile-sheet-close {
+    border-color: rgba(188, 214, 220, 0.14);
+    background: rgba(12, 20, 27, 0.72);
+  }
+
+  .mobile-fab:hover,
+  .mobile-fab.active,
+  .mobile-fab--primary,
+  .mobile-action-panel button:hover,
+  .mobile-action-panel button.active {
+    background: rgba(45, 212, 154, 0.16);
+    color: #61e5b4;
   }
 }
 </style>

@@ -17,7 +17,12 @@ const resolveJsSpecifier = (fileDir, specifier) => {
   }
 
   const candidate = resolve(fileDir, `${specifier}.js`)
-  return existsSync(candidate) ? `${specifier}.js` : specifier
+  if (existsSync(candidate)) {
+    return `${specifier}.js`
+  }
+
+  const indexCandidate = resolve(fileDir, specifier, 'index.js')
+  return existsSync(indexCandidate) ? `${specifier}/index.js` : specifier
 }
 
 async function fixFile(filePath) {
