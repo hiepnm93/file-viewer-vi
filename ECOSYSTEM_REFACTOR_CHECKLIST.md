@@ -31,7 +31,7 @@
 - 开源总仓库 Release: GitHub Release `v2.0.1` 维护 20 个资产（core、标准组件包、兼容包、Demo、文档、lib dist、`release-manifest.json`、`release-status.json` 和 `release-status.schema.json`），由 `pnpm verify:github-release-assets` 校验文件名、大小和 sha256。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`、`FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
-- Demo / 文档站: Demo 生产部署仍以 `demo.file-viewer.app` 为准，最近一次 Cloudflare Pages 部署为 `https://7533352f.flyfish-file-viewer.pages.dev`；文档站已生成并部署最新开源总仓库口径，`doc.file-viewer.app` 当前由 Cloudflare Pages 生产分支 `v3` 承载，源码发布基线仍是私有 Gitea `main` 完整原始聚合仓。
+- Demo / 文档站: Demo 与文档站 Cloudflare Pages 构建物已部署并可通过 Pages 主别名访问；`file-viewer.app` 已返回 200。当前 `demo.file-viewer.app` 仍卡在 SSL 握手，`doc.file-viewer.app` 仍返回旧内容，需在 Cloudflare 自定义域名/DNS 绑定层切到对应 Pages 项目后再关闭生产域名 smoke 缺口。
 - npm 发布: `@file-viewer/*` 标准包、`@flyfish-group/*` 历史兼容包和 `file-viewer3` 非 scoped alias 已通过交互式 passkey 发布到 npm registry，目标版本为 `2.0.1`；`pnpm verify:npm-registry-release -- --registry https://registry.npmjs.org/` 已拉回 14 个 release tarball 并完成包体校验。
 
 ## 总体不变量
@@ -88,20 +88,20 @@
 
 ## npm 发布包清单
 
-- [ ] `@file-viewer/core`
-- [ ] `@file-viewer/vue3`
-- [ ] `@file-viewer/vue2.7`
-- [ ] `@file-viewer/vue2.6`
-- [ ] `@file-viewer/react`
-- [ ] `@file-viewer/react-legacy`
-- [ ] `@file-viewer/web`
-- [ ] `@file-viewer/jquery`
-- [ ] `@file-viewer/svelte`
-- [ ] `@flyfish-group/file-viewer3`
-- [ ] `file-viewer3`
-- [ ] `@flyfish-group/file-viewer`
-- [ ] `@flyfish-group/file-viewer-web`
-- [ ] `@flyfish-group/file-viewer-react`
+- [x] `@file-viewer/core`
+- [x] `@file-viewer/vue3`
+- [x] `@file-viewer/vue2.7`
+- [x] `@file-viewer/vue2.6`
+- [x] `@file-viewer/react`
+- [x] `@file-viewer/react-legacy`
+- [x] `@file-viewer/web`
+- [x] `@file-viewer/jquery`
+- [x] `@file-viewer/svelte`
+- [x] `@flyfish-group/file-viewer3`
+- [x] `file-viewer3`
+- [x] `@flyfish-group/file-viewer`
+- [x] `@flyfish-group/file-viewer-web`
+- [x] `@flyfish-group/file-viewer-react`
 
 ## Phase 1: Core 底座收敛
 
@@ -257,7 +257,8 @@
 - [x] `pnpm release:status:write` 已接入机器可读状态报告，开源总仓 `artifacts/release-status.json` 会记录各渠道当前状态、缺口、`gapSummary` 和 `gapDetails`
 - [x] `release-status.json` 已声明 `sourceBaseline`，明确私有 Gitea `main` 是完整原始聚合仓发布基线，本地 checkout 分支名只作为执行环境记录
 - [x] `pnpm verify:release-status-schema` 已接入状态报告 schema 校验，开源总仓 `artifacts/release-status.schema.json` 会随 Release 分发
-- [ ] `pnpm release:channels:preflight`（已验证本地结构、GitHub Release、GitHub core/组件仓均通过；当前仅缺 npm 登录态和 Gitee API token，`--use-git-credential` 也未发现可用 Gitee token）
+- [ ] `pnpm release:channels:preflight`（完整外部预检仍需 Gitee API token；npm registry 已通过发布后拉包校验）
+- [x] `pnpm release:channels:preflight -- --skip-external`
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
 - [ ] `pnpm verify:wrapper-public-remotes`
@@ -272,19 +273,19 @@
 - [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.1/ecosystem/flyfish-group-file-viewer-2.0.1.tgz`
 - [x] `pnpm test`
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（GitHub Release 与 npm 已通过；Demo/文档 Pages 主别名已通过；Gitee 与自定义域名绑定仍待完成）
 
 ## 完成审计标准
 
 - [x] 当前私有 Gitea 仓库作为完整原始聚合仓，`main` 分支保留完整 monorepo 和统一发布自动化，不代表开源总仓库，也不缩减为 core-only。
-- [ ] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
+- [x] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [x] 所有 `@file-viewer/*` npm 包均发布成功。
 - [x] 所有历史兼容包和别名包均发布成功。
 - [x] 所有标准组件包的 README 中英文完整。
 - [x] GitHub 开源总仓库包含最新全渠道构建产物、文档静态产物、混淆库产物、release manifest、release status 和 GitHub Release 下载物。
 - [~] Gitee 开源总仓库使用 `pnpm public:gitee:snapshot` 同步到与 GitHub 开源总仓库相同的文件树，正式推送需显式确认重写镜像历史。
-- [ ] 文档站和 Demo 站均上线最新内容。
+- [ ] 文档站和 Demo 站均上线最新内容。（Cloudflare Pages 主别名已上线最新内容；`demo.file-viewer.app` / `doc.file-viewer.app` 自定义域名绑定仍待修正）
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（当前剩余缺口为 Gitee 镜像/分仓与 Cloudflare 自定义域名绑定）
 - [~] 发布记录已经证明私有 Gitea `main`、GitHub 开源总仓库、GitHub Release、Demo 构建物和文档构建物的版本口径一致，且 npm registry 已发布并校验到 `2.0.1`；Gitee 外部镜像完成后关闭剩余缺口。
