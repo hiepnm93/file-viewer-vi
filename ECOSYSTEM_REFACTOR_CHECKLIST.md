@@ -27,10 +27,10 @@
 - 实时审计命令: `pnpm audit:ecosystem-status`；最终发布阻断可使用 `node scripts/audit-ecosystem-status.mjs --strict`。
 - 本地 worktree 风险: `pnpm audit:ecosystem-status` 会列出所有本地 worktree。当前 `/Users/wangyu/IdeaProjects/file-viewer-main-sync` 仍占用本地 `main` 且停留在旧提交并含本地改动；发布审计基线以 `/Users/wangyu/IdeaProjects/file-viewer3` 的当前 HEAD 和远端 `origin/main` 为准，不能用旧 worktree 直接发布。
 - 源码仓当前状态: 私有 Gitea 聚合仓 `origin/main` 已同步为完整原始聚合仓；`origin/v2` / `origin/v3` 已切为 Vue2.7 / Vue3 标准组件包快照；具体提交以实时审计命令输出为准，避免 checklist 因自我更新产生哈希追尾。
-- 开源总仓库: GitHub `flyfish-dev/file-viewer` 由 `pnpm release:public` 生成最新开源总仓库内容；Gitee `flyfish-dev/file-viewer` 当前仍受远端仓库体积配额限制，完整历史 push 会触发远端超限，已补充 `pnpm public:gitee:snapshot` 生成同文件树浅历史镜像流程；具体提交和 tree hash 以实时审计命令输出为准。
+- 开源总仓库: GitHub `flyfish-dev/file-viewer` 由 `pnpm release:public` 生成最新开源总仓库内容并作为本次公开分发验收入口。Gitee `flyfish-dev/file-viewer` 暂不纳入本次验收；`pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` 已生成同文件树浅历史镜像，但远端仍返回 `Repo size: 1312.406MB, exceeds quota 1024MB` 并拒绝推送，后续待 Gitee 后台 GC / 扩容后重试。
 - 开源总仓库 Release: GitHub Release `v2.0.1` 维护 20 个资产（core、标准组件包、兼容包、Demo、文档、lib dist、`release-manifest.json`、`release-status.json` 和 `release-status.schema.json`），由 `pnpm verify:github-release-assets` 校验文件名、大小和 sha256。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`、`FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
+- Component Gitee 仓库: 不纳入本次验收。core + 8 个标准组件包 Gitee 仓库仍返回 404，临时旧 token 预检返回 `401 Unauthorized: Access token does not exist`；后续拿到有效组织 token 后再执行 `components:gitee:*`。
 - Demo / 文档站: Demo 与文档站已按 Cloudflare Pages production branch `v3` 重新部署；`file-viewer.app`、`doc.file-viewer.app` 和 `viewer.flyfish.dev` 均返回 200，`doc.file-viewer.app` 已确认是最新文档口径。`demo.file-viewer.app` 已通过 Cloudflare Pages API 添加到 `flyfish-file-viewer` 项目，但当前状态仍为 `pending`，需等待 Cloudflare 验证/证书生效后再关闭 demo 主域名 smoke 缺口。
 - Docker Hub: `docker manifest inspect flyfishdev/file-viewer:2.0.1` 返回 `no such manifest`；本机 Docker daemon 当前不可连接，无法在本机完成 `linux/amd64` / `linux/arm64` 镜像构建和推送。
 - npm 发布: `@file-viewer/*` 标准包、`@flyfish-group/*` 历史兼容包和 `file-viewer3` 非 scoped alias 已通过交互式 passkey 发布到 npm registry，目标版本为 `2.0.1`；`pnpm verify:npm-registry-release -- --registry https://registry.npmjs.org/` 已拉回 14 个 release tarball 并完成包体校验。
@@ -201,13 +201,14 @@
 
 ## Phase 5: 公开仓库与 README
 
-- [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
-- [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
-- [x] Gitee core/组件分仓预检、创建与发布命令已标准化为 `components:gitee:preflight` / `components:gitee:create` / `components:gitee:publish`，但仍待有效组织 token 实际执行。
 - [x] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式，并由 `pnpm verify:ecosystem-readmes` 覆盖。
 - [x] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址，并由 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main` 覆盖。
 - [x] core 源码进入 `file-viewer-core` 与开源总仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
+
+后续事项（非本次验收）:
+
+- Gitee core/组件分仓预检、创建与发布命令已标准化为 `components:gitee:preflight` / `components:gitee:create` / `components:gitee:publish`，待有效组织 token 后再执行。
 
 ## Phase 6: npm 发布与兼容别名
 
@@ -221,8 +222,12 @@
 
 - [x] 开源总仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
 - [x] 开源总仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
-- [~] GitHub 开源总仓库已同步最新内容；Gitee 开源总仓库完整历史 push 超限，已提供 `pnpm public:gitee:snapshot` 浅历史镜像流程用于同步同一文件树。
+- [x] GitHub 开源总仓库已同步最新内容。
 - [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。（Docker Hub `flyfishdev/file-viewer:2.0.1` 暂无 manifest；本机 Docker daemon 未运行）
+
+后续事项（非本次验收）:
+
+- Gitee 开源总仓库完整历史 push 超限；`pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` 已验证可生成同文件树浅历史镜像，但远端配额仍拒绝推送，待 Gitee GC / 扩容后重试。
 
 ## Phase 8: 验证与发布门禁
 
@@ -258,14 +263,9 @@
 - [x] `pnpm release:status:write` 已接入机器可读状态报告，开源总仓 `artifacts/release-status.json` 会记录各渠道当前状态、缺口、`gapSummary` 和 `gapDetails`
 - [x] `release-status.json` 已声明 `sourceBaseline`，明确私有 Gitea `main` 是完整原始聚合仓发布基线，本地 checkout 分支名只作为执行环境记录
 - [x] `pnpm verify:release-status-schema` 已接入状态报告 schema 校验，开源总仓 `artifacts/release-status.schema.json` 会随 Release 分发
-- [ ] `pnpm release:channels:preflight`（完整外部预检仍需 Gitee API token；npm registry 已通过发布后拉包校验）
 - [x] `pnpm release:channels:preflight -- --skip-external`
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
-- [ ] `pnpm verify:wrapper-public-remotes`
-- [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`
-- [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create`
-- [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
 - [x] `pnpm components:standalone-smoke`
@@ -274,19 +274,22 @@
 - [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.1/ecosystem/flyfish-group-file-viewer-2.0.1.tgz`
 - [x] `pnpm test`
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（GitHub Release、npm、文档主域名与 Demo 旧域名已通过；Gitee、Docker Hub 和 `demo.file-viewer.app` pending 仍待完成）
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm 发布结果与当前私有 `main` 发布基线一致。（GitHub Release、npm、文档主域名与 Demo 旧域名已通过；Docker Hub 和 `demo.file-viewer.app` pending 仍待完成）
 
 ## 完成审计标准
 
 - [x] 当前私有 Gitea 仓库作为完整原始聚合仓，`main` 分支保留完整 monorepo 和统一发布自动化，不代表开源总仓库，也不缩减为 core-only。
 - [x] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
-- [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
+- [x] 所有目标标准组件包 均存在 GitHub 公开仓库。
 - [x] 所有 `@file-viewer/*` npm 包均发布成功。
 - [x] 所有历史兼容包和别名包均发布成功。
 - [x] 所有标准组件包的 README 中英文完整。
 - [x] GitHub 开源总仓库包含最新全渠道构建产物、文档静态产物、混淆库产物、release manifest、release status 和 GitHub Release 下载物。
-- [~] Gitee 开源总仓库使用 `pnpm public:gitee:snapshot` 同步到与 GitHub 开源总仓库相同的文件树，正式推送需显式确认重写镜像历史。
 - [ ] 文档站和 Demo 站均上线最新内容。（文档主域名已最新；Demo 已部署到 `viewer.flyfish.dev` 和 Pages production，`demo.file-viewer.app` 已添加但仍 pending）
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（当前剩余缺口为 Gitee 镜像/分仓、Docker Hub 镜像和 `demo.file-viewer.app` pending）
-- [~] 发布记录已经证明私有 Gitea `main`、GitHub 开源总仓库、GitHub Release、Demo 构建物和文档构建物的版本口径一致，且 npm registry 已发布并校验到 `2.0.1`；Gitee 外部镜像完成后关闭剩余缺口。
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm 发布结果与当前私有 `main` 发布基线一致。（当前剩余缺口为 Docker Hub 镜像和 `demo.file-viewer.app` pending）
+- [x] 发布记录已经证明私有 Gitea `main`、GitHub 开源总仓库、GitHub Release、Demo 构建物和文档构建物的版本口径一致，且 npm registry 已发布并校验到 `2.0.1`。
+
+后续事项（非本次验收）:
+
+- Gitee 开源总仓库和 core/组件分仓后续再同步，不再作为本次终验阻塞项。
