@@ -30,7 +30,6 @@ pnpm install
 | `pnpm verify:branch-roles` | 校验 `origin` 私有 Gitea 聚合仓、main/v2/v3 分支职责、core 公开策略、标准组件包公开仓库和公开仓库策略 |
 | `pnpm verify:core-api` | 校验 `@file-viewer/core` 根入口、`@file-viewer/core/headless` 契约入口、`@file-viewer/core/browser` 浏览器渲染入口、实例方法、framework-neutral 类型、ESM/声明产物元数据和纯 TS 源码边界 |
 | `pnpm verify:format-support` | 校验 core 格式矩阵保持 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / 组件 README 口径一致 |
-| `pnpm verify:ecosystem-checklist` | 校验生态重构 checklist 覆盖当前标准组件包/npm 包、GitHub/Gitee 仓库、分支职责、源码策略、格式数量和最终完成审计项 |
 | `pnpm verify:ecosystem-readmes` | 校验根 README / README.en.md 的公开生态索引、官方文档/Demo、GitHub/Gitee 组件仓库、入口格式、历史兼容包、core 公开仓和格式数量口径 |
 | `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包转发到标准 React 组件包，纯 Web 兼容包转发到标准 web 组件包，scoped Vue3 根包只保留 core 类型门面、登记过的 alias 和受控公共类型出口，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
@@ -125,7 +124,7 @@ pnpm release:ecosystem:pack
 | jQuery | 当前仓库子工程 | `@file-viewer/jquery` | `$(el).fileViewer(options)` |
 | Svelte | 当前仓库子工程 | `@file-viewer/svelte` | Svelte component package |
 
-分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库；`v2` 对应 Vue 2.7 标准组件包线，`v3` 对应 Vue 3 标准组件包线。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core native engine。
+分支职责以 `ecosystem/branch-roles.json` 和仓库根目录 `BRANCHES.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库；`v2` 对应 Vue 2.7 标准组件包线，`v3` 对应 Vue 3 标准组件包线。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core native engine。
 
 ## 主要产物位置
 
@@ -144,8 +143,8 @@ pnpm release:ecosystem:pack
 - README 和文档站是否同时写清 Vue3 / Vue2 / React / 纯 JS 包名、版本和接入方式
 - 文档站中的支持格式、native component package 接入说明和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
-- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、生态重构 checklist、根 README 生态索引、smoke 矩阵、体验基线证据、分支职责/源码边界、core API 与纯 TS 边界、组件源包校验、组件运行 API 与参数面一致性、兼容包运行/类型门面、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
-- 生态目标、包名、仓库、分支职责和最终完成标准是否已经通过 `pnpm verify:ecosystem-checklist`，确认 checklist 与 `ecosystem/wrappers.json` / `ecosystem/branch-roles.json` / core 格式矩阵一致
+- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、体验基线证据、分支职责/源码边界、core API 与纯 TS 边界、组件源包校验、组件运行 API 与参数面一致性、兼容包运行/类型门面、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
+- 生态目标、包名、仓库和分支职责是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:branch-roles`，确认 `ecosystem/wrappers.json` / `ecosystem/branch-roles.json` / core 格式矩阵口径一致
 - 新增格式、示例或标准组件包 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 修改主入口、文档比对、历史 React / 纯 JS 组件或 script tag 接入时，`ecosystem/experience-baseline.json` 是否同步补充对应页面、特性组、事件/按钮/打印导出/视觉证据和验证脚本
 - 每个标准组件包 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族

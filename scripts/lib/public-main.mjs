@@ -22,7 +22,6 @@ export const openSourceMainDefaultRoots = [
   'README.md',
   'README.en.md',
   'BRANCHES.md',
-  'ECOSYSTEM_REFACTOR_CHECKLIST.md',
   'WRAPPER_ECOSYSTEM.md',
   'LICENSE',
   'package.json',

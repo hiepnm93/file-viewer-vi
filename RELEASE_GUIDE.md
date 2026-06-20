@@ -18,7 +18,6 @@
 - `README.md`
 - `README.en.md`
 - `BRANCHES.md`
-- `ECOSYSTEM_REFACTOR_CHECKLIST.md`
 - `WRAPPER_ECOSYSTEM.md`
 - `LICENSE`
 - `package.json`
@@ -41,7 +40,7 @@
 - `packages/components/`: 标准组件包源码
 - `packages/compat/`: 历史 npm 包名兼容 alias
 - `docs/`: VitePress 文档站源码
-- `BRANCHES.md` / `WRAPPER_ECOSYSTEM.md` / `ECOSYSTEM_REFACTOR_CHECKLIST.md`: 公开架构边界、生态仓库矩阵和迁移验收清单
+- `BRANCHES.md` / `WRAPPER_ECOSYSTEM.md`: 公开架构边界和生态仓库矩阵
 
 开源总仓库仍然严禁出现这些本地或内部内容:
 
@@ -329,7 +328,6 @@ test -d docs-dist
 test -d artifacts
 test -f BRANCHES.md
 test -f WRAPPER_ECOSYSTEM.md
-test -f ECOSYSTEM_REFACTOR_CHECKLIST.md
 test ! -d .release
 test ! -d node_modules
 test ! -d scripts

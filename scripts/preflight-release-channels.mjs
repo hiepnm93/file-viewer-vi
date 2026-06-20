@@ -24,10 +24,6 @@ const steps = [
     command: ['node', 'scripts/verify-branch-roles.mjs']
   },
   {
-    name: 'ecosystem checklist',
-    command: ['node', 'scripts/verify-ecosystem-checklist.mjs']
-  },
-  {
     name: 'ecosystem README coverage',
     command: ['node', 'scripts/verify-ecosystem-readmes.mjs']
   },

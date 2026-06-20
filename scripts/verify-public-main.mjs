@@ -261,7 +261,7 @@ async function assertReadmes(repoDir) {
 }
 
 await assertDirectory(publicRepoDir, 'open-source main repository')
-for (const requiredFile of ['README.md', 'README.en.md', 'BRANCHES.md', 'ECOSYSTEM_REFACTOR_CHECKLIST.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json']) {
+for (const requiredFile of ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json']) {
   await assertFile(join(publicRepoDir, requiredFile), requiredFile)
 }
 for (const requiredDirectory of ['apps', 'packages', 'docs', 'dist', 'artifacts']) {
