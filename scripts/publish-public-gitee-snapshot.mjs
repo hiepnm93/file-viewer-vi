@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { cp, mkdir, rm } from 'node:fs/promises'
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -29,6 +29,7 @@ const confirmRewriteHistory = args.includes('--confirm-rewrite-history')
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
 const remoteUrl = readArg('--remote-url', branchRoles.publicMainRepository.gitee)
 const message = readArg('--message', 'chore: publish open-source main snapshot mirror')
+const packageMetadataFiles = ['package.json', 'README.md', 'README.en.md', 'LICENSE']
 
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
@@ -87,6 +88,145 @@ async function copyTrackedFiles(from, to) {
   return trackedFiles.length
 }
 
+async function pathExists(path) {
+  try {
+    await stat(path)
+    return true
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return false
+    }
+    throw error
+  }
+}
+
+async function copyIfExists(source, target) {
+  if (!(await pathExists(source))) {
+    return false
+  }
+  await mkdir(dirname(target), { recursive: true })
+  await cp(source, target, {
+    recursive: true,
+    force: true,
+    preserveTimestamps: true
+  })
+  return true
+}
+
+async function listPackageDirs(section) {
+  const root = join(sourceRoot, 'packages', section)
+  if (!(await pathExists(root))) {
+    return []
+  }
+  const entries = await readdir(root, { withFileTypes: true })
+  const dirs = []
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue
+    }
+    const relativeDir = `packages/${section}/${entry.name}`
+    if (await pathExists(join(sourceRoot, relativeDir, 'package.json'))) {
+      dirs.push(relativeDir)
+    }
+  }
+  return dirs
+}
+
+async function packageDirs() {
+  return [
+    'packages/core',
+    ...(await listPackageDirs('components')),
+    ...(await listPackageDirs('compat'))
+  ]
+}
+
+function normalizeRuntimePackageJson(packageJson) {
+  delete packageJson.scripts
+  delete packageJson.devDependencies
+  delete packageJson.publishConfig
+
+  if (packageJson.name === '@file-viewer/svelte') {
+    delete packageJson.svelte
+    packageJson.main = './dist/index.js'
+    packageJson.module = './dist/index.js'
+    packageJson.types = './dist/index.d.ts'
+    packageJson.exports = {
+      '.': {
+        types: './dist/index.d.ts',
+        import: './dist/index.js',
+        default: './dist/index.js'
+      },
+      './action': {
+        types: './dist/index.d.ts',
+        import: './dist/index.js',
+        default: './dist/index.js'
+      },
+      './types': {
+        types: './dist/index.d.ts',
+        import: './dist/index.js',
+        default: './dist/index.js'
+      },
+      './package.json': './package.json'
+    }
+    packageJson.files = ['dist', 'README.md', 'README.en.md']
+  }
+
+  return packageJson
+}
+
+async function copyRuntimePackage(relativePackageDir, snapshotRoot) {
+  const sourcePackageDir = join(sourceRoot, relativePackageDir)
+  const targetPackageDir = join(snapshotRoot, relativePackageDir)
+
+  await rm(targetPackageDir, { recursive: true, force: true })
+  await mkdir(targetPackageDir, { recursive: true })
+
+  for (const filename of packageMetadataFiles) {
+    await copyIfExists(join(sourcePackageDir, filename), join(targetPackageDir, filename))
+  }
+
+  const packageJsonPath = join(targetPackageDir, 'package.json')
+  const packageJson = normalizeRuntimePackageJson(JSON.parse(await readFile(packageJsonPath, 'utf8')))
+  await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
+
+  await copyIfExists(join(sourcePackageDir, 'dist'), join(targetPackageDir, 'dist'))
+  await copyIfExists(join(sourcePackageDir, 'vendor'), join(targetPackageDir, 'vendor'))
+  await copyIfExists(join(sourcePackageDir, 'viewer'), join(targetPackageDir, 'viewer'))
+  await copyIfExists(
+    join(sourcePackageDir, 'scripts', 'copy-assets.mjs'),
+    join(targetPackageDir, 'scripts', 'copy-assets.mjs')
+  )
+}
+
+async function replacePackagesWithRuntimeDist(snapshotRoot) {
+  const dirs = await packageDirs()
+  await rm(join(snapshotRoot, 'packages'), { recursive: true, force: true })
+  for (const relativePackageDir of dirs) {
+    await copyRuntimePackage(relativePackageDir, snapshotRoot)
+  }
+  return dirs.length
+}
+
+async function rewriteSnapshotRootPackage(snapshotRoot) {
+  const packagePath = join(snapshotRoot, 'package.json')
+  const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
+  packageJson.scripts = {
+    dev: packageJson.scripts?.dev || 'pnpm --filter @flyfish-group/file-viewer-demo dev',
+    'site:dev': packageJson.scripts?.['site:dev'] || 'pnpm --filter @flyfish-group/file-viewer-site dev',
+    'site:build': packageJson.scripts?.['site:build'] || 'pnpm --filter @flyfish-group/file-viewer-site build',
+    'site:preview': packageJson.scripts?.['site:preview'] || 'pnpm --filter @flyfish-group/file-viewer-site preview',
+    build: packageJson.scripts?.['build:demo'] || 'pnpm --filter @flyfish-group/file-viewer-demo build',
+    'build:demo': packageJson.scripts?.['build:demo'] || 'pnpm --filter @flyfish-group/file-viewer-demo build',
+    'build:component-demo':
+      packageJson.scripts?.['build:component-demo'] ||
+      'pnpm --filter @flyfish-group/file-viewer-component-demo build',
+    'docs:dev': packageJson.scripts?.['docs:dev'] || 'vitepress dev docs',
+    'docs:build': packageJson.scripts?.['docs:build'] || 'vitepress build docs',
+    'docs:preview': packageJson.scripts?.['docs:preview'] || 'vitepress preview docs'
+  }
+  await writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
+}
+
 if (shouldPush && !confirmRewriteHistory) {
   throw new Error(
     'Refusing to rewrite the Gitee open-source main mirror without --confirm-rewrite-history. ' +
@@ -104,6 +244,8 @@ await rm(snapshotDir, { recursive: true, force: true })
 await mkdir(snapshotDir, { recursive: true })
 
 const fileCount = await copyTrackedFiles(publicRepoDir, snapshotDir)
+const packageCount = await replacePackagesWithRuntimeDist(snapshotDir)
+await rewriteSnapshotRootPackage(snapshotDir)
 
 run('git', ['init', '-b', branch], { cwd: snapshotDir })
 run('git', ['config', 'user.name', 'Flyfish Release Bot'], { cwd: snapshotDir })
@@ -126,15 +268,14 @@ run('git', ['remote', 'add', 'gitee', remoteUrl], { cwd: snapshotDir })
 
 const snapshotHead = run('git', ['rev-parse', 'HEAD'], { cwd: snapshotDir, capture: true })
 const snapshotTree = run('git', ['rev-parse', 'HEAD^{tree}'], { cwd: snapshotDir, capture: true })
-if (snapshotTree !== publicTree) {
-  throw new Error(`Snapshot tree ${snapshotTree} does not match public tree ${publicTree}.`)
-}
 
 console.log(`Prepared Gitee snapshot mirror in ${snapshotDir}`)
 console.log(`Tracked files: ${fileCount}`)
+console.log(`Runtime package directories: ${packageCount}`)
 console.log(`Public source commit: ${publicHead}`)
 console.log(`Snapshot commit: ${snapshotHead}`)
-console.log(`Tree: ${snapshotTree}`)
+console.log(`Public tree: ${publicTree}`)
+console.log(`Snapshot tree: ${snapshotTree}`)
 console.log(`Gitee ${branch}: ${remoteHead || '(missing)'}`)
 
 if (shouldPush) {
