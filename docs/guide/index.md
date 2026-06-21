@@ -91,8 +91,10 @@
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想在 React 中接入 | [React 集成](/guide/quickstart-react) |
 | 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |
-| 想在 Svelte 或 jQuery 中接入 | [生态组件总览](/guide/ecosystem) |
-| 想基于 core 自研组件 | [生态组件总览](/guide/ecosystem) |
+| 想在 Svelte 中接入 | [Svelte 集成](/guide/ecosystem#svelte) |
+| 想在 jQuery 老后台中接入 | [jQuery 集成](/guide/ecosystem#jquery) |
+| 想基于 core 自研组件 | [Core 自定义接入](/guide/ecosystem#core) |
+| 想单独使用 PPTX 渲染引擎 | [PPTX 引擎接入](/guide/ecosystem#pptx) |
 | 想了解统一 options 和事件 | [组件用法](/guide/usage) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
 | 想下载源码、release 或了解支持 | [发布与开源分发](/guide/distribution) |

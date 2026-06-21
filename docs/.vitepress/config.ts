@@ -51,9 +51,14 @@ export default defineConfig({
           items: [
             { text: '生态组件总览', link: '/guide/ecosystem' },
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
-            { text: 'Vue2 集成', link: '/guide/quickstart-vue2' },
+            { text: 'Vue2.7 / 2.6 集成', link: '/guide/quickstart-vue2' },
             { text: 'React 集成', link: '/guide/quickstart-react' },
-            { text: '纯 JS 集成', link: '/guide/quickstart-web' },
+            { text: 'React Legacy 集成', link: '/guide/ecosystem#react-legacy' },
+            { text: '纯 JS / Script 标签集成', link: '/guide/quickstart-web' },
+            { text: 'jQuery 集成', link: '/guide/ecosystem#jquery' },
+            { text: 'Svelte 集成', link: '/guide/ecosystem#svelte' },
+            { text: 'Core 自定义接入', link: '/guide/ecosystem#core' },
+            { text: 'PPTX 引擎接入', link: '/guide/ecosystem#pptx' },
             { text: '组件用法', link: '/guide/usage' }
           ]
         },
