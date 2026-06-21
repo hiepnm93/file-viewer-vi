@@ -1,7 +1,31 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-20T17:57:51.048Z",
+  "generatedAt": "2026-06-21T00:09:28.345Z",
   "rendererAssetManifests": [
+    {
+      "rendererId": "drawing",
+      "assets": [
+        {
+          "id": "drawio-viewer-script",
+          "rendererId": "drawing",
+          "kind": "script",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/drawio/viewer-static.min.js",
+          "optionPath": "drawing.viewerScriptUrl",
+          "description": "Official diagrams.net viewer-static.min.js self-hosted for offline Draw.io rendering."
+        },
+        {
+          "id": "drawio-offline-assets",
+          "rendererId": "drawing",
+          "kind": "directory",
+          "target": "public",
+          "required": true,
+          "defaultPath": "vendor/drawio/",
+          "description": "Official diagrams.net styles, shapes, stencils, images, mxGraph and math assets for offline rendering."
+        }
+      ]
+    },
     {
       "rendererId": "pdf",
       "assets": [
@@ -183,8 +207,28 @@
   ],
   "validation": {
     "valid": true,
-    "checkedAt": "2026-06-20T17:57:51.048Z",
+    "checkedAt": "2026-06-21T00:09:28.345Z",
     "assets": [
+      {
+        "id": "drawio-viewer-script",
+        "rendererId": "drawing",
+        "kind": "script",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/drawio/viewer-static.min.js",
+        "exists": true,
+        "description": "Official diagrams.net viewer-static.min.js self-hosted for offline Draw.io rendering."
+      },
+      {
+        "id": "drawio-offline-assets",
+        "rendererId": "drawing",
+        "kind": "directory",
+        "target": "public",
+        "required": true,
+        "relativePath": "vendor/drawio/",
+        "exists": true,
+        "description": "Official diagrams.net styles, shapes, stencils, images, mxGraph and math assets for offline rendering."
+      },
       {
         "id": "pdf-worker",
         "rendererId": "pdf",

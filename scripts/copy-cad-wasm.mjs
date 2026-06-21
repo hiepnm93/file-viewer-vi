@@ -55,6 +55,7 @@ const pdfWorker = join(pdfjsRoot, 'legacy', 'build', 'pdf.worker.mjs')
 const pdfCmapsDir = join(pdfjsRoot, 'cmaps')
 const pdfWasmDir = join(pdfjsRoot, 'wasm')
 const pdfStandardFontsDir = join(pdfjsRoot, 'standard_fonts')
+const drawioSourceRoot = join(projectRoot, 'third_party', 'drawio')
 const rawArgs = process.argv.slice(2)
 const args = new Set(rawArgs)
 const readArgValue = name => {
@@ -81,6 +82,7 @@ const cadTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'cad'))
 const typstTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'typst'))
 const dataTargetRoots = baseTargetRoots.map(root => join(root, 'wasm', 'data'))
 const pdfTargetRoots = baseTargetRoots.map(root => join(root, 'vendor', 'pdf'))
+const drawioTargetRoots = baseTargetRoots.map(root => join(root, 'vendor', 'drawio'))
 
 const copyWorkerChunks = async targetRoot => {
   const files = await readdir(wasmDir)
@@ -137,9 +139,13 @@ for (const targetRoot of pdfTargetRoots) {
   await copyDirectoryChecked(pdfStandardFontsDir, join(targetRoot, 'standard_fonts'))
 }
 
+for (const targetRoot of drawioTargetRoots) {
+  await copyDirectoryChecked(drawioSourceRoot, targetRoot)
+}
+
 console.log(
   `[file-viewer] Viewer WASM assets copied to ${
-    [...cadTargetRoots, ...typstTargetRoots, ...dataTargetRoots, ...pdfTargetRoots]
+    [...cadTargetRoots, ...typstTargetRoots, ...dataTargetRoots, ...pdfTargetRoots, ...drawioTargetRoots]
       .map(root => root.replace(`${projectRoot}/`, ''))
       .join(', ')
   }`

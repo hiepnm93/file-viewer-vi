@@ -3,6 +3,7 @@ import type {
   FileViewerCadOptions,
   FileViewerDataOptions,
   FileViewerDocxOptions,
+  FileViewerDrawingOptions,
   FileViewerOptions,
   FileViewerPdfOptions,
   FileViewerSpreadsheetOptions,
@@ -17,6 +18,8 @@ export const DEFAULT_FILE_VIEWER_PDF_WORKER_PATH = 'vendor/pdf/pdf.worker.mjs';
 export const DEFAULT_FILE_VIEWER_PDF_CMAP_PATH = 'vendor/pdf/cmaps/';
 export const DEFAULT_FILE_VIEWER_PDF_WASM_PATH = 'vendor/pdf/wasm/';
 export const DEFAULT_FILE_VIEWER_PDF_STANDARD_FONT_PATH = 'vendor/pdf/standard_fonts/';
+export const DEFAULT_FILE_VIEWER_DRAWIO_VIEWER_SCRIPT_PATH = 'vendor/drawio/viewer-static.min.js';
+export const DEFAULT_FILE_VIEWER_DRAWIO_ASSET_PATH = 'vendor/drawio/';
 export const DEFAULT_FILE_VIEWER_CAD_WASM_PATH = 'wasm/cad/';
 export const DEFAULT_FILE_VIEWER_CAD_WORKER_PATH = 'wasm/cad/dwg-worker.js';
 export const DEFAULT_FILE_VIEWER_CAD_DWF_WASM_PATH = 'wasm/cad/dwfv-render.wasm';
@@ -74,6 +77,7 @@ export type FileViewerRendererAssetOptionPath =
   | 'cad.dwfWasmUrl'
   | 'data.sqlWasmUrl'
   | 'docx.workerUrl'
+  | 'drawing.viewerScriptUrl'
   | 'pdf.workerUrl'
   | 'pdf.cMapUrl'
   | 'pdf.wasmUrl'
@@ -111,6 +115,30 @@ export interface ResolveFileViewerRendererAssetsOptions extends ResolveFileViewe
 }
 
 export const DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS: readonly FileViewerRendererAssetManifest[] = [
+  {
+    rendererId: 'drawing',
+    assets: [
+      {
+        id: 'drawio-viewer-script',
+        rendererId: 'drawing',
+        kind: 'script',
+        target: 'public',
+        required: true,
+        defaultPath: DEFAULT_FILE_VIEWER_DRAWIO_VIEWER_SCRIPT_PATH,
+        optionPath: 'drawing.viewerScriptUrl',
+        description: 'Official diagrams.net viewer-static.min.js self-hosted for offline Draw.io rendering.',
+      },
+      {
+        id: 'drawio-offline-assets',
+        rendererId: 'drawing',
+        kind: 'directory',
+        target: 'public',
+        required: true,
+        defaultPath: DEFAULT_FILE_VIEWER_DRAWIO_ASSET_PATH,
+        description: 'Official diagrams.net styles, shapes, stencils, images, mxGraph and math assets for offline rendering.',
+      },
+    ],
+  },
   {
     rendererId: 'pdf',
     assets: [
@@ -368,6 +396,17 @@ export const resolveFileViewerPdfAssetUrls = (
   };
 };
 
+export const resolveFileViewerDrawioViewerScriptUrl = (
+  options?: Pick<FileViewerDrawingOptions, 'viewerScriptUrl'> | null,
+  documentBaseUrl?: string
+) => {
+  return resolveFileViewerAssetUrl(
+    options?.viewerScriptUrl,
+    DEFAULT_FILE_VIEWER_DRAWIO_VIEWER_SCRIPT_PATH,
+    { documentBaseUrl }
+  );
+};
+
 export const resolveFileViewerDocxWorkerUrl = (
   options?: Pick<FileViewerDocxOptions, 'workerUrl'> | null,
   documentBaseUrl?: string
@@ -449,6 +488,8 @@ const getRendererAssetOptionValue = (
       return options?.data?.sqlWasmUrl;
     case 'docx.workerUrl':
       return options?.docx?.workerUrl;
+    case 'drawing.viewerScriptUrl':
+      return options?.drawing?.viewerScriptUrl;
     case 'pdf.workerUrl':
       return options?.pdf?.workerUrl;
     case 'pdf.cMapUrl':

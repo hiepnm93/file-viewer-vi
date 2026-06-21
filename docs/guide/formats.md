@@ -46,7 +46,7 @@
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | core 共享绘图渲染器按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
-| draw.io | `drawio`、`dio` | 内置离线 SVG 预览；可选自托管 diagrams.net `GraphViewer` | core 共享绘图渲染器默认解析 mxGraphModel / mxfile 并输出安全 SVG，不访问公网；如需官方 viewer 可配置 `options.drawing.viewerScriptUrl` | 流程图、架构图、业务泳道图 |
+| draw.io | `drawio`、`dio` | 官方 diagrams.net `GraphViewer` 离线预览；内置 SVG fallback | core 共享绘图渲染器默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
@@ -137,8 +137,8 @@
 ### 绘图文件
 
 - `excalidraw` 使用 core 共享绘图渲染器按需加载官方 `@excalidraw/excalidraw` 包的 `restore` 与 `exportToSvg` 能力，输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
-- `drawio` 和 `dio` 默认使用内置离线 SVG 预览，解析常见 mxGraphModel / mxfile 图元、连线和文本，不访问 diagrams.net 公网脚本。
-- 如果你需要官方 diagrams.net `GraphViewer` 的更完整兼容能力，可以把官方脚本部署到自己的静态目录，并通过 `options.drawing.viewerScriptUrl` 指定自托管地址；加载失败或超时时仍会回退到本地 SVG。
+- `drawio` 和 `dio` 默认使用官方 diagrams.net `GraphViewer` 离线预览，`viewer-static.min.js` 与 styles、shapes、stencils、img、mxgraph、math 资源随 viewer assets 分发到 `vendor/drawio/`。
+- 如果你的静态目录前缀特殊，可以通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js` 地址；组件会根据该脚本目录推导同级离线资源目录。官方 viewer 加载失败或超时时仍会回退到本地 SVG；确实希望使用轻量兜底时，可设置 `options.drawing.preferOfficial = false`。
 
 ### 电子书
 
@@ -178,7 +178,7 @@
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先提供 `dwg`、`dxf`、`dwf` 或 `dwfx`；DWG 和 DWF native renderer 会按需加载 Worker/WASM，私有化部署时请确认 viewer assets 中的 `wasm/cad/` 资源可访问。
 - 你要预览 3D 模型：优先沉淀 `glb` / `gltf`，历史模型再用 OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ 等格式接入；STEP、IGES、IFC、3DM 建议先转换。
-- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者默认走离线 SVG 预览并可选接入自托管 diagrams.net viewer。
+- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者默认走官方 diagrams.net 离线 viewer 并在异常时回退内置 SVG。
 - 你要预览电子书或音视频：EPUB / UMD 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG，视频优先选择 MP4 / WEBM；需要流媒体体验时可以提供 M3U8。
 
 ## 不支持的格式会怎样

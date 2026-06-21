@@ -164,8 +164,8 @@ English README: [README.en.md](./README.en.md)。
 | CAD / DWG / DXF / DWF | 按需配置 `options.cad.wasmPath`、`workerUrl`、`dwfWasmUrl`、`dxfEncoding`，支持自托管和内网部署。 |
 | PDF / DOCX / Excel | 按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`；DOCX 和 Excel Worker 均需显式开启。 |
 | Typst / SQLite / Archive | 按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；本地 Typst WASM 不可用时切换源码预览，不访问公共 CDN。 |
-| Drawing | Draw.io 默认使用内置离线 SVG 预览；如需官方 diagrams.net viewer，请通过 `options.drawing.viewerScriptUrl` 指向自托管脚本。 |
-| 离线部署 | 运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包和 Office worker/vendor 资产。 |
+| Drawing | Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer；路径特殊时可通过 `options.drawing.viewerScriptUrl` 覆盖，`preferOfficial:false` 才切到内置 SVG 兜底。 |
+| 离线部署 | 运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包、Draw.io 和 Office worker/vendor 资产。 |
 | 部署原则 | 默认只在命中特定格式时异步加载对应依赖；没有命中的格式不会拉取重型 Worker、WASM 或解析库。 |
 
 ## 质量门禁

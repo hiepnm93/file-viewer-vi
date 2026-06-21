@@ -4,6 +4,7 @@ import {
 } from '../features/document/dom';
 import { createFileViewerZoomChangeEmitter } from '../features/document/zoom';
 import { waitForFileViewerNextPaint } from '../output/export';
+import { resolveFileViewerDrawioViewerScriptUrl } from '../platform/assets';
 import { readFileViewerText } from '../source';
 import type {
   FileRenderContext,
@@ -101,20 +102,58 @@ const isTransparent = (color?: string) => {
   return !color || color === 'transparent' || color === 'rgba(0, 0, 0, 0)';
 };
 
-const resolveOptionalDrawingViewerScriptUrl = (
-  options?: FileViewerDrawingOptions,
-  documentRef?: Document
-) => {
-  const scriptUrl = options?.viewerScriptUrl?.trim();
-  if (!scriptUrl) {
-    return '';
+const resolveDrawingViewerScriptUrl = (options?: FileViewerDrawingOptions, documentRef?: Document) => {
+  return resolveFileViewerDrawioViewerScriptUrl(options, documentRef?.baseURI || documentRef?.URL);
+};
+
+const resolveDirectoryUrl = (url: string) => {
+  try {
+    return new URL('.', url).href;
+  } catch {
+    const slashIndex = url.lastIndexOf('/');
+    return slashIndex >= 0 ? url.slice(0, slashIndex + 1) : '';
+  }
+};
+
+const configureOfflineDiagramsViewerAssets = (documentRef: Document, scriptUrl: string) => {
+  const ownerWindow = documentRef.defaultView || (typeof window !== 'undefined' ? window : undefined);
+  if (!ownerWindow) {
+    return;
   }
 
-  try {
-    return new URL(scriptUrl, documentRef?.baseURI || 'http://localhost/').href;
-  } catch {
-    return scriptUrl;
-  }
+  const viewerWindow = ownerWindow as unknown as Window & Record<string, unknown>;
+  const baseUrl = resolveDirectoryUrl(scriptUrl);
+  const setDefault = (key: string, value: unknown) => {
+    if (viewerWindow[key] === undefined || viewerWindow[key] === '') {
+      viewerWindow[key] = value;
+    }
+  };
+
+  // viewer-static.min.js still contains public diagrams.net defaults. Setting
+  // these before the script executes keeps every secondary asset on the same
+  // self-hosted directory as the viewer script.
+  setDefault('PROXY_URL', `${baseUrl}proxy`);
+  setDefault('STYLE_PATH', `${baseUrl}styles`);
+  setDefault('SHAPES_PATH', `${baseUrl}shapes`);
+  setDefault('STENCIL_PATH', `${baseUrl}stencils`);
+  setDefault('DRAW_MATH_URL', `${baseUrl}math4/es5`);
+  setDefault('GRAPH_IMAGE_PATH', `${baseUrl}img`);
+  setDefault('mxImageBasePath', `${baseUrl}mxgraph/images`);
+  setDefault('mxBasePath', `${baseUrl}mxgraph/`);
+  setDefault('mxLoadStylesheets', false);
+  setDefault('DRAWIO_BASE_URL', baseUrl.replace(/\/$/, ''));
+  setDefault('DRAWIO_LIGHTBOX_URL', baseUrl.replace(/\/$/, ''));
+  setDefault('DRAWIO_SERVER_URL', baseUrl);
+  setDefault('DRAWIO_VIEWER_URL', `${baseUrl}viewer-static.min.js`);
+  setDefault('DRAWIO_LOG_URL', '');
+  setDefault('EXPORT_URL', `${baseUrl}export`);
+  setDefault('PLANT_URL', `${baseUrl}plant`);
+  setDefault('VSS_CONVERT_URL', `${baseUrl}VsdConverter/api/converter`);
+  setDefault('DRAWIO_GITLAB_URL', baseUrl);
+  setDefault('DRAWIO_GITHUB_URL', baseUrl);
+  setDefault('DRAWIO_GITHUB_API_URL', baseUrl);
+  setDefault('RT_WEBSOCKET_URL', `${baseUrl}rt`);
+  setDefault('NOTIFICATIONS_URL', `${baseUrl}notifications`);
 };
 
 const getDiagramsViewerPromiseMap = (documentRef: Document) => {
@@ -139,6 +178,8 @@ const loadDiagramsViewer = (documentRef: Document, scriptUrl: string) => {
   if (ownerWindow?.GraphViewer) {
     return Promise.resolve();
   }
+
+  configureOfflineDiagramsViewerAssets(documentRef, scriptUrl);
 
   const promiseMap = getDiagramsViewerPromiseMap(documentRef);
   const existingPromise = promiseMap.get(scriptUrl);
@@ -842,11 +883,11 @@ const renderDrawio = async (
   target: HTMLElement,
   options?: FileViewerDrawingOptions
 ) => {
-  const scriptUrl = resolveOptionalDrawingViewerScriptUrl(options, documentRef);
-  if (!scriptUrl || options?.preferOfficial === false) {
+  if (options?.preferOfficial === false) {
     renderDrawioFallback(documentRef, text, target);
     return;
   }
+  const scriptUrl = resolveDrawingViewerScriptUrl(options, documentRef);
 
   try {
     await runWithTimeout(

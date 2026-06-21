@@ -180,12 +180,17 @@ export interface FileViewerDataOptions {
 
 export interface FileViewerDrawingOptions {
   /**
-   * Optional self-hosted diagrams.net viewer script.
+   * Self-hosted diagrams.net viewer script.
    *
-   * The core renderer never loads the public diagrams.net CDN by default. When
-   * this value is omitted, Draw.io files use the built-in offline SVG fallback.
+   * The default points to the viewer asset copied under
+   * `vendor/drawio/viewer-static.min.js`, so Draw.io uses the official viewer
+   * offline without reaching public diagrams.net hosts.
    */
   viewerScriptUrl?: string;
+  /**
+   * Defaults to true. Set to false only when a deployment prefers the small
+   * built-in SVG fallback over the official diagrams.net viewer runtime.
+   */
   preferOfficial?: boolean;
 }
 

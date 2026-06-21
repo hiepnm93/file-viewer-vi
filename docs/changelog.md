@@ -7,9 +7,9 @@
 ### 当前主线 全格式浏览器冒烟与静态资源稳定性修复
 
 - 修复 3D 模型、OFD、EPUB、UMD、绘图和 CAD 等渲染器的隐藏 loading 状态在部分浏览器/CSS 组合下仍可见的问题，避免预览完成后继续显示“正在解析”
-- Draw.io 官方预览器加载超时后自动切换为本地 SVG 安全预览，保证 `drawio` / `dio` 样例不会因外部 viewer 初始化卡住而长期 loading
+- Draw.io 默认切换为随 viewer assets 分发的官方 diagrams.net 离线 viewer，加载超时后自动切换本地 SVG 安全预览，保证 `drawio` / `dio` 样例不会因 viewer 初始化卡住而长期 loading
 - Typst compiler / renderer WASM 改为默认随 viewer assets 本地分发，并新增 `options.typst.renderTimeoutMs`；浏览器端编译超过阈值时自动降级为源码预览，避免用户只看到 loading
-- 运行时不再提供公共 CDN 或第三方在线资源 fallback；Typst 本地 WASM 不可用时会直接切换源码预览，Draw.io 默认走内置离线 SVG 预览，适合企业内网和纯离线部署
+- 运行时不再提供公共 CDN 或第三方在线资源 fallback；Typst 本地 WASM 不可用时会直接切换源码预览，Draw.io 默认走官方离线 viewer 并在异常时回退内置 SVG，适合企业内网和纯离线部署
 - PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，构建脚本会同步复制并校验，避免 PDF 预览隐式访问公网静态资源
 - SQLite 预览默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，构建脚本同步复制并校验 sql.js WASM，减少移动端 WebView、本地服务器和 CSP 环境下的加载不确定性
 - PDF 样式注入会去除 PDF.js 内置外部图片引用，避免静态产物部署时因 `images/shadow.png` / `loading-icon.gif` 缺失导致 404 或控制台噪声
@@ -185,7 +185,7 @@
 - 新增 `.umd` 电子书预览，按 UMD 文件结构解析元数据、章节目录和 zlib 压缩正文
 - 新增 `.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 音频入口，使用浏览器原生播放器
 - 新增 `.excalidraw` 预览，使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 能力按需生成只读 SVG
-- 新增 `.drawio` / `.dio` 预览，默认使用内置离线 SVG 预览处理 mxGraphModel / mxfile；也可通过 `options.drawing.viewerScriptUrl` 接入自托管 diagrams.net `GraphViewer`
+- 新增 `.drawio` / `.dio` 预览，默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线处理 mxGraphModel / mxfile；也可通过 `options.drawing.viewerScriptUrl` 覆盖自托管脚本，异常时回退内置 SVG
 - 补充 Demo 示例文件、格式矩阵、FAQ 和接入说明
 
 ### `v1.0.8` 文档视觉与预览稳定性版本
