@@ -207,6 +207,8 @@ const options = {
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
+| `pdf.navigation` / `pdf.defaultNavigationVisible` | 是否启用左侧导航窗格以及初始是否展开。导航窗格支持页面列表和目录树切换 |
+| `pdf.thumbnails` | 页面列表是否显示真实页面缩略图，默认 `false`；开启后只对可见页懒渲染缩略图，避免大 PDF 一次性生成所有 canvas |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
 | `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认相对 viewer 入口加载 `vendor/pdf/pdf.worker.mjs`，适合内网和离线部署 |
@@ -223,19 +225,19 @@ const options = {
 
 图片水印可以传相对路径、业务内网 URL 或 data URL。开启图片水印时，文字水印不会重复绘制；纯离线部署建议使用随业务静态资源发布的图片或 data URL。
 
-Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，本地 WASM 不可用或浏览器端编译超出预期时间时会自动切换为源码预览，避免长期停留在 loading。
+Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，也不会用源码视图冒充预览成功。若本地 WASM 不可用或浏览器端编译超出预期时间，组件会显示明确的部署或超时错误，便于第一时间修正静态资源路径。
 
 ```ts
 const options = {
   typst: {
     compilerWasmUrl: '/file-viewer/wasm/typst/typst_ts_web_compiler_bg.wasm',
     rendererWasmUrl: '/file-viewer/wasm/typst/typst_ts_renderer_bg.wasm',
-    renderTimeoutMs: 20000
+    renderTimeoutMs: 60000
   }
 }
 ```
 
-当前浏览器端编译更适合单文件 Typst 源文档；如果文档依赖同目录图片、字体或拆分源码，建议在业务侧先打包成压缩包预览，保留完整项目结构后再选择内部 `.typ` 文件。
+当前浏览器端编译更适合单文件 Typst 源文档；如果文档依赖同目录图片、字体或拆分源码，建议在业务侧先打包成压缩包预览，保留完整项目结构后再选择内部 `.typ` 文件。部署到 Cloudflare Pages 这类有单文件大小限制的平台时，可以对 `typst_ts_web_compiler_bg.wasm` 做 Brotli 预压缩并通过静态响应头设置 `Content-Encoding: br`，示例发布脚本已经内置该处理。
 
 <div class="doc-note">
   性能敏感的 PDF 建议使用同源静态地址，并让文件服务支持 Range 请求。这样 PDF.js 可以先建立页面结构，再按需渲染当前页和附近页面；不支持 Range 时仍会走 PDF.js URL 渐进读取，避免外层预览器重复整包缓冲。鉴权接口、无后缀下载接口或跨域签名 URL 则建议继续由业务侧取回 Blob 后包装为 File，稳定性更高。

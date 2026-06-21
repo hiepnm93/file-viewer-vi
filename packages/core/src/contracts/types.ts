@@ -75,6 +75,7 @@ export interface FileViewerPdfOptions {
   toolbar?: boolean;
   navigation?: boolean;
   defaultNavigationVisible?: boolean;
+  thumbnails?: boolean;
   rotation?: number;
   streaming?: boolean | 'same-origin';
   rangeChunkSize?: number;

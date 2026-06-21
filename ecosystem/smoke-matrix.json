@@ -212,13 +212,13 @@
       "assertions": ["load-complete", "page-layout", "zoom", "print-capability"]
     },
     {
-      "id": "typst-source",
+      "id": "typst-rendered-document",
       "family": "typst",
       "rendererId": "typst",
       "extension": "typ",
       "sample": "report.typ",
       "surfaces": ["main-demo"],
-      "assertions": ["load-complete", "compile-source", "page-layout", "export-html"]
+      "assertions": ["load-complete", "rendered-svg", "page-layout", "print-capability", "export-html"]
     },
     {
       "id": "archive-zip",

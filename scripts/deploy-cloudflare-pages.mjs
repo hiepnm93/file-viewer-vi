@@ -1,13 +1,16 @@
 import { spawnSync } from 'node:child_process'
+import { brotliCompressSync, constants as zlibConstants } from 'node:zlib'
 import {
   cpSync,
   existsSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   rmSync,
-  statSync
+  statSync,
+  writeFileSync
 } from 'node:fs'
-import { basename, join, relative, resolve } from 'node:path'
+import { basename, extname, join, relative, resolve } from 'node:path'
 
 const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'flyfish-file-viewer'
 // Wrangler direct upload publishes to the production deployment when no branch
@@ -36,6 +39,53 @@ const maxFileBytes = Number.parseInt(
 const resolvedOutputDir = resolve(outputDir)
 const uploadDir = resolve('.release', 'cloudflare-pages', projectName)
 const skippedFiles = []
+const compressedFiles = []
+
+const toUrlPath = filePath => `/${filePath.replaceAll('\\', '/')}`
+
+function writeCompressedAssetHeaders(targetDir) {
+  if (!compressedFiles.length) {
+    return
+  }
+
+  const headersPath = join(targetDir, '_headers')
+  const current = existsSync(headersPath) ? readFileSync(headersPath, 'utf8') : ''
+  const prefix = current
+    ? `${current}${current.endsWith('\n') ? '' : '\n'}\n`
+    : ''
+  const additions = compressedFiles
+    .map(file => [
+      toUrlPath(file.path),
+      '  Content-Type: application/wasm',
+      '  Content-Encoding: br',
+      '  Cache-Control: public, max-age=31536000, immutable'
+    ].join('\n'))
+    .join('\n\n')
+
+  writeFileSync(headersPath, `${prefix}${additions}\n`)
+}
+
+function writeBrotliCompressedWasm(source, target, relativePath) {
+  const raw = readFileSync(source)
+  const compressed = brotliCompressSync(raw, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11
+    }
+  })
+
+  if (compressed.length > maxFileBytes) {
+    return false
+  }
+
+  mkdirSync(join(target, '..'), { recursive: true })
+  writeFileSync(target, compressed)
+  compressedFiles.push({
+    path: relativePath,
+    size: raw.length,
+    compressedSize: compressed.length
+  })
+  return true
+}
 
 function copyDeployableFiles(sourceDir, targetDir) {
   if (!existsSync(sourceDir)) {
@@ -61,8 +111,13 @@ function copyDeployableFiles(sourceDir, targetDir) {
     }
 
     if (stat.size > maxFileBytes) {
+      const relativePath = relative(sourceDir, source)
+      if (extname(source).toLowerCase() === '.wasm' &&
+        writeBrotliCompressedWasm(source, target, relativePath)) {
+        return
+      }
       skippedFiles.push({
-        path: relative(sourceDir, source),
+        path: relativePath,
         size: stat.size
       })
       return
@@ -76,6 +131,16 @@ function copyDeployableFiles(sourceDir, targetDir) {
 }
 
 copyDeployableFiles(resolvedOutputDir, uploadDir)
+writeCompressedAssetHeaders(uploadDir)
+
+if (compressedFiles.length) {
+  console.warn(
+    `[cloudflare-pages] Brotli-compressed ${compressedFiles.length} oversized WASM file(s) while preparing ${basename(uploadDir)}:`
+  )
+  for (const file of compressedFiles) {
+    console.warn(`  - ${file.path} (${file.size} bytes -> ${file.compressedSize} bytes)`)
+  }
+}
 
 if (skippedFiles.length) {
   console.warn(
@@ -83,6 +148,13 @@ if (skippedFiles.length) {
   )
   for (const file of skippedFiles) {
     console.warn(`  - ${file.path} (${file.size} bytes)`)
+  }
+
+  const fatalWasmFiles = skippedFiles.filter(file => file.path.toLowerCase().endsWith('.wasm'))
+  if (fatalWasmFiles.length) {
+    throw new Error(
+      `Cloudflare Pages upload would miss required WASM assets: ${fatalWasmFiles.map(file => file.path).join(', ')}`
+    )
   }
 }
 

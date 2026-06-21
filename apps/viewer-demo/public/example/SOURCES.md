@@ -23,7 +23,7 @@
 | `excel.fods` | Project-authored Flat ODS XML fixture | Apache-2.0 | Standards-conforming Flat OpenDocument spreadsheet route smoke test |
 | `sample.rtf` | Project-generated compatible document fixture | Apache-2.0 | RTF route smoke test |
 | `map.geojson` / `route.kml` / `track.gpx` | Project-generated lightweight geospatial fixtures | Apache-2.0 | GeoJSON, KML and GPX normalization plus offline SVG map smoke tests |
-| `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Direct Typst source preview and browser WASM smoke tests |
+| `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Direct Typst browser WASM rendering and smoke tests |
 | `archive.zip` / `archive.tar.gz` | Project-packaged PDF, public DOCX, Markdown, TypeScript and JSON sample set | See bundled file sources | Archive directory, lazy extraction, cache and nested preview smoke tests |
 | `sample.eml` | Project-generated MIME email fixture | Apache-2.0 | EML headers, text/html body, attachment download and attachment preview smoke tests |
 | `sample.msg` | `https://github.com/HiraokaHyperTools/msgreader/blob/master/test/A%20memo.msg` | MIT | Outlook MSG parsing smoke test through @kenjiuno/msgreader |

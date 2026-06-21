@@ -83,7 +83,6 @@ const sampleSmokeConfig = {
     '.pdfViewer .page',
     '.pptx-slide',
     '.typst-page-shell',
-    '.typst-source-fallback',
     '.umd-viewer',
     'audio',
     'canvas',

@@ -138,7 +138,7 @@ function viewerOptionRows(locale) {
       ['`search`', '配置文档搜索、高亮 class、大小写、整词匹配、最大命中数和 debounce。'],
       ['`ai`', '控制文本结构采集、分块大小和最大文本长度，为溯源、定位、向量化和外部 AI 流程提供基础。'],
       ['`archive`', '配置压缩包 Worker/WASM、超时、缓存、包体限制和压缩包内单文件预览大小。'],
-      ['`pdf`', '配置 PDF.js Worker、导航栏、目录、旋转、流式读取、Range chunk 和凭据。'],
+      ['`pdf`', '配置 PDF.js Worker、导航栏、目录、缩略图、旋转、流式读取、Range chunk 和凭据。'],
       ['`docx` / `spreadsheet`', 'DOCX 与表格默认保真主线程渲染，Worker / 渐进挂载可按需显式开启。'],
       ['`typst` / `data` / `cad`', '配置 Typst、SQLite、CAD/DWG/DXF/DWF 等 WASM、Worker、编码和渲染策略。'],
       ['`hooks` / `beforeOperation`', '统一生命周期 hooks 和操作前置校验，可用于审计、权限、埋点和安全控制。']
@@ -151,7 +151,7 @@ function viewerOptionRows(locale) {
     ['`search`', 'Document search, highlight class names, case sensitivity, whole-word matching, max matches, and debounce.'],
     ['`ai`', 'Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows.'],
     ['`archive`', 'Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits.'],
-    ['`pdf`', 'PDF.js worker, navigation pane, outline, rotation, streaming, range chunk size, and credentials.'],
+    ['`pdf`', 'PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials.'],
     ['`docx` / `spreadsheet`', 'DOCX and Spreadsheet default to fidelity-first main-thread rendering; Worker/progressive paths are explicit opt-in.'],
     ['`typst` / `data` / `cad`', 'Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options.'],
     ['`hooks` / `beforeOperation`', 'Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls.']
@@ -214,7 +214,7 @@ function assetRows(locale) {
       ['通用 viewer assets', 'Pure Web 包提供 `file-viewer-copy-assets`，可把 Worker、WASM、vendor 和示例资源复制到业务静态目录。'],
       ['CAD / DWG / DXF / DWF', '按需配置 `options.cad.wasmPath`、`workerUrl`、`dwfWasmUrl`、`dxfEncoding`，支持自托管和内网部署。'],
       ['PDF / DOCX / Excel', '按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`；DOCX 和 Excel Worker 均需显式开启。'],
-      ['Typst / SQLite / Archive', '按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；本地 Typst WASM 不可用时切换源码预览，不访问公共 CDN。'],
+      ['Typst / SQLite / Archive', '按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；Typst 仅使用本地 WASM 真实渲染，不访问公共 CDN。'],
       ['Drawing', 'Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer；路径特殊时可通过 `options.drawing.viewerScriptUrl` 覆盖，`preferOfficial:false` 才切到内置 SVG 兜底。'],
       ['离线部署', '运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包、Draw.io 和 Office worker/vendor 资产。'],
       ['部署原则', '默认只在命中特定格式时异步加载对应依赖；没有命中的格式不会拉取重型 Worker、WASM 或解析库。']
@@ -224,7 +224,7 @@ function assetRows(locale) {
     ['Shared viewer assets', 'The Pure Web package ships `file-viewer-copy-assets` to copy workers, WASM, vendor files, and examples into your static directory.'],
     ['CAD / DWG / DXF / DWF', 'Configure `options.cad.wasmPath`, `workerUrl`, `dwfWasmUrl`, and `dxfEncoding` for self-hosted or intranet deployment.'],
     ['PDF / DOCX / Excel', 'Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, and `options.spreadsheet.workerUrl`; DOCX and Excel Workers are explicit opt-in.'],
-    ['Typst / SQLite / Archive', 'Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed; missing local Typst WASM falls back to source preview, not a public CDN.'],
+    ['Typst / SQLite / Archive', 'Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed; Typst renders through local WASM only and never falls back to a public CDN.'],
     ['Drawing', 'Draw.io uses the official diagrams.net offline viewer shipped with viewer assets by default; override `options.drawing.viewerScriptUrl` for custom paths, or set `preferOfficial:false` for the built-in SVG fallback.'],
     ['Offline deployment', 'Runtime preview code does not depend on public CDN or third-party online assets; `file-viewer-copy-assets` copies PDF, CAD, Typst, SQLite, archive, Draw.io, and Office worker/vendor assets.'],
     ['Deployment principle', 'Heavy workers, WASM files, and parser libraries stay lazy-loaded and are only requested when the active file type needs them.']
