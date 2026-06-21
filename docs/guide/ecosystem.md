@@ -7,6 +7,20 @@
   新项目优先选择 <code>@file-viewer/*</code> 标准包名；历史 <code>@flyfish-group/*</code> 包名仍同步维护，用于平滑升级旧项目。
 </p>
 
+## 导览
+
+| 技术栈 / 场景 | 推荐入口 |
+| --- | --- |
+| Vue 3 项目 | [Vue3 集成](/guide/quickstart-vue3) |
+| Vue 2.7 / 2.6 项目 | [Vue2.7 / 2.6 集成](/guide/quickstart-vue2) |
+| React 18 / 19 项目 | [React 集成](/guide/quickstart-react) |
+| React 16.8 / 17 老项目 | [React Legacy 集成](#react-legacy) |
+| 无框架页面、微前端壳、script 标签 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |
+| 传统 jQuery 后台 | [jQuery 集成](#jquery) |
+| Svelte / SvelteKit 项目 | [Svelte 集成](#svelte) |
+| 自研组件或深度二开 | [Core 自定义接入](#core) |
+| 单独验证 PPTX 渲染能力 | [PPTX 引擎接入](#pptx) |
+
 ## 选型一览
 
 | 场景 | 推荐包 | 适合项目 | 入口能力 |
@@ -31,6 +45,8 @@
 - 所有组件包共享同一套 `ViewerMountOptions`、`FileViewerOptions`、生命周期事件、操作回调、搜索、缩放、水印、打印和导出语义。
 - Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。
 - 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
+
+<span id="vue3"></span>
 
 ## Vue 3
 
@@ -90,6 +106,8 @@ new Vue({
 
 历史 Vue 2 包 `@flyfish-group/file-viewer` 仍对应 Vue 2.7 线。新项目如果无法升级 Vue，先按运行时版本选择 `@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`。
 
+<span id="react"></span>
+
 ## React
 
 ```bash
@@ -138,7 +156,13 @@ export function SearchablePreview() {
 }
 ```
 
+<span id="react-legacy"></span>
+
+### React Legacy
+
 React 16.8 / 17 的旧项目可改用 `@file-viewer/react-legacy`，API 保持同一套 props 与 controller 语义。
+
+<span id="web"></span>
 
 ## Pure Web
 
@@ -180,6 +204,8 @@ npm install @file-viewer/web
 
 `@file-viewer/web` 还提供 `file-viewer-copy-assets`，用于把离线资源复制到业务静态目录。
 
+<span id="jquery"></span>
+
 ## jQuery
 
 ```bash
@@ -205,6 +231,8 @@ $('#viewer').fileViewer('zoomIn')
 ```
 
 如果页面已经有全局 jQuery，插件包会尽量自动挂载；显式调用 `installJQueryFileViewer($)` 更稳，也更适合模块化项目。
+
+<span id="svelte"></span>
 
 ## Svelte
 
@@ -256,6 +284,8 @@ npm install @file-viewer/svelte
 
 SvelteKit 中请确保预览器只在浏览器端挂载，并给容器稳定高度；服务端渲染阶段不要访问 `window`、`document` 或真实文件对象。
 
+<span id="core"></span>
+
 ## Core 自定义接入
 
 业务如果要做自己的组件层，可以直接依赖 `@file-viewer/core`，但建议只有在标准组件包无法覆盖交互模型时才这么做。
@@ -265,6 +295,16 @@ npm install @file-viewer/core
 ```
 
 Core 暴露格式矩阵、资源路径解析、搜索/缩放/打印导出工具、生命周期上下文和渲染器注册能力。上层组件应只负责容器、状态管理、事件桥接和生态交互，不要把 Vue / React / Svelte 运行时下沉到 core。
+
+<span id="pptx"></span>
+
+## PPTX 引擎接入
+
+```bash
+npm install @file-viewer/pptx
+```
+
+`@file-viewer/pptx` 是从主预览器中独立出来的 PPTX 渲染引擎包，适合单独验证 PPTX 渲染、在自研预览器中复用幻灯片解析能力，或配合 `@file-viewer/core` 做更深的二次封装。标准 Vue、React、Pure Web、jQuery 和 Svelte 组件包会自动按需加载该能力，普通业务接入不需要额外安装。
 
 ## 离线资源
 

@@ -140,9 +140,21 @@ titleTemplate: false
 <strong>纯 JS 页面</strong>
 <span>安装 @file-viewer/web，用 mountViewer 直接挂载到目标 DOM。</span>
 </a>
-<a class="doc-path-card" href="/guide/ecosystem">
-<strong>Svelte / jQuery / Core</strong>
-<span>查看 Svelte 组件和 action、jQuery 插件、Pure Web script 标签、Core 自定义接入和 PPTX 引擎包。</span>
+<a class="doc-path-card" href="/guide/ecosystem#svelte">
+<strong>Svelte 项目</strong>
+<span>安装 @file-viewer/svelte，使用 Svelte 组件或 action 原生接入。</span>
+</a>
+<a class="doc-path-card" href="/guide/ecosystem#jquery">
+<strong>jQuery 后台</strong>
+<span>安装 @file-viewer/jquery，用 $(el).fileViewer(options) 接入传统系统。</span>
+</a>
+<a class="doc-path-card" href="/guide/ecosystem#core">
+<strong>Core 自定义</strong>
+<span>使用 @file-viewer/core 构建自研组件层，复用底层格式能力和统一 API。</span>
+</a>
+<a class="doc-path-card" href="/guide/ecosystem#pptx">
+<strong>PPTX 引擎</strong>
+<span>使用 @file-viewer/pptx 单独验证或复用原生幻灯片渲染能力。</span>
 </a>
 <a class="doc-path-card" href="/guide/usage">
 <strong>统一 API</strong>
