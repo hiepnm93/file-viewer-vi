@@ -35,7 +35,7 @@
 | OLB | 可识别常见 CFB/OLE2 容器、流、属性、字符串和元件候选 | 参考 OpenOrCadParser 的 C++ 解析路线，后续可拆 `@file-viewer/eda-orcad`，通过 Emscripten/WASM 或逐步 TS 移植补齐符号图形 |
 | DRA | 可识别 CFB/OLE2 容器、封装/padstack/图形候选和可读属性 | DRA/PSM/PAD 属于 Allegro 私有数据库生态，应先积累真实样本，再独立维护 OrCAD/Allegro renderer |
 | OAS/OASIS | 当前做安全二进制索引、可读字符串、结构候选和诊断 | OASIS 需要低层 record parser、重复结构展开、压缩块处理和版图实例渲染，适合拆 `@file-viewer/eda-layout` |
-| STEP/IGES/IFC/3DM | `@file-viewer/renderer-3d` 已保留 3D 入口，但完整几何解析依赖专业内核 | STEP/IGES 走 OpenCascade WASM，IFC 走 `web-ifc`，3DM 走 `rhino3dm`，均应按需拆包 |
+| STEP/IGES/IFC/3DM | `@file-viewer/renderer-3d` 已保留 3D 入口，但完整几何解析依赖专业内核 | STEP/IGES/BREP 走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open Fragments，3DM 走 `rhino3dm` / Three.js loader，均应按需拆包 |
 
 ## 当前落地策略
 
@@ -43,8 +43,8 @@
 | --- | --- | --- |
 | XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | 保留 `@ljheee/xmind-parser`，独立 `@file-viewer/renderer-mindmap` 负责解析和交互；当前拖拽边界已放宽为画布式平移，并提供 PointerEvent、MouseEvent、TouchEvent、键盘方向键、Ctrl/Command 滚轮锚点缩放和双击适配视图 |
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；后续像 PPTX 一样拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护 |
-| GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合 WebGL 或 WASM | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
-| STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` | 保留 `@file-viewer/renderer-3d` 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
+| GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合参考 KLayout/KWeb 或自研 WebGL/WASM pipeline | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
+| STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 保留 `@file-viewer/renderer-3d` 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
 | Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
 | GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo`，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
@@ -68,8 +68,11 @@
 - OASIS 公开生态里存在低层解析器，但不是完整 Web viewer，需要在解析层之上自行构建几何模型和渲染层: <https://github.com/EDDRSoftware/oasFileParser>
 - OpenOrCadParser 是 OrCAD DSN/OLB 二进制解析的 C++ 开源实现，说明 OLB 完整解析可行，但工程量和样本覆盖都应独立维护: <https://github.com/Werni2A/OpenOrCadParser>
 - OpenAllegroParser 是 Allegro 二进制解析的 C++ 开源路线，适合作为 DRA / PSM / PAD 后续 WASM 内核参考: <https://github.com/Werni2A/OpenAllegroParser>
-- OpenCascade / `occt-import-js` 证明 STEP / IGES / BREP 可以在浏览器 WASM 中导入，再交给 Three.js 渲染: <https://github.com/kovacsv/occt-import-js>
-- That Open `web-ifc` 生态提供 IFC 的 WASM 读取能力，适合独立 BIM renderer，而不是进入默认 core: <https://github.com/thatopen/engine_web-ifc>
+- OpenCascade.js 是 Open CASCADE Technology 官方列出的 JavaScript/WebAssembly 绑定路线，可作为后续精确 CAD 几何内核的长期参考: <https://dev.opencascade.org/project/opencascadejs>
+- `occt-import-js` 证明 STEP / IGES / BREP 可以在浏览器 WASM 中导入，再交给 Three.js 渲染: <https://github.com/kovacsv/occt-import-js>
+- That Open `web-ifc` 生态提供 IFC 的 WASM 读取能力；That Open 的 IFC Loader 文档还建议把 IFC 转换成可复用 Fragments 资产，适合大 BIM 文件的二次加载优化: <https://github.com/thatopen/engine_web-ifc>
+- McNeel `rhino3dm.js` 基于 openNURBS 并随 `rhino3dm.wasm` 运行在浏览器和 Node.js，Three.js 也提供 Rhino3dmLoader，适合后续 3DM 独立几何 renderer: <https://github.com/mcneel/rhino3dm>
+- KLayout 明确定位为 GDS 和 OASIS viewer/editor；KWeb / KLayout Web Viewer 说明 GDS 在线浏览更适合按专业版图 viewer 路线独立演进: <https://www.klayout.de/intro.html>
 
 ## 后续验收 checklist
 
