@@ -110,12 +110,12 @@ const xmindStyle = `
 .xmind-sidebar{min-height:0;overflow:auto;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.72);padding:14px}
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
-.xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
+.xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
 .xmind-stage *{touch-action:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
 .xmind-stage.is-panning,.xmind-stage.is-panning *{cursor:grabbing!important;user-select:none}
 .xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
-.xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab}
+.xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab;user-select:none;-webkit-user-select:none}
 .xmind-stage.is-panning .xmind-node{cursor:grabbing}
 .xmind-node.root{width:260px;border-color:rgba(33,163,102,.28);background:linear-gradient(135deg,#effdf5,#fff);box-shadow:0 18px 38px rgba(33,163,102,.16)}
 .xmind-node.detached{border-style:dashed}.xmind-node.summary{background:#fff8e7}.xmind-node.callout{background:#eef6ff}
@@ -731,6 +731,8 @@ export default async function renderXMind(
     if ((event.pointerType === 'mouse' && event.button !== 0) || status !== 'ready' || isPanBlockedTarget(event.target)) {
       return;
     }
+    event.preventDefault();
+    event.stopPropagation();
     stage.focus({ preventScroll: true });
     panState = {
       pointerId: event.pointerId,
@@ -747,7 +749,6 @@ export default async function renderXMind(
     } catch {
       // Embedded browsers and synthetic events may not support pointer capture.
     }
-    event.preventDefault();
   };
 
   const onPanMove = (event: PointerEvent) => {
@@ -767,12 +768,15 @@ export default async function renderXMind(
     panY = panState.startPanY + deltaY;
     applyZoom();
     event.preventDefault();
+    event.stopPropagation();
   };
 
   const onPanEnd = (event: PointerEvent) => {
     if (!panState || panState.pointerId !== event.pointerId) {
       return;
     }
+    event.preventDefault();
+    event.stopPropagation();
     clearPanState(event);
   };
 
@@ -823,7 +827,13 @@ export default async function renderXMind(
     event.preventDefault();
   };
 
-  stage.addEventListener('pointerdown', onPanStart);
+  const onStageSelectStart = (event: Event) => {
+    if (panState) {
+      event.preventDefault();
+    }
+  };
+
+  stage.addEventListener('pointerdown', onPanStart, true);
   stage.addEventListener('pointermove', onPanMove);
   stage.addEventListener('pointerup', onPanEnd);
   stage.addEventListener('pointercancel', onPanEnd);
@@ -831,6 +841,7 @@ export default async function renderXMind(
   stage.addEventListener('wheel', onStageWheel, { passive: false });
   stage.addEventListener('keydown', onStageKeyDown);
   stage.addEventListener('dragstart', onStageDragStart);
+  stage.addEventListener('selectstart', onStageSelectStart);
   ownerWindow.addEventListener('pointermove', onPanMove);
   ownerWindow.addEventListener('pointerup', onPanEnd);
   ownerWindow.addEventListener('pointercancel', onPanEnd);
@@ -845,7 +856,7 @@ export default async function renderXMind(
     unmount() {
       disposed = true;
       unregisterFileViewerZoomProvider(root);
-      stage.removeEventListener('pointerdown', onPanStart);
+      stage.removeEventListener('pointerdown', onPanStart, true);
       stage.removeEventListener('pointermove', onPanMove);
       stage.removeEventListener('pointerup', onPanEnd);
       stage.removeEventListener('pointercancel', onPanEnd);
@@ -853,6 +864,7 @@ export default async function renderXMind(
       stage.removeEventListener('wheel', onStageWheel);
       stage.removeEventListener('keydown', onStageKeyDown);
       stage.removeEventListener('dragstart', onStageDragStart);
+      stage.removeEventListener('selectstart', onStageSelectStart);
       ownerWindow.removeEventListener('pointermove', onPanMove);
       ownerWindow.removeEventListener('pointerup', onPanEnd);
       ownerWindow.removeEventListener('pointercancel', onPanEnd);

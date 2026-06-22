@@ -25,6 +25,7 @@
 | Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
 | CAD | 委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
 | XMind | 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 core SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已补拖拽平移、滚轮锚点缩放和键盘平移 |
+| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON | 当前可作为离线地理附件快速预览；底图、投影转换和空间分析交给业务 GIS |
 | GDSII | 手写 GDSII record parser，读取 library、structure、boundary、path、text、sref/aref 和坐标边界并生成 SVG | 当前可作为 GDSII 版图快速预览；更大文件和层级实例展开适合拆出 WebGL/WASM renderer |
 
 ## 当前只能作为结构预览的格式
@@ -45,6 +46,7 @@
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合 WebGL 或 WASM | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
 | STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` | 保留 3D 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
 | Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
+| GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo`，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
 | Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |
 
 ## 外部调研依据
@@ -55,6 +57,11 @@
 - XMind 官方 SDK 支持 Node.js，Browser 标注为 not fully supported，因此 viewer 继续使用解析器 + 自有只读渲染更稳: <https://github.com/xmindltd/xmind-sdk-js>
 - SimpleMindMap 文档也确认 `.xmind` 可以按 ZIP 解包并读取 `content.json` 转换为脑图数据: <https://wanglin2.github.io/mind-map-docs/en/api/xmind.html>
 - Mind Elixir 是成熟的交互式脑图内核，适合作为未来“更强交互/编辑级阅读”的候选，但不直接替代当前 XMind 文件解析链路: <https://www.npmjs.com/package/mind-elixir>
+- OASIS ODF 包规范确认 OpenDocument 以 ZIP 包承载 XML 内容和二进制条目，适合先做浏览器端包结构解析: <https://docs.oasis-open.org/office/OpenDocument/v1.3/OpenDocument-v1.3-part2-packages.html>
+- toGeoJSON 生态明确用于 KML / GPX 转 GeoJSON，适合作为地理数据按需 renderer 的转换层: <https://www.npmjs.com/package/@tmcw/togeojson>
+- Shapefile.js 是纯 JavaScript Shapefile 到 GeoJSON 解析库，适合浏览器端 SHP 快速预览: <https://github.com/calvinmetcalf/shapefile-js>
+- libarchive.js 是 libarchive 的 WebAssembly/browser 封装，支持 ZIP、7z、RAR、TAR 等多种归档和压缩格式: <https://github.com/nika-begiashvili/libarchivejs>
+- postal-mime 明确支持 Node.js、浏览器、Web Worker 和 serverless 环境，适合 EML/MBOX 邮件预览: <https://github.com/postalsys/postal-mime>
 - GDS2WebGL 证明 GDSII 可以在浏览器里做 WebGL pan/zoom 查看，适合成为后续 GDS/OASIS 独立 renderer 的参考: <https://github.com/s-holst/GDS2WebGL>
 - GDSJam 证明 GDSII/DXF 可以做客户端 WebGL viewer，适合为大版图交互性能设定基线: <https://github.com/jwt625/gdsjam>
 - OASIS 公开生态里存在低层解析器，但不是完整 Web viewer，需要在解析层之上自行构建几何模型和渲染层: <https://github.com/EDDRSoftware/oasFileParser>

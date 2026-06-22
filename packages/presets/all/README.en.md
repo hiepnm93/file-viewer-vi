@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-This version first aggregates the extracted `@file-viewer/renderer-pdf`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, `@file-viewer/renderer-image`, `@file-viewer/renderer-media`, and `@file-viewer/renderer-mindmap` packages. Renderers that have not been split out yet are still filled in by `@file-viewer/core` for compatibility. As Office, OFD, drawing, 3D, Geo, EDA, and data-asset renderers move out, this preset remains the full aggregation layer.
+This version first aggregates the extracted `@file-viewer/renderer-pdf`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, `@file-viewer/renderer-image`, `@file-viewer/renderer-media`, `@file-viewer/renderer-mindmap`, and `@file-viewer/renderer-geo` packages. Renderers that have not been split out yet are still filled in by `@file-viewer/core` for compatibility. As Office, OFD, drawing, 3D, EDA, and data-asset renderers move out, this preset remains the full aggregation layer.
 
 ## Documentation
 
