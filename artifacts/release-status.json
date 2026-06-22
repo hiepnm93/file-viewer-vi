@@ -1,30 +1,30 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-22T03:14:08.490Z",
-  "version": "2.0.10",
+  "generatedAt": "2026-06-22T06:56:30.969Z",
+  "version": "2.0.11",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
   "sourceBaseline": {
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "e034564b982469466837d38707c7f56236afde5c",
+    "authoritativeCommit": "b3457a0b24281679e17cacace85513b5f42887aa",
     "localBranch": "main",
-    "localCommit": "e034564b982469466837d38707c7f56236afde5c",
+    "localCommit": "b3457a0b24281679e17cacace85513b5f42887aa",
     "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "e034564b982469466837d38707c7f56236afde5c",
-    "shortCommit": "e034564b",
+    "commit": "b3457a0b24281679e17cacace85513b5f42887aa",
+    "shortCommit": "b3457a0b",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "e034564b982469466837d38707c7f56236afde5c",
+    "hash": "b3457a0b24281679e17cacace85513b5f42887aa",
     "error": ""
   },
   "openSourceMain": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "6c6fd8eec70f8bb421dfbdf01e9c2319c263cde8",
+      "hash": "a3675e1f39a61227c060494500bca94d7b666cdf",
       "error": ""
     },
     "gitee": {
@@ -45,20 +45,20 @@
     "inSync": false,
     "syncMode": "stale",
     "treeChecked": true,
-    "referenceTree": "554af82fb275476c4ea20d022d34777007c7f923",
+    "referenceTree": "d692ea333eb1563911800f1fcf16abe5754d9b77",
     "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
     "treeError": "",
     "reportHashNote": "This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
-    "ok": true,
-    "tag": "v2.0.10",
-    "url": "https://github.com/flyfish-dev/file-viewer/releases/tag/v2.0.10",
-    "assetCount": 21,
-    "hasManifest": true,
-    "hasStatus": true,
-    "hasSchema": true,
-    "error": ""
+    "ok": false,
+    "tag": "v2.0.11",
+    "url": "",
+    "assetCount": 0,
+    "hasManifest": false,
+    "hasStatus": false,
+    "hasSchema": false,
+    "error": "release not found"
   },
   "componentRepositories": [
     {
@@ -68,7 +68,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-core",
         "branch": "main",
         "ok": true,
-        "hash": "0e78156d1b1bab06626153a81f15bde89547e34a",
+        "hash": "4e2c765b04bedb7e88b17a72259be7063c6555a5",
         "error": ""
       },
       "gitee": {
@@ -86,7 +86,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-vue3",
         "branch": "main",
         "ok": true,
-        "hash": "889013b82b92c8f34b2a799c4232a75d66008f08",
+        "hash": "e499ce1dc4a4323e7fbd1f74688fe17111f03162",
         "error": ""
       },
       "gitee": {
@@ -104,7 +104,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-vue2.7",
         "branch": "main",
         "ok": true,
-        "hash": "528e207a3510b7e60fcb68119dc000822bd2687a",
+        "hash": "22feb61f511ce91128b1c2a07ae0dd30b38c5636",
         "error": ""
       },
       "gitee": {
@@ -122,7 +122,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-vue2.6",
         "branch": "main",
         "ok": true,
-        "hash": "5714379f4cfbd21487d0113f6c765b4c5c76a29e",
+        "hash": "bec6dd5c94ecc7e7224fe5389984aa067228f208",
         "error": ""
       },
       "gitee": {
@@ -140,7 +140,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-react",
         "branch": "main",
         "ok": true,
-        "hash": "f3feb9752ad87f5efecd87b0282a6b4ee5c35139",
+        "hash": "20e37f058ccb46c04ce28ae2d2d60dd44f23304c",
         "error": ""
       },
       "gitee": {
@@ -158,7 +158,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-react-legacy",
         "branch": "main",
         "ok": true,
-        "hash": "2b6ba354d5415cd4fa461286e6552168ab28e1df",
+        "hash": "ac90dd3d03bb5fd226aa2b8de54087494c6ed354",
         "error": ""
       },
       "gitee": {
@@ -176,7 +176,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-web",
         "branch": "main",
         "ok": true,
-        "hash": "e4a8384ebc720d8fbefd319c68a88c3992530f0c",
+        "hash": "f24d35143dc8b268ce90697fd3961591519bc923",
         "error": ""
       },
       "gitee": {
@@ -194,7 +194,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-jquery",
         "branch": "main",
         "ok": true,
-        "hash": "1872c31131da6c134010ca8e8db517690a319255",
+        "hash": "a7e76e29b91e39ddd0b77c6678bb9929b9d31236",
         "error": ""
       },
       "gitee": {
@@ -212,7 +212,7 @@
         "url": "https://github.com/flyfish-dev/file-viewer-svelte",
         "branch": "main",
         "ok": true,
-        "hash": "caeb40d43b099cfc2f7a501b4b0c6bd7fa2217f7",
+        "hash": "8aaacce228cb361388d369892bf4b4927570752f",
         "error": ""
       },
       "gitee": {
@@ -227,120 +227,135 @@
   "npmPackages": [
     {
       "packageName": "@file-viewer/core",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/pptx",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer3",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "file-viewer3",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer-web",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer-react",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue3",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.7",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.6",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react-legacy",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/web",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/jquery",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/svelte",
-      "expectedVersion": "2.0.10",
-      "publishedVersion": "2.0.10",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
       "ok": true,
       "error": ""
     }
   ],
-  "gaps": [],
+  "gaps": [
+    "GitHub Release v2.0.11 missing"
+  ],
   "gapSummary": {
-    "total": 0,
-    "externalBlockers": 0,
+    "total": 1,
+    "externalBlockers": 1,
     "localActionable": 0,
-    "byChannel": {},
-    "externalBlockerChannels": [],
+    "byChannel": {
+      "github-release": 1
+    },
+    "externalBlockerChannels": [
+      "github-release"
+    ],
     "localActionableChannels": []
   },
-  "gapDetails": [],
+  "gapDetails": [
+    {
+      "id": "github-release-github-release-v2.0.11-missing",
+      "channel": "github-release",
+      "scope": "release-assets",
+      "externalBlocker": true,
+      "message": "GitHub Release v2.0.11 missing",
+      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
+    }
+  ],
   "nextActions": [
     "Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.",
     "After npm publish, run `pnpm verify:npm-registry-release`."
