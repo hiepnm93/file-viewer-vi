@@ -100,20 +100,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'model',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderModel } = await import('./model');
-      return renderModel(buffer, target, type, context);
-    },
-  },
-  {
-    rendererId: 'drawing',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderDrawing } = await import('./drawing');
-      return renderDrawing(buffer, target, type, context);
-    },
-  },
-  {
     rendererId: 'data-asset',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderDataAsset } = await import('./data');

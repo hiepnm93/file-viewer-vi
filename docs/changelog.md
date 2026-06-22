@@ -18,10 +18,11 @@
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
 - 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
-- 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
+- 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，并兼容部分 WebView 在 PointerEvent 移动期间把 `buttons` 错报为 `0` 的情况，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
 - XMind 官方 Demo 样例已通过真实浏览器回归：`.xmind` 能由 `@file-viewer/renderer-mindmap` 正常接管，拖拽后画布 transform 发生平移变化，证明组件层 preset 装配和 renderer 内部 pan 交互同时生效；浏览器冒烟脚本也会对 `.xmind` 执行 PointerEvent 拖拽断言
 - 代码与 Markdown 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `highlight.js` 和 `marked`；完整文本预览统一由 `@file-viewer/renderer-text` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 27 降到 25，Phase 3 依赖预算从 10 降到 8
 - 音视频预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `hls.js` 和 `@tonejs/midi`；MP3/WAV/OGG/MIDI/MP4/WEBM/HLS 完整媒体能力统一由 `@file-viewer/renderer-media` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 25 降到 23，Phase 3 依赖预算从 8 降到 6
+- 3D 模型与绘图预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `three`、`@excalidraw/excalidraw` 和 `roughjs`；GLB/GLTF/STL/OBJ/FBX/DAE/3MF/VTK 等模型由 `@file-viewer/renderer-3d` 装配，Draw.io / Excalidraw 由 `@file-viewer/renderer-drawing` 装配，core 直接渲染依赖从 23 降到 20，Phase 3 依赖预算从 6 降到 3
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
 - OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合

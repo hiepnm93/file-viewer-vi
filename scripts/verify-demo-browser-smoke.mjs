@@ -120,12 +120,10 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
     }
 
     const readTransform = () => window.getComputedStyle(zoomBox).transform || zoomBox.style.transform
-    const before = readTransform()
     const rect = stage.getBoundingClientRect()
     const startX = rect.left + rect.width * 0.52
     const startY = rect.top + rect.height * 0.48
-    const pointerId = 2319
-    const dispatch = (type, clientX, clientY, buttons) => {
+    const dispatch = (type, clientX, clientY, buttons, pointerId) => {
       stage.dispatchEvent(new PointerEvent(type, {
         bubbles: true,
         button: 0,
@@ -137,23 +135,37 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         pointerType: 'mouse'
       }))
     }
+    const drag = async (pointerId, moveButtons = 1) => {
+      const before = readTransform()
 
-    stage.focus({ preventScroll: true })
-    dispatch('pointerdown', startX, startY, 1)
-    dispatch('pointermove', startX + 180, startY + 96, 1)
-    await new Promise(resolve => requestAnimationFrame(resolve))
-    dispatch('pointermove', startX + 220, startY + 118, 1)
-    await new Promise(resolve => requestAnimationFrame(resolve))
-    dispatch('pointerup', startX + 220, startY + 118, 0)
-    await new Promise(resolve => requestAnimationFrame(resolve))
+      stage.focus({ preventScroll: true })
+      dispatch('pointerdown', startX, startY, 1, pointerId)
+      dispatch('pointermove', startX + 180, startY + 96, moveButtons, pointerId)
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      dispatch('pointermove', startX + 220, startY + 118, moveButtons, pointerId)
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      dispatch('pointerup', startX + 220, startY + 118, 0, pointerId)
+      await new Promise(resolve => requestAnimationFrame(resolve))
 
-    const after = readTransform()
+      return { before, after: readTransform() }
+    }
+
+    const normalDrag = await drag(2319, 1)
+    const zeroButtonsDrag = await drag(2320, 0)
     return {
-      ok: nodeCount > 0 && before !== after,
-      before,
-      after,
+      ok: nodeCount > 0 &&
+        normalDrag.before !== normalDrag.after &&
+        zeroButtonsDrag.before !== zeroButtonsDrag.after,
+      before: normalDrag.before,
+      after: zeroButtonsDrag.after,
+      normalDrag,
+      zeroButtonsDrag,
       nodeCount,
-      reason: before === after ? 'XMind transform did not change after pointer drag' : ''
+      reason: normalDrag.before === normalDrag.after
+        ? 'XMind transform did not change after normal pointer drag'
+        : zeroButtonsDrag.before === zeroButtonsDrag.after
+          ? 'XMind transform did not change after WebView-style zero-buttons pointer drag'
+          : ''
     }
   })
 

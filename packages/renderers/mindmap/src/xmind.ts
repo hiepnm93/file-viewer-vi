@@ -870,10 +870,9 @@ export default async function renderXMind(
     if (!panState || panState.pointerId !== event.pointerId) {
       return;
     }
-    if (panState.pointerType === 'mouse' && event.buttons === 0) {
-      clearPanState(event);
-      return;
-    }
+    // Some embedded browsers and mobile WebViews report PointerEvent.buttons as
+    // 0 while a captured pointer is still moving. Pointer sessions are ended by
+    // pointerup, pointercancel, blur, or visibilitychange instead.
     queuePanPoint(event.clientX, event.clientY);
     event.preventDefault();
     event.stopPropagation();

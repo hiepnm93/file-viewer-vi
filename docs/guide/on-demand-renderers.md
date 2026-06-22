@@ -277,7 +277,9 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
 - [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
+- [x] `@file-viewer/core` 已移除 drawing renderer 兼容入口和 `@excalidraw/excalidraw` / `roughjs` 直接依赖，绘图完整能力统一通过 `@file-viewer/renderer-drawing` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
+- [x] `@file-viewer/core` 已移除 3D model renderer 兼容入口和 `three` 直接依赖，模型完整能力统一通过 `@file-viewer/renderer-3d` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
 - [x] `@file-viewer/core` 已移除 code / markdown renderer 兼容入口和 `highlight.js` / `marked` 直接依赖，文本类完整能力统一通过 `@file-viewer/renderer-text` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。

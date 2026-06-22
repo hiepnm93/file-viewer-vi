@@ -31,4 +31,4 @@ const options = {
 - 支持 WebGL 交互预览、轨道控制、适配视图、网格、坐标轴、线框和自动旋转。
 - `gltf` / `dae` / `fbx` 等带外部贴图或二进制资源的格式，会以原始 `url` 的目录作为资源基准继续加载。
 - STEP、IGES、IFC、3DM 等工程 B-Rep / BIM 格式入口会给出明确转换说明；完整解析应拆独立 OpenCascade / web-ifc / rhino3dm WASM renderer。
-- 当前 core 仍保留内置 3D renderer 以兼容历史全量包。后续会把 core 的 3D 入口切换到本包，并从 core 直接依赖中移除 `three`。
+- `@file-viewer/core` 已不再内置 3D renderer，也不再直接依赖 `three`。需要 3D 模型预览时，请显式安装本包，或使用会自动聚合本包的 `@file-viewer/preset-all`。

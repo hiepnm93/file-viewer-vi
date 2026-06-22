@@ -8,6 +8,7 @@ Standalone Draw.io and Excalidraw renderer for Flyfish File Viewer.
 - Uses Excalidraw's official `restore` and `exportToSvg` APIs, with a `roughjs` SVG fallback.
 - Supports unified zoom, print, HTML export, and `options.drawing` self-hosted asset configuration.
 - Ships as an independent renderer package for applications that only need drawing preview.
+- `@file-viewer/core` no longer bundles the drawing renderer and no longer depends directly on `@excalidraw/excalidraw` or `roughjs`.
 
 ## Usage
 

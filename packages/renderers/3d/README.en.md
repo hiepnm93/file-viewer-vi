@@ -31,4 +31,4 @@ const options = {
 - Supports WebGL preview, orbit controls, fit-to-view, grid, axes, wireframe, and auto-rotate.
 - For `gltf`, `dae`, and `fbx` files with external textures or binary resources, the original URL directory is used as the resource base.
 - STEP, IGES, IFC, and 3DM entries explain the required OpenCascade / web-ifc / rhino3dm WASM path instead of pretending to provide full B-Rep or BIM support.
-- The core package still keeps the bundled 3D renderer for backward compatibility. A later migration will switch the core 3D entry to this package and remove `three` from core direct dependencies.
+- `@file-viewer/core` no longer bundles the 3D renderer and no longer depends directly on `three`. Install this package explicitly for 3D model preview, or use `@file-viewer/preset-all`, which aggregates this renderer automatically.

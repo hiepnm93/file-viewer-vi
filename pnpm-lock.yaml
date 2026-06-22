@@ -399,9 +399,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@excalidraw/excalidraw':
-        specifier: ^0.18.1
-        version: 0.18.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
@@ -453,18 +450,12 @@ importers:
       postal-mime:
         specifier: ^2.7.4
         version: 2.7.4
-      roughjs:
-        specifier: ^4.6.6
-        version: 4.6.6
       sql.js:
         specifier: ^1.14.1
         version: 1.14.1
       styled-exceljs:
         specifier: 0.21.1
         version: 0.21.1
-      three:
-        specifier: ^0.184.0
-        version: 0.184.0
       tinycolor2:
         specifier: ^1.6.0
         version: 1.6.0
@@ -472,9 +463,6 @@ importers:
       '@types/pako':
         specifier: ^2.0.4
         version: 2.0.4
-      '@types/three':
-        specifier: ^0.184.1
-        version: 0.184.1
       '@types/tinycolor2':
         specifier: ^1.4.6
         version: 1.4.6

@@ -264,8 +264,13 @@ export const renderFileViewerDrawing = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderDrawing } = await import('./renderers/drawing');
-  return renderDrawing(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Draw.io and Excalidraw rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-drawing, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerEda = async (
   buffer: ArrayBuffer,
@@ -328,8 +333,13 @@ export const renderFileViewerModel = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderModel } = await import('./renderers/model');
-  return renderModel(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    '3D model rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-3d, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerOfd = async (
   buffer: ArrayBuffer,

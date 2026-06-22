@@ -8,6 +8,7 @@ Flyfish File Viewer 的独立绘图渲染器，覆盖 `drawio`、`dio` 和 `exca
 - `excalidraw` 使用官方 `restore` 与 `exportToSvg`，失败时回退到 `roughjs` 只读 SVG。
 - 支持统一缩放、打印、HTML 导出和 `options.drawing` 自托管资源配置。
 - 独立安装、独立发布，适合只需要绘图预览的业务按需装配。
+- `@file-viewer/core` 已不再内置 drawing renderer，也不再直接依赖 `@excalidraw/excalidraw` 或 `roughjs`。
 
 ## 使用
 

@@ -20,7 +20,7 @@
 
 | 格式线 | 复核结论 | 当前落点 |
 | --- | --- | --- |
-| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；浏览器端成熟方案都是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移和双击适配视图。 |
+| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；官方 `xmind-viewer` 已归档且 README 自身提示不要用于生产，浏览器端更稳的路线是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移、双击适配视图和 WebView `PointerEvent.buttons` 异常兼容。 |
 | Typst | 官方 Typst 编译器是 Rust 开源编译器，浏览器稳定路线仍是 WASM 编译后输出 SVG/PDF；`@myriaddreamin/typst.ts` 与 compiler/renderer WASM 最新 npm 版本为 `0.7.0`。 | 保持 `@file-viewer/renderer-typst`，直接读取源 `.typ` / `.typst`，按页 SVG 预览，不做 sidecar PDF 替换。 |
 | Archive | `libarchive.js` 是 libarchive 的 browser / WASM port，最新 npm 版本为 `2.0.2`，继续是多压缩包格式最稳的离线方向。 | 保持 `@file-viewer/renderer-archive` 的 Worker + WASM 优先策略，并保留 ZIP/TAR/GZIP 兼容降级。 |
 | Email | `postal-mime` 最新 npm 版本为 `2.7.4`，支持 Node、browser、Web Worker 和 serverless；`@kenjiuno/msgreader` 最新 npm 版本为 `1.28.0`，适合作为 MSG 读取层。 | 保持 `@file-viewer/renderer-email` 分别处理 EML/MBOX 与 MSG，正文沙箱化，附件继续复用统一预览器。 |
@@ -53,7 +53,7 @@
 
 | 格式线 | 浏览器端可行方案 | Flyfish Viewer 当前动作 |
 | --- | --- | --- |
-| XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | `@ljheee/xmind-parser` 只保留在独立 `@file-viewer/renderer-mindmap` 内，core 默认安装不再携带脑图解析依赖；当前拖拽边界已放宽为画布式平移，并提供 PointerEvent、MouseEvent、TouchEvent、移动端双指缩放、键盘方向键、Ctrl/Command 滚轮锚点缩放和双击适配视图 |
+| XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | `@ljheee/xmind-parser` 只保留在独立 `@file-viewer/renderer-mindmap` 内，core 默认安装不再携带脑图解析依赖；当前拖拽边界已放宽为画布式平移，并提供 PointerEvent、MouseEvent、TouchEvent、移动端双指缩放、键盘方向键、Ctrl/Command 滚轮锚点缩放、双击适配视图和部分 WebView `buttons=0` 的拖拽兼容 |
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；后续像 PPTX 一样拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护 |
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合参考 KLayout/KWeb 或自研 WebGL/WASM pipeline | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
 | STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 保留 `@file-viewer/renderer-3d` 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
@@ -91,7 +91,7 @@
 
 ## 后续验收 checklist
 
-- [x] XMind 支持 Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图。
+- [x] XMind 支持 Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、双击适配视图和 WebView `PointerEvent.buttons` 异常兼容。
 - [x] 继续保持 Draw.io、Typst、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
 - [x] 使用 `pnpm verify:format-support` 校验 198 个扩展名和 24 条 renderer pipeline 口径一致。
 - [ ] 为 XMind 增加真实复杂样本，覆盖多 sheet、标签、备注、图片、链接、折叠节点和大脑图拖拽回归。
