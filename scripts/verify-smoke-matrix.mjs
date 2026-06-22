@@ -7,6 +7,8 @@ const sourceRoot = process.cwd()
 const matrixPath = join(sourceRoot, 'ecosystem', 'smoke-matrix.json')
 const wrapperManifestPath = join(sourceRoot, 'ecosystem', 'wrappers.json')
 const examplesRoot = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
+const vitePluginSourcePath = join(sourceRoot, 'packages', 'presets', 'vite-plugin', 'src', 'index.ts')
+const pluginEnginePackages = new Set(['@file-viewer/pptx'])
 
 function fail(message) {
   throw new Error(`[smoke-matrix] ${message}`)
@@ -44,6 +46,49 @@ function sampleExtension(sample, explicitExtension) {
   return extname(sample).replace(/^\./, '').toLowerCase()
 }
 
+function quotedValues(text) {
+  return [...String(text).matchAll(/'([^']+)'/g)].map(match => match[1])
+}
+
+async function readViteRendererPackageDescriptors() {
+  const source = await readFile(vitePluginSourcePath, 'utf8')
+  const rendererModuleMatch = source.match(
+    /const rendererModules:[\s\S]*?=\s*\[([\s\S]*?)\]\s*\n\nconst descriptorsById/
+  )
+  if (!rendererModuleMatch) {
+    fail('Could not find rendererModules in @file-viewer/vite-plugin source')
+  }
+
+  const descriptors = new Map()
+  const rendererObjectPattern = /\{\s*id:\s*'([^']+)'([\s\S]*?)chunkName:\s*'[^']+'\s*\}/g
+  for (const match of rendererModuleMatch[1].matchAll(rendererObjectPattern)) {
+    const id = match[1]
+    const body = match[2]
+    const packageName = body.match(/packageName:\s*'([^']+)'/)?.[1]
+    const rendererIdsSource = body.match(/rendererIds:\s*\[([\s\S]*?)\]/)?.[1]
+    if (!packageName || !rendererIdsSource) {
+      fail(`Could not parse renderer package descriptor for ${id}`)
+    }
+    if (descriptors.has(packageName)) {
+      fail(`Vite renderer package descriptor contains duplicate package ${packageName}`)
+    }
+    const rendererIds = quotedValues(rendererIdsSource)
+    if (!rendererIds.length) {
+      fail(`Vite renderer package descriptor ${packageName} does not expose renderer ids`)
+    }
+    descriptors.set(packageName, {
+      id,
+      packageName,
+      rendererIds
+    })
+  }
+
+  if (!descriptors.size) {
+    fail('No Vite renderer package descriptors were detected')
+  }
+  return descriptors
+}
+
 function assertRendererSample(entry, label) {
   const renderer = renderers.get(entry.rendererId)
   if (!renderer) {
@@ -56,10 +101,11 @@ function assertRendererSample(entry, label) {
   assertSampleExists(entry.sample, label)
 }
 
-const [matrix, wrapperManifest, renderers] = await Promise.all([
+const [matrix, wrapperManifest, renderers, viteRendererPackages] = await Promise.all([
   readJson(matrixPath),
   readJson(wrapperManifestPath),
-  readCoreRendererDefinitions(sourceRoot)
+  readCoreRendererDefinitions(sourceRoot),
+  readViteRendererPackageDescriptors()
 ])
 
 if (matrix.schemaVersion !== 1) {
@@ -116,6 +162,26 @@ if (matrix.coverage?.requireAllRendererIds) {
   }
 }
 
+let coveredRendererPackageCount = 0
+if (matrix.coverage?.requireAllRendererPackages) {
+  for (const rendererPackage of wrapperManifest.renderers || []) {
+    if (pluginEnginePackages.has(rendererPackage.packageName)) {
+      continue
+    }
+    const descriptor = viteRendererPackages.get(rendererPackage.packageName)
+    if (!descriptor) {
+      fail(`Smoke matrix cannot resolve renderer package ${rendererPackage.packageName} through @file-viewer/vite-plugin`)
+    }
+    const missingRendererIds = descriptor.rendererIds.filter(rendererId => !coveredRendererIds.has(rendererId))
+    if (missingRendererIds.length) {
+      fail(
+        `Smoke matrix does not cover renderer package ${rendererPackage.packageName}; missing renderer ids: ${missingRendererIds.join(', ')}`
+      )
+    }
+    coveredRendererPackageCount += 1
+  }
+}
+
 for (const family of matrix.coverage?.requiredFormatFamilies || []) {
   if (!coveredFamilies.has(family)) {
     fail(`Smoke matrix does not cover required family ${family}`)
@@ -166,5 +232,5 @@ if (matrix.wrapperCoverage?.requireEveryWrapper) {
 }
 
 console.log(
-  `[smoke-matrix] Verified ${matrix.cases.length} format cases, ${matrix.wrapperCases.length} wrapper cases, ${wrapperTargetCount} wrapper family targets, ${renderers.size} renderer pipelines.`
+  `[smoke-matrix] Verified ${matrix.cases.length} format cases, ${matrix.wrapperCases.length} wrapper cases, ${wrapperTargetCount} wrapper family targets, ${renderers.size} renderer pipelines, and ${coveredRendererPackageCount} renderer packages.`
 )

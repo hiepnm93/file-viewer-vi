@@ -3,6 +3,7 @@
   "description": "Migration smoke coverage matrix for preserving the v3 feature experience while moving shared logic into the TypeScript core browser renderer engine.",
   "coverage": {
     "requireAllRendererIds": true,
+    "requireAllRendererPackages": true,
     "requiredFormatFamilies": [
       "pdf",
       "docx",

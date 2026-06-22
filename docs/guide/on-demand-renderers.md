@@ -303,7 +303,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 data-asset 兼容入口和 `ag-psd` / `sql.js` / `hyparquet` / `avsc` 直接依赖，数据资产完整能力统一通过 `@file-viewer/renderer-data` 或 preset 装配；SQLite WASM 资产路径仍由 core manifest 统一发现。
 - [x] `@file-viewer/core` 已移除 EDA 兼容入口和 `cfb` 直接依赖，OLB / DRA / GDSII / OASIS 完整结构预览统一通过 `@file-viewer/renderer-eda` 或 preset 装配。
 - [x] `@file-viewer/core` 已移除 spreadsheet 兼容入口和 `styled-exceljs` / `e-virt-table` / `tinycolor2` 直接依赖，表格完整能力统一通过 `@file-viewer/renderer-spreadsheet` 或 preset 装配；Spreadsheet Worker 资产路径仍由 core manifest 统一发现。
-- [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
+- [x] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build 和 smoke 覆盖；`verify:renderer-contracts`、`verify:renderer-assets`、`verify:renderer-standalone-smoke` 与 `verify:smoke-matrix` 会分别检查包契约、资产、独立安装和 renderer package 对应样例覆盖。
 - [x] demo 使用 `preset-all`，业务组件 README 默认展示 `preset-lite` / `preset-office` / `preset-engineering` 和单 renderer 精确裁剪两种路线；`verify:ecosystem-readmes` 会检查这些 preset 包名、`@file-viewer/vite-plugin` 和 `virtual:file-viewer-renderers` 口径。
 - [x] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵；`verify:format-support`、`verify:compatibility-api` 和 `verify:compatibility-readmes` 纳入迁移门禁。
 - [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`styled-exceljs`、`e-virt-table` 或 `tinycolor2`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
