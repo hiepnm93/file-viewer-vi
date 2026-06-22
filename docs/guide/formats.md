@@ -45,7 +45,7 @@
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | `@file-viewer/renderer-3d` + Three.js loaders | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
-| XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、Ctrl/Command 滚轮锚点缩放、键盘平移、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
+| XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
@@ -121,7 +121,7 @@
 ### XMind 脑图
 
 - `xmind` 使用 `@ljheee/xmind-parser` 解析 XMind 8 的 `content.xml` 与 XMind 2020+ 的 `content.json`，不依赖在线服务，也不访问公共 CDN。
-- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、适配画布、搜索、缩放、打印和 HTML 导出。
+- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、适配画布、搜索、缩放、打印和 HTML 导出。
 - 大型脑图会限制单次渲染节点数量，避免浏览器一次性挂载过多 DOM。需要更深层编辑、重新排版或协同批注时，仍建议回到专业脑图工具。
 
 ### CAD 图纸

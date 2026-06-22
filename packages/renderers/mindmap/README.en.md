@@ -1,6 +1,6 @@
 # @file-viewer/renderer-mindmap
 
-Standalone XMind and mind map renderer package for Flyfish File Viewer. It parses modern `content.json` and classic `content.xml` XMind files, then renders an interactive canvas with pan, zoom, sheet tabs, and node navigation.
+Standalone XMind and mind map renderer package for Flyfish File Viewer. It parses modern `content.json` and classic `content.xml` XMind files, then renders an interactive canvas with pointer/mouse/touch pan, mobile pinch zoom, sheet tabs, and node navigation.
 
 ## Usage
 
@@ -36,4 +36,4 @@ const options = {
 
 ## Migration Note
 
-The core package no longer bundles the XMind parser and no longer installs `@ljheee/xmind-parser` by default. Install this renderer explicitly, or use `@file-viewer/preset-all` / `@file-viewer/preset-engineering`, when XMind preview is required.
+The core package no longer bundles the XMind parser and no longer installs `@ljheee/xmind-parser` by default. Install this renderer explicitly, or use `@file-viewer/preset-all`, when XMind preview is required.

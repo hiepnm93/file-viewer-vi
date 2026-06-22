@@ -50,9 +50,9 @@
 | `@file-viewer/core`                                                 | 纯 TS 核心：类型、格式注册表、source loader、dispatcher、生命周期、搜索、缩放、打印/导出 API、资产解析协议 | 只保留无渲染重依赖的基础代码；不依赖 Vue/React/Svelte，不依赖 Office/CAD/PDF/Typst 等重库 |
 | `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/svelte` 等 | 生产可用标准组件                                                                                           | 只依赖 core 和自身生态依赖；通过 props/options 接收 renderers/presets                     |
 | `@file-viewer/renderer-*`                                           | 单条或一组强相关渲染链路                                                                                   | 自己声明真实重依赖、worker、wasm、vendor assets 和 smoke 样本                             |
-| `@file-viewer/preset-lite`                                          | 常用轻量格式：文本、Markdown、图片、音视频基础预览                                                         | 体积小，适合默认安装体验                                                                  |
-| `@file-viewer/preset-office`                                        | Word、Excel、PPT、OpenDocument、RTF                                                                        | 明确引入 Office 相关依赖                                                                  |
-| `@file-viewer/preset-engineering`                                   | CAD、3D、XMind、Draw.io、Excalidraw、Geo、EDA 结构预览                                                     | 工程格式单独安装                                                                          |
+| 轻量 renderer 组合                                                  | 文本、Markdown、图片、音视频基础预览                                                                       | 使用 `@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media` 等真实包按需组合 |
+| Office / 文档 renderer 包                                           | Word、PPT、PDF、OFD；Excel 仍由 core 兼容链路承接，后续拆独立 renderer                                    | 明确引入对应文档依赖，不把 Office 相关重库放入业务无关首屏                                |
+| 独立工程 renderer 包                                                 | CAD、3D、XMind、Draw.io、Excalidraw、Geo、EDA 结构预览                                                     | 只安装业务需要的工程格式 renderer；需要一次性装配时使用 `@file-viewer/preset-all`          |
 | `@file-viewer/preset-all`                                           | 完整能力聚合包                                                                                             | 需要全格式时一行安装，demo 和全量发行版使用                                               |
 | `@file-viewer/vite-plugin`                                          | 自动生成 renderer virtual module、复制 assets、设置 manual chunks                                          | 让业务项目按配置自动装配，不需要手写大量 import                                           |
 
@@ -60,8 +60,8 @@
 
 | 场景                            | 推荐方式                                                  | 安装体验                        | 打包体验                                 |
 | ------------------------------- | --------------------------------------------------------- | ------------------------------- | ---------------------------------------- |
-| 只预览常见轻量附件              | 安装组件包 + `@file-viewer/preset-lite`                   | 最快，依赖最少                  | 主包只包含轻量 renderer                  |
-| 只需要 PDF/Word/Excel           | 安装组件包 + `@file-viewer/preset-office` 或单独 renderer | Office 依赖集中在 Office preset | 只会产生 Office 相关异步 chunk           |
+| 只预览常见轻量附件              | 安装组件包 + `@file-viewer/renderer-text` / `renderer-image` / `renderer-media` | 最快，依赖最少                  | 主包只包含轻量 renderer                  |
+| 只需要 PDF/Word/Excel           | 安装组件包 + `@file-viewer/renderer-pdf` / `renderer-word`；Excel 暂走 core 兼容链路 | Office 依赖按 renderer 分散安装 | 只会产生相关异步 chunk                   |
 | CAD/3D/Typst/Archive 等专项能力 | 安装对应 `@file-viewer/renderer-*`                        | 哪条链路用到才安装哪条          | worker/wasm 跟随 renderer asset manifest |
 | 企业内网全格式平台              | 安装组件包 + `@file-viewer/preset-all` + asset copy CLI   | 一次性完整安装                  | chunk 按 renderer 拆分，避免首屏全部执行 |
 | 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 配置 `formats`                 | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
@@ -89,12 +89,11 @@ import { FileViewer } from '@file-viewer/vue3'
 import { pdfRenderer } from '@file-viewer/renderer-pdf'
 import { ofdRenderer } from '@file-viewer/renderer-ofd'
 import { wordRenderer } from '@file-viewer/renderer-word'
-import { spreadsheetRenderer } from '@file-viewer/preset-office'
 import { cadRenderer } from '@file-viewer/renderer-cad'
 
 const options = {
   builtinRenderers: 'none',
-  renderers: [pdfRenderer, ofdRenderer, wordRenderer, spreadsheetRenderer, cadRenderer]
+  renderers: [pdfRenderer, ofdRenderer, wordRenderer, cadRenderer]
 }
 ```
 
@@ -240,7 +239,7 @@ fileViewerRenderers({
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
 | Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
-| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
+| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
 | GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，并输出离线 SVG 地图，不依赖在线瓦片服务。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
 | EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records 并生成 SVG 快速版图，OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | 大型 OASIS/GDSII 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
@@ -274,7 +273,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
-- [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移。
+- [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
@@ -310,7 +309,7 @@ fileViewerRenderers({
 - [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时保留为后续增强。
 - [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；lite/office/engineering preset 分项预算保留为后续增强。
 - [ ] 新增 release 校验：每个 renderer 包 npm tarball、README、exports、assets manifest、smoke 样本齐全。
-- [ ] 官网、文档站、README 的支持矩阵能区分 core、preset-lite、preset-office、preset-engineering、preset-all。
+- [ ] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包和 `@file-viewer/preset-all`。
 - [ ] 迁移完成后 `@file-viewer/core` 的 `dependencies` 只保留真正跨 renderer 的轻量工具，重依赖直接数量接近 0。
 
 ## 当前状态

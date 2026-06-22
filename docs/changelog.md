@@ -7,9 +7,9 @@
 - 新增 `@file-viewer/renderer-presentation` 独立 renderer 包，基于 `@file-viewer/pptx` 提供 PPTX / PPTM / POTX / POTM / PPSX / PPSM 按需预览、缩放、打印和 HTML 导出；`@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 已优先聚合该包，ODP 继续走 OpenDocument 兼容链路
 - `@file-viewer/core` 移除 `@file-viewer/pptx` 直接依赖和内置 PPTX handler，PowerPoint 完整预览统一通过 `@file-viewer/renderer-presentation` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 37 降到 36
 - 新增 `@file-viewer/renderer-word` 独立 renderer 包，承接 DOCX / DOCM / DOTX / DOTM、DOC / DOT、RTF 和 ODT 预览链路；`@file-viewer/core` 移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 和 `@xmldom/xmldom` 直接依赖，Word 完整预览统一通过 `@file-viewer/renderer-word` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 36 降到 31
-- XMind 已从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@ljheee/xmind-parser`；完整脑图预览统一由 `@file-viewer/renderer-mindmap`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 31 降到 30
-- 地理数据已从 core 兼容入口中移出，`@file-viewer/core` 不再默认安装 `@tmcw/togeojson` 和 `shpjs`；GeoJSON / KML / GPX / SHP 预览统一由 `@file-viewer/renderer-geo`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 30 降到 28
-- HEIC / HEIF 转换能力已从 core 轻量图片入口中移出，`@file-viewer/core` 不再默认安装 `heic2any`；普通图片仍保留浏览器原生预览，HEIC / HEIF 和完整图片链路统一由 `@file-viewer/renderer-image`、`@file-viewer/preset-lite` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 28 降到 27
+- XMind 已从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@ljheee/xmind-parser`；完整脑图预览统一由 `@file-viewer/renderer-mindmap` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 31 降到 30
+- 地理数据已从 core 兼容入口中移出，`@file-viewer/core` 不再默认安装 `@tmcw/togeojson` 和 `shpjs`；GeoJSON / KML / GPX / SHP 预览统一由 `@file-viewer/renderer-geo` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 30 降到 28
+- HEIC / HEIF 转换能力已从 core 轻量图片入口中移出，`@file-viewer/core` 不再默认安装 `heic2any`；普通图片仍保留浏览器原生预览，HEIC / HEIF 和完整图片链路统一由 `@file-viewer/renderer-image` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 28 降到 27
 - Vue3 原生组件渲染桥接层改为按当前 `options.renderers`、`options.rendererMode` 和 `options.builtinRenderers` 创建临时 renderer registry，`@file-viewer/preset-all` / 独立 renderer 包会在组件路径真实生效，避免 XMind、Geo、HEIC 等已从 core 移出的格式在 Demo 中误显示“不支持”
 - 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
@@ -17,9 +17,9 @@
 - 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
 - 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
-- `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、适配画布、搜索、缩放、打印和 HTML 导出
-- 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
-- XMind 官方 Demo 样例已通过真实浏览器回归：`.xmind` 能由 `@file-viewer/renderer-mindmap` 正常接管，拖拽后画布 transform 发生平移变化，证明组件层 preset 装配和 renderer 内部 pan 交互同时生效
+- `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
+- 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
+- XMind 官方 Demo 样例已通过真实浏览器回归：`.xmind` 能由 `@file-viewer/renderer-mindmap` 正常接管，拖拽后画布 transform 发生平移变化，证明组件层 preset 装配和 renderer 内部 pan 交互同时生效；浏览器冒烟脚本也会对 `.xmind` 执行 PointerEvent 拖拽断言
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
 - OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合

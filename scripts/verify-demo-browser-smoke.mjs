@@ -34,7 +34,8 @@ const sampleSmokeConfig = {
     '.pdf-state[hidden]',
     '.pptx-error[hidden]',
     '.pptx-loading[hidden]',
-    '.umd-state[hidden]'
+    '.umd-state[hidden]',
+    '.xmind-state[hidden]'
   ],
   loadingSelectors: [
     '.archive-state:not(.archive-hidden)',
@@ -51,7 +52,8 @@ const sampleSmokeConfig = {
     '.sheet-loading:not(.hidden)',
     '.state-panel.loading-panel:not(.hidden)',
     '.typst-loading',
-    '.umd-state:not(.error):not([hidden])'
+    '.umd-state:not(.error):not([hidden])',
+    '.xmind-state:not(.error):not([hidden])'
   ],
   errorSelectors: [
     '.archive-error:not(.archive-hidden)',
@@ -64,7 +66,8 @@ const sampleSmokeConfig = {
     '.pptx-error:not([hidden])',
     '.state-panel.error-panel:not(.hidden)',
     '.typst-error',
-    '.umd-state.error:not([hidden])'
+    '.umd-state.error:not([hidden])',
+    '.xmind-state.error:not([hidden])'
   ],
   meaningfulSelectors: [
     '.archive-entry',
@@ -84,6 +87,7 @@ const sampleSmokeConfig = {
     '.pptx-slide',
     '.typst-page-shell',
     '.umd-viewer',
+    '.xmind-node',
     'audio',
     'canvas',
     'code',
@@ -100,6 +104,62 @@ const sampleSmokeConfig = {
       includes: 'STEP 属于 CAD B-Rep'
     }
   ]
+}
+
+const verifyXMindPanInteraction = async (page, samplePath) => {
+  const result = await page.evaluate(async () => {
+    const stage = document.querySelector('.xmind-stage')
+    const zoomBox = document.querySelector('.xmind-zoom-box')
+    const nodeCount = document.querySelectorAll('.xmind-node').length
+    if (!(stage instanceof HTMLElement) || !(zoomBox instanceof HTMLElement)) {
+      return {
+        ok: false,
+        reason: 'missing XMind stage or zoom box',
+        nodeCount
+      }
+    }
+
+    const readTransform = () => window.getComputedStyle(zoomBox).transform || zoomBox.style.transform
+    const before = readTransform()
+    const rect = stage.getBoundingClientRect()
+    const startX = rect.left + rect.width * 0.52
+    const startY = rect.top + rect.height * 0.48
+    const pointerId = 2319
+    const dispatch = (type, clientX, clientY, buttons) => {
+      stage.dispatchEvent(new PointerEvent(type, {
+        bubbles: true,
+        button: 0,
+        buttons,
+        cancelable: true,
+        clientX,
+        clientY,
+        pointerId,
+        pointerType: 'mouse'
+      }))
+    }
+
+    stage.focus({ preventScroll: true })
+    dispatch('pointerdown', startX, startY, 1)
+    dispatch('pointermove', startX + 180, startY + 96, 1)
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    dispatch('pointermove', startX + 220, startY + 118, 1)
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    dispatch('pointerup', startX + 220, startY + 118, 0)
+    await new Promise(resolve => requestAnimationFrame(resolve))
+
+    const after = readTransform()
+    return {
+      ok: nodeCount > 0 && before !== after,
+      before,
+      after,
+      nodeCount,
+      reason: before === after ? 'XMind transform did not change after pointer drag' : ''
+    }
+  })
+
+  if (!result.ok) {
+    throw new Error(`Sample ${samplePath} failed XMind pan smoke: ${JSON.stringify(result, null, 2)}`)
+  }
 }
 
 const mimeTypes = new Map([
@@ -477,6 +537,9 @@ const verifySampleFile = async (page, baseUrl, samplePath, failures) => {
 
   assertNoBrowserFailures(failures, `Sample ${samplePath} emitted browser errors.`)
   failures.length = 0
+  if (samplePath.toLowerCase().endsWith('.xmind')) {
+    await verifyXMindPanInteraction(page, samplePath)
+  }
   return state
 }
 

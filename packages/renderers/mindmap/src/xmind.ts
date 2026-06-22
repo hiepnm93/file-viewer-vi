@@ -98,6 +98,7 @@ const WHEEL_ZOOM_STEP = 0.12;
 const KEYBOARD_PAN_STEP = 42;
 const KEYBOARD_PAN_FAST_STEP = 96;
 const CLICK_SUPPRESSION_MS = 120;
+const PINCH_MIN_DISTANCE = 24;
 
 const xmindStyle = `
 .xmind-viewer{height:100%;min-height:0;display:flex;flex-direction:column;background:#eef3f7;color:#172033}
@@ -442,6 +443,14 @@ export default async function renderXMind(
   let panFrame: number | undefined;
   let queuedPanPoint: { clientX: number; clientY: number } | null = null;
   let lastPanMoveAt = 0;
+  let touchGesture: {
+    centerX: number;
+    centerY: number;
+    distance: number;
+    logicalX: number;
+    logicalY: number;
+    zoom: number;
+  } | null = null;
   let panState: {
     source: 'pointer' | 'mouse' | 'touch';
     pointerId?: number;
@@ -480,7 +489,7 @@ export default async function renderXMind(
   const ownerWindow = ownerDocument.defaultView || window;
   stage.tabIndex = 0;
   stage.setAttribute('role', 'application');
-  stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, double click to fit, use Ctrl or Command with wheel to zoom.');
+  stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, pinch on touch screens to zoom, double click to fit, use Ctrl or Command with wheel to zoom.');
   const zoomBox = createElement('div', 'xmind-zoom-box');
   const surface = createElement('div', 'xmind-surface');
   const state = createElement('div', 'xmind-state', '正在解析 XMind 脑图...');
@@ -938,8 +947,72 @@ export default async function renderXMind(
 
   const primaryTouch = (touches: TouchList) => touches.length === 1 ? touches.item(0) : null;
 
+  const getTouchPair = (touches: TouchList) => {
+    const first = touches.item(0);
+    const second = touches.item(1);
+    return first && second ? [first, second] as const : null;
+  };
+
+  const getTouchMetrics = (first: Touch, second: Touch) => {
+    const centerX = (first.clientX + second.clientX) / 2;
+    const centerY = (first.clientY + second.clientY) / 2;
+    const deltaX = second.clientX - first.clientX;
+    const deltaY = second.clientY - first.clientY;
+    return {
+      centerX,
+      centerY,
+      distance: Math.max(PINCH_MIN_DISTANCE, Math.hypot(deltaX, deltaY)),
+    };
+  };
+
+  const beginTouchGesture = (first: Touch, second: Touch) => {
+    const rect = stage.getBoundingClientRect();
+    const metrics = getTouchMetrics(first, second);
+    const viewportX = metrics.centerX - rect.left;
+    const viewportY = metrics.centerY - rect.top;
+    clearPanState();
+    touchGesture = {
+      ...metrics,
+      logicalX: (viewportX - panX) / zoom,
+      logicalY: (viewportY - panY) / zoom,
+      zoom,
+    };
+    stage.classList.add('is-panning');
+  };
+
+  const updateTouchGesture = (first: Touch, second: Touch) => {
+    if (!touchGesture) {
+      beginTouchGesture(first, second);
+      return;
+    }
+
+    const rect = stage.getBoundingClientRect();
+    const metrics = getTouchMetrics(first, second);
+    const ratio = metrics.distance / touchGesture.distance;
+    zoom = clampZoom(touchGesture.zoom * ratio);
+    panX = metrics.centerX - rect.left - touchGesture.logicalX * zoom;
+    panY = metrics.centerY - rect.top - touchGesture.logicalY * zoom;
+    applyZoom();
+    zoomEmitter.emit();
+  };
+
+  const endTouchGesture = () => {
+    if (!touchGesture) {
+      return;
+    }
+    touchGesture = null;
+    stage.classList.remove('is-panning');
+  };
+
   const onTouchStart = (event: TouchEvent) => {
-    if (panState) {
+    const pair = getTouchPair(event.touches);
+    if (pair) {
+      beginTouchGesture(pair[0], pair[1]);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (panState || touchGesture) {
       return;
     }
     const touch = primaryTouch(event.touches);
@@ -951,6 +1024,16 @@ export default async function renderXMind(
   };
 
   const onTouchMove = (event: TouchEvent) => {
+    const pair = getTouchPair(event.touches);
+    if (pair) {
+      updateTouchGesture(pair[0], pair[1]);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (touchGesture) {
+      endTouchGesture();
+    }
     if (!panState || panState.source !== 'touch') {
       return;
     }
@@ -965,6 +1048,12 @@ export default async function renderXMind(
   };
 
   const onTouchEnd = (event: TouchEvent) => {
+    if (touchGesture) {
+      endTouchGesture();
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (!panState || panState.source !== 'touch') {
       return;
     }
@@ -1051,6 +1140,7 @@ export default async function renderXMind(
 
   const stopPanInteractions = () => {
     clearPanState();
+    endTouchGesture();
     setSpacePanning(false);
   };
 

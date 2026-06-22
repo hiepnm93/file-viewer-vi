@@ -6,7 +6,7 @@ The full renderer preset for Flyfish File Viewer. It packages the current comple
 
 - You want the same full-format coverage as the official demo.
 - You are migrating from the historical all-in-one dependency model to on-demand renderer assembly.
-- You want to start with one preset, then later replace it with narrower combinations such as `preset-lite`, `preset-office`, `renderer-pdf`, or `renderer-cad`.
+- You want to start with one preset, then later replace it with narrower combinations such as `renderer-text`, `renderer-image`, `renderer-word`, `renderer-pdf`, or `renderer-cad`.
 
 ## Usage
 

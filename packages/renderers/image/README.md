@@ -32,4 +32,4 @@ const options = {
 
 ## 迁移说明
 
-`@file-viewer/core` 仍保留 PNG / JPEG / SVG / WebP 等浏览器原生图片的轻量预览，但已不再默认安装 `heic2any`。需要 HEIC / HEIF 转换预览、或希望完全由独立图片 renderer 接管图片链路时，请显式安装本包，或直接使用 `@file-viewer/preset-all` / `@file-viewer/preset-lite` 聚合能力。
+`@file-viewer/core` 仍保留 PNG / JPEG / SVG / WebP 等浏览器原生图片的轻量预览，但已不再默认安装 `heic2any`。需要 HEIC / HEIF 转换预览、或希望完全由独立图片 renderer 接管图片链路时，请显式安装本包，或直接使用 `@file-viewer/preset-all` 聚合能力。
