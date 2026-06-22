@@ -325,6 +325,8 @@ pnpm audit:renderer-deps -- --json
 pnpm audit:renderer-deps
 pnpm verify:core-framework-neutral
 pnpm verify:core-api
+pnpm verify:core-dependency-budget
+pnpm verify:renderer-contracts
 pnpm verify:format-support
 pnpm verify:ecosystem-versions
 pnpm verify:production-entrypoints
@@ -333,13 +335,14 @@ pnpm docs:build
 pnpm build-only
 ```
 
-额外新增门禁：
+已落地与计划中的精细门禁：
 
-- `verify:core-dependency-budget`：core 的直接 runtime dependencies 必须只包含共享轻量依赖，重渲染依赖为 0。
-- `verify:renderer-assets`：每个 renderer 的 worker/wasm/vendor assets 都能从 npm tarball 复制出来。
-- `verify:renderer-standalone-smoke`：任意单 renderer + 任意 wrapper 能独立预览对应样例。
-- `verify:bundle-budget`：demo 主入口不包含 Office/CAD/Typst/Archive/3D 等重库，重链路全部落到 renderer chunk。
-- `verify:cold-install-budget`：记录并限制 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的依赖数量和安装耗时。
+- `verify:core-dependency-budget`：已落地。默认按当前基线阻止 core 直接渲染依赖继续膨胀；`verify:core-dependency-budget:strict` 用于拆包完成后的终态，要求 core 重渲染依赖为 0。
+- `verify:renderer-contracts`：已落地。检查每个 renderer 包的 `exports`、`files`、README、LICENSE、dist 入口、build/type-check 脚本、wrapper 依赖隔离和 plugin 懒加载出口。
+- `verify:renderer-assets`：计划中。每个 renderer 的 worker/wasm/vendor assets 都能从 npm tarball 复制出来。
+- `verify:renderer-standalone-smoke`：计划中。任意单 renderer + 任意 wrapper 能独立预览对应样例。
+- `verify:bundle-budget`：计划中。demo 主入口不包含 Office/CAD/Typst/Archive/3D 等重库，重链路全部落到 renderer chunk。
+- `verify:cold-install-budget`：计划中。记录并限制 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的依赖数量和安装耗时。
 
 ## 外部参考
 
