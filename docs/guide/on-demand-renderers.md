@@ -260,6 +260,7 @@ fileViewerRenderers({
 - [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
 - [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
+- [x] `pnpm verify:on-demand-boundaries` 守住按需加载边界：core 不依赖 renderer/preset/wrapper，标准组件包不依赖 renderer/preset，compat 包只 alias 到目标组件，preset-all 才聚合完整 renderer。
 
 ### Phase 2：第一批重链路拆包
 
@@ -368,6 +369,7 @@ pnpm verify:core-api
 pnpm verify:core-dependency-budget
 pnpm verify:renderer-contracts
 pnpm verify:renderer-assets
+pnpm verify:on-demand-boundaries
 pnpm verify:install-budget
 pnpm verify:bundle-budget
 pnpm verify:format-support
@@ -383,6 +385,7 @@ pnpm build-only
 - `verify:core-dependency-budget`：已落地。默认按当前基线阻止 core 直接渲染依赖继续膨胀；`verify:core-dependency-budget:strict` 用于拆包完成后的终态，要求 core 重渲染依赖为 0。
 - `verify:renderer-contracts`：已落地。检查每个 renderer 包的 `exports`、`files`、README、LICENSE、dist 入口、build/type-check 脚本、wrapper 依赖隔离和 plugin 懒加载出口。
 - `verify:renderer-assets`：已落地。检查每个 renderer npm dry-run 中的入口、`new URL(..., import.meta.url)` 本地运行时资源、core asset manifest 字段，以及 `@file-viewer/web` 发布包内的 viewer worker/wasm/vendor assets。
+- `verify:on-demand-boundaries`：已落地。检查 core、renderer、preset、标准组件和兼容 alias 的依赖方向，防止组件包重新捆绑重 renderer，确保按需安装边界不会回退。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
 - `verify:renderer-standalone-smoke`：计划中。任意单 renderer + 任意 wrapper 能独立预览对应样例。
