@@ -131,7 +131,7 @@ const copy = {
       eyebrow: '浏览器原生文件预览超级组件',
       title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
-        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、Typst、XMind、CAD、EDA、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
+        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、Typst、XMind、CAD、EDA、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。XMind 支持拖拽平移，标准 GDSII 支持 SVG 版图预览；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
@@ -179,7 +179,7 @@ const copy = {
       eyebrow: 'Browser-native file preview super component',
       title: 'Turn complex files into instant product experiences.',
       subtitle:
-        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, Typst, XMind, CAD, EDA, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
+        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, Typst, XMind, CAD, EDA, archives, email, ebooks, code, media, 3D models, and data assets into the browser. XMind supports drag-to-pan, standard GDSII gets an SVG layout preview, and Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',

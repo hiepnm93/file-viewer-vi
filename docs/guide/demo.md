@@ -143,7 +143,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 | `samples/apache/blocks_and_tables.dwf` | 使用 Apache Tika 公开 Jira 附件验证原生 DWF 容器、块和表格渲染 | `dwf` |
 | `samples/autodesk/house.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 DWFx/XPS native renderer、多页结构和 CAD 视图适配 | `dwfx` |
 | `samples/autodesk/robot-arm.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 W2D/W3D native renderer 和复杂装配图形 | `dwfx` |
-| `mindmap.xmind` | 使用项目内生成的双 sheet XMind 夹具验证脑图节点、标签、备注、链接、目录、缩放、搜索和导出 | `xmind` |
+| `mindmap.xmind` | 使用项目内生成的双 sheet XMind 夹具验证脑图节点、标签、备注、链接、目录、拖拽平移、适配画布、缩放、搜索和导出 | `xmind` |
 | `map.geojson` | 验证 GeoJSON 点线面离线地图预览 | `geojson` |
 | `route.kml` | 验证 KML 转 GeoJSON 后预览 | `kml` |
 | `track.gpx` | 验证 GPX 轨迹转 GeoJSON 后预览 | `gpx` |
@@ -163,7 +163,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 | `sample.mbox` | 验证 MBOX 归档识别和首封邮件预览 | `mbox` |
 | `sample.olb` | 使用项目内生成的 CFB 元件库夹具验证 OLB 结构预览 | `olb` |
 | `sample.dra` | 使用项目内生成的 CFB 封装图纸夹具验证 DRA 结构预览 | `dra` |
-| `layout.gds` | 使用项目内生成的 GDSII 版图夹具验证库名、单元、层、边界、路径和可读字符串索引 | `gds` |
+| `layout.gds` | 使用项目内生成的 GDSII 版图夹具验证库名、单元、层、边界、路径、文本、引用和 SVG 版图预览 | `gds` |
 | `layout.oas` / `layout.oasis` | 使用项目内生成的 OASIS 文本结构夹具验证 OAS/OASIS 路由和版图结构退化预览 | `oas` / `oasis` |
 | `markdown.md` | 验证 Markdown 长内容、表格、代码块和明暗主题阅读面 | `md` |
 | `notes.markdown` | 验证 Markdown 长扩展名和主题隔离 | `markdown` |
@@ -237,11 +237,11 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer assets 中 `wasm/cad/` 下的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
 
-3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、搜索、缩放和导出链路。
+3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，后续按 OpenCascade / web-ifc 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、拖拽平移、适配画布、搜索、缩放和导出链路。
 
 Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件默认使用随 viewer assets 分发的官方 `GraphViewer` 离线预览，styles、shapes、stencils、img、mxgraph 和 math 资源都来自本地 `vendor/drawio/`。如果官方 viewer 加载异常，会自动回退内置 SVG 预览；内网路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管脚本。
 
-压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG / MBOX 的头信息、正文切换、附件下载和附件预览。地理数据样例用于验证 GeoJSON/KML/GPX 到离线 SVG 地图的链路。OLB / DRA / GDS / OAS / OASIS 样例用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引。SQLite、WASM 和 ICO 样例用于验证资产/数据预览链路不会影响普通文档首屏。
+压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG / MBOX 的头信息、正文切换、附件下载和附件预览。地理数据样例用于验证 GeoJSON/KML/GPX 到离线 SVG 地图的链路。OLB / DRA 样例用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引；GDS 样例用于验证标准 GDSII 记录解析和 SVG 版图预览；OAS / OASIS 样例用于验证安全结构索引和复杂格式退化提示。SQLite、WASM 和 ICO 样例用于验证资产/数据预览链路不会影响普通文档首屏。
 
 ## 公开样例来源
 

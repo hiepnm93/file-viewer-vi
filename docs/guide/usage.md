@@ -440,15 +440,15 @@ async function useLocal(blob: Blob) {
 
 `.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
-`.xmind` 会使用 `@ljheee/xmind-parser` 解析 XMind 8 XML 和 XMind 2020+ JSON 文件包，并由 core 脑图渲染器展示多 sheet、节点、标签、备注、链接、标记、目录侧栏、搜索和缩放。它是只读预览能力，不会修改脑图文件；需要编辑、协作批注或复杂布局重排时仍建议回到专业脑图软件。
+`.xmind` 会使用 `@ljheee/xmind-parser` 解析 XMind 8 XML 和 XMind 2020+ JSON 文件包，并由 core 脑图渲染器展示多 sheet、节点、标签、备注、链接、标记、目录侧栏、拖拽平移、适配画布、搜索和缩放。它是只读预览能力，不会修改脑图文件；需要编辑、协作批注或复杂布局重排时仍建议回到专业脑图软件。
 
 `.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署一般不需要手动配置 `archive.workerUrl`；如果静态目录或资源前缀特殊，可把 `worker-bundle.js` 与同目录的 `libarchive.wasm` 发布出来后配置 `options.archive.workerUrl`。当手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化失败时，组件会自动切换到 ZIP/TAR/GZIP 兼容模式，避免停留在 loading。
 
 `.eml` 使用 `postal-mime`，`.msg` 使用 `@kenjiuno/msgreader`。邮件正文会在隔离沙箱文档中展示，附件可以下载，也可以继续在线预览。
 
-`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。`.gds`、`.oas`、`.oasis` 会按芯片版图结构做安全索引，展示库名、单元、层、边界、路径、文本、可读字符串和诊断信息；它适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、版图编辑、DRC/LVS、规则校核和电气验证。
+`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。标准 `.gds` 会读取 GDSII 记录流，提取库名、structure、boundary、path、文本和引用，并生成可滚动 SVG 版图预览；`.oas`、`.oasis` 当前做安全结构索引、可读字符串和诊断信息。EDA 链路适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、版图编辑、DRC/LVS、规则校核和电气验证；完整 OASIS 几何预览后续更适合拆成独立按需包持续维护。
 
-3D 模型使用 Three.js，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议。
+3D 模型使用 Three.js，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议；当前调研路线是 STEP / IGES / BREP 使用 OpenCascade WASM，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`，后续应按独立懒加载包接入，避免拖慢普通预览首屏。
 
 ### 地理数据怎么接
 

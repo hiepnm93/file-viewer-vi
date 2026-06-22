@@ -96,7 +96,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音视频、字体、PSD、SQLite、WASM、Parquet、Avro 和 WebArchive；PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音视频、字体、PSD、SQLite、WASM、Parquet、Avro 和 WebArchive；XMind 支持拖拽平移和适配画布，标准 GDSII 可生成 SVG 版图预览，PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>

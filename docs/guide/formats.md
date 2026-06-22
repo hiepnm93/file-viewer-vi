@@ -41,11 +41,11 @@
 | Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | core archive renderer + `libarchive.js` WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存、体积上限和 ZIP/TAR/GZIP 兼容降级 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；MBOX 会解析首封邮件并标注识别数量；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
-| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `cfb` 容器解析 + EDA / 版图结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器；GDSII/OASIS 会进入安全结构索引，展示可读字符串、层/单元/几何记录、实体候选和诊断；非 CFB 文件安全退化 | 元件库、封装图纸、芯片版图文件初筛 |
+| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `cfb` 容器解析 + GDSII 记录解析 + EDA / 版图结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference 并生成 SVG 版图预览；OAS/OASIS 当前做安全结构索引、可读字符串、实体候选和诊断；非 CFB 文件安全退化 | 元件库、封装图纸、芯片版图文件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
-| XMind 脑图 | `xmind` | `@ljheee/xmind-parser` + core 脑图渲染器 | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、缩放、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
+| XMind 脑图 | `xmind` | `@ljheee/xmind-parser` + core 脑图渲染器 | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、拖拽平移、适配画布、缩放、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | core 共享绘图渲染器按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | 官方 diagrams.net `GraphViewer` 离线预览；内置 SVG fallback | core 共享绘图渲染器默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
@@ -114,12 +114,13 @@
 - EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。
 - MBOX 会按 `From ` 分隔线识别邮件条目，并使用同一套 MIME 解析器读取首封邮件，适合邮件归档包的快速审阅。超大归档建议先在业务层拆分或提供索引，避免一次性把全部历史邮件拉入浏览器内存。
 - 邮件 HTML 正文渲染在隔离沙箱文档中，不执行脚本；如果你接收外部邮件，仍建议在业务层保留病毒扫描和附件白名单策略。
-- OLB / DRA 使用 `cfb` 读取常见复合文档容器，并按 OrCAD Capture 元件库、Allegro drawing / footprint / padstack 的内容习惯做结构树、对象候选、属性和诊断展示。GDS / OAS / OASIS 会按版图结构进行安全索引，尽量展示库名、单元、层、边界、路径、文本和可读字符串；复杂电气规则、版图几何校核、DRC/LVS 和专业编辑仍应交给 OrCAD / Allegro / KLayout 等专业工具。
+- OLB / DRA 使用 `cfb` 读取常见复合文档容器，并按 OrCAD Capture 元件库、Allegro drawing / footprint / padstack 的内容习惯做结构树、对象候选、属性和诊断展示。标准 GDSII 会在浏览器内读取记录流，提取 library、structure、boundary、path、text、sref/aref 和坐标边界，并生成可滚动 SVG 版图预览；复杂电气规则、版图几何校核、DRC/LVS 和专业编辑仍应交给 OrCAD / Allegro / KLayout 等专业工具。
+- OAS / OASIS 的二进制压缩和重复结构更复杂，当前内置能力定位为安全结构索引和字符串/诊断预览，不会虚标为完整几何渲染。完整 OASIS 图形预览后续更适合像 `@file-viewer/pptx` 一样拆成独立 `@file-viewer/eda-layout` 包持续维护，避免把专业版图内核塞进 core 首屏链路。
 
 ### XMind 脑图
 
 - `xmind` 使用 `@ljheee/xmind-parser` 解析 XMind 8 的 `content.xml` 与 XMind 2020+ 的 `content.json`，不依赖在线服务，也不访问公共 CDN。
-- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、搜索、缩放、打印和 HTML 导出。
+- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、拖拽平移、适配画布、搜索、缩放、打印和 HTML 导出。
 - 大型脑图会限制单次渲染节点数量，避免浏览器一次性挂载过多 DOM。需要更深层编辑、重新排版或协同批注时，仍建议回到专业脑图工具。
 
 ### CAD 图纸
@@ -140,6 +141,7 @@
 - `glb` / `gltf` 是最推荐的 Web 3D 交换格式；`obj`、`stl`、`ply` 适合轻量几何和打印模型；`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd` / `usdz`、`kmz` 适合兼容设计工具导出的历史或工程资产。
 - `pcd`、`xyz`、`vtk`、`vtp` 会按点云或几何模型展示，适合扫描、仿真和工程数据的快速浏览。
 - `step` / `stp`、`iges` / `igs`、`ifc`、`3dm` 已保留入口，但完整解析需要 OpenCascade、web-ifc 或 rhino3dm 这类 WebAssembly 几何内核；组件会展示原因，生产建议在私有服务端转换为 `glb` / `gltf`。
+- 已调研的浏览器内核路线是: STEP / IGES / BREP 使用 `occt-import-js` 或 `occt-wasm` 这类 OpenCascade WASM 包转为 Three.js mesh，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`。这些内核体积、初始化和许可证边界都比普通 3D loader 重，后续应拆为独立按需包，而不是默认进入 core。
 - 如果 `.gltf`、`.dae`、`.fbx` 依赖同目录贴图、材质或 `.bin` 文件，使用 `url` 远程预览时会以原始 URL 的目录作为资源基准继续加载；使用本地单文件上传时，请优先选择 `.glb` 或把资源内联。
 
 ### 绘图文件

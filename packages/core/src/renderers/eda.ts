@@ -3,6 +3,8 @@ import {
   parseEdaFile,
   type EdaDomainRole,
   type EdaEntity,
+  type EdaLayoutElement,
+  type EdaLayoutPreview,
   type EdaParseResult,
   type EdaStreamKind,
   type EdaStreamView,
@@ -92,6 +94,15 @@ const edaStyle = `
 .eda-property-grid span{color:#64748b;font-weight:700}
 .eda-property-grid strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eda-panel pre{min-height:220px;max-height:440px;margin:12px 0 0;overflow:auto;padding:16px;border-top:1px solid rgba(23,32,51,.08);background:#101725;color:#d9e7ff;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.eda-layout-panel{min-height:360px;display:flex;flex-direction:column}
+.eda-layout-meta{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(23,32,51,.08)}
+.eda-layout-meta span{border-radius:999px;padding:6px 10px;background:#eef6f7;color:#0b7480;font-size:12px;font-weight:800}
+.eda-layout-canvas{flex:1;min-height:320px;overflow:auto;background:#111827}
+.eda-layout-svg{display:block;min-width:860px;min-height:420px;background:#111827}
+.eda-layout-svg polygon{fill-opacity:.28;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.eda-layout-svg polyline{fill:none;stroke-width:2;vector-effect:non-scaling-stroke}
+.eda-layout-svg circle{stroke-width:1.4;vector-effect:non-scaling-stroke}
+.eda-layout-svg text{paint-order:stroke;stroke:#111827;stroke-width:3px;stroke-linejoin:round;font:700 13px ui-sans-serif,system-ui,sans-serif}
 .eda-empty{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 .eda-string-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));align-content:start;gap:8px;padding:14px}
 .eda-string-grid span{min-width:0;padding:8px 10px;border-radius:10px;background:#f6f9fb;color:#334155;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -172,6 +183,149 @@ const appendPanelHead = (panel: HTMLElement, title: string, value: string) => {
   const head = createElement('div', 'eda-panel-head');
   head.append(createElement('span', undefined, title), createElement('strong', undefined, value));
   panel.append(head);
+};
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+const layoutPalette = [
+  '#5eead4',
+  '#93c5fd',
+  '#c4b5fd',
+  '#f9a8d4',
+  '#fde68a',
+  '#86efac',
+  '#fdba74',
+  '#67e8f9',
+];
+
+const layoutColor = (element: EdaLayoutElement) => {
+  const layer = Number.isFinite(element.layer) ? Number(element.layer) : 0;
+  return layoutPalette[Math.abs(layer) % layoutPalette.length];
+};
+
+const formatOptionalNumber = (value?: number) => {
+  if (!Number.isFinite(value)) {
+    return '-';
+  }
+  return Math.abs(Number(value)) < 0.001 ? Number(value).toExponential(2) : String(value);
+};
+
+const createSvgElement = <K extends keyof SVGElementTagNameMap>(
+  tagName: K,
+  attributes: Record<string, string | number>
+) => {
+  const element = document.createElementNS(SVG_NS, tagName);
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, String(value));
+  });
+  return element;
+};
+
+const createLayoutPreview = (layout: EdaLayoutPreview) => {
+  const panel = createElement('section', 'eda-panel eda-layout-panel');
+  appendPanelHead(panel, '版图预览', `${layout.structureCount || layout.structures.length} structures · ${layout.elements.length} elements`);
+
+  const meta = createElement('div', 'eda-layout-meta');
+  [
+    `Library: ${layout.libraryName || '-'}`,
+    `User unit: ${formatOptionalNumber(layout.userUnit)}`,
+    `DB unit: ${formatOptionalNumber(layout.databaseUnit)}`,
+  ].forEach(item => meta.append(createElement('span', undefined, item)));
+  panel.append(meta);
+
+  if (!layout.bounds || !layout.elements.length) {
+    panel.append(createEmpty('没有可绘制几何', '已读取 GDSII 头部和 structure 信息，但未发现 boundary、path、text 或 reference 元素。'));
+    return panel;
+  }
+
+  const bounds = layout.bounds;
+  const rawWidth = Math.max(1, bounds.maxX - bounds.minX);
+  const rawHeight = Math.max(1, bounds.maxY - bounds.minY);
+  const targetWidth = 1200;
+  const targetHeight = Math.max(460, Math.min(1100, Math.round(targetWidth * rawHeight / rawWidth)));
+  const padding = 40;
+  const scale = Math.min(
+    (targetWidth - padding * 2) / rawWidth,
+    (targetHeight - padding * 2) / rawHeight
+  );
+  const svgWidth = Math.max(860, Math.round(rawWidth * scale + padding * 2));
+  const svgHeight = Math.max(420, Math.round(rawHeight * scale + padding * 2));
+  const mapPoint = (point: { x: number; y: number }) => ({
+    x: (point.x - bounds.minX) * scale + padding,
+    y: (bounds.maxY - point.y) * scale + padding,
+  });
+  const pointList = (points: Array<{ x: number; y: number }>) => points
+    .map(point => {
+      const mapped = mapPoint(point);
+      return `${mapped.x.toFixed(2)},${mapped.y.toFixed(2)}`;
+    })
+    .join(' ');
+
+  const canvas = createElement('div', 'eda-layout-canvas');
+  const svg = createSvgElement('svg', {
+    class: 'eda-layout-svg',
+    width: svgWidth,
+    height: svgHeight,
+    viewBox: `0 0 ${svgWidth} ${svgHeight}`,
+    role: 'img',
+    'aria-label': 'GDSII layout preview',
+  });
+  svg.append(createSvgElement('rect', {
+    x: 0,
+    y: 0,
+    width: svgWidth,
+    height: svgHeight,
+    fill: '#111827',
+  }));
+
+  layout.elements.forEach(element => {
+    const color = layoutColor(element);
+    if ((element.kind === 'boundary' || element.kind === 'aref') && element.xy.length >= 3) {
+      svg.append(createSvgElement('polygon', {
+        points: pointList(element.xy),
+        fill: color,
+        stroke: color,
+      }));
+      return;
+    }
+
+    if (element.kind === 'path' && element.xy.length >= 2) {
+      const strokeWidth = Math.max(1.4, Math.min(10, (element.width || rawWidth / 500) * scale));
+      svg.append(createSvgElement('polyline', {
+        points: pointList(element.xy),
+        stroke: color,
+        'stroke-width': strokeWidth,
+      }));
+      return;
+    }
+
+    const anchor = element.xy[0];
+    if (!anchor) {
+      return;
+    }
+    const mapped = mapPoint(anchor);
+    svg.append(createSvgElement('circle', {
+      cx: mapped.x,
+      cy: mapped.y,
+      r: 4.5,
+      fill: '#111827',
+      stroke: color,
+    }));
+    const label = element.text || element.reference || element.kind.toUpperCase();
+    if (label) {
+      const text = createSvgElement('text', {
+        x: mapped.x + 8,
+        y: mapped.y - 8,
+        fill: color,
+      });
+      text.append(document.createTextNode(label));
+      svg.append(text);
+    }
+  });
+
+  canvas.append(svg);
+  panel.append(canvas);
+  return panel;
 };
 
 const buildStatsCards = (parsed: EdaParseResult) => {
@@ -287,7 +441,9 @@ export default async function renderEda(
     summary.append(
       createElement('strong', undefined, parsed.title),
       createElement('p', undefined, parsed.type === 'gds' || parsed.type === 'oas' || parsed.type === 'oasis'
-        ? 'GDSII / OASIS 属于芯片版图工程文件。预览器优先索引结构、属性、可读字符串和二进制线索，并在纯前端安全退化。'
+        ? parsed.layout
+          ? 'GDSII 属于芯片版图工程文件。预览器已在浏览器端解析标准记录并生成 SVG 版图预览，同时保留结构、字符串和诊断索引。'
+          : 'GDSII / OASIS 属于芯片版图工程文件。预览器优先索引结构、属性、可读字符串和二进制线索，并在纯前端安全退化。'
         : 'OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。')
     );
     sidebar.append(summary);
@@ -502,6 +658,9 @@ export default async function renderEda(
     diagnosticsPanel.append(diagnostics, localStrings);
     bottom.append(stringsPanel, diagnosticsPanel);
 
+    if (parsed.layout) {
+      preview.append(createLayoutPreview(parsed.layout));
+    }
     preview.append(overview, topology, currentPanel, bottom);
     body.append(sidebar, preview);
     root.append(header, body);

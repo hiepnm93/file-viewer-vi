@@ -55,11 +55,11 @@
 | Typst | `typ`、`typst` | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | core 共享 archive renderer，基于 `libarchive.js` WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | EML/MBOX 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览 | 邮件归档、工单邮件、客户来信附件 |
-| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | 使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器；GDSII/OASIS 等版图文件会进入安全结构索引，展示可读字符串、实体候选、层/单元/几何记录和诊断，不在浏览器内执行专业电气校核 | 元件库、封装图纸、芯片版图附件初筛 |
+| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | 使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference 并生成 SVG 版图预览；OAS/OASIS 先做安全结构索引、可读字符串、实体候选和诊断，不在浏览器内执行专业电气校核 | 元件库、封装图纸、芯片版图附件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | 基于 `@flyfish-dev/cad-viewer` 预览图纸；DWG 通过 Worker + LibreDWG WASM 解析，DXF 使用 JS parser，DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形 | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | 基于 Three.js 交互预览；工程 CAD/BIM 格式会给出不内置几何内核的原因和转换建议 | 设计模型、点云、三维资产、工程模型 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@tmcw/togeojson` / `shpjs` 转 GeoJSON 后离线 SVG 预览 | 地理附件、轨迹、边界和轻量 GIS 数据 |
-| XMind 脑图 | `xmind` | 基于 `@ljheee/xmind-parser` 解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，离线渲染多 sheet 脑图、节点、标签、备注、链接、标记、图片和目录树，支持搜索、打印、HTML 导出和缩放 | 脑图、项目规划、知识结构、会议纪要 |
+| XMind 脑图 | `xmind` | 基于 `@ljheee/xmind-parser` 解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，离线渲染多 sheet 脑图、节点、标签、备注、链接、标记、图片和目录树，支持拖拽平移、适配画布、搜索、打印、HTML 导出和缩放 | 脑图、项目规划、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | 基于官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` 输出只读预览 | 白板草图、流程草稿、产品沟通图 |
 | draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |

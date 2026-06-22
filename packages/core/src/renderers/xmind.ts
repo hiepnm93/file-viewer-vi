@@ -92,6 +92,7 @@ const LEVEL_GAP = 112;
 const SIBLING_GAP = 24;
 const CANVAS_PADDING = 44;
 const MAX_RENDER_NODES = 1800;
+const PAN_CLICK_THRESHOLD = 5;
 
 const xmindStyle = `
 .xmind-viewer{height:100%;min-height:0;display:flex;flex-direction:column;background:#eef3f7;color:#172033}
@@ -105,9 +106,11 @@ const xmindStyle = `
 .xmind-sidebar{min-height:0;overflow:auto;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.72);padding:14px}
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
-.xmind-stage{position:relative;min-width:0;min-height:0;overflow:auto;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px}
+.xmind-stage{position:relative;min-width:0;min-height:0;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px}
+.xmind-stage.is-panning{cursor:grabbing;user-select:none}
 .xmind-zoom-box{position:relative;transform-origin:top left}.xmind-surface{position:relative;transform-origin:top left}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
-.xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033}
+.xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab}
+.xmind-stage.is-panning .xmind-node{cursor:grabbing}
 .xmind-node.root{width:260px;border-color:rgba(33,163,102,.28);background:linear-gradient(135deg,#effdf5,#fff);box-shadow:0 18px 38px rgba(33,163,102,.16)}
 .xmind-node.detached{border-style:dashed}.xmind-node.summary{background:#fff8e7}.xmind-node.callout{background:#eef6ff}
 .xmind-node h3{margin:0;color:#172033;font-size:14px;line-height:1.35;word-break:break-word}.xmind-node.root h3{font-size:16px}
@@ -140,7 +143,7 @@ const createElement = <K extends keyof HTMLElementTagNameMap>(
   return element;
 };
 
-const clampZoom = (value: number) => Math.min(2.5, Math.max(0.5, Number(value.toFixed(2))));
+const clampZoom = (value: number) => Math.min(2.5, Math.max(0.25, Number(value.toFixed(2))));
 
 const normalizeArray = <T>(value: T[] | undefined | null) => Array.isArray(value) ? value : [];
 
@@ -341,7 +344,11 @@ const renderEdges = (svg: SVGSVGElement, node: MindNodeView) => {
   });
 };
 
-const createNodeElement = (node: MindNodeView, scrollToNode: (node: MindNodeView) => void) => {
+const createNodeElement = (
+  node: MindNodeView,
+  scrollToNode: (node: MindNodeView) => void,
+  shouldSuppressClick: () => boolean
+) => {
   const card = createElement('article', [
     'xmind-node',
     node.depth === 0 ? 'root' : '',
@@ -392,7 +399,14 @@ const createNodeElement = (node: MindNodeView, scrollToNode: (node: MindNodeView
     card.append(link);
   }
 
-  card.addEventListener('click', () => scrollToNode(node));
+  card.addEventListener('click', event => {
+    if (shouldSuppressClick()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    scrollToNode(node);
+  });
   return card;
 };
 
@@ -409,6 +423,15 @@ export default async function renderXMind(
   let disposed = false;
   let activeSheetIndex = 0;
   let sheets: SheetView[] = [];
+  let suppressNodeClick = false;
+  let panState: {
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startScrollLeft: number;
+    startScrollTop: number;
+    moved: boolean;
+  } | null = null;
 
   const root = createElement('section', 'xmind-viewer');
   root.dataset.viewerZoomProvider = 'xmind';
@@ -425,7 +448,7 @@ export default async function renderXMind(
   });
   zoomOutButton.title = '缩小';
   zoomInButton.title = '放大';
-  resetButton.title = '还原';
+  resetButton.title = '适配画布';
   actions.append(zoomOutButton, zoomLabel, zoomInButton, resetButton);
   toolbar.append(title, actions);
 
@@ -446,9 +469,9 @@ export default async function renderXMind(
     scale: zoom,
     label: `${Math.round(zoom * 100)}%`,
     canZoomIn: zoom < 2.5,
-    canZoomOut: zoom > 0.5,
+    canZoomOut: zoom > 0.25,
     canReset: zoom !== 1,
-    minScale: 0.5,
+    minScale: 0.25,
     maxScale: 2.5,
   });
 
@@ -468,6 +491,26 @@ export default async function renderXMind(
     zoom = clampZoom(scale);
     applyZoom();
     zoomEmitter.emit();
+    return getZoomState();
+  };
+
+  const fitSheetToStage = () => {
+    const sheet = sheets[activeSheetIndex];
+    if (!sheet) {
+      return getZoomState();
+    }
+
+    const availableWidth = Math.max(1, stage.clientWidth - CANVAS_PADDING);
+    const availableHeight = Math.max(1, stage.clientHeight - CANVAS_PADDING);
+    const fitScale = Math.min(1, availableWidth / sheet.width, availableHeight / sheet.height);
+    setZoom(fitScale);
+    requestAnimationFrame(() => {
+      stage.scrollTo({
+        left: Math.max(0, (sheet.width * zoom - stage.clientWidth) / 2),
+        top: Math.max(0, (sheet.height * zoom - stage.clientHeight) / 2),
+        behavior: 'smooth',
+      });
+    });
     return getZoomState();
   };
 
@@ -523,12 +566,12 @@ export default async function renderXMind(
     surface.append(svg);
 
     walkMindNodes(sheet.root, node => {
-      surface.append(createNodeElement(node, scrollToNode));
+      surface.append(createNodeElement(node, scrollToNode, () => suppressNodeClick));
     });
 
     renderSidebar(sheet);
     applyZoom();
-    requestAnimationFrame(() => scrollToNode(sheet.root));
+    requestAnimationFrame(() => fitSheetToStage());
   };
 
   const renderTabs = () => {
@@ -592,9 +635,87 @@ export default async function renderXMind(
     subscribe: zoomEmitter.subscribe,
   });
 
+  const isPanBlockedTarget = (targetValue: EventTarget | null) => {
+    const element = targetValue instanceof Element ? targetValue : null;
+    return Boolean(element?.closest('a,button,input,textarea,select,[contenteditable="true"],.xmind-toolbar,.xmind-tabs,.xmind-sidebar'));
+  };
+
+  const clearPanState = (event?: PointerEvent) => {
+    if (!panState) {
+      return;
+    }
+    const moved = panState.moved;
+    if (event && stage.hasPointerCapture?.(panState.pointerId)) {
+      try {
+        stage.releasePointerCapture(panState.pointerId);
+      } catch {
+        // Pointer capture can already be released by WebView scrolling or synthetic browser smoke events.
+      }
+    }
+    panState = null;
+    stage.classList.remove('is-panning');
+    if (moved) {
+      suppressNodeClick = true;
+      window.setTimeout(() => {
+        suppressNodeClick = false;
+      }, 0);
+    }
+  };
+
+  const onPanStart = (event: PointerEvent) => {
+    if (event.button !== 0 || status !== 'ready' || isPanBlockedTarget(event.target)) {
+      return;
+    }
+    panState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startScrollLeft: stage.scrollLeft,
+      startScrollTop: stage.scrollTop,
+      moved: false,
+    };
+    stage.classList.add('is-panning');
+    try {
+      stage.setPointerCapture?.(event.pointerId);
+    } catch {
+      // Embedded browsers and synthetic events may not support pointer capture.
+    }
+    event.preventDefault();
+  };
+
+  const onPanMove = (event: PointerEvent) => {
+    if (!panState || panState.pointerId !== event.pointerId) {
+      return;
+    }
+    const deltaX = event.clientX - panState.startX;
+    const deltaY = event.clientY - panState.startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
+      panState.moved = true;
+    }
+    stage.scrollLeft = panState.startScrollLeft - deltaX;
+    stage.scrollTop = panState.startScrollTop - deltaY;
+    event.preventDefault();
+  };
+
+  const onPanEnd = (event: PointerEvent) => {
+    if (!panState || panState.pointerId !== event.pointerId) {
+      return;
+    }
+    clearPanState(event);
+  };
+
+  const onLostPointerCapture = () => {
+    clearPanState();
+  };
+
+  stage.addEventListener('pointerdown', onPanStart);
+  stage.addEventListener('pointermove', onPanMove);
+  stage.addEventListener('pointerup', onPanEnd);
+  stage.addEventListener('pointercancel', onPanEnd);
+  stage.addEventListener('lostpointercapture', onLostPointerCapture);
   zoomOutButton.addEventListener('click', () => setZoom(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoom(zoom + 0.15));
-  resetButton.addEventListener('click', () => setZoom(1));
+  resetButton.addEventListener('click', () => fitSheetToStage());
   syncState();
   void load();
 
@@ -603,6 +724,11 @@ export default async function renderXMind(
     unmount() {
       disposed = true;
       unregisterFileViewerZoomProvider(root);
+      stage.removeEventListener('pointerdown', onPanStart);
+      stage.removeEventListener('pointermove', onPanMove);
+      stage.removeEventListener('pointerup', onPanEnd);
+      stage.removeEventListener('pointercancel', onPanEnd);
+      stage.removeEventListener('lostpointercapture', onLostPointerCapture);
       target.replaceChildren();
     },
   };
