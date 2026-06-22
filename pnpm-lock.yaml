@@ -520,12 +520,28 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../core
+      '@file-viewer/renderer-cad':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/cad
       '@file-viewer/renderer-mindmap':
         specifier: workspace:^2.0.11
         version: link:../../renderers/mindmap
       '@file-viewer/renderer-pdf':
         specifier: workspace:^2.0.11
         version: link:../../renderers/pdf
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/cad:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      '@flyfish-dev/cad-viewer':
+        specifier: ^0.6.4
+        version: 0.6.4(three@0.184.0)
     devDependencies:
       typescript:
         specifier: ^6.0.3

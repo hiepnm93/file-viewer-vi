@@ -38,6 +38,17 @@
       "publicSource": true
     },
     {
+      "id": "cad",
+      "packageName": "@file-viewer/renderer-cad",
+      "description": "Standalone CAD renderer plugin for File Viewer with DWG, DXF, DWF, DWFx, XPS, worker/WASM assets, layer controls, zoom, and native DWF rendering support.",
+      "packageDir": "packages/renderers/cad",
+      "repository": "file-viewer-renderer-cad",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-cad",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-cad",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",
