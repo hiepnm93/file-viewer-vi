@@ -149,13 +149,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'mindmap',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderMindMap } = await import('./xmind');
-      return renderMindMap(buffer, target, type, context);
-    },
-  },
-  {
     rendererId: 'data-asset',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderDataAsset } = await import('./data');

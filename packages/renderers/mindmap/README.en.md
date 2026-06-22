@@ -36,4 +36,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps the bundled XMind renderer for backward compatibility. A later migration will switch the core XMind entry to this package and remove `@ljheee/xmind-parser` from core direct dependencies.
+The core package no longer bundles the XMind parser and no longer installs `@ljheee/xmind-parser` by default. Install this renderer explicitly, or use `@file-viewer/preset-all` / `@file-viewer/preset-engineering`, when XMind preview is required.
