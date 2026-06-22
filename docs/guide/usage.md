@@ -206,6 +206,7 @@ const options = {
 | `docx.workerTimeout` | DOCX Worker 超时时间，默认 120000ms，超时后由 `@file-viewer/docx` 自动回退 |
 | `spreadsheet.worker` | 是否启用表格静态 Worker 尝试，默认 `false`；默认使用同一套 `styled-exceljs` 主线程解析以避开本地服务器、手机 WebView、MIME 或 CSP 导致的 Worker 卡住问题 |
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
+| `spreadsheet.resizableColumns` | 是否允许用户在 Excel / CSV / ODS 等表格预览中拖拽表头边界调整列宽，默认 `false` 以保持历史兼容；Demo 默认开启，便于查看被截断的长文本 |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.navigation` / `pdf.defaultNavigationVisible` | 是否启用左侧导航窗格以及初始是否展开。导航窗格支持页面列表和目录树切换 |

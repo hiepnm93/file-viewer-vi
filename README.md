@@ -47,7 +47,7 @@
 | Word | `docx`、`docm`、`dotx`、`dotm` | 自研 `@file-viewer/docx`，Worker 解析、连续流式阅读、目录字段缓存和异步分批渲染；模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式文档、Word 模板 |
 | Word | `doc`、`dot` | `msdoc-viewer` + Word 风格页面容器，增强 CFB 容错和表格布局 | 历史 `.doc` 老文档、Word 97-2003 模板 |
 | 兼容文档 | `rtf`、`odt` | `rtf.js` / ODF `content.xml` 兼容预览 | RTF 富文本、OpenDocument 文本文档 |
-| Excel | `xlsx`、`xltx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色和 workbook drawing 图片；默认主线程解析，静态 Worker 需显式开启；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务、Excel 模板 |
+| Excel | `xlsx`、`xltx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色、workbook drawing 图片和可选表头拖拽调整列宽；默认主线程解析，静态 Worker 需显式开启；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式；同样遵循虚拟表格打印边界 | 老表格、轻量数据查看 |
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | 基于独立开源 `@file-viewer/pptx` 原生引擎浏览幻灯片内容，Worker 渐进解析并按页输出；ODP 走 OpenDocument 幻灯片文本预览 | 汇报材料、课件、方案、演示模板 |
 | PDF | `pdf` | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |

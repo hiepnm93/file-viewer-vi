@@ -45,7 +45,7 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | Word | `docx`, `docm`, `dotx`, `dotm` | Self-maintained `@file-viewer/docx` with Worker parsing, continuous flow reading, cached TOC fields, async rendering, print, and HTML export; visual pagination is opt-in | Modern Word documents and templates |
 | Legacy Word | `doc`, `dot` | `msdoc-viewer` with Word-like paper surface and CFB tolerance fixes | Old Word 97-2003 files |
 | Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
-| Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
+| Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, optional header drag column resizing, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
 | Excel-compatible | `xlsm`, `xlsb`, `xls`, `xlt`, `xltm`, `csv`, `ods`, `fods`, `numbers` | Progressive spreadsheet parsing and virtual rendering through the same default main-thread path, with Worker opt-in when deployment allows it | Legacy spreadsheets and lightweight data preview |
 | PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Native open-source `@file-viewer/pptx` engine with Worker based progressive slide output; ODP uses OpenDocument slide text extraction | Presentations, training decks, proposals |
 | PDF | `pdf` | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export | Contracts, invoices, official layout documents |
@@ -388,6 +388,7 @@ Historical package names remain compatible, but new projects should prefer the s
 | `docx.workerTimeout` | DOCX Worker timeout in milliseconds. Defaults to 120000ms. |
 | `spreadsheet.worker` | Enables the optional spreadsheet Worker path. Defaults to `false`; main-thread parsing avoids local-server, mobile WebView, MIME, or CSP Worker stalls. |
 | `spreadsheet.workerUrl` | Custom Spreadsheet Worker URL. The default candidate is `vendor/xlsx/sheet.worker.js` under the current deployment base. |
+| `spreadsheet.resizableColumns` | Enables drag resizing on spreadsheet column headers. Defaults to `false` for backward-compatible interactions; the official demo enables it by default for long text inspection. |
 | `pdf.streaming` | PDF URL loading strategy. Same-origin streaming is enabled by default. |
 | `pdf.rangeChunkSize` | PDF.js Range request chunk size. |
 | `pdf.workerUrl` | Custom PDF.js Worker URL for private, offline, or strict-CSP deployments. Defaults to the self-hosted viewer asset path under the current deployment base. |

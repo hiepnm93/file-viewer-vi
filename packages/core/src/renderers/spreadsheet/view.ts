@@ -31,6 +31,7 @@ const HIDDEN_ROW_HEIGHT = 0.1
 const CELL_PADDING = 2
 const CELL_LINE_HEIGHT = 1.2
 export const HEADER_HEIGHT = 34
+export const RESIZABLE_COLUMN_MIN_WIDTH = 40
 const EXCEL_HEADER_BG = '#f3f3f3'
 const EXCEL_HEADER_TEXT = '#5f6368'
 const EXCEL_GRID = '#d7dbe0'
@@ -62,6 +63,7 @@ const LOADING_CELL_STYLE: CellStyleCache = {
 
 interface TableConfigOptions {
   hostHeight: number
+  resizableColumns?: boolean
   sheetDefaults: SheetDefaults
   virtualState: VirtualSheetState
   zoomScale?: number
@@ -872,6 +874,7 @@ export const normalizeCellStyle = (
 
 export const createTableConfig = ({
   hostHeight,
+  resizableColumns = false,
   sheetDefaults,
   virtualState,
   zoomScale = 1
@@ -1020,7 +1023,11 @@ export const createTableConfig = ({
     ENABLE_AUTOFILL_SPAN_ROW: true,
     ENABLE_PASTER: false,
     ENABLE_HISTORY: false,
-    ENABLE_RESIZE_COLUMN: false,
+    ENABLE_RESIZE_COLUMN: resizableColumns,
+    ENABLE_RESIZE_COLUMN_TEXT: resizableColumns,
+    RESIZE_COLUMN_LINE_COLOR: EXCEL_GREEN,
+    RESIZE_COLUMN_TEXT_BG_COLOR: EXCEL_GREEN,
+    RESIZE_COLUMN_MIN_WIDTH: RESIZABLE_COLUMN_MIN_WIDTH,
     ENABLE_RESIZE_ROW: false,
     ENABLE_KEYBOARD: true,
     ENABLE_COPY: true,

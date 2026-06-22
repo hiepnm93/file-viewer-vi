@@ -22,6 +22,7 @@ import {
   DEFAULT_SHEET_DEFAULTS,
   displayCellKey,
   getDataKey,
+  INDEX_COLUMN_KEY,
   markWindowState,
   ROW_STATE_FIELD,
   RowState,
@@ -39,6 +40,7 @@ import {
   INDEX_COLUMN_WIDTH,
   normalizeCellStyle,
   normalizeRowHeight,
+  RESIZABLE_COLUMN_MIN_WIDTH,
 } from './spreadsheet/view';
 
 type EVirtTableInstance = {
@@ -50,14 +52,20 @@ type EVirtTableInstance = {
     scrollX?: number;
     scrollY?: number;
   };
-  on(type: string, handler: () => void): void;
+  on(type: string, handler: (...args: any[]) => void): void;
   loadConfig(config: unknown): void;
   loadColumns(columns: unknown[]): void;
   loadData(rows: unknown[]): void;
+  setCustomHeader?(customHeader: unknown, ignoreEmit?: boolean): void;
   draw(): void;
   doLayout(): void;
   scrollTo(x: number, y: number): void;
   destroy(): void;
+};
+
+type ResizeColumnChangeEvent = {
+  key?: string | number;
+  width?: number;
 };
 
 type EVirtTableConstructor = new (
@@ -386,6 +394,7 @@ const renderFileViewerSpreadsheet = async (
   let sheetSessionId = 0;
   let disposed = false;
   let hasNotifiedFirstPaint = false;
+  const resizableColumns = context?.options?.spreadsheet?.resizableColumns === true;
 
   const controller = createFileViewerWorkerController(
     createSpreadsheetWorkerFactory(target, context),
@@ -581,6 +590,7 @@ const renderFileViewerSpreadsheet = async (
   const buildTableView = () => ({
     config: createTableConfig({
       hostHeight: getHostHeight(),
+      resizableColumns,
       sheetDefaults,
       virtualState,
       zoomScale: zoom,
@@ -641,6 +651,7 @@ const renderFileViewerSpreadsheet = async (
       columns: [],
       config: createTableConfig({
         hostHeight: getHostHeight(),
+        resizableColumns,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,
@@ -649,6 +660,7 @@ const renderFileViewerSpreadsheet = async (
     table.on('onScrollX', scheduleViewportLoad);
     table.on('onScrollY', scheduleViewportLoad);
     table.on('resize', scheduleViewportLoad);
+    table.on('resizeColumnChange', handleColumnResizeChange);
 
     return table;
   };
@@ -662,6 +674,7 @@ const renderFileViewerSpreadsheet = async (
     const view = {
       config: createTableConfig({
         hostHeight: getHostHeight(),
+        resizableColumns,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,
@@ -699,6 +712,59 @@ const renderFileViewerSpreadsheet = async (
     instance.draw();
     syncImageViewport();
     scheduleViewportLoad();
+  }
+
+  function setColumnWidthByKey(columns: unknown[], key: string, width: number): boolean {
+    for (const column of columns as Array<Record<string, unknown>>) {
+      if (`${column.key}` === key) {
+        column.width = width;
+        return true;
+      }
+      if (Array.isArray(column.children) && setColumnWidthByKey(column.children, key, width)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function clearTableResizableHeaderCache() {
+    try {
+      table?.setCustomHeader?.({ resizableData: {} }, true);
+    } catch {
+      // 某些旧版 e-virt-table 类型没有公开 setCustomHeader，忽略即可，下一次 loadColumns 仍会使用 core 状态。
+    }
+  }
+
+  function handleColumnResizeChange(event: ResizeColumnChangeEvent) {
+    if (!resizableColumns || disposed) {
+      return;
+    }
+    const key = event?.key === undefined ? '' : `${event.key}`;
+    const displayWidth = Number(event?.width);
+    if (!key || key === INDEX_COLUMN_KEY || !Number.isFinite(displayWidth) || displayWidth <= 0) {
+      return;
+    }
+
+    const baseWidth = Math.max(
+      1,
+      Math.round(displayWidth / Math.max(zoom, 0.01))
+    );
+    const changed = setColumnWidthByKey(
+      virtualState.columns,
+      key,
+      Math.max(baseWidth, Math.round(RESIZABLE_COLUMN_MIN_WIDTH / Math.max(zoom, 1)))
+    );
+    if (!changed) {
+      return;
+    }
+
+    const activeSheetId = getActiveSheetId();
+    if (activeSheetId !== undefined) {
+      sheetStateCache.set(activeSheetId, virtualState);
+    }
+
+    clearTableResizableHeaderCache();
+    syncTableLayout();
   }
 
   function requestWindow(startRow = 0, silent = true) {

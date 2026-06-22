@@ -629,6 +629,10 @@ const viewerOptions = computed<FileViewerOptions>(() => ({
     ...runtimeOptions.value.archive
   },
   ...runtimeOptions.value,
+  spreadsheet: {
+    resizableColumns: true,
+    ...runtimeOptions.value.spreadsheet
+  },
   toolbar: hidden.value ? runtimeOptions.value.toolbar ?? true : false,
   watermark: watermarkEnabled.value
     ? {

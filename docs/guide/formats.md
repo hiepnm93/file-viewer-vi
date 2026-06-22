@@ -33,7 +33,7 @@
 | Word | `docx`、`docm`、`dotx`、`dotm` | 自研 `@file-viewer/docx` | 白色文档面显示在灰色阅读底中，支持宽度自适应；默认使用 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
 | Word | `doc`、`dot` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
 | 兼容文档 | `rtf`、`odt` | `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
-| Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
+| Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式、workbook drawing 图片和可选表头拖拽调整列宽；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/pptx` 原生引擎 / OpenDocument 兼容预览 | PPTX 走独立开源 native renderer，Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
@@ -83,6 +83,7 @@
 
 - 表格类文件统一走 `styled-exceljs` 解析和 `e-virt-table` 虚拟渲染，适合需要保留表格结构、合并单元格、workbook drawing 图片和视觉层级的场景。
 - 表格解析默认走主线程同一套 `styled-exceljs` 解析器，避免本地服务器、手机 WebView、MIME 或 CSP 导致 Worker 初始化后卡住。确认部署环境能稳定提供静态 Worker 时，可传 `options.spreadsheet.worker: true`，并按需通过 `options.spreadsheet.workerUrl` 指向当前部署 base 下的 `vendor/xlsx/sheet.worker.js` 或自托管路径。
+- 如果业务用户经常查看被截断的长文本，可以开启 `options.spreadsheet.resizableColumns: true`，用户即可拖拽表头右侧边界调整列宽。该能力默认关闭以保持历史交互兼容，官方 Demo 默认开启用于体验。
 - `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` 会读取格式中能表达的数据、尺寸和样式；部分格式本身不包含完整样式时，会按可用信息渐进还原。
 - Excel 预览为了兼顾大表格性能采用虚拟表格，DOM 中不会一次性持有完整工作表，因此当前会主动隐藏打印按钮，避免浏览器只打印当前视口或截断内容。
 - 如果你正在设计业务导出格式，优先选 `xlsx`；如果你只是需要把历史附件打开看内容，兼容链路已经足够实用。
