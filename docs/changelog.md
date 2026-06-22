@@ -19,9 +19,9 @@
 
 ## `v2.0.9` 生态文档与定制能力完善版本
 
-- 文档站、README 和各生态组件 README 全量补齐实际支持的 props / options / events / controller API，覆盖 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte、core 与兼容 alias 包
+- 文档站、README 和各生态组件 README 全量补齐实际支持的 props / options / events / controller API，覆盖 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte、core 与兼容 alias 包
 - 工具栏定制能力文档化，统一说明 `options.toolbar`、`toolbar.beforeOperation`、`toolbar.items`、自定义按钮、隐藏默认工具栏和外部自定义工具栏的最佳实践
-- 官网首页补充多框架快速接入代码切换板块，帮助用户在 Vue、React、Svelte、jQuery、Pure Web 和 core API 之间快速定位接入方式
+- 官网首页补充多框架快速接入代码切换板块，帮助用户在 Vanilla JS / Pure Web、Vue、React、Svelte、jQuery 和 core API 之间快速定位接入方式
 - 生态发布口径同步刷新到 `2.0.9`，继续保持 core 纯 TypeScript 底座、各框架组件独立实现、离线资源随包分发和生产级 demo / 文档站 / 官网一体上线
 
 ## 当前主线
@@ -35,7 +35,7 @@
 
 ### 当前主线 生态接入文档全量对齐
 
-- 新增 [生态组件总览](/guide/ecosystem)，集中说明 `@file-viewer/core`、`@file-viewer/pptx`、Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 和历史兼容包的选型边界
+- 新增 [生态组件总览](/guide/ecosystem)，集中说明 `@file-viewer/core`、`@file-viewer/pptx`、Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 和历史兼容包的选型边界
 - 文档站导航、快速开始、Vue2/React/Pure Web 接入、组件用法、FAQ、发布分发和开发发版说明统一改为 `@file-viewer/*` 标准包名优先
 - 补齐 Svelte 组件/action、jQuery 插件、Pure Web script 标签、Core 自定义接入、离线 viewer assets 和统一 controller API 示例
 - 修正 React 文档中的事件参数为标准 `onEvent`，并明确 React Legacy、Vue2.6、PPTX 引擎和离线资源复制流程
@@ -57,7 +57,7 @@
 ### `v2.0.1` 架构重构与全生态 2.x 起始版本
 
 - 全线 npm 包、workspace 依赖、Docker 镜像和开源 release 包从 `2.0.1` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
-- `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只依赖 core，各自提供原生集成体验
+- `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 等标准组件包只依赖 core，各自提供原生集成体验
 - 清理旧独立页面实现和历史过渡口径，对外文档统一强调原生组件与纯 Web API 是核心集成路径
 - 开源总仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Component Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
 - 文档、README、分发说明、Docker 部署说明和生态验收清单同步刷新到 2.x 版本口径，后续新增能力都在 2.x 线上连续演进

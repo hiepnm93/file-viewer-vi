@@ -11,14 +11,14 @@
 | Vue2.6 | `@file-viewer/vue2.6` |
 | React 18/19 | `@file-viewer/react` |
 | React 16.8/17 | `@file-viewer/react-legacy` |
-| Pure Web / script 标签 | `@file-viewer/web` |
+| Vanilla JS / Pure Web / script 标签 | `@file-viewer/web` |
 | jQuery | `@file-viewer/jquery` |
 | Svelte / SvelteKit | `@file-viewer/svelte` |
 | 自研组件或深度二开 | `@file-viewer/core` |
 
 历史包名 `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web` 仍会同步维护，主要用于旧项目不改包名升级。
 
-所有包线的格式能力、示例文件、`file` / `url` 参数行为、options、事件和类型语义保持一致。Vue3、Vue2、React、Pure Web、jQuery 和 Svelte 都是各自生态的原生接入，不需要借用其他框架组件。
+所有包线的格式能力、示例文件、`file` / `url` 参数行为、options、事件和类型语义保持一致。Vanilla JS / Pure Web、Vue3、Vue2、React、jQuery 和 Svelte 都是各自生态的原生接入，不需要借用其他框架组件。
 
 如果需要固定 Worker、WASM 或示例资源路径，可以运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 

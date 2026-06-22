@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-22T07:03:45.735Z",
+  "generatedAt": "2026-06-22T07:59:44.758Z",
   "version": "2.0.11",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -10,14 +10,14 @@
     "policy": "private-complete-original-workspace",
     "authoritativeCommit": "6d08a9a834c49f05e9c3ed41384a96afbd16110f",
     "localBranch": "main",
-    "localCommit": "6d08a9a834c49f05e9c3ed41384a96afbd16110f",
-    "inSync": true,
+    "localCommit": "1f2b9a3e9932a75d9c544d91967ba50370c966d3",
+    "inSync": false,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "6d08a9a834c49f05e9c3ed41384a96afbd16110f",
-    "shortCommit": "6d08a9a8",
+    "commit": "1f2b9a3e9932a75d9c544d91967ba50370c966d3",
+    "shortCommit": "1f2b9a3e",
     "dirty": false
   },
   "sourceRemote": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "47024dc181cc780bb205b525d17cc7b6ba5bf522",
+      "hash": "359475bc40c8927844454815b1c1ebcf8122fce3",
       "error": ""
     },
     "gitee": {
@@ -43,21 +43,21 @@
       "error": ""
     },
     "inSync": false,
-    "syncMode": "stale",
-    "treeChecked": true,
-    "referenceTree": "0f206aab6f318a61011bb106df52800931ed50eb",
-    "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
-    "treeError": "",
+    "syncMode": "unchecked",
+    "treeChecked": false,
+    "referenceTree": "57d8a70f3b667ca133f5e868e2290e3eb65c7598",
+    "giteeTree": "",
+    "treeError": "local public repository dc99aa86d40b does not match GitHub 359475bc40c8",
     "reportHashNote": "This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
     "ok": true,
     "tag": "v2.0.11",
     "url": "https://github.com/flyfish-dev/file-viewer/releases/tag/v2.0.11",
-    "assetCount": 18,
-    "hasManifest": false,
-    "hasStatus": false,
-    "hasSchema": false,
+    "assetCount": 21,
+    "hasManifest": true,
+    "hasStatus": true,
+    "hasSchema": true,
     "error": ""
   },
   "componentRepositories": [
@@ -77,6 +77,24 @@
         "ok": false,
         "hash": "",
         "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-core/' not found"
+      }
+    },
+    {
+      "id": "web",
+      "packageName": "@file-viewer/web",
+      "github": {
+        "url": "https://github.com/flyfish-dev/file-viewer-web",
+        "branch": "main",
+        "ok": true,
+        "hash": "738849715d96af63352108b7a13ff2b82291a43f",
+        "error": ""
+      },
+      "gitee": {
+        "url": "https://gitee.com/flyfish-dev/file-viewer-web",
+        "branch": "main",
+        "ok": false,
+        "hash": "",
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web/' not found"
       }
     },
     {
@@ -170,24 +188,6 @@
       }
     },
     {
-      "id": "web",
-      "packageName": "@file-viewer/web",
-      "github": {
-        "url": "https://github.com/flyfish-dev/file-viewer-web",
-        "branch": "main",
-        "ok": true,
-        "hash": "738849715d96af63352108b7a13ff2b82291a43f",
-        "error": ""
-      },
-      "gitee": {
-        "url": "https://gitee.com/flyfish-dev/file-viewer-web",
-        "branch": "main",
-        "ok": false,
-        "hash": "",
-        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web/' not found"
-      }
-    },
-    {
       "id": "jquery",
       "packageName": "@file-viewer/jquery",
       "github": {
@@ -275,6 +275,13 @@
       "error": ""
     },
     {
+      "packageName": "@file-viewer/web",
+      "expectedVersion": "2.0.11",
+      "publishedVersion": "2.0.11",
+      "ok": true,
+      "error": ""
+    },
+    {
       "packageName": "@file-viewer/vue3",
       "expectedVersion": "2.0.11",
       "publishedVersion": "2.0.11",
@@ -310,13 +317,6 @@
       "error": ""
     },
     {
-      "packageName": "@file-viewer/web",
-      "expectedVersion": "2.0.11",
-      "publishedVersion": "2.0.11",
-      "ok": true,
-      "error": ""
-    },
-    {
       "packageName": "@file-viewer/jquery",
       "expectedVersion": "2.0.11",
       "publishedVersion": "2.0.11",
@@ -332,46 +332,28 @@
     }
   ],
   "gaps": [
-    "GitHub Release v2.0.11 missing release-manifest.json",
-    "GitHub Release v2.0.11 missing release-status.json",
-    "GitHub Release v2.0.11 missing release-status.schema.json"
+    "local HEAD 1f2b9a3e does not match origin/main 6d08a9a834c4"
   ],
   "gapSummary": {
-    "total": 3,
-    "externalBlockers": 3,
-    "localActionable": 0,
+    "total": 1,
+    "externalBlockers": 0,
+    "localActionable": 1,
     "byChannel": {
-      "github-release": 3
+      "source-worktree": 1
     },
-    "externalBlockerChannels": [
-      "github-release"
-    ],
-    "localActionableChannels": []
+    "externalBlockerChannels": [],
+    "localActionableChannels": [
+      "source-worktree"
+    ]
   },
   "gapDetails": [
     {
-      "id": "github-release-github-release-v2.0.11-missing-release-manifest.json",
-      "channel": "github-release",
-      "scope": "release-assets",
-      "externalBlocker": true,
-      "message": "GitHub Release v2.0.11 missing release-manifest.json",
-      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
-    },
-    {
-      "id": "github-release-github-release-v2.0.11-missing-release-status.json",
-      "channel": "github-release",
-      "scope": "release-assets",
-      "externalBlocker": true,
-      "message": "GitHub Release v2.0.11 missing release-status.json",
-      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
-    },
-    {
-      "id": "github-release-github-release-v2.0.11-missing-release-status.schema.json",
-      "channel": "github-release",
-      "scope": "release-assets",
-      "externalBlocker": true,
-      "message": "GitHub Release v2.0.11 missing release-status.schema.json",
-      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
+      "id": "source-worktree-local-head-1f2b9a3e-does-not-match-origin-main-6d08a9a834c4",
+      "channel": "source-worktree",
+      "scope": "local",
+      "externalBlocker": false,
+      "message": "local HEAD 1f2b9a3e does not match origin/main 6d08a9a834c4",
+      "nextAction": "Commit or clean the local source worktree, then rerun the release audit."
     }
   ],
   "nextActions": [

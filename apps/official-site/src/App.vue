@@ -131,7 +131,7 @@ const copy = {
       eyebrow: '浏览器原生文件预览超级组件',
       title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
-        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、CAD、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vue、React、Web、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
+        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、CAD、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
@@ -179,7 +179,7 @@ const copy = {
       eyebrow: 'Browser-native file preview super component',
       title: 'Turn complex files into instant product experiences.',
       subtitle:
-        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, CAD, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vue, React, Web, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
+        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, CAD, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',
@@ -219,13 +219,13 @@ const metrics = computed<MetricItem[]>(() =>
     ? [
         { title: '文件扩展名', value: '194+', detail: '覆盖业务附件、工程资产、媒体与数据文件', tone: 'green' },
         { title: '预览链路', value: '23', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
-        { title: '生态组件', value: '8+', detail: 'Vue、React、Web、jQuery、Svelte 全线可用', tone: 'violet' },
+        { title: '生态组件', value: '8+', detail: 'Vanilla JS、Vue、React、jQuery、Svelte 全线可用', tone: 'violet' },
         { title: '分发形态', value: '4', detail: 'npm、Release、Docker、静态资源私有化', tone: 'amber' }
       ]
     : [
         { title: 'Extensions', value: '194+', detail: 'Business attachments, engineering files, media, and data assets', tone: 'green' },
         { title: 'Pipelines', value: '23', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
-        { title: 'Components', value: '8+', detail: 'Vue, React, Web, jQuery, and Svelte packages', tone: 'violet' },
+        { title: 'Components', value: '8+', detail: 'Vanilla JS, Vue, React, jQuery, and Svelte packages', tone: 'violet' },
         { title: 'Delivery paths', value: '4', detail: 'npm, GitHub Release, Docker, and static self-hosting', tone: 'amber' }
       ]
 )
@@ -368,13 +368,13 @@ const capabilities = computed<Capability[]>(() =>
         { title: '统一搜索与定位', detail: 'Ctrl/Command + F 调出浮层搜索，命中高亮、上一条/下一条和行级/页级定位可复用。', icon: SearchCheck },
         { title: '高保真打印导出', detail: 'PDF、Word、Markdown、图片等按渲染链路动态启用打印与 HTML 导出，避免只打印当前视口。', icon: Download },
         { title: '主题与水印', detail: 'light、dark、system 可控，文字/图片水印通过 options 统一注入。', icon: PanelTop },
-        { title: '低耦合组件生态', detail: 'Vue、React、Web、jQuery、Svelte 组件均只依赖 core，不互相嵌套实现。', icon: Boxes }
+        { title: '低耦合组件生态', detail: 'Vanilla JS、Vue、React、jQuery、Svelte 组件均只依赖 core，不互相嵌套实现。', icon: Boxes }
       ]
     : [
         { title: 'Unified search and anchors', detail: 'Ctrl/Command + F opens focused search with highlights, next/previous navigation, and reusable page/line anchors.', icon: SearchCheck },
         { title: 'High-fidelity print and export', detail: 'PDF, Word, Markdown, images, and other printable renderers expose print and HTML export only when the output is trustworthy.', icon: Download },
         { title: 'Theme and watermark options', detail: 'light, dark, and system themes are controlled by options; text and image watermarks use one contract.', icon: PanelTop },
-        { title: 'Decoupled component ecosystem', detail: 'Vue, React, Web, jQuery, and Svelte packages depend only on core and do not nest framework implementations.', icon: Boxes }
+        { title: 'Decoupled component ecosystem', detail: 'Vanilla JavaScript, Vue, React, jQuery, and Svelte packages depend only on core and do not nest framework implementations.', icon: Boxes }
       ]
 )
 
@@ -406,12 +406,12 @@ const portalLinks = computed<LinkItem[]>(() =>
 
 const ecosystem = [
   '@file-viewer/core',
+  '@file-viewer/web',
   '@file-viewer/vue3',
   '@file-viewer/vue2.7',
   '@file-viewer/vue2.6',
   '@file-viewer/react',
   '@file-viewer/react-legacy',
-  '@file-viewer/web',
   '@file-viewer/jquery',
   '@file-viewer/svelte'
 ]
@@ -421,6 +421,35 @@ function snippetImport(statement: string) {
 }
 
 const quickStartItems = computed<QuickStartItem[]>(() => [
+  {
+    label: isZh.value ? 'Vanilla JS' : 'Vanilla JS',
+    packageName: '@file-viewer/web',
+    install: 'npm install @file-viewer/web',
+    title: isZh.value ? '无框架页面也有原生组件' : 'Native components for framework-free pages',
+    summary: isZh.value
+      ? 'Custom Element、命令式 controller 和 script 标签入口都走同一套 core 能力，最适合快速标准化接入。'
+      : 'Custom Element, imperative controller, and script-tag entry all share the same core for the fastest standard integration path.',
+    language: 'HTML',
+    href: `${docsUrl}guide/quickstart-web`,
+    tone: 'violet',
+    icon: MonitorPlay,
+    code: `<flyfish-file-viewer
+  id="viewer"
+  src="/files/drawing.dwg"
+  theme="light"
+  toolbar-position="bottom-right"
+></flyfish-file-viewer>
+
+${snippetImport("{ defineFileViewerElement } from '@file-viewer/web'")}
+
+defineFileViewerElement()
+
+const viewer = document.getElementById('viewer')
+viewer.addEventListener('viewer-load-complete', event => {
+  console.log('loaded', event.detail.payload.fileName)
+})
+viewer.zoomIn()`
+  },
   {
     label: isZh.value ? 'Vue 3' : 'Vue 3',
     packageName: '@file-viewer/vue3',
@@ -514,35 +543,6 @@ export function Preview() {
 }`
   },
   {
-    label: isZh.value ? '纯 Web' : 'Pure Web',
-    packageName: '@file-viewer/web',
-    install: 'npm install @file-viewer/web',
-    title: isZh.value ? '无框架页面也有原生组件' : 'Native components for framework-free pages',
-    summary: isZh.value
-      ? 'Custom Element、命令式 controller 和 script 标签入口都走同一套 core 能力。'
-      : 'Custom Element, imperative controller, and script-tag entry all share the same core.',
-    language: 'HTML',
-    href: `${docsUrl}guide/quickstart-web`,
-    tone: 'violet',
-    icon: MonitorPlay,
-    code: `<flyfish-file-viewer
-  id="viewer"
-  src="/files/drawing.dwg"
-  theme="light"
-  toolbar-position="bottom-right"
-></flyfish-file-viewer>
-
-${snippetImport("{ defineFileViewerElement } from '@file-viewer/web'")}
-
-defineFileViewerElement()
-
-const viewer = document.getElementById('viewer')
-viewer.addEventListener('viewer-load-complete', event => {
-  console.log('loaded', event.detail.payload.fileName)
-})
-viewer.zoomIn()`
-  },
-  {
     label: 'jQuery',
     packageName: '@file-viewer/jquery',
     install: 'npm install jquery @file-viewer/jquery',
@@ -625,13 +625,15 @@ const qrItems = computed<QrItem[]>(() =>
         { label: '微信打赏', note: '请我们喝杯柠檬水', image: '/donate-wx.jpg' },
         { label: '支付宝打赏', note: '支持开源持续迭代', image: '/donate-alipay.jpg' },
         { label: '客服微信', note: '优先支持与商业沟通', image: '/contact.jpg' },
-        { label: '公众号', note: '关注更新与实践文章', image: '/wechat-mp.png' }
+        { label: '公众号', note: '关注更新与实践文章', image: '/wechat-mp.png' },
+        { label: '交流群', note: '加入用户交流群', image: '/community-qr.png' }
       ]
     : [
         { label: 'WeChat Sponsor', note: 'Buy us a lemonade', image: '/donate-wx.jpg' },
         { label: 'Alipay Sponsor', note: 'Support open-source work', image: '/donate-alipay.jpg' },
         { label: 'Support Contact', note: 'Priority support and business inquiries', image: '/contact.jpg' },
-        { label: 'Official Account', note: 'Updates and engineering notes', image: '/wechat-mp.png' }
+        { label: 'Official Account', note: 'Updates and engineering notes', image: '/wechat-mp.png' },
+        { label: 'Community Group', note: 'Join the user community', image: '/community-qr.png' }
       ]
 )
 

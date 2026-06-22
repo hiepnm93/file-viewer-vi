@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 194 个扩展名和 Vue3、Vue2.7/2.6、React、Pure Web、jQuery、Svelte 原生接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 194 个扩展名和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -25,9 +25,9 @@ export default defineConfig({
           { text: '官网门户', link: 'https://file-viewer.app' },
           { text: '在线 Demo', link: 'https://demo.file-viewer.app' },
           { text: 'npm Core', link: 'https://www.npmjs.com/package/@file-viewer/core' },
+          { text: 'npm Vanilla JS / Pure Web', link: 'https://www.npmjs.com/package/@file-viewer/web' },
           { text: 'npm Vue3', link: 'https://www.npmjs.com/package/@file-viewer/vue3' },
           { text: 'npm React', link: 'https://www.npmjs.com/package/@file-viewer/react' },
-          { text: 'npm Pure Web', link: 'https://www.npmjs.com/package/@file-viewer/web' },
           { text: 'npm Svelte', link: 'https://www.npmjs.com/package/@file-viewer/svelte' },
           { text: 'GitHub 开源总仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
           { text: 'Gitee 开源总仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
@@ -50,11 +50,11 @@ export default defineConfig({
           text: '集成方式',
           items: [
             { text: '生态组件总览', link: '/guide/ecosystem' },
+            { text: '纯 JS / Script 标签集成', link: '/guide/quickstart-web' },
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
             { text: 'Vue2.7 / 2.6 集成', link: '/guide/quickstart-vue2' },
             { text: 'React 集成', link: '/guide/quickstart-react' },
             { text: 'React Legacy 集成', link: '/guide/ecosystem#react-legacy' },
-            { text: '纯 JS / Script 标签集成', link: '/guide/quickstart-web' },
             { text: 'jQuery 集成', link: '/guide/ecosystem#jquery' },
             { text: 'Svelte 集成', link: '/guide/ecosystem#svelte' },
             { text: 'Core 自定义接入', link: '/guide/ecosystem#core' },

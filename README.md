@@ -4,11 +4,11 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
+`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
-- 标准 npm 包: `@file-viewer/core`、`@file-viewer/pptx`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/web`、`@file-viewer/jquery`、`@file-viewer/svelte`
+- 标准 npm 包: `@file-viewer/core`、`@file-viewer/pptx`、`@file-viewer/web`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/jquery`、`@file-viewer/svelte`
 - 历史兼容 npm 包: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`
 - 官方网站: [file-viewer.app](https://file-viewer.app)
 - 官方文档: [doc.file-viewer.app](https://doc.file-viewer.app)
@@ -32,7 +32,7 @@
 - **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
-- **各框架体验一致。** core 聚焦底层预览能力，Vue3、Vue2、React、纯 Web、jQuery 和 Svelte 标准组件包 各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
+- **各框架体验一致。** core 聚焦底层预览能力，Vanilla JS / Pure Web、Vue3、Vue2、React、jQuery 和 Svelte 标准组件包各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
 - **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
 - **适合开源分发和二次接入。** 开源总仓库同时维护 core、独立渲染引擎包、标准组件包、兼容包、主 Demo 源码、文档源码、混淆压缩产物、npm tarball、静态部署产物和 release 下载物，便于下载、运行、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
 
@@ -70,7 +70,7 @@
 
 ## 效果截图
 
-| 主 Demo / 多格式预览 | 文档预览 / Office 与 PDF 阅读面 | 纯 Web / script 标签接入 |
+| 主 Demo / 多格式预览 | 文档预览 / Office 与 PDF 阅读面 | Vanilla JS / script 标签接入 |
 | --- | --- | --- |
 | <img src="docs/_images/demo-main.png" width="360" alt="Flyfish Viewer 主 Demo 多格式预览效果" /> | <img src="docs/_images/demo-doc.png" width="360" alt="Flyfish Viewer 文档预览效果" /> | <img src="docs/_images/demo-iframe.png" width="360" alt="Flyfish Viewer 纯 Web 接入预览效果" /> |
 
@@ -82,12 +82,12 @@
 | --- | --- | --- | --- | --- |
 | Core 底座 | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | 无 | `latest` | 框架无关的格式矩阵、预览能力、资源加载、生命周期事件、搜索、缩放、打印、导出和操作 API |
 | PPTX 原生引擎 | [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx) | 无 | `latest` | 从 Flyfish 历史稳定实现拆出的独立 PPTX 渲染引擎，Worker 渐进解析并可由 core 按需加载 |
+| Vanilla JS / Pure Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`、Custom Element、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
 | Vue3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型 |
 | Vue2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `latest` | Vue2.7 原生组件，能力和 Vue3 保持一致 |
 | Vue2.6 | [`@file-viewer/vue2.6`](https://www.npmjs.com/package/@file-viewer/vue2.6) | 无 | `latest` | Vue2.6 专线，面向仍停留在 Vue 2.6 的老项目 |
 | React 18/19 | [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react) | [`@flyfish-group/file-viewer-react`](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | `latest` | React 原生组件和 hooks/controller，不通过 Vue 或 iframe 转接 |
 | React 16.8/17 | [`@file-viewer/react-legacy`](https://www.npmjs.com/package/@file-viewer/react-legacy) | 无 | `latest` | 面向旧 React 项目的兼容组件包 |
-| 纯 Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
 | jQuery | [`@file-viewer/jquery`](https://www.npmjs.com/package/@file-viewer/jquery) | 无 | `latest` | jQuery 插件式接入，适合传统后台系统 |
 | Svelte | [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte) | 无 | `latest` | Svelte 组件、action 和类型入口 |
 
@@ -96,9 +96,9 @@
 常见安装方式:
 
 ```bash
+pnpm add @file-viewer/web
 pnpm add @file-viewer/vue3
 pnpm add @file-viewer/react
-pnpm add @file-viewer/web
 pnpm add @file-viewer/core
 pnpm add @file-viewer/pptx
 ```
@@ -108,12 +108,12 @@ pnpm add @file-viewer/pptx
 ```bash
 npm install ./artifacts/file-viewer-core-*.tgz
 npm install ./artifacts/file-viewer-pptx-*.tgz
+npm install ./artifacts/file-viewer-web-*.tgz
 npm install ./artifacts/file-viewer-vue3-*.tgz
 npm install ./artifacts/file-viewer-vue2.7-*.tgz
 npm install ./artifacts/file-viewer-vue2.6-*.tgz
 npm install ./artifacts/file-viewer-react-*.tgz
 npm install ./artifacts/file-viewer-react-legacy-*.tgz
-npm install ./artifacts/file-viewer-web-*.tgz
 npm install ./artifacts/file-viewer-jquery-*.tgz
 npm install ./artifacts/file-viewer-svelte-*.tgz
 npm install ./artifacts/flyfish-group-file-viewer3-*.tgz
@@ -122,14 +122,14 @@ npm install ./artifacts/flyfish-group-file-viewer-web-*.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-*.tgz
 ```
 
-Core、PPTX 原生引擎、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+Core、PPTX 原生引擎、Vanilla JS / Pure Web、Vue3、Vue2、React、React legacy、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 GitHub Release 会同步提供完整下载项:
 
 | 文件 | 用途 |
 | --- | --- |
 | `file-viewer-v2-*-demo.tar.gz` | 主 Demo 静态站，解压后即可体验主预览和 `/compare.html` 文档比对 |
-| `file-viewer-v2-*-component-demo.tar.gz` | React / 纯 JS 原生 组件演示站 |
+| `file-viewer-v2-*-component-demo.tar.gz` | Vanilla JS / React 原生组件演示站 |
 | `file-viewer-v2-*-lib-dist.tar.gz` | Vue3 组件库构建产物，适合离线检查 dist 内容 |
 | `file-viewer-v2-*-docs.tar.gz` | 文档站静态产物 |
 | `file-viewer-core-*.tgz` | `@file-viewer/core` 纯 TypeScript 底座本地 npm 安装包 |
@@ -158,27 +158,27 @@ GitHub Release 会同步提供完整下载项:
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
+| Vanilla JS / Pure Web | `@file-viewer/web` | ESM, 类型声明, script 标签 IIFE, Worker/WASM viewer 资源, 复制静态资源 CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
 | Vue 3 | `@file-viewer/vue3` | ESM, 类型声明 | [file-viewer-vue3](https://github.com/flyfish-dev/file-viewer-vue3) | [file-viewer-vue3](https://gitee.com/flyfish-dev/file-viewer-vue3) | `@flyfish-group/file-viewer3`, `file-viewer3` |
 | Vue 2.7 | `@file-viewer/vue2.7` | ESM, 类型声明 | [file-viewer-vue2.7](https://github.com/flyfish-dev/file-viewer-vue2.7) | [file-viewer-vue2.7](https://gitee.com/flyfish-dev/file-viewer-vue2.7) | `@flyfish-group/file-viewer` |
 | Vue 2.6 | `@file-viewer/vue2.6` | ESM, 类型声明 | [file-viewer-vue2.6](https://github.com/flyfish-dev/file-viewer-vue2.6) | [file-viewer-vue2.6](https://gitee.com/flyfish-dev/file-viewer-vue2.6) | 无 |
 | React 18/19 | `@file-viewer/react` | ESM, 类型声明 | [file-viewer-react](https://github.com/flyfish-dev/file-viewer-react) | [file-viewer-react](https://gitee.com/flyfish-dev/file-viewer-react) | `@flyfish-group/file-viewer-react` |
 | React 16.8/17 | `@file-viewer/react-legacy` | ESM, 类型声明 | [file-viewer-react-legacy](https://github.com/flyfish-dev/file-viewer-react-legacy) | [file-viewer-react-legacy](https://gitee.com/flyfish-dev/file-viewer-react-legacy) | 无 |
-| Pure Web | `@file-viewer/web` | ESM, 类型声明, script 标签 IIFE, Worker/WASM viewer 资源, 复制静态资源 CLI | [file-viewer-web](https://github.com/flyfish-dev/file-viewer-web) | [file-viewer-web](https://gitee.com/flyfish-dev/file-viewer-web) | `@flyfish-group/file-viewer-web` |
 | jQuery | `@file-viewer/jquery` | ESM, 类型声明 | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | 无 |
 | Svelte | `@file-viewer/svelte` | Svelte 组件, ESM, 类型声明 | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | 无 |
 
 ### 组件属性与工具栏定制摘要
 
-每个生态包都暴露原生接入方式。Vue3 保持轻量声明式 props；React、Pure Web、Svelte、jQuery 和 Vue2 适合需要 `buffer`、`name`、`type`、`size` 等命令式挂载参数的场景。完整示例见官方文档: https://doc.file-viewer.app/guide/ecosystem
+每个生态包都暴露原生接入方式。Vanilla JS / Pure Web 优先面向非框架、Custom Element 和 script 标签场景；Vue3 保持轻量声明式 props；React、Svelte、jQuery 和 Vue2 适合需要 `buffer`、`name`、`type`、`size` 等命令式挂载参数的场景。完整示例见官方文档: https://doc.file-viewer.app/guide/ecosystem
 
 | 组件 | 实际属性 / 入口 | 事件入口 | 定制入口 |
 | --- | --- | --- | --- |
+| Vanilla JS / Pure Web `@file-viewer/web` | `<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)` | `viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()` | Custom Element 实例暴露完整 controller handle；IIFE script 标签会自动注册元素，同时保留 `mountViewer` 命令式挂载和资源复制 CLI。 |
 | Vue 3 `@file-viewer/vue3` | `url`、`file`、`options` | `load-start`、`load-complete`、`unload-start`、`unload-complete`、`operation-before`、`operation-cancel`、`operation-availability-change`、`search-change`、`location-change`、`zoom-change` | 模板 `ref` 暴露 `FileViewerExpose`；适合声明式接入。`Blob` / `ArrayBuffer` 建议包装成带扩展名的 `File` 后传给 `file`。 |
 | Vue 2.7 `@file-viewer/vue2.7` | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size`、`options`、`containerClass`、`containerStyle` | `viewer-event` / `viewerEvent` | 组件实例暴露 controller handle 全量方法；适合 Vue 2.7 项目和历史 `@flyfish-group/file-viewer` 平滑升级。 |
 | Vue 2.6 `@file-viewer/vue2.6` | 同 Vue 2.7 | `viewer-event` / `viewerEvent` | 独立 Vue 2.6 构建，不要求业务升级到 Vue 2.7。 |
 | React `@file-viewer/react` | `ViewerMountOptions` + `div` 原生属性，如 `className`、`style`、`data-*`、`aria-*` | `onEvent`、`onStateChange` | `ref` 暴露 `FileViewerHandle`；`useFileViewer()` 会返回 `ref`、`props`、`state`、`handle`，便于自定义工具栏。 |
 | React Legacy `@file-viewer/react-legacy` | 同 React 标准包 | `onEvent`、`onStateChange` | 面向 React 16.8 / 17；组件名和默认导出保持 legacy 生态友好。 |
-| Pure Web `@file-viewer/web` | `<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)` | `viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()` | Custom Element 实例暴露完整 controller handle；IIFE script 标签会自动注册元素，同时保留 `mountViewer` 命令式挂载和资源复制 CLI。 |
 | jQuery `@file-viewer/jquery` | `$(el).fileViewer(ViewerMountOptions & { replace?: boolean })` | `onEvent`、`onStateChange` 或 `getFileViewerController(el).subscribe()` | 插件方法支持 `zoomIn`、`printRenderedHtml`、`searchDocument` 等；`replace:false` 可在同一节点上原地更新。 |
 | Svelte `@file-viewer/svelte` | `ViewerMountOptions` + `className`、`containerStyle` | `on:viewerEvent`、`onEvent`、`onStateChange` | `bind:this` 暴露 controller handle；也提供 `use:fileViewer` action，action 额外支持 `replace`。 |
 
@@ -205,15 +205,40 @@ Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预
 - 商业版 Demo: [office.flyfish.dev](https://office.flyfish.dev/)
 - 飞鱼开源工作室: [flyfish.dev](https://flyfish.dev/)
 
-| 微信赞赏码 | 微信支付 | 支付宝收款码 | 微信公众号 / 客服微信二维码 |
-| --- | --- | --- | --- |
-| <img src="docs/_media/support/wechat-reward.jpg" width="160" alt="微信赞赏码" /> | <img src="docs/_media/support/wechat-pay.jpg" width="160" alt="微信支付赞助码" /> | <img src="docs/_media/support/alipay.jpg" width="160" alt="支付宝收款码" /> | <img src="docs/_media/support/wechat-mp.png" width="220" alt="飞鱼开源 WorkShop 微信公众号与客服微信入口" /> |
+| 微信赞赏码 | 微信支付 | 支付宝收款码 | 微信公众号 / 客服微信二维码 | 用户交流群 |
+| --- | --- | --- | --- | --- |
+| <img src="docs/_media/support/wechat-reward.jpg" width="150" alt="微信赞赏码" /> | <img src="docs/_media/support/wechat-pay.jpg" width="150" alt="微信支付赞助码" /> | <img src="docs/_media/support/alipay.jpg" width="150" alt="支付宝收款码" /> | <img src="docs/_media/support/wechat-mp.png" width="190" alt="飞鱼开源 WorkShop 微信公众号与客服微信入口" /> | <img src="docs/_media/support/community-qr.png" width="150" alt="Flyfish Viewer 用户交流群二维码" /> |
 
 商业版来自 Flyfish Office 产品线，面向严肃企业场景提供自研原生 Office 文档引擎，重点解决 Word、Excel、PowerPoint 在复杂版式、大文件、分页布局、高保真渲染和稳定性能上的更高要求。开源版会继续维护，商业支持主要用于更快响应、私有化评估和定制交付。
 
 ## 接入路线
 
-### 1. Vue 3 组件集成
+### 1. Vanilla JS / Pure Web 集成
+
+适合非框架页面、微前端壳、传统后台、低代码平台和任意希望直接通过原生 Web 组件接入的系统。`@file-viewer/web` 同时提供 `<flyfish-file-viewer>`、`mountViewer(container, options)`、IIFE script 标签包和资源复制 CLI。
+
+```bash
+npm install @file-viewer/web
+```
+
+```html
+<flyfish-file-viewer
+  src="https://example.com/demo.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:100vh"
+></flyfish-file-viewer>
+
+<script type="module">
+  import { defineFileViewerElement } from '@file-viewer/web'
+
+  defineFileViewerElement()
+</script>
+```
+
+完整的 script 标签、Custom Element、`mountViewer` 和离线资源复制说明见 [纯 JS 集成文档](https://doc.file-viewer.app/guide/quickstart-web)。
+
+### 2. Vue 3 组件集成
 
 适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。Vue3 标准组件包 直接使用共享 core 能力，并承担 Vue 生态内的插件安装、组件 props、ref API 和类型出口。
 
@@ -245,7 +270,7 @@ const url = ref('https://example.com/demo.pdf')
 </template>
 ```
 
-### 2. Vue 2 组件集成
+### 3. Vue 2 组件集成
 
 适合仍在 Vue2.7 技术栈上，希望直接以内嵌组件方式完成接入的团队。Vue2 入口也会自动带上样式，不需要再额外 import CSS。
 
@@ -283,13 +308,12 @@ export default {
 </script>
 ```
 
-### 3. React / 纯 Web 子工程
+### 4. React 子工程
 
-React 与纯 Web 标准包都走 native controller，直接在业务页面挂载完整预览器。
+React 标准包走 native controller，直接在业务页面挂载完整预览器。React 16.8 / 17 老项目可使用 `@file-viewer/react-legacy`。
 
 ```bash
 npm install @file-viewer/react
-npm install @file-viewer/web
 ```
 
 ```tsx
@@ -308,22 +332,22 @@ export function Preview() {
 
 `@file-viewer/react` 支持 React 17 / 18 / 19，内部使用本包本地 controller 调用 `@file-viewer/core` 与 core browser engine，不依赖纯 Web 组件实现。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 交给预览器。资源复制命令仍保留，用于 worker/WASM 和示例资源的自托管分发；标准组件包接入不需要额外的静态页面地址。
 
-本仓库内置了一个组件演示应用，覆盖 React 组件、纯 Web helper、jQuery 和 Svelte 入口。调试时直接运行:
+本仓库内置了一个组件演示应用，覆盖 Vanilla JS / Pure Web helper、React 组件、jQuery 和 Svelte 入口。调试时直接运行:
 
 ```bash
 pnpm dev:components
 ```
 
-打开本地地址即可验证 React 组件和纯 JS `mountViewer` 的 native 预览效果。验证静态部署产物时运行:
+打开本地地址即可验证 Vanilla JS `mountViewer` 和 React 组件的 native 预览效果。验证静态部署产物时运行:
 
 ```bash
 pnpm build:component-demo
 pnpm --filter @flyfish-group/file-viewer-component-demo preview
 ```
 
-确认无误后，`apps/component-demo/dist` 可以作为普通静态目录部署；其中只包含 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入示例。正式在线预览站和文档比对入口由 `apps/viewer-demo` 承载。
+确认无误后，`apps/component-demo/dist` 可以作为普通静态目录部署；其中只包含 Vanilla JS / Pure Web、React、Vue3、jQuery、Svelte 和 script 标签接入示例。正式在线预览站和文档比对入口由 `apps/viewer-demo` 承载。
 
-### 4. Docker 一键部署
+### 5. Docker 一键部署
 
 适合内网、私有云、客户现场或希望直接运行完整 Demo 的场景。镜像发布后可直接运行:
 

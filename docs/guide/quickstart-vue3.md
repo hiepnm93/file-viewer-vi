@@ -177,4 +177,4 @@ Vue2.7 项目请使用 `@file-viewer/vue2.7`，Vue2.6 项目请使用 `@file-vie
 
 ## 更适合平台化的方案
 
-如果你正在做的是统一附件中心或多个系统共用预览能力，建议先统一到 core + 标准组件包的包线管理: Vue、React、Pure Web、jQuery、Svelte 使用同一套 options、事件和文件输入语义，业务侧只需要按技术栈选择对应标准组件包。完整矩阵见 [生态组件总览](/guide/ecosystem)。
+如果你正在做的是统一附件中心或多个系统共用预览能力，建议先统一到 core + 标准组件包的包线管理: Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 使用同一套 options、事件和文件输入语义，业务侧只需要按技术栈选择对应标准组件包。完整矩阵见 [生态组件总览](/guide/ecosystem)。

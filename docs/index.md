@@ -11,7 +11,7 @@ titleTemplate: false
 <h1>Flyfish Viewer</h1>
 <p>
 纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音视频、字体、设计资产和结构化数据预览能力放进浏览器端，
-同时提供 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 和 Svelte 原生集成路径。
+同时提供 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 原生集成路径。
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
@@ -103,7 +103,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>接入边界清晰</h3>
-<p>Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 和 Svelte 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
+<p>Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
 </article>
 <article class="doc-card">
 <h3>开源总仓一站式入口</h3>
@@ -124,6 +124,10 @@ titleTemplate: false
 </div>
 
 <div class="doc-path-grid">
+<a class="doc-path-card" href="/guide/quickstart-web">
+<strong>Vanilla JS / 纯 JS 页面</strong>
+<span>安装 @file-viewer/web，优先用 &lt;flyfish-file-viewer&gt; 原生组件，也可用 mountViewer 命令式挂载。</span>
+</a>
 <a class="doc-path-card" href="/guide/quickstart-vue3">
 <strong>Vue 3 项目</strong>
 <span>安装 @file-viewer/vue3，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
@@ -135,10 +139,6 @@ titleTemplate: false
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
 <span>React 18/19 使用 @file-viewer/react，React 16.8/17 使用 @file-viewer/react-legacy。</span>
-</a>
-<a class="doc-path-card" href="/guide/quickstart-web">
-<strong>纯 JS 页面</strong>
-<span>安装 @file-viewer/web，优先用 &lt;flyfish-file-viewer&gt; 原生组件，也可用 mountViewer 命令式挂载。</span>
 </a>
 <a class="doc-path-card" href="/guide/ecosystem#svelte">
 <strong>Svelte 项目</strong>
@@ -177,7 +177,7 @@ titleTemplate: false
 官网门户是 <a href="https://file-viewer.app">file-viewer.app</a>，
 开源总仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
 Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。
-React、Pure Web、jQuery 和 Svelte 组件默认在业务页面内原生挂载预览器，不会把官网 Demo 地址作为内置依赖。
+Vanilla JS / Pure Web、React、jQuery 和 Svelte 组件默认在业务页面内原生挂载预览器，不会把官网 Demo 地址作为内置依赖。
 </p>
 </div>
 <a class="doc-action doc-action-primary" href="/guide/">进入文档导览</a>
