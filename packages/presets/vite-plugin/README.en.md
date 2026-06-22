@@ -8,7 +8,7 @@ Vite plugin for Flyfish File Viewer on-demand renderer assembly. It generates `v
 pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/renderer-pdf
 ```
 
-Install additional renderer packages when you need more formats, such as `@file-viewer/renderer-cad`, `@file-viewer/renderer-typst`, or `@file-viewer/renderer-archive`.
+Install additional renderer packages when you need more formats, such as `@file-viewer/renderer-ofd`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-typst`, or `@file-viewer/renderer-archive`.
 
 ## vite.config.ts
 
@@ -41,7 +41,7 @@ const options = {
 
 ## Current Boundary
 
-The plugin currently generates imports for renderer packages that have already been split out: PDF, CAD, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Formats that are still waiting for standalone packages, such as Word, Excel, OFD, drawing, 3D, EDA, and data assets, produce clear guidance. Use `@file-viewer/preset-all` for full compatibility until every renderer line is fully extracted.
+The plugin currently generates imports for renderer packages that have already been split out: PDF, OFD, CAD, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Formats that are still waiting for standalone packages, such as Word, Excel, drawing, 3D, EDA, and data assets, produce clear guidance. Use `@file-viewer/preset-all` for full compatibility until every renderer line is fully extracted.
 
 ## Documentation
 

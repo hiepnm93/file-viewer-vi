@@ -15,6 +15,14 @@ const rendererModules = [
         chunkName: 'file-viewer-pdf'
     },
     {
+        id: 'ofd',
+        packageName: '@file-viewer/renderer-ofd',
+        exportName: 'ofdRenderer',
+        formats: ['ofd'],
+        rendererIds: ['ofd'],
+        chunkName: 'file-viewer-ofd'
+    },
+    {
         id: 'cad',
         packageName: '@file-viewer/renderer-cad',
         exportName: 'cadRenderer',
@@ -187,12 +195,6 @@ const plannedRenderers = [
         targetPackage: '@file-viewer/renderer-presentation',
         formats: ['ppt', 'pptx', 'pptm', 'odp'],
         note: 'Presentation renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-presentation.'
-    },
-    {
-        id: 'ofd',
-        targetPackage: '@file-viewer/renderer-ofd',
-        formats: ['ofd'],
-        note: 'OFD renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-ofd.'
     },
     {
         id: 'drawing',

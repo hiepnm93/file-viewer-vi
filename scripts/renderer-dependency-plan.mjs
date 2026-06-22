@@ -6,7 +6,7 @@ export const rendererModularizationLines = [
     phase: 2,
     status: 'planned',
     renderers: ['office-word-openxml', 'office-word-binary', 'open-document'],
-    dependencies: ['@file-viewer/docx', 'msdoc-viewer', 'rtf.js', 'jszip'],
+    dependencies: ['@file-viewer/docx', 'msdoc-viewer', 'rtf.js', 'jszip', 'linkedom'],
   },
   {
     id: 'office-presentation',
@@ -40,9 +40,9 @@ export const rendererModularizationLines = [
     group: 'document',
     targetPackage: '@file-viewer/renderer-ofd',
     phase: 2,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['ofd'],
-    dependencies: ['ofd-xml-parser', 'linkedom'],
+    dependencies: ['ofd-xml-parser', 'jszip'],
   },
   {
     id: 'document-typst',

@@ -27,6 +27,17 @@
       "publicSource": true
     },
     {
+      "id": "ofd",
+      "packageName": "@file-viewer/renderer-ofd",
+      "description": "Standalone OFD renderer plugin for File Viewer with DLTech21/ofd.js parsing, page rendering, zoom, print, export, and offline vendor support.",
+      "packageDir": "packages/renderers/ofd",
+      "repository": "file-viewer-renderer-ofd",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-ofd",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-ofd",
+      "entryFormats": ["esm", "types", "vendor"],
+      "publicSource": true
+    },
+    {
       "id": "mindmap",
       "packageName": "@file-viewer/renderer-mindmap",
       "description": "Standalone XMind and mind map renderer plugin for File Viewer with modern/classic XMind parsing, draggable canvas, zoom, sheet navigation, and node outline support.",

@@ -10,6 +10,7 @@
 - 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容，禁用浏览器原生拖图/拖链接，并把边界约束改为画布式保留可见边缘，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
+- OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - EPUB 预览迁移为 `@file-viewer/renderer-ebook` 独立 renderer 包，继续使用 `epubjs` 提供目录、滚动阅读、章节跳转和阅读进度，并由 `@file-viewer/preset-all` 自动聚合
 - 代码与 Markdown 预览迁移为 `@file-viewer/renderer-text` 独立 renderer 包，继续使用按语言动态加载的 `highlight.js` 和 `marked`，并由 `@file-viewer/preset-all` 自动聚合
 - 图片预览迁移为 `@file-viewer/renderer-image` 独立 renderer 包，普通图片继续使用浏览器原生解码，HEIC / HEIF 只在命中格式时按需加载 `heic2any`，并由 `@file-viewer/preset-all` 自动聚合

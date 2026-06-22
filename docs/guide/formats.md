@@ -37,7 +37,7 @@
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/pptx` 原生引擎 / OpenDocument 兼容预览 | PPTX 走独立开源 native renderer，Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
-| OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
+| OFD | `ofd` | `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，vendor 随包离线分发，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `@file-viewer/renderer-archive` + `libarchive.js` WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存、体积上限和 ZIP/TAR/GZIP 兼容降级 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | `@file-viewer/renderer-email` + `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；MBOX 会解析首封邮件并标注识别数量；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |

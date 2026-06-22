@@ -58,6 +58,7 @@
     "@file-viewer/renderer-image": "workspace:^2.0.11",
     "@file-viewer/renderer-media": "workspace:^2.0.11",
     "@file-viewer/renderer-mindmap": "workspace:^2.0.11",
+    "@file-viewer/renderer-ofd": "workspace:^2.0.11",
     "@file-viewer/renderer-pdf": "workspace:^2.0.11",
     "@file-viewer/renderer-text": "workspace:^2.0.11",
     "@file-viewer/renderer-typst": "workspace:^2.0.11"
