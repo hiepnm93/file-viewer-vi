@@ -20,20 +20,63 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - Sponsorship and priority support: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-## Support, Sponsorship, and Commercial Edition
+## Why Use It
 
-Flyfish Viewer remains Apache-2.0 open source. The open-source edition is designed for general Web preview, intranet deployment, attachment centers, and lightweight integration. If you need higher fidelity, stronger performance, private delivery, custom compatibility work, or priority support, you can sponsor the project and learn about the commercial native document engine through the links below.
+- **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
+- **Broad format coverage.** The current release maps 194 extensions across 23 preview pipelines, including Office, PDF, OFD, Typst, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
+- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
+- **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
+- **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
+- **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
+- **Controlled theming.** `options.theme` supports `light`, `dark`, and `system`. Light business UIs can lock the viewer to `light` even when the operating system is in dark mode.
+- **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
+- **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
+- **Consistent native component package experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
+- **Open-source main distribution.** The open-source main repository contains core, standalone renderer packages, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
 
-- Sponsorship and priority support: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
-- Commercial edition: [product.flyfish.group](https://product.flyfish.group/)
-- Commercial demo: [office.flyfish.dev](https://office.flyfish.dev/)
-- Flyfish Open Source Studio: [flyfish.dev](https://flyfish.dev/)
+## Supported Formats
 
-| WeChat reward | WeChat Pay | Alipay collection | Official account / customer support |
+The viewer is organized around preview pipelines rather than one-off file extensions.
+
+| Category | Extensions | Rendering pipeline | Typical use |
 | --- | --- | --- | --- |
-| <img src="docs/_media/support/wechat-reward.jpg" width="160" alt="WeChat reward QR code" /> | <img src="docs/_media/support/wechat-pay.jpg" width="160" alt="WeChat Pay sponsorship QR code" /> | <img src="docs/_media/support/alipay.jpg" width="160" alt="Alipay collection QR code" /> | <img src="docs/_media/support/wechat-mp.png" width="220" alt="Flyfish Open Source WorkShop official account and customer support entry" /> |
+| Word | `docx`, `docm`, `dotx`, `dotm` | Self-maintained `@file-viewer/docx` with Worker parsing, continuous flow reading, cached TOC fields, async rendering, print, and HTML export; visual pagination is opt-in | Modern Word documents and templates |
+| Legacy Word | `doc`, `dot` | `msdoc-viewer` with Word-like paper surface and CFB tolerance fixes | Old Word 97-2003 files |
+| Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
+| Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
+| Excel-compatible | `xlsm`, `xlsb`, `xls`, `xlt`, `xltm`, `csv`, `ods`, `fods`, `numbers` | Progressive spreadsheet parsing and virtual rendering through the same default main-thread path, with Worker opt-in when deployment allows it | Legacy spreadsheets and lightweight data preview |
+| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Native open-source `@file-viewer/pptx` engine with Worker based progressive slide output; ODP uses OpenDocument slide text extraction | Presentations, training decks, proposals |
+| PDF | `pdf` | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export | Contracts, invoices, official layout documents |
+| OFD | `ofd` | Browser-side OFD preview based on `DLTech21/ofd.js` source | Chinese e-invoices, government documents, archives |
+| Typst | `typ`, `typst` | Direct Typst source rendering with browser WASM compiler and SVG pages | Technical reports, papers, engineering documents |
+| Archives | `zip`, `zipx`, `7z`, `rar`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`, `cab`, `iso`, `jar`, `apk`, `cbz`, `cbr`, and more | Shared core archive renderer with a `libarchive.js` Worker, directory listing, lazy extraction, nested preview, IndexedDB cache, and ZIP/TAR/GZIP fallback | Attachment packages and internal document bundles |
+| Email | `eml`, `msg`, `mbox` | `postal-mime` for EML/MBOX, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview | Email archives and support tickets |
+| EDA | `olb`, `dra` | CFB-based OrCAD / Allegro structure inspection, trees, symbols, footprints, padstack candidates, properties, strings, diagnostics | Component libraries and EDA attachments |
+| CAD | `dwg`, `dxf`, `dwf`, `dwfx`, `xps` | `@flyfish-dev/cad-viewer` preview. DWG uses Worker + LibreDWG WASM, DXF uses a JS parser, and DWF/DWFx/XPS use the native `dwf-viewer` path for W2D/W3D/XPS graphics | Engineering drawings and AutoCAD archives |
+| Geospatial data | `geojson`, `kml`, `gpx`, `shp` | GeoJSON normalization with `@tmcw/togeojson` and `shpjs`, rendered as an offline SVG map preview | GIS exports, route tracks, map attachment review |
+| 3D models | `glb`, `gltf`, `obj`, `stl`, `ply`, `fbx`, `dae`, `3ds`, `3mf`, `amf`, `usd`, `usda`, `usdc`, `usdz`, `kmz`, `pcd`, `wrl`, `vrml`, `xyz`, `vtk`, `vtp`, `step`, `stp`, `iges`, `igs`, `ifc`, `3dm` | Three.js interactive preview, with conversion guidance for heavy CAD/BIM kernels | 3D assets, point clouds, design models |
+| Excalidraw | `excalidraw` | Official `@excalidraw/excalidraw` restore and `exportToSvg` read-only rendering | Whiteboard sketches and product diagrams |
+| draw.io | `drawio`, `dio` | Official diagrams.net `GraphViewer` | Flowcharts and architecture diagrams |
+| EPUB | `epub` | `epubjs` table of contents and scrolling reader | Ebooks and long training materials |
+| UMD ebook | `umd` | UMD metadata, chapters, offsets, zlib text blocks | Legacy mobile ebooks |
+| Markdown | `md`, `markdown` | Markdown reading surface with theme-aware styles | README files and knowledge base articles |
+| Images | `gif`, `jpg`, `jpeg`, `bmp`, `tiff`, `tif`, `png`, `svg`, `webp`, `avif`, `ico`, `heic`, `heif`, `jxl` | Native image preview with HEIC/HEIF conversion loaded only when needed | Image attachments, screenshots, icons, design exports |
+| Source and text | `txt`, `json`, `jsonc`, `json5`, `ipynb`, `js`, `mjs`, `cjs`, `css`, `java`, `py`, `html`, `htm`, `jsx`, `ts`, `tsx`, `xml`, `log`, `vue`, `yaml`, `yml`, `toml`, `ini`, `proto`, `hcl`, `tex`, `gv`, `http`, `sh`, `bash`, `sql`, `go`, `rs`, `rb`, `swift`, `kt`, `react`, `php`, `c`, `cpp`, `cc`, `h`, `hpp`, `cs`, `diff` | Lightweight `highlight.js` language-specific highlighting, HTML shown as source | Logs, configs, notebooks, code snippets, API responses |
+| Audio | `mp3`, `mpeg`, `wav`, `ogg`, `oga`, `opus`, `m4a`, `aac`, `flac`, `weba`, `midi`, `mid` | Native browser audio player, plus MIDI metadata parsing with `@tonejs/midi` | Recordings, audio attachments, MIDI scores |
+| Video | `mp4`, `webm`, `m3u8` | Native browser video player with `hls.js` fallback for HLS streams | Screen recordings, demo videos, HLS previews |
+| Fonts, design assets, and data | `ttf`, `otf`, `woff`, `woff2`, `psd`, `ai`, `eps`, `sqlite`, `wasm`, `parquet`, `avro`, `webarchive` | Shared core data renderer with FontFace previews, PSD metadata/layers, PDF-backed AI handoff, SQLite/Parquet/Avro/WASM structural summaries, and configurable SQLite WASM URL | Asset review, local databases, binary package inspection |
 
-The commercial edition comes from the Flyfish Office product line. It provides a self-developed native Office document engine for serious enterprise Word, Excel, and PowerPoint scenarios, with stronger fidelity for complex layout, large files, pagination, high-quality rendering, and stable performance. The open-source edition will continue to evolve; commercial support is mainly for faster maintainer response, private deployment evaluation, and custom delivery.
+## Screenshots
+
+| Scenario | Preview |
+| --- | --- |
+| Official website / product portal | <img src="docs/_images/home-hero-premium.jpg" width="720" alt="Flyfish Viewer official website visual" /> |
+| Main demo / multi-format preview | <img src="docs/_images/demo-main.png" width="720" alt="Flyfish Viewer main demo" /> |
+| Document preview / Office and PDF reading surface | <img src="docs/_images/demo-doc.png" width="720" alt="Flyfish Viewer document preview" /> |
+| Pure Web / script tag integration | <img src="docs/_images/demo-iframe.png" width="720" alt="Flyfish Viewer Pure Web integration" /> |
+| Website wide-screen showcase | <img src="docs/_images/demo1.png" width="720" alt="Flyfish Viewer website showcase" /> |
+| Contact and support entry | <img src="docs/_images/contact.jpg" width="420" alt="Flyfish Viewer contact and support entry" /> |
+| Official account strip | <img src="docs/_images/mp.png" width="420" alt="Flyfish Open Source WorkShop official account strip" /> |
 
 ## Current npm Ecosystem
 
@@ -123,6 +166,7 @@ GitHub Releases provide all distribution downloads:
 The unscoped `file-viewer3` historical alias remains part of the npm release flow. The open-source main repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
+
 ## Standard Ecosystem Packages and Public Repositories
 
 This section is generated from `ecosystem/wrappers.json` and `packages/core/src/registry/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.
@@ -169,53 +213,20 @@ The built-in toolbar can be used as-is, or hidden with `toolbar:false` so your o
 The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
-![Flyfish Viewer demo](docs/_images/demo-main.png)
+## Support, Sponsorship, and Commercial Edition
 
-## Why Use It
+Flyfish Viewer remains Apache-2.0 open source. The open-source edition is designed for general Web preview, intranet deployment, attachment centers, and lightweight integration. If you need higher fidelity, stronger performance, private delivery, custom compatibility work, or priority support, you can sponsor the project and learn about the commercial native document engine through the links below.
 
-- **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
-- **Broad format coverage.** The current release maps 194 extensions across 23 preview pipelines, including Office, PDF, OFD, Typst, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
-- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
-- **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
-- **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
-- **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
-- **Controlled theming.** `options.theme` supports `light`, `dark`, and `system`. Light business UIs can lock the viewer to `light` even when the operating system is in dark mode.
-- **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
-- **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
-- **Consistent native component package experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
-- **Open-source main distribution.** The open-source main repository contains core, standalone renderer packages, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
+- Sponsorship and priority support: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- Commercial edition: [product.flyfish.group](https://product.flyfish.group/)
+- Commercial demo: [office.flyfish.dev](https://office.flyfish.dev/)
+- Flyfish Open Source Studio: [flyfish.dev](https://flyfish.dev/)
 
-## Supported Formats
-
-The viewer is organized around preview pipelines rather than one-off file extensions.
-
-| Category | Extensions | Rendering pipeline | Typical use |
+| WeChat reward | WeChat Pay | Alipay collection | Official account / customer support |
 | --- | --- | --- | --- |
-| Word | `docx`, `docm`, `dotx`, `dotm` | Self-maintained `@file-viewer/docx` with Worker parsing, continuous flow reading, cached TOC fields, async rendering, print, and HTML export; visual pagination is opt-in | Modern Word documents and templates |
-| Legacy Word | `doc`, `dot` | `msdoc-viewer` with Word-like paper surface and CFB tolerance fixes | Old Word 97-2003 files |
-| Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
-| Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
-| Excel-compatible | `xlsm`, `xlsb`, `xls`, `xlt`, `xltm`, `csv`, `ods`, `fods`, `numbers` | Progressive spreadsheet parsing and virtual rendering through the same default main-thread path, with Worker opt-in when deployment allows it | Legacy spreadsheets and lightweight data preview |
-| PowerPoint | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp` | Native open-source `@file-viewer/pptx` engine with Worker based progressive slide output; ODP uses OpenDocument slide text extraction | Presentations, training decks, proposals |
-| PDF | `pdf` | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export | Contracts, invoices, official layout documents |
-| OFD | `ofd` | Browser-side OFD preview based on `DLTech21/ofd.js` source | Chinese e-invoices, government documents, archives |
-| Typst | `typ`, `typst` | Direct Typst source rendering with browser WASM compiler and SVG pages | Technical reports, papers, engineering documents |
-| Archives | `zip`, `zipx`, `7z`, `rar`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`, `cab`, `iso`, `jar`, `apk`, `cbz`, `cbr`, and more | Shared core archive renderer with a `libarchive.js` Worker, directory listing, lazy extraction, nested preview, IndexedDB cache, and ZIP/TAR/GZIP fallback | Attachment packages and internal document bundles |
-| Email | `eml`, `msg`, `mbox` | `postal-mime` for EML/MBOX, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview | Email archives and support tickets |
-| EDA | `olb`, `dra` | CFB-based OrCAD / Allegro structure inspection, trees, symbols, footprints, padstack candidates, properties, strings, diagnostics | Component libraries and EDA attachments |
-| CAD | `dwg`, `dxf`, `dwf`, `dwfx`, `xps` | `@flyfish-dev/cad-viewer` preview. DWG uses Worker + LibreDWG WASM, DXF uses a JS parser, and DWF/DWFx/XPS use the native `dwf-viewer` path for W2D/W3D/XPS graphics | Engineering drawings and AutoCAD archives |
-| Geospatial data | `geojson`, `kml`, `gpx`, `shp` | GeoJSON normalization with `@tmcw/togeojson` and `shpjs`, rendered as an offline SVG map preview | GIS exports, route tracks, map attachment review |
-| 3D models | `glb`, `gltf`, `obj`, `stl`, `ply`, `fbx`, `dae`, `3ds`, `3mf`, `amf`, `usd`, `usda`, `usdc`, `usdz`, `kmz`, `pcd`, `wrl`, `vrml`, `xyz`, `vtk`, `vtp`, `step`, `stp`, `iges`, `igs`, `ifc`, `3dm` | Three.js interactive preview, with conversion guidance for heavy CAD/BIM kernels | 3D assets, point clouds, design models |
-| Excalidraw | `excalidraw` | Official `@excalidraw/excalidraw` restore and `exportToSvg` read-only rendering | Whiteboard sketches and product diagrams |
-| draw.io | `drawio`, `dio` | Official diagrams.net `GraphViewer` | Flowcharts and architecture diagrams |
-| EPUB | `epub` | `epubjs` table of contents and scrolling reader | Ebooks and long training materials |
-| UMD ebook | `umd` | UMD metadata, chapters, offsets, zlib text blocks | Legacy mobile ebooks |
-| Markdown | `md`, `markdown` | Markdown reading surface with theme-aware styles | README files and knowledge base articles |
-| Images | `gif`, `jpg`, `jpeg`, `bmp`, `tiff`, `tif`, `png`, `svg`, `webp`, `avif`, `ico`, `heic`, `heif`, `jxl` | Native image preview with HEIC/HEIF conversion loaded only when needed | Image attachments, screenshots, icons, design exports |
-| Source and text | `txt`, `json`, `jsonc`, `json5`, `ipynb`, `js`, `mjs`, `cjs`, `css`, `java`, `py`, `html`, `htm`, `jsx`, `ts`, `tsx`, `xml`, `log`, `vue`, `yaml`, `yml`, `toml`, `ini`, `proto`, `hcl`, `tex`, `gv`, `http`, `sh`, `bash`, `sql`, `go`, `rs`, `rb`, `swift`, `kt`, `react`, `php`, `c`, `cpp`, `cc`, `h`, `hpp`, `cs`, `diff` | Lightweight `highlight.js` language-specific highlighting, HTML shown as source | Logs, configs, notebooks, code snippets, API responses |
-| Audio | `mp3`, `mpeg`, `wav`, `ogg`, `oga`, `opus`, `m4a`, `aac`, `flac`, `weba`, `midi`, `mid` | Native browser audio player, plus MIDI metadata parsing with `@tonejs/midi` | Recordings, audio attachments, MIDI scores |
-| Video | `mp4`, `webm`, `m3u8` | Native browser video player with `hls.js` fallback for HLS streams | Screen recordings, demo videos, HLS previews |
-| Fonts, design assets, and data | `ttf`, `otf`, `woff`, `woff2`, `psd`, `ai`, `eps`, `sqlite`, `wasm`, `parquet`, `avro`, `webarchive` | Shared core data renderer with FontFace previews, PSD metadata/layers, PDF-backed AI handoff, SQLite/Parquet/Avro/WASM structural summaries, and configurable SQLite WASM URL | Asset review, local databases, binary package inspection |
+| <img src="docs/_media/support/wechat-reward.jpg" width="160" alt="WeChat reward QR code" /> | <img src="docs/_media/support/wechat-pay.jpg" width="160" alt="WeChat Pay sponsorship QR code" /> | <img src="docs/_media/support/alipay.jpg" width="160" alt="Alipay collection QR code" /> | <img src="docs/_media/support/wechat-mp.png" width="220" alt="Flyfish Open Source WorkShop official account and customer support entry" /> |
+
+The commercial edition comes from the Flyfish Office product line. It provides a self-developed native Office document engine for serious enterprise Word, Excel, and PowerPoint scenarios, with stronger fidelity for complex layout, large files, pagination, high-quality rendering, and stable performance. The open-source edition will continue to evolve; commercial support is mainly for faster maintainer response, private deployment evaluation, and custom delivery.
 
 ## Vue 3 Integration
 
