@@ -38,6 +38,17 @@
       "publicSource": true
     },
     {
+      "id": "presentation",
+      "packageName": "@file-viewer/renderer-presentation",
+      "description": "Standalone presentation renderer plugin for File Viewer with @file-viewer/pptx parsing, progressive slide rendering, zoom, print, and export support.",
+      "packageDir": "packages/renderers/presentation",
+      "repository": "file-viewer-renderer-presentation",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-presentation",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-presentation",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "mindmap",
       "packageName": "@file-viewer/renderer-mindmap",
       "description": "Standalone XMind and mind map renderer plugin for File Viewer with modern/classic XMind parsing, draggable canvas, zoom, sheet navigation, and node outline support.",

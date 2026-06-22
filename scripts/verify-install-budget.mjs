@@ -33,12 +33,12 @@ const packageBudgets = {
     maxLocalPackageClosure: 3
   },
   '@file-viewer/preset-all': {
-    maxPackedBytes: 8_000,
-    maxUnpackedBytes: 24_000,
+    maxPackedBytes: 9_000,
+    maxUnpackedBytes: 28_000,
     maxFiles: 8,
-    maxDirectRuntimeDependencies: 13,
+    maxDirectRuntimeDependencies: 14,
     maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 15
+    maxLocalPackageClosure: 16
   },
   '@file-viewer/vite-plugin': {
     maxPackedBytes: 30_000,

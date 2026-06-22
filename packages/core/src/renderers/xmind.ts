@@ -97,6 +97,9 @@ const PAN_BOUNDARY_MARGIN = 96;
 const PAN_MIN_VISIBLE_RATIO = 0.18;
 const PAN_MIN_VISIBLE_PX = 96;
 const WHEEL_ZOOM_STEP = 0.12;
+const KEYBOARD_PAN_STEP = 42;
+const KEYBOARD_PAN_FAST_STEP = 96;
+const CLICK_SUPPRESSION_MS = 120;
 
 const xmindStyle = `
 .xmind-viewer{height:100%;min-height:0;display:flex;flex-direction:column;background:#eef3f7;color:#172033}
@@ -113,7 +116,7 @@ const xmindStyle = `
 .xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent;contain:layout paint;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
 .xmind-stage *{touch-action:none;-webkit-user-drag:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
-.xmind-stage.is-panning,.xmind-stage.is-panning *{cursor:grabbing!important;user-select:none}
+.xmind-stage.is-panning,.xmind-stage.is-space-panning,.xmind-stage.is-panning *,.xmind-stage.is-space-panning *{cursor:grabbing!important;user-select:none}
 .xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
 .xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab;user-select:none;-webkit-user-select:none}
 .xmind-stage.is-panning .xmind-node{cursor:grabbing}
@@ -432,6 +435,7 @@ export default async function renderXMind(
   let activeSheetIndex = 0;
   let sheets: SheetView[] = [];
   let suppressNodeClick = false;
+  let spacePanning = false;
   let panState: {
     source: 'pointer' | 'mouse' | 'touch';
     pointerId?: number;
@@ -469,7 +473,7 @@ export default async function renderXMind(
   const ownerWindow = target.ownerDocument?.defaultView || window;
   stage.tabIndex = 0;
   stage.setAttribute('role', 'application');
-  stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, use Ctrl or Command with wheel to zoom.');
+  stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, double click to fit, use Ctrl or Command with wheel to zoom.');
   const zoomBox = createElement('div', 'xmind-zoom-box');
   const surface = createElement('div', 'xmind-surface');
   const state = createElement('div', 'xmind-state', '正在解析 XMind 脑图...');
@@ -725,8 +729,13 @@ export default async function renderXMind(
       suppressNodeClick = true;
       ownerWindow.setTimeout(() => {
         suppressNodeClick = false;
-      }, 0);
+      }, CLICK_SUPPRESSION_MS);
     }
+  };
+
+  const setSpacePanning = (enabled: boolean) => {
+    spacePanning = enabled;
+    stage.classList.toggle('is-space-panning', enabled);
   };
 
   const beginPan = (
@@ -735,7 +744,7 @@ export default async function renderXMind(
     source: 'pointer' | 'mouse' | 'touch',
     targetValue: EventTarget | null
   ) => {
-    if (status !== 'ready' || isPanBlockedTarget(targetValue)) {
+    if (status !== 'ready' || (!spacePanning && isPanBlockedTarget(targetValue))) {
       return false;
     }
     stage.focus({ preventScroll: true });
@@ -898,7 +907,12 @@ export default async function renderXMind(
     if (status !== 'ready') {
       return;
     }
-    const step = event.shiftKey ? 96 : 42;
+    const step = event.shiftKey ? KEYBOARD_PAN_FAST_STEP : KEYBOARD_PAN_STEP;
+    if (event.key === ' ') {
+      setSpacePanning(true);
+      event.preventDefault();
+      return;
+    }
     if (event.key === 'ArrowLeft') {
       panX += step;
     } else if (event.key === 'ArrowRight') {
@@ -915,6 +929,21 @@ export default async function renderXMind(
       return;
     }
     applyZoom();
+    event.preventDefault();
+  };
+
+  const onStageKeyUp = (event: KeyboardEvent) => {
+    if (event.key === ' ') {
+      setSpacePanning(false);
+      event.preventDefault();
+    }
+  };
+
+  const onStageDblClick = (event: MouseEvent) => {
+    if (status !== 'ready' || isPanBlockedTarget(event.target)) {
+      return;
+    }
+    fitSheetToStage();
     event.preventDefault();
   };
 
@@ -940,6 +969,8 @@ export default async function renderXMind(
   stage.addEventListener('touchcancel', onTouchEnd);
   stage.addEventListener('wheel', onStageWheel, { passive: false });
   stage.addEventListener('keydown', onStageKeyDown);
+  stage.addEventListener('keyup', onStageKeyUp);
+  stage.addEventListener('dblclick', onStageDblClick);
   stage.addEventListener('dragstart', onStageDragStart);
   stage.addEventListener('selectstart', onStageSelectStart);
   ownerWindow.addEventListener('pointermove', onPanMove);
@@ -947,6 +978,7 @@ export default async function renderXMind(
   ownerWindow.addEventListener('pointercancel', onPanEnd);
   ownerWindow.addEventListener('mousemove', onMouseMove);
   ownerWindow.addEventListener('mouseup', onMouseUp);
+  ownerWindow.addEventListener('keyup', onStageKeyUp);
   zoomOutButton.addEventListener('click', () => setZoom(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoom(zoom + 0.15));
   resetButton.addEventListener('click', () => fitSheetToStage());
@@ -970,6 +1002,8 @@ export default async function renderXMind(
       stage.removeEventListener('touchcancel', onTouchEnd);
       stage.removeEventListener('wheel', onStageWheel);
       stage.removeEventListener('keydown', onStageKeyDown);
+      stage.removeEventListener('keyup', onStageKeyUp);
+      stage.removeEventListener('dblclick', onStageDblClick);
       stage.removeEventListener('dragstart', onStageDragStart);
       stage.removeEventListener('selectstart', onStageSelectStart);
       ownerWindow.removeEventListener('pointermove', onPanMove);
@@ -977,6 +1011,7 @@ export default async function renderXMind(
       ownerWindow.removeEventListener('pointercancel', onPanEnd);
       ownerWindow.removeEventListener('mousemove', onMouseMove);
       ownerWindow.removeEventListener('mouseup', onMouseUp);
+      ownerWindow.removeEventListener('keyup', onStageKeyUp);
       target.replaceChildren();
     },
   };

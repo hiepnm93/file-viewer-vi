@@ -32,6 +32,9 @@
 | --- | --- | --- |
 | Core 底座 | `@file-viewer/core` | 无 |
 | PPTX 原生引擎 | `@file-viewer/pptx` | 无 |
+| 演示文稿 renderer | `@file-viewer/renderer-presentation` | 无 |
+| 全量 renderer preset | `@file-viewer/preset-all` | 无 |
+| Vite 按需装配插件 | `@file-viewer/vite-plugin` | 无 |
 | Vanilla JS / Pure Web / script 标签 | `@file-viewer/web` | `@flyfish-group/file-viewer-web` |
 | Vue3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`、`file-viewer3` |
 | Vue2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` |

@@ -233,6 +233,7 @@ fileViewerRenderers({
 
 | 格式线                      | 当前优先方案                                                                                                                                                  | 后续拆包方向                                                                                             |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Presentation / PPTX         | `@file-viewer/renderer-presentation` 作为标准 renderer 插件，底层复用 `@file-viewer/pptx` 原生引擎和 Worker 渐进幻灯片输出；ODP 仍归 OpenDocument 兼容链路。 | 后续从 core 直接依赖中移除 `@file-viewer/pptx`，保留本包作为唯一标准 PowerPoint renderer 入口。        |
 | OFD                         | 使用 `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；当前已经拆成 `@file-viewer/renderer-ofd`，vendor 源码随包离线分发。                  | 后续清理 core 中的兼容 OFD 入口，并补充独立样例 smoke。                                                  |
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
 | Draw.io / diagrams.net      | 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。                                      | `@file-viewer/renderer-drawing` 统一 drawio、excalidraw、Mermaid 类绘图资产。                            |
@@ -261,6 +262,7 @@ fileViewerRenderers({
 - [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD/archive 直接依赖。
 - [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [x] 建立 `@file-viewer/renderer-ofd` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OFD renderer。
+- [x] 建立 `@file-viewer/renderer-presentation` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OOXML 演示文稿 renderer。
 - [x] 建立 `@file-viewer/renderer-cad` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 CAD renderer。
 - [x] 建立 `@file-viewer/renderer-typst` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Typst renderer。
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
@@ -278,7 +280,7 @@ fileViewerRenderers({
 
 ### Phase 3：体验与自动化
 
-- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、CAD、Typst、Archive、Email、EPUB、Text、Image、Media、XMind 和 Geo；尚未拆出的格式会给出明确缺失提示。
+- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、Presentation、CAD、Typst、Archive、Email、EPUB、Text、Image、Media、XMind 和 Geo；尚未拆出的格式会给出明确缺失提示。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，Office/3D/EDA 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
@@ -310,7 +312,7 @@ pnpm audit:renderer-deps -- --json
 
 截至当前工作区，`@file-viewer/core` 仍直接声明 37 个渲染依赖：
 
-- Phase 2 还有 20 个依赖留在 core。
+- Phase 2 还有 20 个依赖留在 core，其中 Presentation 已有标准 renderer 包，下一步是从 core 直接依赖中移除 `@file-viewer/pptx`。
 - Phase 3 还有 14 个依赖留在 core。
 - Phase 4 还有 5 个依赖留在 core。
 

@@ -39,6 +39,14 @@ const rendererModules = [
         chunkName: 'file-viewer-typst'
     },
     {
+        id: 'presentation',
+        packageName: '@file-viewer/renderer-presentation',
+        exportName: 'presentationRenderer',
+        formats: ['presentation', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'],
+        rendererIds: ['office-presentation'],
+        chunkName: 'file-viewer-presentation'
+    },
+    {
         id: 'archive',
         packageName: '@file-viewer/renderer-archive',
         exportName: 'archiveRenderer',
@@ -189,12 +197,6 @@ const plannedRenderers = [
         targetPackage: '@file-viewer/renderer-spreadsheet',
         formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
         note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
-    },
-    {
-        id: 'presentation',
-        targetPackage: '@file-viewer/renderer-presentation',
-        formats: ['ppt', 'pptx', 'pptm', 'odp'],
-        note: 'Presentation renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-presentation.'
     },
     {
         id: 'drawing',
