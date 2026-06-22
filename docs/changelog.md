@@ -5,7 +5,7 @@
 ## `v2.0.10` DOCX 自研渲染引擎稳定版
 
 - 全生态包版本同步推进到 `2.0.10`，Demo、组件 Demo、官网、文档站和开源总仓库统一使用当前 DOCX 主链路
-- `@file-viewer/core` 继续使用自研 `@file-viewer/docx@0.3.11`，默认 Worker 解析、连续流式阅读、目录字段缓存、异步分批渲染和离线 `workerUrl` / `workerJsZipUrl` 资源配置
+- `@file-viewer/core` 继续使用自研 `@file-viewer/docx@0.3.12`，默认 Worker 解析、连续流式阅读、目录字段缓存、异步分批渲染和离线 `workerUrl` / `workerJsZipUrl` 资源配置
 - DOCX 默认保持流式布局，避免复杂目录、长表格、制表符、样式继承和中文正式文档在视觉分页中被拆坏；需要页式效果的业务仍可显式开启 `options.docx.visualPagination`
 - 开源 README、文档站、组件 README、Demo 样例与发布产物统一以当前 DOCX 能力为准，便于客户直接升级验证
 
