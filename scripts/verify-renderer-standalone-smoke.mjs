@@ -11,6 +11,7 @@ import {
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 const args = process.argv.slice(2)
+const pluginEnginePackages = new Set(['@file-viewer/pptx'])
 
 const readArg = (name, fallback) => {
   const index = args.indexOf(name)
@@ -20,7 +21,7 @@ const readArg = (name, fallback) => {
 const selectedRenderers = args
   .filter(arg => arg.startsWith('--renderer='))
   .map(arg => arg.slice('--renderer='.length))
-const smokeRenderers = selectedRenderers.length ? selectedRenderers : ['pdf']
+const smokeAllRenderers = args.includes('--all')
 const smokeRoot = resolve(
   sourceRoot,
   readArg(
@@ -36,6 +37,9 @@ const commandTimeoutMs = Number(
 const { entries } = await loadEcosystemReleaseContext(sourceRoot)
 const entryByPackageName = new Map(entries.map(entry => [entry.packageName, entry]))
 const entryById = new Map(entries.map(entry => [entry.id, entry]))
+const pluginRendererEntries = entries.filter(
+  entry => entry.kind === 'renderer' && !pluginEnginePackages.has(entry.packageName)
+)
 
 function assert(condition, message) {
   if (!condition) {
@@ -124,11 +128,11 @@ function collectLocalDependencyClosure(entry, collected = new Set()) {
 function resolveRendererEntry(idOrName) {
   const normalized = idOrName.startsWith('renderer-') ? idOrName : `renderer-${idOrName}`
   const byId = entryById.get(normalized)
-  if (byId?.kind === 'renderer') {
+  if (byId?.kind === 'renderer' && !pluginEnginePackages.has(byId.packageName)) {
     return byId
   }
   const byPackageName = entryByPackageName.get(idOrName)
-  if (byPackageName?.kind === 'renderer') {
+  if (byPackageName?.kind === 'renderer' && !pluginEnginePackages.has(byPackageName.packageName)) {
     return byPackageName
   }
   throw new Error(`Unknown renderer smoke target: ${idOrName}`)
@@ -144,11 +148,15 @@ const vitePluginEntry = entryByPackageName.get('@file-viewer/vite-plugin')
 assert(coreEntry, 'Missing @file-viewer/core entry')
 assert(vitePluginEntry, 'Missing @file-viewer/vite-plugin entry')
 
-const rendererEntries = smokeRenderers.map(resolveRendererEntry)
-assert(
-  rendererEntries.length === 1 && rendererEntries[0].packageName === '@file-viewer/renderer-pdf',
-  'Renderer standalone smoke currently verifies the PDF-only install path. Use --renderer=pdf or extend the smoke assertions for additional renderers.'
-)
+const rendererInputs = smokeAllRenderers
+  ? pluginRendererEntries.map(entry => entry.renderer.id)
+  : (selectedRenderers.length ? selectedRenderers : ['pdf'])
+const rendererEntries = [...new Map(rendererInputs.map(input => {
+  const entry = resolveRendererEntry(input)
+  return [entry.packageName, entry]
+})).values()]
+assert(rendererEntries.length, 'No renderer smoke targets were selected')
+
 const requiredEntries = new Map()
 for (const entry of [coreEntry, vitePluginEntry, ...rendererEntries]) {
   requiredEntries.set(entry.packageName, entry)
@@ -181,11 +189,15 @@ for (const entry of requiredEntries.values()) {
 }
 
 const dependencies = Object.fromEntries(
-  [coreEntry, vitePluginEntry, ...rendererEntries].map(entry => [
+  [...requiredEntries.values()].map(entry => [
     entry.packageName,
     toFileSpec(caseRoot, tarballByPackageName.get(entry.packageName))
   ])
 )
+const smokeTargets = rendererEntries.map(entry => ({
+  id: entry.renderer.id,
+  packageName: entry.packageName
+}))
 
 await writeFile(
   join(caseRoot, 'package.json'),
@@ -215,6 +227,7 @@ import { fileViewerRenderers, resolveFileViewerRendererSelection } from '@file-v
 ${rendererEntries.map((entry, index) => `import renderer${index} from '${entry.packageName}'`).join('\n')}
 
 const rendererPlugins = [${rendererEntries.map((_entry, index) => `renderer${index}`).join(', ')}]
+const smokeTargets = ${JSON.stringify(smokeTargets, null, 2)}
 const registry = createRendererRegistry([])
 const handlers = new Map()
 await installFileViewerRendererPlugins({
@@ -225,28 +238,43 @@ await installFileViewerRendererPlugins({
   }
 })
 
-assert.equal(registry.getByExtension('pdf')?.id, 'pdf')
-assert.equal(handlers.has('pdf'), true)
-assert.equal(registry.hasExtension('docx'), false)
+assert.equal(rendererPlugins.length, smokeTargets.length)
+assert.equal(registry.hasExtension('docx'), smokeTargets.some(target => target.id === 'word'))
 
-const pdfSelection = resolveFileViewerRendererSelection({ formats: ['pdf'] }, process.cwd())
-assert.deepEqual(pdfSelection.renderers.map(item => item.packageName), ['@file-viewer/renderer-pdf'])
+for (const target of smokeTargets) {
+  const selection = resolveFileViewerRendererSelection({ renderers: [target.id] }, process.cwd())
+  assert.deepEqual(
+    selection.renderers.map(item => item.packageName),
+    [target.packageName],
+    target.id + ' must map to its own standalone renderer package'
+  )
+  const rendererIds = selection.renderers.flatMap(item => item.rendererIds)
+  assert.ok(rendererIds.length, target.id + ' must expose at least one core renderer id')
+  for (const rendererId of rendererIds) {
+    assert.ok(registry.getById(rendererId), target.packageName + ' must register definition ' + rendererId)
+    assert.ok(handlers.has(rendererId), target.packageName + ' must register handler ' + rendererId)
+  }
 
-const pdfPlugin = fileViewerRenderers({ formats: ['pdf'] })
-await pdfPlugin.buildStart?.()
-const resolvedId = pdfPlugin.resolveId?.('virtual:file-viewer-renderers')
-assert.equal(typeof resolvedId, 'string')
-const virtualCode = await pdfPlugin.load?.(resolvedId)
-assert.match(virtualCode, /@file-viewer\\/renderer-pdf/)
-assert.doesNotMatch(virtualCode, /@file-viewer\\/renderer-word/)
+  const vitePlugin = fileViewerRenderers({ renderers: [target.id] })
+  await vitePlugin.buildStart?.()
+  const resolvedId = vitePlugin.resolveId?.('virtual:file-viewer-renderers')
+  assert.equal(typeof resolvedId, 'string', target.id + ' virtual module must resolve')
+  const virtualCode = await vitePlugin.load?.(resolvedId)
+  assert.ok(
+    virtualCode.includes(target.packageName),
+    target.id + ' virtual module must import ' + target.packageName
+  )
+  for (const otherTarget of smokeTargets) {
+    if (otherTarget.packageName !== target.packageName) {
+      assert.ok(
+        !virtualCode.includes(otherTarget.packageName),
+        target.id + ' virtual module must not import unrelated package ' + otherTarget.packageName
+      )
+    }
+  }
+}
 
-const missingPlugin = fileViewerRenderers({ formats: ['docx'], missingRenderer: 'error' })
-await assert.rejects(
-  async () => missingPlugin.buildStart?.(),
-  /Missing File Viewer renderer package\\(s\\): @file-viewer\\/renderer-word/
-)
-
-console.log('[renderer-standalone-smoke] PDF-only renderer installation passed.')
+console.log('[renderer-standalone-smoke] Renderer plugin installation passed for ' + smokeTargets.map(target => target.packageName).join(', ') + '.')
 `
 )
 

@@ -316,7 +316,7 @@ fileViewerRenderers({
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [x] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包；`verify:bundle-budget` 会检查主 Demo、文档比对入口和异步 renderer chunk。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
-- [x] 增加独立安装 smoke：`verify:renderer-standalone-smoke` 会在临时目录只安装本地 tarball 版 `@file-viewer/core`、`@file-viewer/renderer-pdf` 和 `@file-viewer/vite-plugin`，验证 PDF renderer 可注册、virtual module 只导入 PDF，并确认未安装 DOCX renderer 时给出明确缺失提示。
+- [x] 增加独立安装 smoke：`verify:renderer-standalone-smoke` 会在临时目录安装本地 tarball 版 `@file-viewer/core`、`@file-viewer/vite-plugin`、全部独立 renderer plugin 以及本地依赖闭包，验证每个 renderer 可注册、处理器可挂载，并逐个确认 Vite virtual module 只导入当前选择的 renderer 包。
 
 ### Phase 4：专业格式独立内核
 
@@ -398,7 +398,7 @@ pnpm build-only
 - `verify:renderer-assets`：已落地。检查每个 renderer npm dry-run 中的入口、`new URL(..., import.meta.url)` 本地运行时资源、core asset manifest 字段，以及 `@file-viewer/web` 发布包内的 viewer worker/wasm/vendor assets。
 - `verify:on-demand-boundaries`：已落地。检查 core、renderer、preset、标准组件和兼容 alias 的依赖方向，防止组件包重新捆绑重 renderer，确保按需安装边界不会回退。
 - `verify:vite-plugin-auto-scan`：已落地。构建 Vite 插件后用临时源码项目验证 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 和注释 hint 能自动映射到对应 renderer 包。
-- `verify:renderer-standalone-smoke`：已落地 PDF-only 独立安装 smoke。它用本地 tarball 构造隔离业务项目，只安装 core、PDF renderer 和 Vite 插件，验证单 renderer 装配、virtual module 和缺失 renderer 提示。后续可扩展为全 renderer + wrapper 矩阵。
+- `verify:renderer-standalone-smoke`：已落地全 renderer plugin 独立安装 smoke。它用本地 tarball 构造隔离业务项目，安装 core、Vite 插件、19 个独立 renderer plugin 以及 `@file-viewer/pptx` 等本地依赖闭包；逐个验证 renderer 注册、handler 挂载、Vite selection 映射和 virtual module 只导入当前 renderer 包。后续可扩展为 wrapper 矩阵与真实样例渲染 smoke。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
 - `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的真实冷安装耗时。
