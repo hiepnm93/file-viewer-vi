@@ -104,6 +104,17 @@
       "publicSource": true
     },
     {
+      "id": "image",
+      "packageName": "@file-viewer/renderer-image",
+      "description": "Standalone image renderer plugin for File Viewer with native image decoding, HEIC/HEIF conversion, lightbox preview, and unified zoom support.",
+      "packageDir": "packages/renderers/image",
+      "repository": "file-viewer-renderer-image",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-image",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-image",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

@@ -1,14 +1,16 @@
 {
-  "name": "@file-viewer/preset-all",
+  "name": "@file-viewer/renderer-image",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "All renderer preset for Flyfish File Viewer, preserving the full format matrix while renderer packages are split out.",
+  "description": "Standalone image renderer plugin for Flyfish File Viewer with native image preview, HEIC/HEIF conversion, lightbox, and unified zoom support.",
   "keywords": [
     "file-viewer",
-    "renderer-preset",
-    "document-preview",
-    "on-demand-renderer"
+    "renderer",
+    "image",
+    "heic",
+    "heif",
+    "document-preview"
   ],
   "publishConfig": {
     "access": "public",
@@ -20,12 +22,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-preset-all.git",
-    "directory": "packages/presets/all"
+    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-image.git",
+    "directory": "packages/renderers/image"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-preset-all/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer-renderer-image/issues"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -50,15 +52,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^2.0.11",
-    "@file-viewer/renderer-archive": "workspace:^2.0.11",
-    "@file-viewer/renderer-cad": "workspace:^2.0.11",
-    "@file-viewer/renderer-ebook": "workspace:^2.0.11",
-    "@file-viewer/renderer-email": "workspace:^2.0.11",
-    "@file-viewer/renderer-image": "workspace:^2.0.11",
-    "@file-viewer/renderer-mindmap": "workspace:^2.0.11",
-    "@file-viewer/renderer-pdf": "workspace:^2.0.11",
-    "@file-viewer/renderer-text": "workspace:^2.0.11",
-    "@file-viewer/renderer-typst": "workspace:^2.0.11"
+    "heic2any": "^0.0.4"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

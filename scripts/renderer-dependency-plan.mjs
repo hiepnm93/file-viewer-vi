@@ -161,7 +161,7 @@ export const rendererModularizationLines = [
     group: 'mediaAndData',
     targetPackage: '@file-viewer/renderer-image',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['image'],
     dependencies: ['heic2any'],
   },
