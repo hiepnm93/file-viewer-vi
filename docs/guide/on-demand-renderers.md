@@ -215,7 +215,7 @@ fileViewerRenderers({
 
 | 波次 | 目标 | 关键动作 | 完成证据 |
 | --- | --- | --- | --- |
-| Wave 0 | 建立依赖账本 | `audit:renderer-deps` 输出 core 直接重依赖、目标包、阶段和状态；新增安装体积/bundle 预算脚本 | CI 能报告 core 依赖数、packed size、demo 首屏 chunk |
+| Wave 0 | 建立依赖账本 | `audit:renderer-deps` 输出 core 直接重依赖、目标包、阶段和状态；新增安装体积和 bundle 预算脚本 | CI 能报告 core 依赖数、packed size、安装依赖闭包、demo 首屏 chunk |
 | Wave 1 | 完成 Phase 2 重链路拆出 | Word、Spreadsheet、OFD、Presentation、PDF、Typst、CAD、Archive 全部从 core 迁到 renderer 包 | `@file-viewer/core` 不再声明这些依赖；`preset-all` 格式矩阵不掉格式 |
 | Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护 | 默认组件安装不带相关重库；各 renderer 有独立 smoke |
 | Wave 3 | 完成 Phase 4 专业内核 | EDA/GDS/OASIS/OrCAD/Allegro/Data Asset 独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核 |
@@ -294,7 +294,7 @@ fileViewerRenderers({
 
 ### Phase 5：发布与质量门禁
 
-- [ ] 新增安装体积预算：`@file-viewer/core` packed size、依赖数量、cold install 时间纳入 CI。
+- [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时保留为后续增强。
 - [ ] 新增 bundle 预算：demo 主入口、lite preset、office preset、engineering preset 分别统计 gzip/brotli。
 - [ ] 新增 release 校验：每个 renderer 包 npm tarball、README、exports、assets manifest、smoke 样本齐全。
 - [ ] 官网、文档站、README 的支持矩阵能区分 core、preset-lite、preset-office、preset-engineering、preset-all。
@@ -328,6 +328,7 @@ pnpm verify:core-api
 pnpm verify:core-dependency-budget
 pnpm verify:renderer-contracts
 pnpm verify:renderer-assets
+pnpm verify:install-budget
 pnpm verify:format-support
 pnpm verify:ecosystem-versions
 pnpm verify:production-entrypoints
@@ -341,9 +342,10 @@ pnpm build-only
 - `verify:core-dependency-budget`：已落地。默认按当前基线阻止 core 直接渲染依赖继续膨胀；`verify:core-dependency-budget:strict` 用于拆包完成后的终态，要求 core 重渲染依赖为 0。
 - `verify:renderer-contracts`：已落地。检查每个 renderer 包的 `exports`、`files`、README、LICENSE、dist 入口、build/type-check 脚本、wrapper 依赖隔离和 plugin 懒加载出口。
 - `verify:renderer-assets`：已落地。检查每个 renderer npm dry-run 中的入口、`new URL(..., import.meta.url)` 本地运行时资源、core asset manifest 字段，以及 `@file-viewer/web` 发布包内的 viewer worker/wasm/vendor assets。
+- `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:renderer-standalone-smoke`：计划中。任意单 renderer + 任意 wrapper 能独立预览对应样例。
 - `verify:bundle-budget`：计划中。demo 主入口不包含 Office/CAD/Typst/Archive/3D 等重库，重链路全部落到 renderer chunk。
-- `verify:cold-install-budget`：计划中。记录并限制 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的依赖数量和安装耗时。
+- `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的真实冷安装耗时。
 
 ## 外部参考
 
