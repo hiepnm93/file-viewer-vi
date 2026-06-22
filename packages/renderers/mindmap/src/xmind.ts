@@ -491,6 +491,7 @@ export default async function renderXMind(
   stage.tabIndex = 0;
   stage.setAttribute('role', 'application');
   stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, pinch on touch screens to zoom, double click to fit, use Ctrl or Command with wheel to zoom.');
+  stage.setAttribute('aria-keyshortcuts', 'Space ArrowLeft ArrowRight ArrowUp ArrowDown Control+0 Meta+0');
   const zoomBox = createElement('div', 'xmind-zoom-box');
   const surface = createElement('div', 'xmind-surface');
   const state = createElement('div', 'xmind-state', '正在解析 XMind 脑图...');
@@ -612,6 +613,7 @@ export default async function renderXMind(
     panX = stage.clientWidth / 2 - (node.x + node.width / 2) * zoom;
     panY = stage.clientHeight / 2 - (node.y + node.height / 2) * zoom;
     applyZoom();
+    zoomEmitter.emit();
   };
 
   const renderSidebar = (sheet: SheetView) => {
@@ -814,6 +816,7 @@ export default async function renderXMind(
     stage.classList.remove('is-panning');
     if (moved) {
       suppressNodeClick = true;
+      zoomEmitter.emit();
       ownerWindow.setTimeout(() => {
         suppressNodeClick = false;
       }, CLICK_SUPPRESSION_MS);
@@ -1104,6 +1107,7 @@ export default async function renderXMind(
       panX -= event.deltaX;
       panY -= event.deltaY;
       applyZoom();
+      zoomEmitter.emit();
       return;
     }
     const direction = event.deltaY > 0 ? -1 : 1;
@@ -1136,6 +1140,7 @@ export default async function renderXMind(
       return;
     }
     applyZoom();
+    zoomEmitter.emit();
     event.preventDefault();
   };
 

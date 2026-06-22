@@ -19,6 +19,7 @@
 - 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
 - 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，并兼容部分 WebView 在 PointerEvent 移动期间把 `buttons` 错报为 `0` 的情况，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
+- XMind 平移、目录定位和键盘方向键移动后会同步通知统一缩放 toolbar，外部 `resetZoom()` / `getZoomState()` 能正确感知“已平移但比例未变化”的状态
 - XMind 官方 Demo 样例已通过真实浏览器回归：`.xmind` 能由 `@file-viewer/renderer-mindmap` 正常接管，拖拽后画布 transform 发生平移变化，证明组件层 preset 装配和 renderer 内部 pan 交互同时生效；浏览器冒烟脚本也会对 `.xmind` 执行 PointerEvent 拖拽断言
 - 代码与 Markdown 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `highlight.js` 和 `marked`；完整文本预览统一由 `@file-viewer/renderer-text` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 27 降到 25，Phase 3 依赖预算从 10 降到 8
 - 音视频预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `hls.js` 和 `@tonejs/midi`；MP3/WAV/OGG/MIDI/MP4/WEBM/HLS 完整媒体能力统一由 `@file-viewer/renderer-media` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 25 降到 23，Phase 3 依赖预算从 8 降到 6
