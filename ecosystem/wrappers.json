@@ -159,6 +159,17 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-preset-all",
       "entryFormats": ["esm", "types"],
       "publicSource": true
+    },
+    {
+      "id": "vite-plugin",
+      "packageName": "@file-viewer/vite-plugin",
+      "description": "Vite plugin for File Viewer on-demand renderer assembly, virtual renderer modules, renderer chunk planning, and offline worker/WASM asset deployment.",
+      "packageDir": "packages/presets/vite-plugin",
+      "repository": "file-viewer-vite-plugin",
+      "github": "https://github.com/flyfish-dev/file-viewer-vite-plugin",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vite-plugin",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
     }
   ],
   "compatibilityPackages": [

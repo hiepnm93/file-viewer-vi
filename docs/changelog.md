@@ -15,6 +15,7 @@
 - 图片预览迁移为 `@file-viewer/renderer-image` 独立 renderer 包，普通图片继续使用浏览器原生解码，HEIC / HEIF 只在命中格式时按需加载 `heic2any`，并由 `@file-viewer/preset-all` 自动聚合
 - 音视频预览迁移为 `@file-viewer/renderer-media` 独立 renderer 包，MP4 / WebM / 常见音频继续使用原生控件，HLS 和 MIDI 只在命中格式时按需加载 `hls.js` / `@tonejs/midi`，并由 `@file-viewer/preset-all` 自动聚合
 - 地理数据预览迁移为 `@file-viewer/renderer-geo` 独立 renderer 包，GeoJSON 直接读取，KML / GPX 按需加载 `@tmcw/togeojson`，SHP 按需加载 `shpjs`，并由 `@file-viewer/preset-all` 自动聚合
+- 新增 `@file-viewer/vite-plugin` 工程化入口，支持按 `formats` 自动生成 `virtual:file-viewer-renderers`、renderer chunk 分组、缺失 renderer 提示，并复制 PDF/CAD/Typst/Archive 离线 worker/WASM/vendor 资源和部署 manifest
 - STEP / IGES / IFC / 3DM 等重型工程格式完成浏览器 WASM 路线调研，后续适合按 OpenCascade、web-ifc、rhino3dm 等独立按需包维护，不进入 core 首屏链路
 - 表格预览新增 `options.spreadsheet.resizableColumns` 开关，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便客户拖拽表头边界查看被截断的长文本
 - Demo 新增 `mindmap.xmind`、`layout.gds`、`layout.oas`、`layout.oasis` 示例，并将样例选择器补充为脑图与绘图、邮件与 EDA 等更清晰分组

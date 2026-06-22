@@ -118,7 +118,7 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default defineConfig({
   plugins: [
     fileViewerRenderers({
-      formats: ['pdf', 'docx', 'xlsx', 'pptx', 'dwg', 'dxf'],
+      formats: ['pdf', 'dwg', 'dxf', 'typst', 'zip', 'xmind', 'geojson'],
       copyAssets: true,
       chunkStrategy: 'renderer'
     })
@@ -275,8 +275,8 @@ fileViewerRenderers({
 
 ### Phase 3：体验与自动化
 
-- [ ] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 virtual renderer module。
-- [ ] 插件能复制 worker/wasm/vendor assets，并输出可部署 manifest。
+- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、CAD、Typst、Archive、Email、EPUB、Text、Image、Media、XMind 和 Geo；尚未拆出的格式会给出明确缺失提示。
+- [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；Office/OFD/3D/EDA 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
 - [ ] 增加独立安装 smoke：只安装 `@file-viewer/core + @file-viewer/renderer-pdf` 时 PDF 可预览，其他格式显示明确缺失提示。

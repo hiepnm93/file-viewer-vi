@@ -40,6 +40,14 @@ const packageBudgets = {
     maxExternalDependencyClosure: 39,
     maxLocalPackageClosure: 14
   },
+  '@file-viewer/vite-plugin': {
+    maxPackedBytes: 30_000,
+    maxUnpackedBytes: 100_000,
+    maxFiles: 12,
+    maxDirectRuntimeDependencies: 0,
+    maxExternalDependencyClosure: 0,
+    maxLocalPackageClosure: 1
+  },
   '@file-viewer/pptx': {
     maxPackedBytes: 130_000,
     maxUnpackedBytes: 600_000,
@@ -71,7 +79,7 @@ const kindBudgets = {
   }
 }
 
-const entriesByPackageName = new Map(entries.map(entry => [entry.packageName, entry]))
+const entriesByPackageName = new Map(entries.map((entry) => [entry.packageName, entry]))
 const packageNames = new Set(entriesByPackageName.keys())
 
 function run(command, commandArgs, options = {}) {
@@ -117,11 +125,14 @@ function runtimeDependencyNames(packageJson) {
   }).sort()
 }
 
-function collectInstallClosure(packageName, state = {
-  external: new Set(),
-  local: new Set(),
-  visiting: new Set()
-}) {
+function collectInstallClosure(
+  packageName,
+  state = {
+    external: new Set(),
+    local: new Set(),
+    visiting: new Set()
+  }
+) {
   if (state.visiting.has(packageName)) {
     return state
   }
@@ -176,7 +187,7 @@ for (const entry of entries) {
   const pack = readDryRunPack(entry)
   const runtimeDependencies = runtimeDependencyNames(entry.packageJson)
   const closure = collectInstallClosure(entry.packageName)
-  const externalClosure = [...closure.external].filter(name => !packageNames.has(name)).sort()
+  const externalClosure = [...closure.external].filter((name) => !packageNames.has(name)).sort()
   const localClosure = [...closure.local].sort()
 
   const report = {
@@ -219,19 +230,25 @@ for (const entry of entries) {
 
 if (errors.length) {
   console.error('[install-budget] Failed')
-  errors.forEach(error => console.error(`  - ${error}`))
+  errors.forEach((error) => console.error(`  - ${error}`))
   console.error('\nCurrent install budget report:')
-  reports.forEach(report => {
+  reports.forEach((report) => {
     console.error(
       `  - ${report.packageName}: packed ${formatBytes(report.packedBytes)}, unpacked ${formatBytes(report.unpackedBytes)}, files ${report.fileCount}, direct deps ${report.directRuntimeDependencyCount}, external closure ${report.externalDependencyClosureCount}, local closure ${report.localPackageClosureCount}`
     )
   })
   process.exitCode = 1
 } else {
-  const tracked = reports.filter(report =>
-    ['@file-viewer/core', '@file-viewer/vue3', '@file-viewer/web', '@file-viewer/preset-all'].includes(report.packageName)
+  const tracked = reports.filter((report) =>
+    [
+      '@file-viewer/core',
+      '@file-viewer/vue3',
+      '@file-viewer/web',
+      '@file-viewer/preset-all',
+      '@file-viewer/vite-plugin'
+    ].includes(report.packageName)
   )
-  tracked.forEach(report => {
+  tracked.forEach((report) => {
     console.log(
       `[install-budget] ${report.packageName}: packed ${formatBytes(report.packedBytes)}, unpacked ${formatBytes(report.unpackedBytes)}, files ${report.fileCount}, direct deps ${report.directRuntimeDependencyCount}, external closure ${report.externalDependencyClosureCount}, local closure ${report.localPackageClosureCount}.`
     )
