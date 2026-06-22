@@ -110,8 +110,8 @@ const xmindStyle = `
 .xmind-sidebar{min-height:0;overflow:auto;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.72);padding:14px}
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
-.xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
-.xmind-stage *{touch-action:none}
+.xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent;contain:layout paint;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
+.xmind-stage *{touch-action:none;-webkit-user-drag:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
 .xmind-stage.is-panning,.xmind-stage.is-panning *{cursor:grabbing!important;user-select:none}
 .xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
@@ -433,8 +433,9 @@ export default async function renderXMind(
   let sheets: SheetView[] = [];
   let suppressNodeClick = false;
   let panState: {
-    pointerId: number;
-    pointerType: string;
+    source: 'pointer' | 'mouse' | 'touch';
+    pointerId?: number;
+    pointerType?: string;
     startX: number;
     startY: number;
     startPanX: number;
@@ -710,9 +711,10 @@ export default async function renderXMind(
       return;
     }
     const moved = panState.moved;
-    if (event && stage.hasPointerCapture?.(panState.pointerId)) {
+    const pointerId = panState.pointerId;
+    if (event && pointerId !== undefined && stage.hasPointerCapture?.(pointerId)) {
       try {
-        stage.releasePointerCapture(panState.pointerId);
+        stage.releasePointerCapture(pointerId);
       } catch {
         // Pointer capture can already be released by WebView scrolling or synthetic browser smoke events.
       }
@@ -727,23 +729,53 @@ export default async function renderXMind(
     }
   };
 
-  const onPanStart = (event: PointerEvent) => {
-    if ((event.pointerType === 'mouse' && event.button !== 0) || status !== 'ready' || isPanBlockedTarget(event.target)) {
-      return;
+  const beginPan = (
+    clientX: number,
+    clientY: number,
+    source: 'pointer' | 'mouse' | 'touch',
+    targetValue: EventTarget | null
+  ) => {
+    if (status !== 'ready' || isPanBlockedTarget(targetValue)) {
+      return false;
     }
-    event.preventDefault();
-    event.stopPropagation();
     stage.focus({ preventScroll: true });
     panState = {
-      pointerId: event.pointerId,
-      pointerType: event.pointerType,
-      startX: event.clientX,
-      startY: event.clientY,
+      source,
+      startX: clientX,
+      startY: clientY,
       startPanX: panX,
       startPanY: panY,
       moved: false,
     };
     stage.classList.add('is-panning');
+    return true;
+  };
+
+  const updatePan = (clientX: number, clientY: number) => {
+    if (!panState) {
+      return;
+    }
+    const deltaX = clientX - panState.startX;
+    const deltaY = clientY - panState.startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
+      panState.moved = true;
+    }
+    panX = panState.startPanX + deltaX;
+    panY = panState.startPanY + deltaY;
+    applyZoom();
+  };
+
+  const onPanStart = (event: PointerEvent) => {
+    if ((event.pointerType === 'mouse' && event.button !== 0) || panState) {
+      return;
+    }
+    if (!beginPan(event.clientX, event.clientY, 'pointer', event.target)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    panState!.pointerId = event.pointerId;
+    panState!.pointerType = event.pointerType;
     try {
       stage.setPointerCapture?.(event.pointerId);
     } catch {
@@ -759,14 +791,7 @@ export default async function renderXMind(
       clearPanState(event);
       return;
     }
-    const deltaX = event.clientX - panState.startX;
-    const deltaY = event.clientY - panState.startY;
-    if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
-      panState.moved = true;
-    }
-    panX = panState.startPanX + deltaX;
-    panY = panState.startPanY + deltaY;
-    applyZoom();
+    updatePan(event.clientX, event.clientY);
     event.preventDefault();
     event.stopPropagation();
   };
@@ -781,6 +806,76 @@ export default async function renderXMind(
   };
 
   const onLostPointerCapture = () => {
+    clearPanState();
+  };
+
+  const onMouseDown = (event: MouseEvent) => {
+    if (event.button !== 0 || panState) {
+      return;
+    }
+    if (!beginPan(event.clientX, event.clientY, 'mouse', event.target)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onMouseMove = (event: MouseEvent) => {
+    if (!panState || panState.source !== 'mouse') {
+      return;
+    }
+    if (event.buttons === 0) {
+      clearPanState();
+      return;
+    }
+    updatePan(event.clientX, event.clientY);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onMouseUp = (event: MouseEvent) => {
+    if (!panState || panState.source !== 'mouse') {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    clearPanState();
+  };
+
+  const primaryTouch = (touches: TouchList) => touches.length === 1 ? touches.item(0) : null;
+
+  const onTouchStart = (event: TouchEvent) => {
+    if (panState) {
+      return;
+    }
+    const touch = primaryTouch(event.touches);
+    if (!touch || !beginPan(touch.clientX, touch.clientY, 'touch', event.target)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (!panState || panState.source !== 'touch') {
+      return;
+    }
+    const touch = primaryTouch(event.touches);
+    if (!touch) {
+      clearPanState();
+      return;
+    }
+    updatePan(touch.clientX, touch.clientY);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onTouchEnd = (event: TouchEvent) => {
+    if (!panState || panState.source !== 'touch') {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
     clearPanState();
   };
 
@@ -838,6 +933,11 @@ export default async function renderXMind(
   stage.addEventListener('pointerup', onPanEnd);
   stage.addEventListener('pointercancel', onPanEnd);
   stage.addEventListener('lostpointercapture', onLostPointerCapture);
+  stage.addEventListener('mousedown', onMouseDown, true);
+  stage.addEventListener('touchstart', onTouchStart, { passive: false, capture: true });
+  stage.addEventListener('touchmove', onTouchMove, { passive: false });
+  stage.addEventListener('touchend', onTouchEnd);
+  stage.addEventListener('touchcancel', onTouchEnd);
   stage.addEventListener('wheel', onStageWheel, { passive: false });
   stage.addEventListener('keydown', onStageKeyDown);
   stage.addEventListener('dragstart', onStageDragStart);
@@ -845,6 +945,8 @@ export default async function renderXMind(
   ownerWindow.addEventListener('pointermove', onPanMove);
   ownerWindow.addEventListener('pointerup', onPanEnd);
   ownerWindow.addEventListener('pointercancel', onPanEnd);
+  ownerWindow.addEventListener('mousemove', onMouseMove);
+  ownerWindow.addEventListener('mouseup', onMouseUp);
   zoomOutButton.addEventListener('click', () => setZoom(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoom(zoom + 0.15));
   resetButton.addEventListener('click', () => fitSheetToStage());
@@ -861,6 +963,11 @@ export default async function renderXMind(
       stage.removeEventListener('pointerup', onPanEnd);
       stage.removeEventListener('pointercancel', onPanEnd);
       stage.removeEventListener('lostpointercapture', onLostPointerCapture);
+      stage.removeEventListener('mousedown', onMouseDown, true);
+      stage.removeEventListener('touchstart', onTouchStart, true);
+      stage.removeEventListener('touchmove', onTouchMove);
+      stage.removeEventListener('touchend', onTouchEnd);
+      stage.removeEventListener('touchcancel', onTouchEnd);
       stage.removeEventListener('wheel', onStageWheel);
       stage.removeEventListener('keydown', onStageKeyDown);
       stage.removeEventListener('dragstart', onStageDragStart);
@@ -868,6 +975,8 @@ export default async function renderXMind(
       ownerWindow.removeEventListener('pointermove', onPanMove);
       ownerWindow.removeEventListener('pointerup', onPanEnd);
       ownerWindow.removeEventListener('pointercancel', onPanEnd);
+      ownerWindow.removeEventListener('mousemove', onMouseMove);
+      ownerWindow.removeEventListener('mouseup', onMouseUp);
       target.replaceChildren();
     },
   };

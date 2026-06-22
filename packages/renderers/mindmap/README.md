@@ -1,6 +1,6 @@
 # @file-viewer/renderer-mindmap
 
-Flyfish File Viewer 的独立 XMind / Mind Map renderer 包。它负责解析现代 `content.json` 和经典 `content.xml` XMind 文件，并提供可拖拽、可缩放、可定位的脑图画布。
+Flyfish File Viewer 的独立 XMind / Mind Map renderer 包。它负责解析现代 `content.json` 和经典 `content.xml` XMind 文件，并提供支持 Pointer / 鼠标 / 触摸拖拽、缩放和定位的脑图画布。
 
 ## 用法
 
@@ -31,7 +31,7 @@ const options = {
 - 支持 `.xmind`。
 - 支持 XMind 2020+ 的 `content.json` 和 XMind 8 / Classic 的 `content.xml`。
 - 支持多 sheet、节点层级、标签、备注、链接、图片资源提示、概要/标注/浮动节点状态。
-- 支持工具栏缩放、适配画布、按住鼠标或触摸拖拽平移、`Ctrl` / `Command` + 滚轮指针缩放、键盘方向键平移。
+- 支持工具栏缩放、适配画布、Pointer / 鼠标 / 触摸三层拖拽平移、`Ctrl` / `Command` + 滚轮指针缩放、键盘方向键平移。
 
 ## 迁移说明
 

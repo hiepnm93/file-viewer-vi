@@ -24,7 +24,7 @@
 | Draw.io | 使用官方 diagrams.net `viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 全部自托管 | 保持离线 viewer 优先，内置 SVG 仅作为失败兜底 |
 | Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
 | CAD | 委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
-| XMind | 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 core SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已补拖拽平移、滚轮锚点缩放和键盘平移 |
+| XMind | 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 core SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已补 Pointer / 鼠标 / 触摸拖拽平移、滚轮锚点缩放和键盘平移 |
 | GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON | 当前可作为离线地理附件快速预览；底图、投影转换和空间分析交给业务 GIS |
 | GDSII | 手写 GDSII record parser，读取 library、structure、boundary、path、text、sref/aref 和坐标边界并生成 SVG | 当前可作为 GDSII 版图快速预览；更大文件和层级实例展开适合拆出 WebGL/WASM renderer |
 
@@ -41,7 +41,7 @@
 
 | 格式线 | 浏览器端可行方案 | Flyfish Viewer 当前动作 |
 | --- | --- | --- |
-| XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | 保留 `@ljheee/xmind-parser`，独立 `@file-viewer/renderer-mindmap` 负责解析和交互；当前拖拽边界已放宽为画布式平移，鼠标、触摸、滚轮、键盘统一处理 |
+| XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | 保留 `@ljheee/xmind-parser`，独立 `@file-viewer/renderer-mindmap` 负责解析和交互；当前拖拽边界已放宽为画布式平移，并提供 PointerEvent、MouseEvent、TouchEvent 三层输入兼容 |
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；后续像 PPTX 一样拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护 |
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合 WebGL 或 WASM | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
 | STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` | 保留 3D 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
@@ -72,7 +72,7 @@
 
 ## 后续验收 checklist
 
-- [x] XMind 支持拖拽平移、触摸/鼠标兼容、Ctrl/Command 滚轮锚点缩放、键盘方向键平移。
+- [x] XMind 支持 Pointer / 鼠标 / 触摸拖拽平移、Ctrl/Command 滚轮锚点缩放、键盘方向键平移。
 - [x] 继续保持 Draw.io、Typst、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
 - [x] 使用 `pnpm verify:format-support` 校验 198 个扩展名和 24 条 renderer pipeline 口径一致。
 - [ ] 为 XMind 增加真实复杂样本，覆盖多 sheet、标签、备注、图片、链接、折叠节点和大脑图拖拽回归。

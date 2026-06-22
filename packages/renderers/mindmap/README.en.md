@@ -31,7 +31,7 @@ const options = {
 - Supports `.xmind`.
 - Supports XMind 2020+ `content.json` and XMind 8 / Classic `content.xml`.
 - Supports multiple sheets, hierarchy, labels, notes, hyperlinks, image resource hints, summaries, callouts, and floating-topic states.
-- Supports toolbar zoom, fit-to-canvas, mouse/touch drag panning, `Ctrl` / `Command` + wheel pointer zoom, and arrow-key panning.
+- Supports toolbar zoom, fit-to-canvas, Pointer / mouse / touch drag panning, `Ctrl` / `Command` + wheel pointer zoom, and arrow-key panning.
 
 ## Migration Note
 

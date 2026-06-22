@@ -235,7 +235,7 @@ fileViewerRenderers({
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
 | Draw.io / diagrams.net      | 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。                                      | `@file-viewer/renderer-drawing` 统一 drawio、excalidraw、Mermaid 类绘图资产。                            |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
-| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供可拖拽、缩放、定位的自研画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | `@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。                            |
+| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | `@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。                            |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
 | EDA / 工程二进制            | 简单结构先做安全解析和树形浏览；Cadence DRA/OLB/DSN 等复杂二进制以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主，不硬塞进 core。                         | 参考 PPTX 独立内核路线，必要时拆 `@file-viewer/eda-*`、`@file-viewer/eda-allegro` 并引入 WASM/增量渲染。 |
 

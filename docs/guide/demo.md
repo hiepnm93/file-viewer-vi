@@ -143,7 +143,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 | `samples/apache/blocks_and_tables.dwf` | 使用 Apache Tika 公开 Jira 附件验证原生 DWF 容器、块和表格渲染 | `dwf` |
 | `samples/autodesk/house.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 DWFx/XPS native renderer、多页结构和 CAD 视图适配 | `dwfx` |
 | `samples/autodesk/robot-arm.dwfx` | 使用 Autodesk 官方 Viewer 教程样例验证 W2D/W3D native renderer 和复杂装配图形 | `dwfx` |
-| `mindmap.xmind` | 使用项目内生成的双 sheet XMind 夹具验证脑图节点、标签、备注、链接、目录、拖拽平移、适配画布、缩放、搜索和导出 | `xmind` |
+| `mindmap.xmind` | 使用项目内生成的双 sheet XMind 夹具验证脑图节点、标签、备注、链接、目录、Pointer / 鼠标 / 触摸拖拽平移、适配画布、缩放、搜索和导出 | `xmind` |
 | `map.geojson` | 验证 GeoJSON 点线面离线地图预览 | `geojson` |
 | `route.kml` | 验证 KML 转 GeoJSON 后预览 | `kml` |
 | `track.gpx` | 验证 GPX 轨迹转 GeoJSON 后预览 | `gpx` |
@@ -237,7 +237,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer assets 中 `wasm/cad/` 下的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
 
-3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，后续按 OpenCascade / web-ifc 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、拖拽平移、适配画布、搜索、缩放和导出链路。
+3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到同一个 Three.js 预览器。STEP/IGES/IFC/3DM 会展示转换原因，后续按 OpenCascade / web-ifc 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、Pointer / 鼠标 / 触摸拖拽平移、适配画布、搜索、缩放和导出链路。
 
 Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件默认使用随 viewer assets 分发的官方 `GraphViewer` 离线预览，styles、shapes、stencils、img、mxgraph 和 math 资源都来自本地 `vendor/drawio/`。如果官方 viewer 加载异常，会自动回退内置 SVG 预览；内网路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管脚本。
 
