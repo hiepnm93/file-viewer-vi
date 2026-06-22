@@ -35,7 +35,15 @@ const localeReadmes = [
     noAliasLabel: '无',
     rendererCountText: `${supportSummary.rendererCount} 条预览链路`,
     extensionCountText: `${supportSummary.uniqueExtensionCount} 个扩展名`,
-    matrixHeaders: readmeTemplate.locales.zh.wrapperMatrixHeaders
+    matrixHeaders: readmeTemplate.locales.zh.wrapperMatrixHeaders,
+    requiredTerms: [
+      '工程级按需 renderer 装配',
+      '@file-viewer/vite-plugin',
+      'virtual:file-viewer-renderers',
+      'configuredFileViewerRenderers',
+      'rendererMode',
+      'builtinRenderers'
+    ]
   },
   {
     locale: 'en',
@@ -46,7 +54,15 @@ const localeReadmes = [
     noAliasLabel: 'none',
     rendererCountText: `${supportSummary.rendererCount} preview pipelines`,
     extensionCountText: `${supportSummary.uniqueExtensionCount} file extensions`,
-    matrixHeaders: readmeTemplate.locales.en.wrapperMatrixHeaders
+    matrixHeaders: readmeTemplate.locales.en.wrapperMatrixHeaders,
+    requiredTerms: [
+      'Engineering-Grade On-Demand Renderer Assembly',
+      '@file-viewer/vite-plugin',
+      'virtual:file-viewer-renderers',
+      'configuredFileViewerRenderers',
+      'rendererMode',
+      'builtinRenderers'
+    ]
   }
 ]
 
@@ -60,6 +76,12 @@ const wrapperReadmeConfigs = [
     extensionCountText: `${supportSummary.uniqueExtensionCount} 个扩展名`,
     noAliasLabel: '无',
     requiredTerms: [
+      '工程级按需 renderer 装配',
+      '@file-viewer/vite-plugin',
+      'virtual:file-viewer-renderers',
+      'configuredFileViewerRenderers',
+      'rendererMode',
+      'builtinRenderers',
       '统一参数与事件',
       '生命周期与操作事件',
       '公共操作 API',
@@ -85,6 +107,12 @@ const wrapperReadmeConfigs = [
     extensionCountText: `${supportSummary.uniqueExtensionCount} file extensions`,
     noAliasLabel: 'none',
     requiredTerms: [
+      'Engineering-Grade On-Demand Renderer Assembly',
+      '@file-viewer/vite-plugin',
+      'virtual:file-viewer-renderers',
+      'configuredFileViewerRenderers',
+      'rendererMode',
+      'builtinRenderers',
       'Shared Options And Events',
       'Lifecycle And Operation Events',
       'Public Operation API',
@@ -169,6 +197,9 @@ for (const config of localeReadmes) {
     assertIncludesUrl(content, link, label)
   }
   for (const term of readmeTemplate.requiredTerms) {
+    assertIncludes(content, term, label)
+  }
+  for (const term of config.requiredTerms) {
     assertIncludes(content, term, label)
   }
   assertWrapperMatrix(content, label, config.locale, config.noAliasLabel)

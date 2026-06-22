@@ -258,7 +258,7 @@ fileViewerRenderers({
 - [x] `createViewer()` 支持传入 renderer plugins，并能通过 `rendererMode: 'replace' | 'extend'` 覆盖或追加默认 registry。
 - [x] 所有 wrapper 共享的 `FileViewerOptions` / `ViewerOptions` 类型暴露 `renderers` 和 `rendererMode`，可直接接收 renderer plugin 或 preset。
 - [x] `FileViewerOptions.builtinRenderers` 支持 `all`、`lite`、`none`，为默认轻量化和显式全量装配提供稳定开关。
-- [ ] wrapper README 和官网示例补齐 `renderers` / `rendererMode` 的按需装配示例。
+- [x] wrapper README 和开源总仓 README 补齐 `renderers` / `rendererMode` / `builtinRenderers` 的按需装配示例，并由 `verify:ecosystem-readmes` 校验 `@file-viewer/vite-plugin`、`virtual:file-viewer-renderers` 和 `configuredFileViewerRenderers` 等关键接入口径。
 - [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
 - [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
@@ -315,7 +315,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/vite-plugin` 支持 `scan: true` 源码 hint 自动发现：`fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / `accept` 会合并进 renderer 选择，开发和构建阶段都能生成相同 virtual module。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [x] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包；`verify:bundle-budget` 会检查主 Demo、文档比对入口和异步 renderer chunk。
-- [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
+- [x] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式；生成器会同步到 Vanilla JS / Pure Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、jQuery 和 Svelte 的中英文 README。
 - [x] 增加独立安装 smoke：`verify:renderer-standalone-smoke` 会在临时目录安装本地 tarball 版 `@file-viewer/core`、`@file-viewer/vite-plugin`、全部独立 renderer plugin 以及本地依赖闭包，验证每个 renderer 可注册、处理器可挂载，并逐个确认 Vite virtual module 只导入当前选择的 renderer 包。
 
 ### Phase 4：专业格式独立内核

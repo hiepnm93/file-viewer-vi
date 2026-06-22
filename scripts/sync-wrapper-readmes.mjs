@@ -285,6 +285,90 @@ function toolbarOptionRows(locale) {
   ]
 }
 
+function onDemandRendererSection(locale) {
+  if (locale === 'zh') {
+    return [
+      '## 工程级按需 renderer 装配',
+      '',
+      '一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐把组件包、`@file-viewer/core`、`@file-viewer/vite-plugin` 和业务实际需要的 renderer 包组合安装，Vite 插件负责生成 `virtual:file-viewer-renderers`，业务代码只传同一套 `options`。',
+      '',
+      '```bash',
+      'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf @file-viewer/renderer-word',
+      '```',
+      '',
+      '```ts',
+      "import { fileViewerRenderers } from '@file-viewer/vite-plugin'",
+      '',
+      'export default {',
+      '  plugins: [',
+      '    fileViewerRenderers({',
+      "      formats: ['pdf', 'docx'],",
+      '      scan: true,',
+      '      copyAssets: true',
+      '    })',
+      '  ]',
+      '}',
+      '```',
+      '',
+      '```ts',
+      "import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'",
+      '',
+      'const options = {',
+      "  builtinRenderers: 'none',",
+      '  renderers: configuredFileViewerRenderers,',
+      "  rendererMode: 'replace'",
+      '}',
+      '```',
+      '',
+      '- Vue、React、Svelte、jQuery、Vanilla JS / Pure Web 都传同一份 `options`，只是在各自生态中映射为 props、hook、action、plugin 或 `mountViewer(...)` 参数。',
+      '- `scan:true` 会识别 `fileViewerFormats`、`data-file-viewer-formats` 和上传控件 `accept`，调试与打包时自动选择 renderer。',
+      '- `copyAssets:true` 会复制 PDF/CAD/Typst/Archive/Data 等 worker、WASM 和 vendor 资源，满足离线和企业内网部署。',
+      '- 想一次性拥有官方 Demo 的完整能力时，可以安装 `@file-viewer/preset-all` 并把 `allRenderers` 传给 `renderers`；这适合 demo 和后台运维工具，不建议作为所有业务默认入口。',
+      ''
+    ].join('\n')
+  }
+
+  return [
+    '## Engineering-Grade On-Demand Renderer Assembly',
+    '',
+    'One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. The recommended setup is to install the component package, `@file-viewer/core`, `@file-viewer/vite-plugin`, and only the renderer packages your product actually needs. The Vite plugin generates `virtual:file-viewer-renderers`, and application code passes the same shared `options` everywhere.',
+    '',
+    '```bash',
+    'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf @file-viewer/renderer-word',
+    '```',
+    '',
+    '```ts',
+    "import { fileViewerRenderers } from '@file-viewer/vite-plugin'",
+    '',
+    'export default {',
+    '  plugins: [',
+    '    fileViewerRenderers({',
+    "      formats: ['pdf', 'docx'],",
+    '      scan: true,',
+    '      copyAssets: true',
+    '    })',
+    '  ]',
+    '}',
+    '```',
+    '',
+    '```ts',
+    "import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'",
+    '',
+    'const options = {',
+    "  builtinRenderers: 'none',",
+    '  renderers: configuredFileViewerRenderers,',
+    "  rendererMode: 'replace'",
+    '}',
+    '```',
+    '',
+    '- Vue, React, Svelte, jQuery, and Vanilla JavaScript / Pure Web all receive the same `options`; each package maps them to native props, hooks, actions, plugins, or `mountViewer(...)` parameters.',
+    '- `scan:true` detects `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` hints so development and production builds select matching renderers automatically.',
+    '- `copyAssets:true` copies PDF/CAD/Typst/Archive/Data workers, WASM, and vendor assets for offline and enterprise intranet deployment.',
+    '- If you want the complete official demo capability matrix, install `@file-viewer/preset-all` and pass `allRenderers` to `renderers`; this is ideal for demos and internal admin tools, but should not be every product default.',
+    ''
+  ].join('\n')
+}
+
 function customToolbarRows(locale) {
   if (locale === 'zh') {
     return [
@@ -421,6 +505,7 @@ function generatedWrapperBlock(locale) {
         rendererRows('zh')
       ),
       '',
+      onDemandRendererSection('zh'),
       '## 统一参数与事件',
       '',
       '所有生态组件都围绕同一套 `ViewerMountOptions` 与 `FileViewerOptions` 工作，只是映射到各自框架的 props、事件、ref、action 或插件 API。',
@@ -488,6 +573,7 @@ function generatedWrapperBlock(locale) {
       rendererRows('en')
     ),
     '',
+    onDemandRendererSection('en'),
     '## Shared Options And Events',
     '',
     'Every ecosystem package uses the same `ViewerMountOptions` and `FileViewerOptions` semantics, mapped to framework-native props, events, refs, actions, or plugin APIs.',
@@ -553,6 +639,7 @@ function generatedPublicBlock(locale) {
         wrapperRows('zh')
       ),
       '',
+      onDemandRendererSection('zh'),
       '### 组件属性与工具栏定制摘要',
       '',
       '每个生态包都暴露原生接入方式。Vanilla JS / Pure Web 优先面向非框架、Custom Element 和 script 标签场景；Vue3 保持轻量声明式 props；React、Svelte、jQuery 和 Vue2 适合需要 `buffer`、`name`、`type`、`size` 等命令式挂载参数的场景。完整示例见官方文档: https://doc.file-viewer.app/guide/ecosystem',
@@ -581,6 +668,7 @@ function generatedPublicBlock(locale) {
       wrapperRows('en')
     ),
     '',
+    onDemandRendererSection('en'),
     '### Component Props and Toolbar Customization Summary',
     '',
     'Every ecosystem package exposes a native integration surface. Vanilla JavaScript / Pure Web is the first stop for framework-free pages, Custom Elements, and script tags; Vue 3 keeps a compact declarative prop API; React, Svelte, jQuery, and Vue 2 are better when you need imperative mount fields such as `buffer`, `name`, `type`, and `size`. See the full examples in the official documentation: https://doc.file-viewer.app/guide/ecosystem',
