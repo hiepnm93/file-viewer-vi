@@ -60,6 +60,7 @@
     "@file-viewer/renderer-3d": "workspace:^2.0.11",
     "@file-viewer/renderer-archive": "workspace:^2.0.11",
     "@file-viewer/renderer-cad": "workspace:^2.0.11",
+    "@file-viewer/renderer-data": "workspace:^2.0.11",
     "@file-viewer/renderer-drawing": "workspace:^2.0.11",
     "@file-viewer/renderer-ebook": "workspace:^2.0.11",
     "@file-viewer/renderer-email": "workspace:^2.0.11",

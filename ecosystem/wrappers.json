@@ -181,6 +181,17 @@
       "publicSource": true
     },
     {
+      "id": "data",
+      "packageName": "@file-viewer/renderer-data",
+      "description": "Standalone data asset renderer plugin for File Viewer with PSD, SQLite, Parquet, Avro, WASM, font, AI/EPS, and WebArchive previews plus SQL.js WASM asset support.",
+      "packageDir": "packages/renderers/data",
+      "repository": "file-viewer-renderer-data",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-data",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-data",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

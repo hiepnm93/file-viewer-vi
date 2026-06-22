@@ -55,7 +55,7 @@
 | 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `@file-viewer/renderer-text` + `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本；Notebook、JSONC/JSON5、TOML、Proto、HTTP、Graphviz 等按最接近语言映射展示 | 配置文件、日志、代码片段、接口响应、Notebook 和工程配置 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | `@file-viewer/renderer-media` + 浏览器原生 `<audio>` / `@tonejs/midi` | 常见音频使用原生控件播放，MIDI 命中时按需展示轨道、时长、PPQ 和音符摘要 | 录音、播客、语音附件、音效素材、MIDI 文件 |
 | 视频 | `mp4`、`webm`、`m3u8` | `@file-viewer/renderer-media` + 浏览器原生 `<video>` / `hls.js` | MP4/WEBM 原生播放，HLS 清单优先用浏览器能力，必要时按需加载 `hls.js` | 演示视频、录屏材料、HLS 流 |
-| 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | core 资产/数据预览器 | 字体用 FontFace 展示样张，PSD 解析画布与图层摘要，AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
+| 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | `@file-viewer/renderer-data` | 字体用 FontFace 展示样张，PSD 解析画布与图层摘要，AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
 
 ## 按类型看体验和边界
 
@@ -175,7 +175,7 @@
 
 - 字体类 `ttf`、`otf`、`woff`、`woff2` 使用浏览器 FontFace API 临时加载并展示样张，不把字体注册到全局业务页面。
 - `psd` 使用 `ag-psd` 解析画布、图层和基础尺寸；`ai` 如果是 PDF-backed 文件会交给 PDF 链路，否则展示安全摘要；`eps` 按 PostScript 文本摘要展示，不执行脚本或渲染不可信指令。
-- `sqlite` 使用 core 共享 data renderer 按需加载 `sql.js` 打开本地数据库并展示表结构和少量行数据，默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，也可以通过 `options.data.sqlWasmUrl` 或全局 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指向私有化资源；`parquet` 使用 `hyparquet` 读取元数据和预览行；`avro` 使用 `avsc` 读取 schema 和样例对象；`wasm` 只读取模块导入导出信息；`webarchive` 做安全文本摘要。
+- `sqlite` 使用 `@file-viewer/renderer-data` 按需加载 `sql.js` 打开本地数据库并展示表结构和少量行数据，默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，也可以通过 `options.data.sqlWasmUrl` 或全局 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指向私有化资源；`parquet` 使用 `hyparquet` 读取元数据和预览行；`avro` 使用 `avsc` 读取 schema 和样例对象；`wasm` 只读取模块导入导出信息；`webarchive` 做安全文本摘要。
 - 这些格式默认定位是“附件快速审阅”，不会替代数据库客户端、设计软件或专业二进制分析工具。超大数据文件建议通过业务层先做分页、抽样或服务端索引。
 
 ## 真实业务里怎么选

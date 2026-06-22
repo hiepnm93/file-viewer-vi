@@ -170,7 +170,7 @@ export const rendererModularizationLines = [
     group: 'mediaAndData',
     targetPackage: '@file-viewer/renderer-data',
     phase: 4,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['data-asset'],
     dependencies: ['ag-psd', 'sql.js', 'hyparquet', 'avsc'],
   },

@@ -473,7 +473,7 @@ async function useLocal(blob: Blob) {
 
 ### 字体、设计资产和数据文件怎么接
 
-字体文件 `ttf/otf/woff/woff2` 会用 FontFace 临时注册到预览容器并展示样张。`psd` 会按需加载 `ag-psd` 展示尺寸、图层和预览图；`ai` 如果是 PDF-backed 文件会进入 PDF 预览，否则展示安全摘要；`eps` 不执行 PostScript，仅展示文本摘要。`sqlite`、`parquet`、`avro`、`wasm` 和 `webarchive` 都走 core 共享结构预览链路，目标是快速判断文件内容，不替代数据库客户端或专业分析工具。SQLite 默认从 viewer assets 加载 `wasm/data/sql-wasm.wasm`；私有化部署路径特殊时，可以通过 `options.data.sqlWasmUrl` 或 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指定自托管地址。
+字体文件 `ttf/otf/woff/woff2` 会用 FontFace 临时注册到预览容器并展示样张。`psd` 会按需加载 `ag-psd` 展示尺寸、图层和预览图；`ai` 如果是 PDF-backed 文件会进入 PDF 预览，否则展示安全摘要；`eps` 不执行 PostScript，仅展示文本摘要。`sqlite`、`parquet`、`avro`、`wasm` 和 `webarchive` 都走 `@file-viewer/renderer-data` 独立结构预览链路，目标是快速判断文件内容，不替代数据库客户端或专业分析工具。SQLite 默认从 viewer assets 加载 `wasm/data/sql-wasm.wasm`；私有化部署路径特殊时，可以通过 `options.data.sqlWasmUrl` 或 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指定自托管地址。
 
 ### `html` 会被当网页渲染吗
 

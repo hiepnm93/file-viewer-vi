@@ -36,9 +36,9 @@ const packageBudgets = {
     maxPackedBytes: 10_000,
     maxUnpackedBytes: 32_000,
     maxFiles: 9,
-    maxDirectRuntimeDependencies: 16,
+    maxDirectRuntimeDependencies: 17,
     maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 18
+    maxLocalPackageClosure: 19
   },
   '@file-viewer/vite-plugin': {
     maxPackedBytes: 30_000,
@@ -61,6 +61,14 @@ const packageBudgets = {
     maxUnpackedBytes: 520_000,
     maxFiles: 34,
     maxDirectRuntimeDependencies: 3,
+    maxExternalDependencyClosure: 39,
+    maxLocalPackageClosure: 3
+  },
+  '@file-viewer/renderer-data': {
+    maxPackedBytes: 35_000,
+    maxUnpackedBytes: 160_000,
+    maxFiles: 18,
+    maxDirectRuntimeDependencies: 5,
     maxExternalDependencyClosure: 39,
     maxLocalPackageClosure: 3
   }

@@ -313,6 +313,31 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     formats: ['geo', 'geojson', 'kml', 'gpx', 'shp'],
     rendererIds: ['geo'],
     chunkName: 'file-viewer-geo'
+  },
+  {
+    id: 'data',
+    packageName: '@file-viewer/renderer-data',
+    exportName: 'dataRenderer',
+    formats: [
+      'data',
+      'data-asset',
+      'sqlite',
+      'db',
+      'sqlite3',
+      'parquet',
+      'avro',
+      'psd',
+      'ai',
+      'eps',
+      'webarchive',
+      'wasm',
+      'ttf',
+      'otf',
+      'woff',
+      'woff2'
+    ],
+    rendererIds: ['data-asset'],
+    chunkName: 'file-viewer-data'
   }
 ]
 
@@ -328,12 +353,6 @@ const plannedRenderers: readonly PlannedRendererDescriptor[] = [
     targetPackage: '@file-viewer/renderer-spreadsheet',
     formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
     note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
-  },
-  {
-    id: 'data',
-    targetPackage: '@file-viewer/renderer-data',
-    formats: ['sqlite', 'db', 'parquet', 'avro', 'psd', 'ai', 'eps', 'webarchive', 'wasm'],
-    note: 'Data asset renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-data.'
   },
   {
     id: 'eda',
@@ -708,6 +727,18 @@ async function copyKnownRendererAssets(targetRoot: string, rendererIds: readonly
       )
   )
 
+  const sqlJsRoot = resolvePackageRoot('sql.js', ['@file-viewer/renderer-data'])
+  await push(
+    'data-asset',
+    'data-sql-wasm',
+    join(targetRoot, 'wasm/data/sql-wasm.wasm'),
+    () =>
+      copyFileIfPresent(
+        sqlJsRoot ? join(sqlJsRoot, 'dist/sql-wasm.wasm') : null,
+        join(targetRoot, 'wasm/data/sql-wasm.wasm')
+      )
+  )
+
   await mkdir(targetRoot, { recursive: true })
   await writeFile(
     join(targetRoot, 'flyfish-viewer-assets.json'),
@@ -740,7 +771,7 @@ function copyOptions(
 
 function collectAssetRendererIds(selection: RendererSelection) {
   if (selection.preset === 'all') {
-    return ['pdf', 'cad', 'typst', 'archive']
+    return ['pdf', 'cad', 'typst', 'archive', 'data-asset']
   }
   return unique(selection.descriptors.flatMap((descriptor) => descriptor.rendererIds))
 }
