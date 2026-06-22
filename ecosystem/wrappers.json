@@ -49,6 +49,17 @@
       "publicSource": true
     },
     {
+      "id": "typst",
+      "packageName": "@file-viewer/renderer-typst",
+      "description": "Standalone Typst renderer plugin for File Viewer with browser WASM compilation, paged SVG rendering, zoom, print, export, timeout, and offline WASM asset support.",
+      "packageDir": "packages/renderers/typst",
+      "repository": "file-viewer-renderer-typst",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-typst",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-typst",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

@@ -180,6 +180,7 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 - [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD/archive 直接依赖。
 - [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [x] 建立 `@file-viewer/renderer-cad` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 CAD renderer。
+- [x] 建立 `@file-viewer/renderer-typst` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Typst renderer。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。

@@ -49,7 +49,7 @@ export const rendererModularizationLines = [
     group: 'document',
     targetPackage: '@file-viewer/renderer-typst',
     phase: 2,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['typst'],
     dependencies: [
       '@myriaddreamin/typst.ts',
