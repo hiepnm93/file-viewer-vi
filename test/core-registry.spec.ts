@@ -16,6 +16,7 @@ import {
   type RendererDefinition,
   wrapFileViewerFileRef,
 } from '../packages/core/src';
+import { allRenderers } from '../packages/presets/all/src';
 
 const setRect = (element: Element, rect: Partial<DOMRect>) => {
   Object.defineProperty(element, 'getBoundingClientRect', {
@@ -268,6 +269,25 @@ describe('@file-viewer/core registry', () => {
     expect(container.dataset.extendedRenderer).toBe('plus');
     expect(viewer.getRenderer('plus')?.id).toBe('fixture-extend-renderer');
     expect(viewer.getRenderer('pdf')?.load).toBeTypeOf('function');
+  });
+
+  it('can restore the full format matrix through @file-viewer/preset-all in replace mode', async () => {
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
+    const viewer = createViewer(container, {
+      options: {
+        rendererMode: 'replace',
+        renderers: allRenderers,
+      },
+    });
+
+    await viewer.load({ filename: 'empty' });
+
+    expect(viewer.getRenderer('pdf')?.load).toBeTypeOf('function');
+    expect(viewer.getRenderer('docx')?.load).toBeTypeOf('function');
+    expect(viewer.getRenderer('dwg')?.load).toBeTypeOf('function');
+    expect(viewer.getRenderer('zip')?.load).toBeTypeOf('function');
+    expect(viewer.getRenderer('typst')?.load).toBeTypeOf('function');
   });
 
   it('exposes framework-neutral viewer interaction APIs', async () => {

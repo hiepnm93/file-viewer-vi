@@ -25,6 +25,13 @@ export function ecosystemPackageSpecs(wrapperManifest) {
       renderer,
       publicSource: renderer.publicSource !== false
     })),
+    ...(wrapperManifest.presets || []).map(preset => ({
+      id: `preset-${preset.id}`,
+      kind: 'preset',
+      packageDir: preset.packageDir,
+      preset,
+      publicSource: preset.publicSource !== false
+    })),
     ...(wrapperManifest.compatibilityPackages || []).map(compatibilityPackage => ({
       id: compatibilityPackage.id,
       kind: 'compatibility',
@@ -132,8 +139,8 @@ export function ecosystemPackageManifestEntry(entry) {
     publicSource: entry.publicSource,
     releaseArtifact: entry.releaseArtifact,
     targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
-    github: entry.wrapper?.github ?? entry.renderer?.github ?? null,
-    gitee: entry.wrapper?.gitee ?? entry.renderer?.gitee ?? null,
+    github: entry.wrapper?.github ?? entry.renderer?.github ?? entry.preset?.github ?? null,
+    gitee: entry.wrapper?.gitee ?? entry.renderer?.gitee ?? entry.preset?.gitee ?? null,
     sourceRepository: entry.corePackage?.sourceRepository ?? null
   }
 }

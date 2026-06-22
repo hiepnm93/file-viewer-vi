@@ -27,6 +27,19 @@
       "publicSource": true
     }
   ],
+  "presets": [
+    {
+      "id": "all",
+      "packageName": "@file-viewer/preset-all",
+      "description": "Full renderer preset for Flyfish File Viewer, preserving the complete format matrix while heavy renderers are split into standalone packages.",
+      "packageDir": "packages/presets/all",
+      "repository": "file-viewer-preset-all",
+      "github": "https://github.com/flyfish-dev/file-viewer-preset-all",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-preset-all",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    }
+  ],
   "compatibilityPackages": [
     {
       "id": "vue3-compat-scoped",

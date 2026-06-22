@@ -160,8 +160,8 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 - [x] 所有 wrapper 共享的 `FileViewerOptions` / `ViewerOptions` 类型暴露 `renderers` 和 `rendererMode`，可直接接收 renderer plugin 或 preset。
 - [ ] wrapper README 和官网示例补齐 `renderers` / `rendererMode` 的按需装配示例。
 - [ ] Vue3 旧组件渲染面板切换到同一套 renderer plugin/preset 装配链路。
-- [ ] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
-- [ ] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
+- [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
+- [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
 
 ### Phase 2：第一批重链路拆包
 

@@ -93,6 +93,19 @@ for (const renderer of wrapperManifest.renderers || []) {
   )
 }
 
+for (const preset of wrapperManifest.presets || []) {
+  const entry = entries.find(candidate => candidate.id === `preset-${preset.id}`)
+  assert(entry, `Missing preset release entry for ${preset.id}`)
+  assert(entry.kind === 'preset', `${preset.packageName} must be a preset release entry`)
+  assert(entry.packageName === preset.packageName, `${preset.id} package name drifted from wrappers.json`)
+  assert(entry.packageDir === preset.packageDir, `${preset.id} packageDir drifted from wrappers.json`)
+  assertRepositoryMetadata(entry, preset.github, preset.packageDir)
+  assert(
+    entry.packageJson.bugs?.url === `${preset.github}/issues`,
+    `${entry.packageName} bugs.url must be ${preset.github}/issues`
+  )
+}
+
 for (const compatibilityPackage of wrapperManifest.compatibilityPackages || []) {
   assert(
     compatibilityPackage.id,
