@@ -152,7 +152,7 @@ export const rendererModularizationLines = [
     group: 'mediaAndData',
     targetPackage: '@file-viewer/renderer-media',
     phase: 3,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['audio', 'video'],
     dependencies: ['hls.js', '@tonejs/midi'],
   },

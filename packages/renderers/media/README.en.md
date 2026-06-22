@@ -33,4 +33,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps bundled media renderers for backward compatibility. A later migration will switch the core media entries to this package and remove `hls.js` and `@tonejs/midi` from core direct dependencies.
+`@file-viewer/core` no longer bundles media renderers and no longer depends directly on `hls.js` or `@tonejs/midi`. Install this package explicitly for audio, video, HLS, or MIDI preview, or use `@file-viewer/preset-all`, which aggregates this renderer automatically.

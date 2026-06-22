@@ -30,20 +30,6 @@ const createWrapper = (el: HTMLDivElement): FileViewerRenderedInstance => ({
 
 export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEntry[] = [
   {
-    rendererId: 'video',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderVideo } = await import('./video');
-      return renderVideo(buffer, target, type, context);
-    },
-  },
-  {
-    rendererId: 'audio',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-      const { default: renderAudio } = await import('./audio');
-      return renderAudio(buffer, target, type);
-    },
-  },
-  {
     rendererId: 'image',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderImage } = await import('./image');
@@ -145,8 +131,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
 
 export const CORE_LITE_RENDERER_IDS = [
   'image',
-  'audio',
-  'video',
   'umd',
 ] as const;
 

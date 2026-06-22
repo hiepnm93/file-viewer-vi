@@ -77,7 +77,8 @@ import { FileViewer } from '@file-viewer/vue3'
 
 // Vue / React / Svelte / jQuery / Vanilla JS 都保持同一套 options 语义。
 const options = {
-  // 当前已可用: 只启用图片、音视频和 UMD 这类 core 原生轻量链路。
+  // 当前已可用: 只启用图片和 UMD 这类 core 原生轻量链路。
+  // 音视频请额外装配 @file-viewer/renderer-media。
   // 代码、文本和 Markdown 请额外装配 @file-viewer/renderer-text。
   builtinRenderers: 'lite'
 }
@@ -282,6 +283,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
 - [x] `@file-viewer/core` 已移除 HEIC / HEIF 转换依赖 `heic2any`，普通图片继续由 core 轻量原生预览，完整图片链路统一通过 `@file-viewer/renderer-image` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
+- [x] `@file-viewer/core` 已移除 audio / video renderer 兼容入口和 `hls.js` / `@tonejs/midi` 直接依赖，媒体完整能力统一通过 `@file-viewer/renderer-media` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-geo` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 GeoJSON / KML / GPX / SHP renderer。
 - [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。

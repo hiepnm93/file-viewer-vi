@@ -212,8 +212,12 @@ export const renderFileViewerAudio = async (
   target: HTMLDivElement,
   type?: string
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderAudio } = await import('./renderers/audio');
-  return renderAudio(buffer, target, type);
+  void buffer;
+  void target;
+  void type;
+  throw new Error(
+    'Audio and MIDI rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-media, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerArchive = async (
   buffer: ArrayBuffer,
@@ -391,8 +395,13 @@ export const renderFileViewerVideo = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderVideo } = await import('./renderers/video');
-  return renderVideo(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Video and HLS rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-media, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerWordDoc = async (
   buffer: ArrayBuffer,

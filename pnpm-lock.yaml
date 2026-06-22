@@ -417,9 +417,6 @@ importers:
       '@myriaddreamin/typst.ts':
         specifier: 0.7.0
         version: 0.7.0(@myriaddreamin/typst-ts-renderer@0.7.0)(@myriaddreamin/typst-ts-web-compiler@0.7.0)
-      '@tonejs/midi':
-        specifier: ^2.0.28
-        version: 2.0.28
       ag-psd:
         specifier: ^30.1.1
         version: 30.1.1
@@ -435,9 +432,6 @@ importers:
       epubjs:
         specifier: ^0.3.93
         version: 0.3.93
-      hls.js:
-        specifier: ^1.6.16
-        version: 1.6.16
       hyparquet:
         specifier: ^1.26.0
         version: 1.26.0
