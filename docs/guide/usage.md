@@ -451,7 +451,7 @@ async function useLocal(blob: Blob) {
 
 `.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。标准 `.gds` 会读取 GDSII 记录流，提取库名、structure、boundary、path、文本和引用，并生成可滚动 SVG 版图预览；`.oas`、`.oasis` 当前做安全结构索引、可读字符串和诊断信息。EDA 链路适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、版图编辑、DRC/LVS、规则校核和电气验证；完整 OASIS 几何预览后续更适合拆成独立按需包持续维护。
 
-3D 模型使用 Three.js，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议；当前调研路线是 STEP / IGES / BREP 使用 OpenCascade WASM，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`，后续应按独立懒加载包接入，避免拖慢普通预览首屏。
+3D 模型使用 `@file-viewer/renderer-3d` + Three.js loaders，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议；当前调研路线是 STEP / IGES / BREP 使用 OpenCascade WASM，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`，后续应按独立懒加载包接入，避免拖慢普通预览首屏。
 
 ### 地理数据怎么接
 

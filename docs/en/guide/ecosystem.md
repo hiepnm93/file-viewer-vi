@@ -41,6 +41,7 @@ Heavy renderers are split so applications can install only what they need:
 - `@file-viewer/renderer-mindmap`
 - `@file-viewer/renderer-geo`
 - `@file-viewer/renderer-drawing`
+- `@file-viewer/renderer-3d`
 
 ## Compatibility Names
 

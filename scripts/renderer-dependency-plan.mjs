@@ -71,7 +71,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-3d',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['model'],
     dependencies: ['three'],
   },

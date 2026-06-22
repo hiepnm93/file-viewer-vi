@@ -102,7 +102,7 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 ## 3D 模型支持哪些格式
 
-3D 模型走 Three.js 按需渲染，当前支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`。如果模型依赖外部贴图、材质或 `.bin`，远程 URL 预览会按原文件目录继续加载；本地上传建议优先使用单文件 `.glb`。`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会进入 3D 预览器并说明为什么需要私有转换链路。
+3D 模型走 `@file-viewer/renderer-3d` 按需渲染，当前支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`。如果模型依赖外部贴图、材质或 `.bin`，远程 URL 预览会按原文件目录继续加载；本地上传建议优先使用单文件 `.glb`。`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会进入 3D 预览器并说明为什么需要私有转换链路。
 
 ## Excalidraw 和 draw.io 是怎么预览的
 

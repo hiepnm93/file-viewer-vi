@@ -270,6 +270,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
+- [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
@@ -281,8 +282,8 @@ fileViewerRenderers({
 
 ### Phase 3：体验与自动化
 
-- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、Presentation、CAD、Typst、Archive、Email、EPUB、Text、Image、Media、XMind 和 Geo；尚未拆出的格式会给出明确缺失提示。
-- [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，Office/3D/EDA 等待对应 renderer 拆包后补入。
+- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind 和 Geo；尚未拆出的格式会给出明确缺失提示。
+- [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D renderer 当前无额外外部资产，Office/EDA 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
 - [ ] 增加独立安装 smoke：只安装 `@file-viewer/core + @file-viewer/renderer-pdf` 时 PDF 可预览，其他格式显示明确缺失提示。

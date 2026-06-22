@@ -91,9 +91,9 @@ const SIBLING_GAP = 24;
 const CANVAS_PADDING = 44;
 const MAX_RENDER_NODES = 1800;
 const PAN_CLICK_THRESHOLD = 5;
-const PAN_BOUNDARY_MARGIN = 96;
-const PAN_MIN_VISIBLE_RATIO = 0.18;
-const PAN_MIN_VISIBLE_PX = 96;
+const PAN_BOUNDARY_MARGIN = 180;
+const PAN_MIN_VISIBLE_RATIO = 0.08;
+const PAN_MIN_VISIBLE_PX = 56;
 const WHEEL_ZOOM_STEP = 0.12;
 const KEYBOARD_PAN_STEP = 42;
 const KEYBOARD_PAN_FAST_STEP = 96;
@@ -114,8 +114,9 @@ const xmindStyle = `
 .xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent;contain:layout paint;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
 .xmind-stage *{touch-action:none;-webkit-user-drag:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
+.xmind-stage:active{cursor:grabbing}
 .xmind-stage.is-panning,.xmind-stage.is-space-panning,.xmind-stage.is-panning *,.xmind-stage.is-space-panning *{cursor:grabbing!important;user-select:none}
-.xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
+.xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible;pointer-events:none}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
 .xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab;user-select:none;-webkit-user-select:none}
 .xmind-stage.is-panning .xmind-node{cursor:grabbing}
 .xmind-node.root{width:260px;border-color:rgba(33,163,102,.28);background:linear-gradient(135deg,#effdf5,#fff);box-shadow:0 18px 38px rgba(33,163,102,.16)}
@@ -470,7 +471,8 @@ export default async function renderXMind(
   const body = createElement('div', 'xmind-body');
   const sidebar = createElement('aside', 'xmind-sidebar');
   const stage = createElement('main', 'xmind-stage');
-  const ownerWindow = target.ownerDocument?.defaultView || window;
+  const ownerDocument = target.ownerDocument || document;
+  const ownerWindow = ownerDocument.defaultView || window;
   stage.tabIndex = 0;
   stage.setAttribute('role', 'application');
   stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, double click to fit, use Ctrl or Command with wheel to zoom.');
@@ -515,7 +517,7 @@ export default async function renderXMind(
       }
       const visibleEdge = Math.min(
         Math.max(PAN_MIN_VISIBLE_PX, viewportSize * PAN_MIN_VISIBLE_RATIO),
-        Math.max(PAN_MIN_VISIBLE_PX, contentSize * 0.5)
+        Math.max(PAN_MIN_VISIBLE_PX, contentSize * 0.35)
       );
       return {
         min: visibleEdge - contentSize,
@@ -984,6 +986,17 @@ export default async function renderXMind(
     }
   };
 
+  const stopPanInteractions = () => {
+    clearPanState();
+    setSpacePanning(false);
+  };
+
+  const onDocumentVisibilityChange = () => {
+    if (ownerDocument.visibilityState === 'hidden') {
+      stopPanInteractions();
+    }
+  };
+
   stage.addEventListener('pointerdown', onPanStart, true);
   stage.addEventListener('pointermove', onPanMove);
   stage.addEventListener('pointerup', onPanEnd);
@@ -1003,9 +1016,14 @@ export default async function renderXMind(
   ownerWindow.addEventListener('pointermove', onPanMove);
   ownerWindow.addEventListener('pointerup', onPanEnd);
   ownerWindow.addEventListener('pointercancel', onPanEnd);
+  ownerDocument.addEventListener('pointermove', onPanMove, true);
+  ownerDocument.addEventListener('pointerup', onPanEnd, true);
+  ownerDocument.addEventListener('pointercancel', onPanEnd, true);
   ownerWindow.addEventListener('mousemove', onMouseMove);
   ownerWindow.addEventListener('mouseup', onMouseUp);
   ownerWindow.addEventListener('keyup', onStageKeyUp);
+  ownerWindow.addEventListener('blur', stopPanInteractions);
+  ownerDocument.addEventListener('visibilitychange', onDocumentVisibilityChange);
   zoomOutButton.addEventListener('click', () => setZoomAtStageCenter(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoomAtStageCenter(zoom + 0.15));
   resetButton.addEventListener('click', () => fitSheetToStage());
@@ -1040,9 +1058,14 @@ export default async function renderXMind(
       ownerWindow.removeEventListener('pointermove', onPanMove);
       ownerWindow.removeEventListener('pointerup', onPanEnd);
       ownerWindow.removeEventListener('pointercancel', onPanEnd);
+      ownerDocument.removeEventListener('pointermove', onPanMove, true);
+      ownerDocument.removeEventListener('pointerup', onPanEnd, true);
+      ownerDocument.removeEventListener('pointercancel', onPanEnd, true);
       ownerWindow.removeEventListener('mousemove', onMouseMove);
       ownerWindow.removeEventListener('mouseup', onMouseUp);
       ownerWindow.removeEventListener('keyup', onStageKeyUp);
+      ownerWindow.removeEventListener('blur', stopPanInteractions);
+      ownerDocument.removeEventListener('visibilitychange', onDocumentVisibilityChange);
       target.replaceChildren();
     },
   };

@@ -6,8 +6,9 @@
 
 - 新增 `@file-viewer/renderer-presentation` 独立 renderer 包，基于 `@file-viewer/pptx` 提供 PPTX / PPTM / POTX / POTM / PPSX / PPSM 按需预览、缩放、打印和 HTML 导出；`@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 已优先聚合该包，ODP 继续走 OpenDocument 兼容链路
 - 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
+- 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
-- 支持格式矩阵提升到 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
+- 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、适配画布、搜索、缩放、打印和 HTML 导出
 - 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，禁用浏览器原生拖图/拖链接，并把边界约束改为画布式保留可见边缘，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制

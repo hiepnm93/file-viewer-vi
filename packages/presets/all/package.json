@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^2.0.11",
+    "@file-viewer/renderer-3d": "workspace:^2.0.11",
     "@file-viewer/renderer-archive": "workspace:^2.0.11",
     "@file-viewer/renderer-cad": "workspace:^2.0.11",
     "@file-viewer/renderer-drawing": "workspace:^2.0.11",

@@ -74,7 +74,7 @@
 - OLB / DRA 使用 CFB 容器解析、结构树、对象候选、属性和可读字符串索引，适合 EDA 附件初筛。
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
 - 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
-- 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
+- 3D 模型走 `@file-viewer/renderer-3d` + Three.js loaders，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走随 viewer assets 分发的官方 diagrams.net 离线 viewer，异常时回退内置 SVG。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
 - 代码和文本由 `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。

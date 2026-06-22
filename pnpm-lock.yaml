@@ -520,6 +520,9 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../core
+      '@file-viewer/renderer-3d':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/3d
       '@file-viewer/renderer-archive':
         specifier: workspace:^2.0.11
         version: link:../../renderers/archive
@@ -578,6 +581,22 @@ importers:
       vite:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@25.9.2)(esbuild@0.27.7)(sass@1.100.0)
+
+  packages/renderers/3d:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      three:
+        specifier: ^0.184.0
+        version: 0.184.0
+    devDependencies:
+      '@types/three':
+        specifier: ^0.184.1
+        version: 0.184.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/renderers/archive:
     dependencies:

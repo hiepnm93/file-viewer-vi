@@ -44,7 +44,7 @@
 | EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `cfb` 容器解析 + GDSII 记录解析 + EDA / 版图结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference 并生成 SVG 版图预览；OAS/OASIS 当前做安全结构索引、可读字符串、实体候选和诊断；完整 OLB/DRA/OASIS 可视化路线见 [格式完整度](/guide/format-fidelity) | 元件库、封装图纸、芯片版图文件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
-| 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
+| 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | `@file-viewer/renderer-3d` + Three.js loaders | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、Ctrl/Command 滚轮锚点缩放、键盘平移、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
@@ -137,7 +137,7 @@
 
 ### 3D 模型
 
-- 3D 模型统一走 Three.js，组件会根据扩展名按需加载对应 loader，避免普通文档预览被 3D 依赖拖慢。
+- 3D 模型由 `@file-viewer/renderer-3d` 承接，组件会根据扩展名按需加载对应 Three.js loader，避免普通文档预览被 3D 依赖拖慢。
 - `glb` / `gltf` 是最推荐的 Web 3D 交换格式；`obj`、`stl`、`ply` 适合轻量几何和打印模型；`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd` / `usdz`、`kmz` 适合兼容设计工具导出的历史或工程资产。
 - `pcd`、`xyz`、`vtk`、`vtp` 会按点云或几何模型展示，适合扫描、仿真和工程数据的快速浏览。
 - `step` / `stp`、`iges` / `igs`、`ifc`、`3dm` 已保留入口，但完整解析需要 OpenCascade、web-ifc 或 rhino3dm 这类 WebAssembly 几何内核；组件会展示原因，生产建议在私有服务端转换为 `glb` / `gltf`。

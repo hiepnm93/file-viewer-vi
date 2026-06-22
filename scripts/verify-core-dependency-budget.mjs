@@ -41,11 +41,16 @@ const dependencies = Object.keys(corePackage.dependencies || {}).sort()
 const rendererDependencies = dependencies.filter(name => dependencyToRendererLine.has(name))
 const unclassifiedDependencies = dependencies.filter(name => !dependencyToRendererLine.has(name))
 
-const phaseDependencyCount = rendererModularizationLines.reduce((result, line) => {
-  result[line.phase] ||= 0
-  result[line.phase] += line.dependencies.filter(name => dependencies.includes(name)).length
+const phaseDependencySets = rendererModularizationLines.reduce((result, line) => {
+  result[line.phase] ||= new Set()
+  line.dependencies
+    .filter(name => dependencies.includes(name))
+    .forEach(name => result[line.phase].add(name))
   return result
 }, {})
+const phaseDependencyCount = Object.fromEntries(
+  Object.entries(phaseDependencySets).map(([phase, names]) => [phase, names.size])
+)
 
 const maxDirectDependencies = strict ? 0 : numberArg('--max-direct', baseline.maxDirectDependencies)
 const maxRendererDependencies = strict ? 0 : numberArg('--max-renderer', baseline.maxRendererDependencies)

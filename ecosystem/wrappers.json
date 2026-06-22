@@ -60,6 +60,17 @@
       "publicSource": true
     },
     {
+      "id": "model",
+      "packageName": "@file-viewer/renderer-3d",
+      "description": "Standalone 3D model renderer plugin for File Viewer with Three.js loaders, WebGL preview, orbit controls, fit-to-view, grid, axes, wireframe, and auto-rotate support.",
+      "packageDir": "packages/renderers/3d",
+      "repository": "file-viewer-renderer-3d",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-3d",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-3d",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "mindmap",
       "packageName": "@file-viewer/renderer-mindmap",
       "description": "Standalone XMind and mind map renderer plugin for File Viewer with modern/classic XMind parsing, draggable canvas, zoom, sheet navigation, and node outline support.",

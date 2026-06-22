@@ -145,6 +145,38 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     chunkName: 'file-viewer-drawing'
   },
   {
+    id: 'model',
+    packageName: '@file-viewer/renderer-3d',
+    exportName: 'modelRenderer',
+    formats: [
+      '3d',
+      'model',
+      'stl',
+      'obj',
+      'gltf',
+      'glb',
+      'fbx',
+      'dae',
+      '3ds',
+      '3mf',
+      'amf',
+      'ply',
+      'pcd',
+      'vrml',
+      'wrl',
+      'vtk',
+      'vtp',
+      'xyz',
+      'usd',
+      'usda',
+      'usdc',
+      'usdz',
+      'kmz'
+    ],
+    rendererIds: ['model'],
+    chunkName: 'file-viewer-3d'
+  },
+  {
     id: 'archive',
     packageName: '@file-viewer/renderer-archive',
     exportName: 'archiveRenderer',
@@ -296,28 +328,6 @@ const plannedRenderers: readonly PlannedRendererDescriptor[] = [
     targetPackage: '@file-viewer/renderer-spreadsheet',
     formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
     note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
-  },
-  {
-    id: 'model',
-    targetPackage: '@file-viewer/renderer-3d',
-    formats: [
-      '3d',
-      'stl',
-      'obj',
-      'gltf',
-      'glb',
-      'fbx',
-      'dae',
-      '3mf',
-      'ply',
-      'pcd',
-      'vrml',
-      'wrl',
-      'vtk',
-      'xyz',
-      'usd'
-    ],
-    note: '3D renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-3d.'
   },
   {
     id: 'data',
