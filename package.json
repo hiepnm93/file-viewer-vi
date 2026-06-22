@@ -77,6 +77,7 @@
     "branch:cutover:prepare": "node scripts/prepare-branch-cutover.mjs",
     "branch:cutover:verify": "node scripts/prepare-branch-cutover.mjs --verify-only",
     "branch:cutover:apply": "node scripts/apply-branch-cutover.mjs",
+    "audit:renderer-deps": "node scripts/audit-renderer-dependencies.mjs",
     "audit:ecosystem-status": "node scripts/audit-ecosystem-status.mjs",
     "audit:ecosystem-status:fast": "node scripts/audit-ecosystem-status.mjs --fast",
     "deploy:cloudflare": "pnpm build-only && pnpm verify:demo-output && node scripts/deploy-cloudflare-pages.mjs",

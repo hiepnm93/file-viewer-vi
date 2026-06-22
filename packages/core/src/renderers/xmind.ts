@@ -93,6 +93,7 @@ const SIBLING_GAP = 24;
 const CANVAS_PADDING = 44;
 const MAX_RENDER_NODES = 1800;
 const PAN_CLICK_THRESHOLD = 5;
+const WHEEL_ZOOM_STEP = 0.12;
 
 const xmindStyle = `
 .xmind-viewer{height:100%;min-height:0;display:flex;flex-direction:column;background:#eef3f7;color:#172033}
@@ -106,7 +107,8 @@ const xmindStyle = `
 .xmind-sidebar{min-height:0;overflow:auto;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.72);padding:14px}
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
-.xmind-stage{position:relative;min-width:0;min-height:0;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px}
+.xmind-stage{position:relative;min-width:0;min-height:0;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
+.xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
 .xmind-stage.is-panning{cursor:grabbing;user-select:none}
 .xmind-zoom-box{position:relative;transform-origin:top left}.xmind-surface{position:relative;transform-origin:top left}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
 .xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab}
@@ -426,6 +428,7 @@ export default async function renderXMind(
   let suppressNodeClick = false;
   let panState: {
     pointerId: number;
+    pointerType: string;
     startX: number;
     startY: number;
     startScrollLeft: number;
@@ -456,6 +459,10 @@ export default async function renderXMind(
   const body = createElement('div', 'xmind-body');
   const sidebar = createElement('aside', 'xmind-sidebar');
   const stage = createElement('main', 'xmind-stage');
+  const ownerWindow = target.ownerDocument?.defaultView || window;
+  stage.tabIndex = 0;
+  stage.setAttribute('role', 'application');
+  stage.setAttribute('aria-label', 'XMind canvas. Drag to pan, use Ctrl or Command with wheel to zoom.');
   const zoomBox = createElement('div', 'xmind-zoom-box');
   const surface = createElement('div', 'xmind-surface');
   const state = createElement('div', 'xmind-state', '正在解析 XMind 脑图...');
@@ -490,6 +497,25 @@ export default async function renderXMind(
   const setZoom = (scale: number) => {
     zoom = clampZoom(scale);
     applyZoom();
+    zoomEmitter.emit();
+    return getZoomState();
+  };
+
+  const setZoomAtPoint = (scale: number, clientX: number, clientY: number) => {
+    const nextZoom = clampZoom(scale);
+    if (nextZoom === zoom) {
+      return getZoomState();
+    }
+
+    const rect = stage.getBoundingClientRect();
+    const viewportX = clientX - rect.left;
+    const viewportY = clientY - rect.top;
+    const logicalX = (stage.scrollLeft + viewportX) / zoom;
+    const logicalY = (stage.scrollTop + viewportY) / zoom;
+    zoom = nextZoom;
+    applyZoom();
+    stage.scrollLeft = Math.max(0, logicalX * zoom - viewportX);
+    stage.scrollTop = Math.max(0, logicalY * zoom - viewportY);
     zoomEmitter.emit();
     return getZoomState();
   };
@@ -656,18 +682,20 @@ export default async function renderXMind(
     stage.classList.remove('is-panning');
     if (moved) {
       suppressNodeClick = true;
-      window.setTimeout(() => {
+      ownerWindow.setTimeout(() => {
         suppressNodeClick = false;
       }, 0);
     }
   };
 
   const onPanStart = (event: PointerEvent) => {
-    if (event.button !== 0 || status !== 'ready' || isPanBlockedTarget(event.target)) {
+    if ((event.pointerType === 'mouse' && event.button !== 0) || status !== 'ready' || isPanBlockedTarget(event.target)) {
       return;
     }
+    stage.focus({ preventScroll: true });
     panState = {
       pointerId: event.pointerId,
+      pointerType: event.pointerType,
       startX: event.clientX,
       startY: event.clientY,
       startScrollLeft: stage.scrollLeft,
@@ -685,6 +713,10 @@ export default async function renderXMind(
 
   const onPanMove = (event: PointerEvent) => {
     if (!panState || panState.pointerId !== event.pointerId) {
+      return;
+    }
+    if (panState.pointerType === 'mouse' && event.buttons === 0) {
+      clearPanState(event);
       return;
     }
     const deltaX = event.clientX - panState.startX;
@@ -708,11 +740,46 @@ export default async function renderXMind(
     clearPanState();
   };
 
+  const onStageWheel = (event: WheelEvent) => {
+    if (status !== 'ready' || (!event.ctrlKey && !event.metaKey)) {
+      return;
+    }
+    event.preventDefault();
+    const direction = event.deltaY > 0 ? -1 : 1;
+    setZoomAtPoint(zoom + direction * WHEEL_ZOOM_STEP, event.clientX, event.clientY);
+  };
+
+  const onStageKeyDown = (event: KeyboardEvent) => {
+    if (status !== 'ready') {
+      return;
+    }
+    const step = event.shiftKey ? 96 : 42;
+    if (event.key === 'ArrowLeft') {
+      stage.scrollLeft -= step;
+    } else if (event.key === 'ArrowRight') {
+      stage.scrollLeft += step;
+    } else if (event.key === 'ArrowUp') {
+      stage.scrollTop -= step;
+    } else if (event.key === 'ArrowDown') {
+      stage.scrollTop += step;
+    } else if ((event.key === '0' || event.key === 'Home') && (event.ctrlKey || event.metaKey)) {
+      fitSheetToStage();
+    } else {
+      return;
+    }
+    event.preventDefault();
+  };
+
   stage.addEventListener('pointerdown', onPanStart);
   stage.addEventListener('pointermove', onPanMove);
   stage.addEventListener('pointerup', onPanEnd);
   stage.addEventListener('pointercancel', onPanEnd);
   stage.addEventListener('lostpointercapture', onLostPointerCapture);
+  stage.addEventListener('wheel', onStageWheel, { passive: false });
+  stage.addEventListener('keydown', onStageKeyDown);
+  ownerWindow.addEventListener('pointermove', onPanMove);
+  ownerWindow.addEventListener('pointerup', onPanEnd);
+  ownerWindow.addEventListener('pointercancel', onPanEnd);
   zoomOutButton.addEventListener('click', () => setZoom(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoom(zoom + 0.15));
   resetButton.addEventListener('click', () => fitSheetToStage());
@@ -729,6 +796,11 @@ export default async function renderXMind(
       stage.removeEventListener('pointerup', onPanEnd);
       stage.removeEventListener('pointercancel', onPanEnd);
       stage.removeEventListener('lostpointercapture', onLostPointerCapture);
+      stage.removeEventListener('wheel', onStageWheel);
+      stage.removeEventListener('keydown', onStageKeyDown);
+      ownerWindow.removeEventListener('pointermove', onPanMove);
+      ownerWindow.removeEventListener('pointerup', onPanEnd);
+      ownerWindow.removeEventListener('pointercancel', onPanEnd);
       target.replaceChildren();
     },
   };
