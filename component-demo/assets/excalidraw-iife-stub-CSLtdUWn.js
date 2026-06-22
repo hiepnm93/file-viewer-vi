@@ -1,0 +1,1 @@
+var e=()=>Error(`The script-tag viewer uses the built-in Excalidraw SVG fallback.`),t=()=>{throw e()},n=async()=>{throw e()};export{n as exportToSvg,t as restore};
