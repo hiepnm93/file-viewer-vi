@@ -38,6 +38,10 @@ const fast = args.has('--fast')
 const gitTimeout = readNumberArg('--git-timeout-ms', fast ? 5_000 : 20_000)
 const npmTimeout = readNumberArg('--npm-timeout-ms', fast ? 8_000 : 30_000)
 const ghTimeout = readNumberArg('--gh-timeout-ms', fast ? 8_000 : 20_000)
+const npmRegistry = readArg(
+  '--npm-registry',
+  process.env.FILE_VIEWER_NPM_REGISTRY || 'https://registry.npmjs.org/'
+)
 
 const { rootPackage, wrapperManifest, entries } = await loadEcosystemReleaseContext(sourceRoot)
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
@@ -130,7 +134,9 @@ async function lsRemoteHead(url, branch = 'main') {
 }
 
 async function npmPackageVersion(packageName) {
-  const result = await runAsync('npm', ['view', packageName, 'version'], { timeout: npmTimeout })
+  const result = await runAsync('npm', ['view', packageName, 'version', '--registry', npmRegistry], {
+    timeout: npmTimeout
+  })
   return {
     ok: result.ok && Boolean(result.stdout),
     version: result.stdout.replace(/^"|"$/g, ''),
