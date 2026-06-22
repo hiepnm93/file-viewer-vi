@@ -9,7 +9,10 @@
     "vite-plugin",
     "renderer-preset",
     "document-preview",
-    "on-demand-renderer"
+    "on-demand-renderer",
+    "document-viewer",
+    "file-preview",
+    "self-hosted"
   ],
   "publishConfig": {
     "access": "public",
@@ -27,6 +30,10 @@
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-vite-plugin/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://dev.flyfish.group/shop"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

@@ -80,7 +80,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-drawing',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['drawing'],
     dependencies: ['@excalidraw/excalidraw', 'roughjs'],
   },

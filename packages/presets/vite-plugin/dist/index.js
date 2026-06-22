@@ -47,6 +47,14 @@ const rendererModules = [
         chunkName: 'file-viewer-presentation'
     },
     {
+        id: 'drawing',
+        packageName: '@file-viewer/renderer-drawing',
+        exportName: 'drawingRenderer',
+        formats: ['drawing', 'drawio', 'dio', 'excalidraw'],
+        rendererIds: ['drawing'],
+        chunkName: 'file-viewer-drawing'
+    },
+    {
         id: 'archive',
         packageName: '@file-viewer/renderer-archive',
         exportName: 'archiveRenderer',
@@ -197,12 +205,6 @@ const plannedRenderers = [
         targetPackage: '@file-viewer/renderer-spreadsheet',
         formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
         note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
-    },
-    {
-        id: 'drawing',
-        targetPackage: '@file-viewer/renderer-drawing',
-        formats: ['drawio', 'dio', 'excalidraw'],
-        note: 'Drawing renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-drawing.'
     },
     {
         id: 'model',

@@ -49,6 +49,17 @@
       "publicSource": true
     },
     {
+      "id": "drawing",
+      "packageName": "@file-viewer/renderer-drawing",
+      "description": "Standalone Draw.io and Excalidraw renderer plugin for File Viewer with official Excalidraw SVG export, diagrams.net offline viewer support, zoom, print, and HTML export.",
+      "packageDir": "packages/renderers/drawing",
+      "repository": "file-viewer-renderer-drawing",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-drawing",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-drawing",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "mindmap",
       "packageName": "@file-viewer/renderer-mindmap",
       "description": "Standalone XMind and mind map renderer plugin for File Viewer with modern/classic XMind parsing, draggable canvas, zoom, sheet navigation, and node outline support.",

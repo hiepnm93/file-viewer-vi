@@ -436,6 +436,8 @@ export default async function renderXMind(
   let sheets: SheetView[] = [];
   let suppressNodeClick = false;
   let spacePanning = false;
+  let lostPointerCaptureTimer: number | undefined;
+  let lastPanMoveAt = 0;
   let panState: {
     source: 'pointer' | 'mouse' | 'touch';
     pointerId?: number;
@@ -569,6 +571,11 @@ export default async function renderXMind(
     return getZoomState();
   };
 
+  const setZoomAtStageCenter = (scale: number) => {
+    const rect = stage.getBoundingClientRect();
+    return setZoomAtPoint(scale, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
+
   const fitSheetToStage = () => {
     const sheet = sheets[activeSheetIndex];
     if (!sheet) {
@@ -697,9 +704,9 @@ export default async function renderXMind(
   };
 
   registerFileViewerZoomProvider(root, {
-    zoomIn: () => setZoom(zoom + 0.15),
-    zoomOut: () => setZoom(zoom - 0.15),
-    resetZoom: () => setZoom(1),
+    zoomIn: () => setZoomAtStageCenter(zoom + 0.15),
+    zoomOut: () => setZoomAtStageCenter(zoom - 0.15),
+    resetZoom: () => fitSheetToStage(),
     setZoom,
     getState: getZoomState,
     subscribe: zoomEmitter.subscribe,
@@ -713,6 +720,10 @@ export default async function renderXMind(
   const clearPanState = (event?: PointerEvent) => {
     if (!panState) {
       return;
+    }
+    if (lostPointerCaptureTimer !== undefined) {
+      ownerWindow.clearTimeout(lostPointerCaptureTimer);
+      lostPointerCaptureTimer = undefined;
     }
     const moved = panState.moved;
     const pointerId = panState.pointerId;
@@ -748,6 +759,7 @@ export default async function renderXMind(
       return false;
     }
     stage.focus({ preventScroll: true });
+    lastPanMoveAt = Date.now();
     panState = {
       source,
       startX: clientX,
@@ -769,6 +781,7 @@ export default async function renderXMind(
     if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
       panState.moved = true;
     }
+    lastPanMoveAt = Date.now();
     panX = panState.startPanX + deltaX;
     panY = panState.startPanY + deltaY;
     applyZoom();
@@ -814,8 +827,24 @@ export default async function renderXMind(
     clearPanState(event);
   };
 
-  const onLostPointerCapture = () => {
-    clearPanState();
+  const onLostPointerCapture = (event: PointerEvent) => {
+    if (!panState || panState.pointerId !== event.pointerId) {
+      return;
+    }
+    if (lostPointerCaptureTimer !== undefined) {
+      ownerWindow.clearTimeout(lostPointerCaptureTimer);
+    }
+    // Some mobile WebViews release pointer capture while the finger is still moving.
+    // Defer cleanup so window-level pointermove/pointerup can keep the pan session alive.
+    lostPointerCaptureTimer = ownerWindow.setTimeout(() => {
+      if (!panState || panState.pointerId !== event.pointerId) {
+        return;
+      }
+      if (Date.now() - lastPanMoveAt < 140) {
+        return;
+      }
+      clearPanState();
+    }, 160);
   };
 
   const onMouseDown = (event: MouseEvent) => {
@@ -979,8 +1008,8 @@ export default async function renderXMind(
   ownerWindow.addEventListener('mousemove', onMouseMove);
   ownerWindow.addEventListener('mouseup', onMouseUp);
   ownerWindow.addEventListener('keyup', onStageKeyUp);
-  zoomOutButton.addEventListener('click', () => setZoom(zoom - 0.15));
-  zoomInButton.addEventListener('click', () => setZoom(zoom + 0.15));
+  zoomOutButton.addEventListener('click', () => setZoomAtStageCenter(zoom - 0.15));
+  zoomInButton.addEventListener('click', () => setZoomAtStageCenter(zoom + 0.15));
   resetButton.addEventListener('click', () => fitSheetToStage());
   syncState();
   void load();
@@ -989,6 +1018,10 @@ export default async function renderXMind(
     $el: root,
     unmount() {
       disposed = true;
+      if (lostPointerCaptureTimer !== undefined) {
+        ownerWindow.clearTimeout(lostPointerCaptureTimer);
+        lostPointerCaptureTimer = undefined;
+      }
       unregisterFileViewerZoomProvider(root);
       stage.removeEventListener('pointerdown', onPanStart, true);
       stage.removeEventListener('pointermove', onPanMove);

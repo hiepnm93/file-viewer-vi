@@ -8,7 +8,10 @@
     "file-viewer",
     "renderer-preset",
     "document-preview",
-    "on-demand-renderer"
+    "on-demand-renderer",
+    "document-viewer",
+    "file-preview",
+    "self-hosted"
   ],
   "publishConfig": {
     "access": "public",
@@ -26,6 +29,10 @@
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-preset-all/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://dev.flyfish.group/shop"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -52,6 +59,7 @@
     "@file-viewer/core": "workspace:^2.0.11",
     "@file-viewer/renderer-archive": "workspace:^2.0.11",
     "@file-viewer/renderer-cad": "workspace:^2.0.11",
+    "@file-viewer/renderer-drawing": "workspace:^2.0.11",
     "@file-viewer/renderer-ebook": "workspace:^2.0.11",
     "@file-viewer/renderer-email": "workspace:^2.0.11",
     "@file-viewer/renderer-geo": "workspace:^2.0.11",

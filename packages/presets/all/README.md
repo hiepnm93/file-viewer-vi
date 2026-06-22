@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-当前版本会优先聚合已经拆出的 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media`、`@file-viewer/renderer-mindmap` 和 `@file-viewer/renderer-geo`，剩余尚未拆包的链路暂由 `@file-viewer/core` 兼容补齐。随着 Word、Excel、绘图、3D、EDA 和数据资产继续独立，本 preset 会保持作为全量聚合层。
+当前版本会优先聚合已经拆出的 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media`、`@file-viewer/renderer-mindmap` 和 `@file-viewer/renderer-geo`，剩余尚未拆包的链路暂由 `@file-viewer/core` 兼容补齐。随着 Word、Excel、3D、EDA 和数据资产继续独立，本 preset 会保持作为全量聚合层。
 
 ## 文档
 

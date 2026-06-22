@@ -236,7 +236,7 @@ fileViewerRenderers({
 | Presentation / PPTX         | `@file-viewer/renderer-presentation` 作为标准 renderer 插件，底层复用 `@file-viewer/pptx` 原生引擎和 Worker 渐进幻灯片输出；ODP 仍归 OpenDocument 兼容链路。 | 后续从 core 直接依赖中移除 `@file-viewer/pptx`，保留本包作为唯一标准 PowerPoint renderer 入口。        |
 | OFD                         | 使用 `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；当前已经拆成 `@file-viewer/renderer-ofd`，vendor 源码随包离线分发。                  | 后续清理 core 中的兼容 OFD 入口，并补充独立样例 smoke。                                                  |
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
-| Draw.io / diagrams.net      | 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。                                      | `@file-viewer/renderer-drawing` 统一 drawio、excalidraw、Mermaid 类绘图资产。                            |
+| Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | `@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。                            |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
@@ -269,6 +269,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
+- [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。

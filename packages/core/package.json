@@ -8,7 +8,14 @@
     "file-viewer",
     "document-preview",
     "typescript",
-    "core"
+    "core",
+    "document-viewer",
+    "file-preview",
+    "self-hosted",
+    "browser",
+    "wasm",
+    "office-viewer",
+    "pdf-viewer"
   ],
   "publishConfig": {
     "access": "public",
@@ -22,6 +29,13 @@
     "type": "git",
     "url": "git+https://github.com/flyfish-dev/file-viewer-core.git",
     "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/flyfish-dev/file-viewer-core/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://dev.flyfish.group/shop"
   },
   "homepage": "https://doc.file-viewer.app/",
   "main": "./dist/index.js",

@@ -45,7 +45,7 @@
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；后续像 PPTX 一样拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护 |
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合 WebGL 或 WASM | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
 | STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` | 保留 3D 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
-| Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
+| Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
 | GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo`，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
 | Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |

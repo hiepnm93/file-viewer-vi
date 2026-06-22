@@ -12,7 +12,10 @@
     "rar",
     "7z",
     "tar",
-    "document-preview"
+    "document-preview",
+    "document-viewer",
+    "file-preview",
+    "self-hosted"
   ],
   "publishConfig": {
     "access": "public",
@@ -30,6 +33,10 @@
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-renderer-archive/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://dev.flyfish.group/shop"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
