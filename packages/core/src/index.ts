@@ -238,8 +238,12 @@ export const renderFileViewerCode = async (
   target: HTMLDivElement,
   type?: string
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderCode } = await import('./renderers/code');
-  return renderCode(buffer, target, type);
+  void buffer;
+  void target;
+  void type;
+  throw new Error(
+    'Code and text rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-text, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerDataAsset = async (
   buffer: ArrayBuffer,
@@ -308,8 +312,11 @@ export const renderFileViewerMarkdown = async (
   buffer: ArrayBuffer,
   target: HTMLDivElement
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderMarkdown } = await import('./renderers/markdown');
-  return renderMarkdown(buffer, target);
+  void buffer;
+  void target;
+  throw new Error(
+    'Markdown rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-text, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerModel = async (
   buffer: ArrayBuffer,

@@ -35,4 +35,4 @@ const options = {
 
 ## 迁移说明
 
-当前 `@file-viewer/core` 仍保留内置 code / markdown renderer 以兼容历史全量包。后续会把 core 的文本入口切换到本包，并从 core 直接依赖中移除 `highlight.js` 和 `marked`。
+`@file-viewer/core` 已不再内置 code / markdown renderer，也不再直接依赖 `highlight.js` 和 `marked`。需要代码、文本或 Markdown 预览时，请显式安装本包，或使用会自动聚合本包的 `@file-viewer/preset-all`。

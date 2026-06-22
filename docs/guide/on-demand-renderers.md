@@ -77,7 +77,8 @@ import { FileViewer } from '@file-viewer/vue3'
 
 // Vue / React / Svelte / jQuery / Vanilla JS 都保持同一套 options 语义。
 const options = {
-  // 当前已可用: 只启用图片、音视频、代码、Markdown 和 UMD 这类轻量内置链路。
+  // 当前已可用: 只启用图片、音视频和 UMD 这类 core 原生轻量链路。
+  // 代码、文本和 Markdown 请额外装配 @file-viewer/renderer-text。
   builtinRenderers: 'lite'
 }
 ```
@@ -277,6 +278,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
+- [x] `@file-viewer/core` 已移除 code / markdown renderer 兼容入口和 `highlight.js` / `marked` 直接依赖，文本类完整能力统一通过 `@file-viewer/renderer-text` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
 - [x] `@file-viewer/core` 已移除 HEIC / HEIF 转换依赖 `heic2any`，普通图片继续由 core 轻量原生预览，完整图片链路统一通过 `@file-viewer/renderer-image` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。

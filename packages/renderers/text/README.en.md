@@ -35,4 +35,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps bundled code / markdown renderers for backward compatibility. A later migration will switch the core text entries to this package and remove `highlight.js` and `marked` from core direct dependencies.
+`@file-viewer/core` no longer bundles code / markdown renderers and no longer depends directly on `highlight.js` or `marked`. Install this package explicitly for code, text, or Markdown preview, or use `@file-viewer/preset-all`, which aggregates this renderer automatically.
