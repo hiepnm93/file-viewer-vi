@@ -51,13 +51,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'pdf',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
-      const { default: renderPdf } = await import('./pdf');
-      return renderPdf(buffer, target, context);
-    },
-  },
-  {
     rendererId: 'spreadsheet-openxml',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderSpreadsheet } = await import('./spreadsheet');

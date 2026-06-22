@@ -84,7 +84,6 @@
     "jszip": "^3.10.1",
     "ofd-xml-parser": "^0.0.6",
     "pako": "^2.1.0",
-    "pdfjs-dist": "^6.0.227",
     "styled-exceljs": "0.21.1",
     "tinycolor2": "^1.6.0"
   },

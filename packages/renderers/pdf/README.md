@@ -41,4 +41,4 @@ const options = {
 
 ## 迁移说明
 
-当前 core 仍保留内置 PDF renderer 以兼容历史全量包。后续会把 core 的 PDF 入口切换到本包，并从 core 直接依赖中移除 `pdfjs-dist`。
+PDF 渲染已经从 `@file-viewer/core` 移入本包，`pdfjs-dist` 只由 `@file-viewer/renderer-pdf` 声明。只安装 core 或标准组件包时不会再拉取 PDF.js；需要 PDF 预览时请显式装配本 renderer，或使用 `@file-viewer/preset-all`。

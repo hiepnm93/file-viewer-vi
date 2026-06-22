@@ -41,4 +41,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps the bundled PDF renderer for backward compatibility. A later migration will switch the core PDF entry to this package and remove `pdfjs-dist` from core direct dependencies.
+PDF rendering has moved out of `@file-viewer/core` into this package, and `pdfjs-dist` is now declared only by `@file-viewer/renderer-pdf`. Installing core or a standard component package no longer pulls PDF.js; explicitly assemble this renderer when PDF preview is needed, or use `@file-viewer/preset-all`.

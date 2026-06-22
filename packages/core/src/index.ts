@@ -389,8 +389,12 @@ export const renderFileViewerPdf = async (
   target: HTMLDivElement,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderPdf } = await import('./renderers/pdf');
-  return renderPdf(buffer, target, context);
+  void buffer;
+  void target;
+  void context;
+  throw new Error(
+    'PDF rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-pdf, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerPptx = async (
   buffer: ArrayBuffer,
