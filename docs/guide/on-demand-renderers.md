@@ -266,7 +266,7 @@ fileViewerRenderers({
 
 ### Phase 2：第一批重链路拆包
 
-- [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD 等剩余重链路直接依赖。
+- [x] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD 等剩余重链路直接依赖；当前 core 运行时依赖仅保留 UMD 轻量解析所需的 `pako`。
 - [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [x] `@file-viewer/core` 已移除 PDF 兼容入口和 `pdfjs-dist` 直接依赖，PDF 完整能力统一通过 `@file-viewer/renderer-pdf` 或 preset 装配；PDF worker、CMap、WASM 和 standard fonts 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-word` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 DOCX / DOC / RTF / ODT renderer。
@@ -305,7 +305,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 spreadsheet 兼容入口和 `styled-exceljs` / `e-virt-table` / `tinycolor2` 直接依赖，表格完整能力统一通过 `@file-viewer/renderer-spreadsheet` 或 preset 装配；Spreadsheet Worker 资产路径仍由 core manifest 统一发现。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
-- [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
+- [x] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵；`verify:format-support`、`verify:compatibility-api` 和 `verify:compatibility-readmes` 纳入迁移门禁。
 - [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`styled-exceljs`、`e-virt-table` 或 `tinycolor2`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
 - [x] Phase 2 重型链路已从 core 默认安装面全部摘除，Spreadsheet 作为最后一条 Office 重链路已拆到 `@file-viewer/renderer-spreadsheet`。
 
@@ -314,9 +314,9 @@ fileViewerRenderers({
 - [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 Word、Spreadsheet、PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；未知格式会给出明确缺失提示。
 - [x] `@file-viewer/vite-plugin` 支持 `scan: true` 源码 hint 自动发现：`fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / `accept` 会合并进 renderer 选择，开发和构建阶段都能生成相同 virtual module。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
-- [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
+- [x] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包；`verify:bundle-budget` 会检查主 Demo、文档比对入口和异步 renderer chunk。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
-- [ ] 增加独立安装 smoke：只安装 `@file-viewer/core + @file-viewer/renderer-pdf` 时 PDF 可预览，其他格式显示明确缺失提示。
+- [x] 增加独立安装 smoke：`verify:renderer-standalone-smoke` 会在临时目录只安装本地 tarball 版 `@file-viewer/core`、`@file-viewer/renderer-pdf` 和 `@file-viewer/vite-plugin`，验证 PDF renderer 可注册、virtual module 只导入 PDF，并确认未安装 DOCX renderer 时给出明确缺失提示。
 
 ### Phase 4：专业格式独立内核
 
@@ -329,9 +329,9 @@ fileViewerRenderers({
 
 - [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时保留为后续增强。
 - [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；lite/office/engineering preset 分项预算保留为后续增强。
-- [ ] 新增 release 校验：每个 renderer 包 npm tarball、README、exports、assets manifest、smoke 样本齐全。
+- [x] 新增 release 校验：`verify:renderer-contracts`、`verify:renderer-assets`、`verify:ecosystem-tarballs` 和 `release:ecosystem:list` 会检查 renderer 包 exports、README、发布文件、assets manifest、npm dry-run tarball 和生态 release 清单。
 - [ ] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包和 `@file-viewer/preset-all`。
-- [ ] 迁移完成后 `@file-viewer/core` 的 `dependencies` 只保留真正跨 renderer 的轻量工具，重依赖直接数量接近 0。
+- [x] 迁移完成后 `@file-viewer/core` 的 `dependencies` 只保留真正跨 renderer 的轻量工具，重依赖直接数量接近 0；`verify:core-dependency-budget` 当前要求 core 只有 1 个直接运行时依赖且 0 个 renderer 依赖。
 
 ## 当前状态
 
@@ -380,6 +380,7 @@ pnpm verify:renderer-contracts
 pnpm verify:renderer-assets
 pnpm verify:on-demand-boundaries
 pnpm verify:vite-plugin-auto-scan
+pnpm verify:renderer-standalone-smoke
 pnpm verify:install-budget
 pnpm verify:bundle-budget
 pnpm verify:format-support
@@ -397,9 +398,9 @@ pnpm build-only
 - `verify:renderer-assets`：已落地。检查每个 renderer npm dry-run 中的入口、`new URL(..., import.meta.url)` 本地运行时资源、core asset manifest 字段，以及 `@file-viewer/web` 发布包内的 viewer worker/wasm/vendor assets。
 - `verify:on-demand-boundaries`：已落地。检查 core、renderer、preset、标准组件和兼容 alias 的依赖方向，防止组件包重新捆绑重 renderer，确保按需安装边界不会回退。
 - `verify:vite-plugin-auto-scan`：已落地。构建 Vite 插件后用临时源码项目验证 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 和注释 hint 能自动映射到对应 renderer 包。
+- `verify:renderer-standalone-smoke`：已落地 PDF-only 独立安装 smoke。它用本地 tarball 构造隔离业务项目，只安装 core、PDF renderer 和 Vite 插件，验证单 renderer 装配、virtual module 和缺失 renderer 提示。后续可扩展为全 renderer + wrapper 矩阵。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
-- `verify:renderer-standalone-smoke`：计划中。任意单 renderer + 任意 wrapper 能独立预览对应样例。
 - `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的真实冷安装耗时。
 
 ## 外部参考

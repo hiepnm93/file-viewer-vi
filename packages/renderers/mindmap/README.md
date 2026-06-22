@@ -34,6 +34,7 @@ const options = {
 - 支持工具栏缩放、适配画布、Pointer / 鼠标 / 触摸三层拖拽平移、移动端双指缩放、按帧合并平移更新、`Ctrl` / `Command` + 滚轮指针缩放、键盘方向键平移。
 - 首次打开和容器尺寸变化时会自动适配视图；用户手动拖拽、滚轮或缩放后会保留当前画布视角，只做安全边界校正。
 - 鼠标和触摸拖拽都带 document 级兜底监听，Pointer 拖拽不依赖不稳定的 `buttons` 状态；即使嵌入式 WebView 出现 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件，也会继续平移画布。
+- 发布前浏览器 smoke 会对 `.xmind` 样例执行真实 pan 回归，覆盖普通 Pointer、`buttons = 0` WebView、Pointer + Mouse 混合、Touch 和 Pointer + Touch 混合路径，避免画布再次退化成“能打开但拖不动”。
 
 ## 迁移说明
 

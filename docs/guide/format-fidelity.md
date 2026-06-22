@@ -16,15 +16,16 @@
 | 结构可读预览 | 能安全读取目录、元数据、文本、对象候选或几何子集，但不能承诺专业工具级还原 | 明确标注为结构预览/附件初筛 |
 | 需要独立内核 | 格式复杂、生态缺少稳定浏览器库、或需要 C++/Rust/WASM 才能达到完整可视 | 拆成独立包持续维护，不塞进 core |
 
-## 2026-06 生态复核
+## 2026-06-23 生态复核
 
 | 格式线 | 复核结论 | 当前落点 |
 | --- | --- | --- |
-| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；官方 SDK 对 Browser 标注为 not fully supported，浏览器端更稳的路线是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移、双击适配视图、首次打开/容器 resize 自动适配、用户交互后视角保留、平移后的统一 toolbar 状态同步、WebView `PointerEvent.buttons` 异常兼容，以及 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件兜底。 |
+| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；官方 SDK 对 Browser 标注为 not fully supported，SimpleMindMap 文档也确认可解包读取 `content.json` 后转换。浏览器端更稳的路线是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移、双击适配视图、首次打开/容器 resize 自动适配、用户交互后视角保留、平移后的统一 toolbar 状态同步、WebView `PointerEvent.buttons` 异常兼容，以及 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件兜底；浏览器 smoke 已把 `.xmind` pan 写成显式验收。 |
 | Typst | 官方 Typst 编译器是 Rust 开源编译器，浏览器稳定路线仍是 WASM 编译后输出 SVG/PDF；`@myriaddreamin/typst.ts` 与 compiler/renderer WASM 最新 npm 版本为 `0.7.0`。 | 保持 `@file-viewer/renderer-typst`，直接读取源 `.typ` / `.typst`，按页 SVG 预览，不做 sidecar PDF 替换。 |
 | Archive | `libarchive.js` 是 libarchive 的 browser / WASM port，最新 npm 版本为 `2.0.2`，继续是多压缩包格式最稳的离线方向。 | 保持 `@file-viewer/renderer-archive` 的 Worker + WASM 优先策略，并保留 ZIP/TAR/GZIP 兼容降级。 |
 | Email | `postal-mime` 最新 npm 版本为 `2.7.4`，支持 Node、browser、Web Worker 和 serverless；`@kenjiuno/msgreader` 最新 npm 版本为 `1.28.0`，适合作为 MSG 读取层。 | 保持 `@file-viewer/renderer-email` 分别处理 EML/MBOX 与 MSG，正文沙箱化，附件继续复用统一预览器。 |
-| OLB / DRA | Cadence / Allegro 相关格式公开规格不完整，未发现可直接开箱即用的官方 Web viewer SDK。公开可持续路线仍是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器 WASM 化，或按真实样本逐步 TS 移植；OpenAllegroParser 文档也显示部分 padstack 数据可从嵌入 ZIP/JSON 线索恢复。 | 当前只声明结构预览；高保真符号/封装图形应拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护，不塞进 core。 |
+| GDSII / OASIS | GDSII 有公开记录结构和 TinyTapeout/gdsii 这类 TS parser，也有 GDS2WebGL / GDSJam 等浏览器 WebGL viewer 证明路线可行；KLayout 明确覆盖 GDS 和 OASIS，但完整 OASIS 几何涉及 SEMI 二进制标准、重复结构、压缩块和层级展开，前端完整实现应拆成专业内核。 | 当前 `@file-viewer/renderer-eda` 对 GDSII 做 record parser + SVG 快速预览；OAS/OASIS 继续做安全结构索引和诊断，后续拆 `@file-viewer/eda-layout` 做 WebGL/WASM/增量渲染。 |
+| OLB / DRA | Cadence 文档确认 OLB 是 OrCAD Capture 的 symbol library，DRA 属于 Allegro drawing / footprint 生态；公开规格不完整，未发现可直接开箱即用的官方 Web viewer SDK。公开可持续路线仍是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器 WASM 化，或按真实样本逐步 TS 移植；OpenAllegroParser 文档也显示部分 padstack 数据可从嵌入 ZIP/JSON 线索恢复。 | 当前只声明结构预览；高保真符号/封装图形应拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护，不塞进 core。 |
 | OpenDocument | ODF 是 ZIP 包承载 XML 内容的开放格式；`odf-kit` 已提供浏览器/Node 纯 JS 读取与 HTML 转换路线，可作为后续 ODT/ODS/ODP 深化预览候选。 | 当前 Word/OpenDocument 链路优先做安全结构和正文预览；需要更高还原度时，应在 `@file-viewer/renderer-word` 内部按需引入 ODF 专用解析层，而不是进入 core。 |
 | Draw.io / Excalidraw | diagrams.net 官方仓库和离线 viewer 仍是 draw.io 最佳只读预览来源；Excalidraw 官方 `restore` + `exportToSvg` 仍是最兼容真实 `.excalidraw` 文件的链路。 | 保持 `@file-viewer/renderer-drawing` 的离线 vendor 分发和官方导出优先策略，失败时才走安全 SVG 兜底。 |
 
@@ -81,7 +82,11 @@
 - postal-mime 明确支持 Node.js、浏览器、Web Worker 和 serverless 环境，适合 EML/MBOX 邮件预览: <https://github.com/postalsys/postal-mime>
 - GDS2WebGL 证明 GDSII 可以在浏览器里做 WebGL pan/zoom 查看，适合成为后续 GDS/OASIS 独立 renderer 的参考: <https://github.com/s-holst/GDS2WebGL>
 - GDSJam 证明 GDSII/DXF 可以做客户端 WebGL viewer，适合为大版图交互性能设定基线: <https://github.com/jwt625/gdsjam>
+- TinyTapeout/gdsii 提供 TypeScript GDSII parser，说明标准 GDSII 记录层适合继续在独立 renderer 中深化: <https://github.com/TinyTapeout/gdsii>
+- KLayout 明确是 GDS 和 OASIS viewer/editor，可作为后续 OASIS 完整几何内核的行为对照: <https://www.klayout.de/intro.html>
+- LayoutEditor 对 OASIS 的说明确认它是用于光罩生产和层级 IC mask layout 的二进制格式，完整预览不应只靠字符串索引虚标: <https://layouteditor.org/layout/file-formats/oasis>
 - OASIS 公开生态里存在低层解析器，但不是完整 Web viewer，需要在解析层之上自行构建几何模型和渲染层: <https://github.com/EDDRSoftware/oasFileParser>
+- Cadence 对 OLB 的说明确认它是 OrCAD Capture symbol library，包含元件符号、pin 定义和属性等结构: <https://resources.pcb.cadence.com/blog/2024-pcb-schematic-file-formats>
 - OpenOrCadParser 是 OrCAD DSN/OLB 二进制解析的 C++ 开源实现，说明 OLB 完整解析可行，但工程量和样本覆盖都应独立维护: <https://github.com/Werni2A/OpenOrCadParser>
 - OpenAllegroParser 是 Allegro 二进制解析的 C++ 开源路线，适合作为 DRA / PSM / PAD 后续 WASM 内核参考: <https://github.com/Werni2A/OpenAllegroParser>
 - OpenAllegroParser 的 padstack 研究说明部分新格式数据可能包含嵌入 ZIP/JSON 结构，后续可以作为 Allegro parser 的样本恢复线索: <https://github.com/Werni2A/OpenAllegroParser/blob/main/doc/pad.md>
@@ -99,6 +104,7 @@
 - [x] XMind 支持 Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、双击适配视图、容器 resize 自适应、用户交互后视角保留、WebView `PointerEvent.buttons` 异常兼容，以及 pointerdown 后续 mousemove/touchmove 的混合事件兜底。
 - [x] 继续保持 Draw.io、Typst、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
 - [x] 使用 `pnpm verify:format-support` 校验 198 个扩展名和 24 条 renderer pipeline 口径一致。
+- [x] 在 smoke matrix 中把 XMind `pan` 列为显式断言，防止只校验打开成功而漏掉画布交互。
 - [ ] 为 XMind 增加真实复杂样本，覆盖多 sheet、标签、备注、图片、链接、折叠节点和大脑图拖拽回归。
 - [ ] 为 GDSII 增加真实公开版图样本，验证层过滤、实例引用、文本和大文件性能。
 - [ ] 拆出 `@file-viewer/eda-layout`，专门维护 GDSII / OASIS WebGL 或 WASM 渲染。

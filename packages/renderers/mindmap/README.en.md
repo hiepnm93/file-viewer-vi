@@ -34,6 +34,7 @@ const options = {
 - Supports toolbar zoom, fit-to-canvas, Pointer / mouse / touch drag panning, requestAnimationFrame-coalesced pan updates, `Ctrl` / `Command` + wheel pointer zoom, arrow-key panning, and embedded WebView cases where PointerEvent `buttons` is reported unreliably.
 - Auto-fits the canvas on first render and host resize; after a user pans, wheels, or zooms manually, the renderer preserves the current view and only clamps unsafe bounds.
 - Mouse and touch panning include document-level fallback listeners for mobile WebViews, embedded browsers, and unstable Pointer Capture release behavior. When an embedded WebView starts with `pointerdown` but continues through `mousemove` or `touchmove`, the canvas keeps panning instead of dropping the gesture.
+- Release browser smoke runs a real `.xmind` pan regression across normal Pointer, `buttons = 0` WebView, Pointer + Mouse hybrid, Touch, and Pointer + Touch hybrid paths, so the canvas cannot silently regress into a non-draggable preview.
 
 ## Migration Note
 

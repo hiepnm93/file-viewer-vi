@@ -318,7 +318,7 @@
       "extension": "xmind",
       "sample": "mindmap.xmind",
       "surfaces": ["main-demo"],
-      "assertions": ["load-complete", "sheet-tabs", "outline", "zoom", "search"]
+      "assertions": ["load-complete", "sheet-tabs", "outline", "pan", "zoom", "search"]
     },
     {
       "id": "ebook-epub",

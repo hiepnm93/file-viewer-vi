@@ -15,6 +15,7 @@
 - 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-data` 独立 renderer 包，承接字体、PSD、AI/EPS、SQLite、Parquet、Avro、WASM 和 WebArchive 的安全结构预览，SQLite WASM 由 `@file-viewer/vite-plugin` 复制到离线 assets
 - 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
+- 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer、Mouse、Touch 和 WebView 混合事件拖拽路径
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
 - 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
@@ -44,6 +45,7 @@
 - 地理数据预览迁移为 `@file-viewer/renderer-geo` 独立 renderer 包，GeoJSON 直接读取，KML / GPX 按需加载 `@tmcw/togeojson`，SHP 按需加载 `shpjs`，并由 `@file-viewer/preset-all` 自动聚合
 - 新增 `@file-viewer/vite-plugin` 工程化入口，支持按 `formats` 自动生成 `virtual:file-viewer-renderers`、renderer chunk 分组、缺失 renderer 提示，并复制 PDF/CAD/Typst/Archive 离线 worker/WASM/vendor 资源和部署 manifest
 - `@file-viewer/vite-plugin` 新增 `scan: true` 源码 hint 自动装配能力，可从 `fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / 上传 `accept` 声明提取格式并选择对应 renderer；新增 `verify:vite-plugin-auto-scan` 防止自动化装配链路回退
+- 新增 `verify:renderer-standalone-smoke`，使用本地 tarball 构造隔离业务项目，只安装 `@file-viewer/core`、`@file-viewer/renderer-pdf` 和 `@file-viewer/vite-plugin`，验证 PDF-only 按需安装可注册 renderer、virtual module 不误引入 Word，并在 DOCX renderer 未安装时给出明确缺失提示
 - STEP / IGES / IFC / 3DM 等重型工程格式完成浏览器 WASM 路线调研，后续适合按 OpenCascade、web-ifc、rhino3dm 等独立按需包维护，不进入 core 首屏链路
 - 表格预览新增 `options.spreadsheet.resizableColumns` 开关，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便客户拖拽表头边界查看被截断的长文本
 - Demo 新增 `mindmap.xmind`、`layout.gds`、`layout.oas`、`layout.oasis` 示例，并将样例选择器补充为脑图与绘图、邮件与 EDA 等更清晰分组

@@ -31,7 +31,8 @@ const options = {
 - `gds` 读取标准 GDSII record，提取 library、structure、boundary、path、text、sref/aref 和坐标边界，并生成 SVG 快速版图预览。
 - `oas` / `oasis` 做安全二进制索引、可读字符串、结构候选和诊断，不虚标为完整几何渲染。
 - `olb` / `dra` 使用 `cfb` 读取常见复合文档容器，展示结构树、对象候选、属性、可读字符串和诊断。
-- 复杂 OrCAD / Allegro / OASIS 高保真图形能力后续会继续演进为独立 WASM/增量渲染内核。
+- 全网调研后继续保持边界清晰: GDSII 有成熟 record parser / WebGL viewer 路线，当前可作为正式快速预览；OASIS 是复杂二进制版图格式，完整几何需要低层 parser、重复结构展开和增量渲染；OLB / DRA 属于 OrCAD / Allegro 专有生态，公开可持续路线是参考 OpenOrCadParser / OpenAllegroParser 做 C++ WASM 或逐步 TS 移植。
+- 复杂 OrCAD / Allegro / OASIS 高保真图形能力后续会继续演进为独立 WASM/增量渲染内核，不进入 core 或普通文档首屏链路。
 
 ## 迁移说明
 

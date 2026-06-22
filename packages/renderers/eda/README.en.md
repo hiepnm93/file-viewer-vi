@@ -31,7 +31,8 @@ const options = {
 - `gds` reads standard GDSII records, extracts libraries, structures, boundaries, paths, text, references, coordinate bounds, and renders a quick SVG layout preview.
 - `oas` / `oasis` currently provide safe binary indexing, readable strings, structure candidates, and diagnostics rather than claiming full geometry rendering.
 - `olb` / `dra` use `cfb` to inspect common compound document containers and expose stream trees, entity candidates, properties, strings, and diagnostics.
-- High-fidelity OrCAD / Allegro / OASIS graphics should evolve as a dedicated WASM or incremental rendering kernel.
+- After a web-wide ecosystem review, the boundary stays explicit: GDSII has mature record parser / WebGL viewer paths and is suitable for official quick preview today; OASIS needs a lower-level parser, repetition expansion, and incremental rendering; OLB / DRA belong to the proprietary OrCAD / Allegro ecosystem, where the sustainable public path is C++ WASM or staged TypeScript ports based on OpenOrCadParser / OpenAllegroParser.
+- High-fidelity OrCAD / Allegro / OASIS graphics should evolve as a dedicated WASM or incremental rendering kernel instead of entering core or the default document first-screen path.
 
 ## Migration Notes
 
