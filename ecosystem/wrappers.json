@@ -192,6 +192,17 @@
       "publicSource": true
     },
     {
+      "id": "eda",
+      "packageName": "@file-viewer/renderer-eda",
+      "description": "Standalone EDA renderer plugin for File Viewer with OLB, DRA, GDSII, and OASIS structure previews plus SVG layout preview for standard GDSII.",
+      "packageDir": "packages/renderers/eda",
+      "repository": "file-viewer-renderer-eda",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-eda",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-eda",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

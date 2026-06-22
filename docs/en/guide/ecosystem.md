@@ -43,6 +43,7 @@ Heavy renderers are split so applications can install only what they need:
 - `@file-viewer/renderer-drawing`
 - `@file-viewer/renderer-3d`
 - `@file-viewer/renderer-data`
+- `@file-viewer/renderer-eda`
 
 ## Compatibility Names
 

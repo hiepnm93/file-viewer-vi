@@ -52,7 +52,8 @@ const heavyRendererGroups = [
   { id: 'text', pattern: /^(?:code|markdown)-|highlight|marked/i },
   { id: 'media', pattern: /^(?:audio|video|hls|Midi)-/i },
   { id: 'image', pattern: /^(?:image|heic2any)-/i },
-  { id: 'data', pattern: /^(?:data|eda)-/i },
+  { id: 'data', pattern: /^data-/i },
+  { id: 'eda', pattern: /^eda-/i },
   { id: 'umd', pattern: /^umd-/i }
 ]
 

@@ -215,7 +215,7 @@ fileViewerRenderers({
 | Wave 0 | 建立依赖账本              | `audit:renderer-deps` 输出 core 直接重依赖、目标包、阶段和状态；新增安装体积和 bundle 预算脚本 | CI 能报告 core 依赖数、packed size、安装依赖闭包、demo 首屏 chunk   |
 | Wave 1 | 完成 Phase 2 重链路拆出   | Word、Spreadsheet、OFD、Presentation、PDF、Typst、CAD、Archive 全部从 core 迁到 renderer 包    | `@file-viewer/core` 不再声明这些依赖；`preset-all` 格式矩阵不掉格式 |
 | Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护                           | 默认组件安装不带相关重库；各 renderer 有独立 smoke                  |
-| Wave 3 | 完成 Phase 4 专业内核     | Data Asset 已先拆出独立 renderer；EDA/GDS/OASIS/OrCAD/Allegro 继续独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核                    |
+| Wave 3 | 完成 Phase 4 专业内核     | Data Asset 与 EDA 结构预览已先拆出独立 renderer；OASIS 大版图、OrCAD/Allegro 高保真图形继续独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核                    |
 | Wave 4 | 工程自动化                | `@file-viewer/vite-plugin`、asset manifest、virtual module、chunk strategy、离线部署校验       | 用户按 `formats` 配置即可自动生成 renderer 装配                     |
 | Wave 5 | 默认轻量切换              | 组件包默认 `builtinRenderers: 'lite'` 或 `none`，全量能力改由 preset 显式启用                  | 新项目 cold install 明显下降；旧全量 demo 仍完整                    |
 
@@ -240,7 +240,7 @@ fileViewerRenderers({
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | `@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。                            |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
-| EDA / 工程二进制            | 简单结构先做安全解析和树形浏览；Cadence DRA/OLB/DSN 等复杂二进制以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主，不硬塞进 core。                         | 参考 PPTX 独立内核路线，必要时拆 `@file-viewer/eda-*`、`@file-viewer/eda-allegro` 并引入 WASM/增量渲染。 |
+| EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records 并生成 SVG 快速版图，OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | 大型 OASIS/GDSII 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
 
 调研结论是：能用成熟官方或事实标准开源链路的格式不手搓；规格复杂、二进制重、需要长期迭代的能力，应该像 PPTX 一样拆成独立内核和独立 renderer 包持续维护。
 
@@ -276,6 +276,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
 - [x] 建立 `@file-viewer/renderer-geo` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 GeoJSON / KML / GPX / SHP renderer。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。
+- [x] 建立 `@file-viewer/renderer-eda` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 OLB / DRA / GDSII / OASIS renderer。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
@@ -283,15 +284,15 @@ fileViewerRenderers({
 
 ### Phase 3：体验与自动化
 
-- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo 和 Data；尚未拆出的格式会给出明确缺失提示。
-- [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D renderer 当前无额外外部资产，Office/EDA 等待对应 renderer 拆包后补入。
+- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；尚未拆出的格式会给出明确缺失提示。
+- [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
 - [ ] 增加独立安装 smoke：只安装 `@file-viewer/core + @file-viewer/renderer-pdf` 时 PDF 可预览，其他格式显示明确缺失提示。
 
 ### Phase 4：专业格式独立内核
 
-- [ ] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立真实样本库和解析边界说明。
+- [x] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立结构预览入口、README 和解析边界说明。
 - [ ] OASIS/GDSII 大文件走 WebGL 或 WASM，不进入 core 首屏链路。
 - [ ] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 能独立发布、独立回归。
 - [ ] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导。
@@ -317,7 +318,7 @@ pnpm audit:renderer-deps -- --json
 
 - Phase 2 还有 20 个依赖留在 core，其中 Presentation 已有标准 renderer 包，下一步是从 core 直接依赖中移除 `@file-viewer/pptx`。
 - Phase 3 还有 14 个依赖留在 core。
-- Phase 4 还有 5 个依赖留在 core，其中 Data Asset 已建立 `@file-viewer/renderer-data` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet` 和 `avsc` 直接依赖。
+- Phase 4 还有 5 个依赖留在 core，其中 Data Asset 与 EDA 已分别建立 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb` 直接依赖。
 
 这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
 

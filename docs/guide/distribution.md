@@ -36,6 +36,7 @@
 | 绘图 renderer | `@file-viewer/renderer-drawing` | 无 |
 | 3D 模型 renderer | `@file-viewer/renderer-3d` | 无 |
 | 数据资产 renderer | `@file-viewer/renderer-data` | 无 |
+| EDA renderer | `@file-viewer/renderer-eda` | 无 |
 | 全量 renderer preset | `@file-viewer/preset-all` | 无 |
 | Vite 按需装配插件 | `@file-viewer/vite-plugin` | 无 |
 | Vanilla JS / Pure Web / script 标签 | `@file-viewer/web` | `@flyfish-group/file-viewer-web` |
@@ -196,7 +197,7 @@ pnpm release:ecosystem:publish:dry-run
 pnpm release:ecosystem:publish
 ```
 
-`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 28 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
+`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 29 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
 开源总仓库使用私有 Gitea `main` 完整聚合仓生成，发布前执行:
 

@@ -124,6 +124,7 @@ const xmindStyle = `
 .xmind-node h3{margin:0;color:#172033;font-size:14px;line-height:1.35;word-break:break-word}.xmind-node.root h3{font-size:16px}
 .xmind-badges,.xmind-labels{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.xmind-badges span,.xmind-labels span{max-width:100%;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:800;line-height:1.3}.xmind-badges span{background:#eef6f7;color:#0b7480}.xmind-labels span{background:#edf2ff;color:#3557a5}
 .xmind-note{margin:8px 0 0;color:#64748b;font-size:12px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.xmind-link{display:block;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0f766e;font-size:12px;font-weight:800;text-decoration:none}.xmind-image{display:block;max-width:100%;max-height:96px;margin-top:8px;border-radius:8px;object-fit:contain;background:#f8fafc}
+.xmind-stage.is-panning .xmind-link{pointer-events:none}
 .xmind-state{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:24px;color:#64748b;font-weight:800;text-align:center;background:rgba(238,243,247,.88)}.xmind-state[hidden]{display:none!important}.xmind-state.error{color:#b42318}
 .file-viewer[data-viewer-theme='dark'] .xmind-viewer{background:#111827;color:#e5eef8}.file-viewer[data-viewer-theme='dark'] .xmind-toolbar,.file-viewer[data-viewer-theme='dark'] .xmind-tabs,.file-viewer[data-viewer-theme='dark'] .xmind-sidebar{background:#fff;color:#172033}
 @media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .xmind-viewer{background:#111827;color:#e5eef8}.file-viewer[data-viewer-theme='system'] .xmind-toolbar,.file-viewer[data-viewer-theme='system'] .xmind-tabs,.file-viewer[data-viewer-theme='system'] .xmind-sidebar{background:#fff;color:#172033}}
@@ -392,6 +393,7 @@ const createNodeElement = (
       image.className = 'xmind-image';
       image.alt = node.title;
       image.src = node.image;
+      image.draggable = false;
       card.append(image);
     } else {
       card.append(createElement('p', 'xmind-note', `图片资源: ${node.image}`));
@@ -404,6 +406,7 @@ const createNodeElement = (
     link.href = node.hyperlink.startsWith('http') ? node.hyperlink : '#';
     link.target = '_blank';
     link.rel = 'noreferrer';
+    link.draggable = false;
     card.append(link);
   }
 
@@ -714,7 +717,19 @@ export default async function renderXMind(
 
   const isPanBlockedTarget = (targetValue: EventTarget | null) => {
     const element = targetValue instanceof Element ? targetValue : null;
-    return Boolean(element?.closest('a,button,input,textarea,select,[contenteditable="true"],.xmind-toolbar,.xmind-tabs,.xmind-sidebar'));
+    if (!element) {
+      return false;
+    }
+    if (element.closest('.xmind-toolbar,.xmind-tabs,.xmind-sidebar')) {
+      return true;
+    }
+    const interactive = element.closest('a,button,input,textarea,select,[contenteditable="true"]');
+    return Boolean(interactive && !interactive.closest('.xmind-node'));
+  };
+
+  const shouldPreventPanStartDefault = (targetValue: EventTarget | null) => {
+    const element = targetValue instanceof Element ? targetValue : null;
+    return !element?.closest('a[href],button,input,textarea,select,[contenteditable="true"]');
   };
 
   const clearPanState = (event?: PointerEvent) => {
@@ -794,7 +809,9 @@ export default async function renderXMind(
     if (!beginPan(event.clientX, event.clientY, 'pointer', event.target)) {
       return;
     }
-    event.preventDefault();
+    if (shouldPreventPanStartDefault(event.target)) {
+      event.preventDefault();
+    }
     event.stopPropagation();
     panState!.pointerId = event.pointerId;
     panState!.pointerType = event.pointerType;
@@ -835,16 +852,18 @@ export default async function renderXMind(
       ownerWindow.clearTimeout(lostPointerCaptureTimer);
     }
     // Some mobile WebViews release pointer capture while the finger is still moving.
-    // Defer cleanup so window-level pointermove/pointerup can keep the pan session alive.
+    // Keep the pan session alive; window/document listeners will end it on pointerup/cancel.
     lostPointerCaptureTimer = ownerWindow.setTimeout(() => {
       if (!panState || panState.pointerId !== event.pointerId) {
         return;
       }
-      if (Date.now() - lastPanMoveAt < 140) {
+      if (Date.now() - lastPanMoveAt < 1_500) {
         return;
       }
-      clearPanState();
-    }, 160);
+      if (panState.pointerType === 'mouse') {
+        clearPanState();
+      }
+    }, 1_600);
   };
 
   const onMouseDown = (event: MouseEvent) => {
@@ -854,7 +873,9 @@ export default async function renderXMind(
     if (!beginPan(event.clientX, event.clientY, 'mouse', event.target)) {
       return;
     }
-    event.preventDefault();
+    if (shouldPreventPanStartDefault(event.target)) {
+      event.preventDefault();
+    }
     event.stopPropagation();
   };
 

@@ -538,6 +538,9 @@ importers:
       '@file-viewer/renderer-ebook':
         specifier: workspace:^2.0.11
         version: link:../../renderers/ebook
+      '@file-viewer/renderer-eda':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/eda
       '@file-viewer/renderer-email':
         specifier: workspace:^2.0.11
         version: link:../../renderers/email
@@ -676,6 +679,19 @@ importers:
       epubjs:
         specifier: ^0.3.93
         version: 0.3.93
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/eda:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      cfb:
+        specifier: ^1.2.2
+        version: 1.2.2
     devDependencies:
       typescript:
         specifier: ^6.0.3

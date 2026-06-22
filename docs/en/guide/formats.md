@@ -23,6 +23,12 @@
 | Text, code, and data | Markdown, source code, logs, JSON, YAML, TOML, SQL, IPYNB, SQLite, WASM, Parquet, Avro |
 | Media and assets | Images, SVG, HEIC, audio, video, HLS, fonts, PSD-style design assets |
 
+## Engineering Renderer Notes
+
+- XMind uses `@file-viewer/renderer-mindmap` with XMind 8 XML and XMind 2020+ JSON package parsing, plus pointer, mouse, and touch drag-to-pan behavior.
+- EDA uses `@file-viewer/renderer-eda`. OLB and DRA are safe structure previews over common CFB/OLE2 containers, standard GDSII can render an SVG layout preview, and OASIS remains a safe structure-index preview until the dedicated WASM/WebGL layout kernel is split out.
+- CAD uses `@file-viewer/renderer-cad` and `@flyfish-dev/cad-viewer`; DWG, DWF, and DWFx assets remain self-hostable for offline deployments.
+
 ## Capability Model
 
 Each renderer reports what it can safely do. The common toolbar then shows download, print, HTML export, zoom, search, and navigation only when the active file type supports those operations.

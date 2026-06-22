@@ -11,6 +11,7 @@ import { cadRenderer } from '@file-viewer/renderer-cad';
 import { dataRenderer } from '@file-viewer/renderer-data';
 import { drawingRenderer } from '@file-viewer/renderer-drawing';
 import { ebookRenderer } from '@file-viewer/renderer-ebook';
+import { edaRenderer } from '@file-viewer/renderer-eda';
 import { emailRenderer } from '@file-viewer/renderer-email';
 import { geoRenderer } from '@file-viewer/renderer-geo';
 import { imageRenderer } from '@file-viewer/renderer-image';
@@ -30,7 +31,7 @@ const allRendererHandlers = coreBrowserRendererHandlers as readonly {
   handler: BrowserRendererHandler;
 }[];
 
-const extractedRendererIds = ['archive', 'audio', 'cad', 'code', 'data-asset', 'drawing', 'email', 'epub', 'geo', 'image', 'markdown', 'mindmap', 'model', 'ofd', 'office-presentation', 'pdf', 'typst', 'video'] as const;
+const extractedRendererIds = ['archive', 'audio', 'cad', 'code', 'data-asset', 'drawing', 'eda', 'email', 'epub', 'geo', 'image', 'markdown', 'mindmap', 'model', 'ofd', 'office-presentation', 'pdf', 'typst', 'video'] as const;
 
 export const fileViewerAllRendererPlugin: FileViewerRendererPlugin<BrowserRendererHandler> = {
   id: 'file-viewer-all-renderers',
@@ -42,7 +43,7 @@ export const fileViewerAllRendererPlugin: FileViewerRendererPlugin<BrowserRender
 export const allRenderers: FileViewerRendererPreset<BrowserRendererHandler> = {
   id: 'file-viewer-preset-all',
   label: 'Flyfish File Viewer full renderer preset',
-  renderers: [pdfRenderer, ofdRenderer, presentationRenderer, cadRenderer, typstRenderer, drawingRenderer, modelRenderer, archiveRenderer, emailRenderer, ebookRenderer, textRenderer, imageRenderer, mediaRenderer, mindmapRenderer, geoRenderer, dataRenderer, fileViewerAllRendererPlugin],
+  renderers: [pdfRenderer, ofdRenderer, presentationRenderer, cadRenderer, typstRenderer, drawingRenderer, modelRenderer, archiveRenderer, emailRenderer, ebookRenderer, textRenderer, imageRenderer, mediaRenderer, mindmapRenderer, geoRenderer, dataRenderer, edaRenderer, fileViewerAllRendererPlugin],
 };
 
 export const fileViewerPresetAll = allRenderers;

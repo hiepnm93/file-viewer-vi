@@ -107,7 +107,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-eda',
     phase: 4,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['eda'],
     dependencies: ['cfb'],
   },

@@ -338,6 +338,14 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     ],
     rendererIds: ['data-asset'],
     chunkName: 'file-viewer-data'
+  },
+  {
+    id: 'eda',
+    packageName: '@file-viewer/renderer-eda',
+    exportName: 'edaRenderer',
+    formats: ['eda', 'gds', 'oas', 'oasis', 'olb', 'dra', 'dsn'],
+    rendererIds: ['eda'],
+    chunkName: 'file-viewer-eda'
   }
 ]
 
@@ -354,12 +362,6 @@ const plannedRenderers: readonly PlannedRendererDescriptor[] = [
     formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
     note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
   },
-  {
-    id: 'eda',
-    targetPackage: '@file-viewer/renderer-eda',
-    formats: ['eda', 'gds', 'oas', 'oasis', 'olb', 'dra', 'dsn'],
-    note: 'EDA renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-eda.'
-  }
 ]
 
 const descriptorsById = new Map(rendererModules.map((descriptor) => [descriptor.id, descriptor]))
@@ -771,7 +773,7 @@ function copyOptions(
 
 function collectAssetRendererIds(selection: RendererSelection) {
   if (selection.preset === 'all') {
-    return ['pdf', 'cad', 'typst', 'archive', 'data-asset']
+    return ['pdf', 'cad', 'typst', 'archive', 'data-asset', 'eda']
   }
   return unique(selection.descriptors.flatMap((descriptor) => descriptor.rendererIds))
 }

@@ -10,7 +10,7 @@ titleTemplate: false
 <div class="doc-eyebrow">Offline-first file preview for web apps</div>
 <h1>Flyfish Viewer</h1>
 <p>
-Preview Office documents, PDF/OFD, CAD drawings, archives, email, EPUB, XMind, diagrams, 3D models, code, media, and structured data directly in the browser.
+Preview Office documents, PDF/OFD, CAD and EDA files, archives, email, EPUB, XMind, diagrams, 3D models, code, media, and structured data directly in the browser.
 No document conversion backend, no Office server, no iframe-only black box.
 </p>
 <div class="doc-home-actions">
@@ -64,7 +64,7 @@ The demo opens real sample files, switches renderers on demand, keeps toolbar op
 <article>
 <span>02</span>
 <h3>Lazy renderer packages</h3>
-<p>Heavy PDF, Office, CAD, Typst, archive, email, EPUB, XMind, media, and code dependencies load only when the active file type needs them.</p>
+<p>Heavy PDF, Office, CAD, EDA, Typst, archive, email, EPUB, XMind, media, and code dependencies load only when the active file type needs them.</p>
 </article>
 <article>
 <span>03</span>
