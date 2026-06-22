@@ -46,4 +46,4 @@ const options = {
 
 ## 迁移说明
 
-当前 core 仍保留内置 CAD renderer 以兼容历史全量包。后续会把 core 的 CAD 入口切换到本包，并从 core 直接依赖中移除 `@flyfish-dev/cad-viewer`。
+CAD 预览已经从 `@file-viewer/core` 中彻底移出，core 只保留资产 manifest、类型和兼容错误提示，不再默认安装 `@flyfish-dev/cad-viewer`。完整 CAD 能力请安装本包并传入 `renderers`，或直接使用 `@file-viewer/preset-all`。

@@ -30,6 +30,7 @@
 - PDF 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `pdfjs-dist`；PDF 页面渲染、导航、目录、搜索、缩放、打印和导出统一由 `@file-viewer/renderer-pdf` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 11 降到 10，Phase 2 依赖预算从 10 降到 9
 - OFD 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `jszip`、`ofd-xml-parser` 和 DLTech21/ofd.js vendor；OFD 页面渲染、缩放、打印和导出统一由 `@file-viewer/renderer-ofd` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 10 降到 8，Phase 2 依赖预算从 9 降到 7
 - Typst 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@myriaddreamin/typst.ts`、`@myriaddreamin/typst-ts-renderer` 和 `@myriaddreamin/typst-ts-web-compiler`；Typst 源文件编译、按页 SVG 渲染、缩放、打印和导出统一由 `@file-viewer/renderer-typst` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 8 降到 5，Phase 2 依赖预算从 7 降到 4
+- CAD 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@flyfish-dev/cad-viewer`；DWG / DXF / DWF / DWFx / XPS 完整预览统一由 `@file-viewer/renderer-cad` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 5 降到 4，Phase 2 依赖预算从 4 降到 3
 - XMind 画布拖拽进一步兼容老 WebView、嵌入式浏览器和非标准鼠标事件：聚焦改为安全降级，`MouseEvent.buttons` 错报为 `0` 时延迟释放拖拽会话，避免实际拖动画布没有响应
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合

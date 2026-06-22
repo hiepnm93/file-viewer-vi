@@ -46,4 +46,4 @@ For private deployments, override them with `options.cad.wasmPath`, `options.cad
 
 ## Migration Note
 
-The core package still keeps the bundled CAD renderer for backward compatibility. A later migration will switch the core CAD entry to this package and remove `@flyfish-dev/cad-viewer` from core direct dependencies.
+CAD preview has moved completely out of `@file-viewer/core`. Core now only keeps the asset manifest, shared types, and a compatibility error message, and it no longer installs `@flyfish-dev/cad-viewer` by default. Install this package and pass it through `renderers`, or use `@file-viewer/preset-all` for the complete CAD experience.

@@ -11,7 +11,7 @@ const cadDefinition = DEFAULT_RENDERER_DEFINITIONS.find(
 ) as RendererDefinition | undefined;
 
 if (!cadDefinition) {
-  throw new Error('@file-viewer/renderer-cad could not locate the core CAD renderer definition.');
+  throw new Error('@file-viewer/renderer-cad could not locate the shared CAD format definition.');
 }
 
 export const cadRendererDefinition = cadDefinition;

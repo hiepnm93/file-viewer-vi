@@ -50,13 +50,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
       return renderSpreadsheet(buffer, target, type, context);
     },
   },
-  {
-    rendererId: 'cad',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderCad } = await import('./cad');
-      return renderCad(buffer, target, type, context);
-    },
-  },
 ];
 
 export const CORE_LITE_RENDERER_IDS = [

@@ -239,8 +239,13 @@ export const renderFileViewerCad = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderCad } = await import('./renderers/cad');
-  return renderCad(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'CAD rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-cad, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerCode = async (
   buffer: ArrayBuffer,

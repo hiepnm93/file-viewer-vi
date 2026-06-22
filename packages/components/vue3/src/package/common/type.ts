@@ -112,8 +112,8 @@ export type FileViewerCadDwfLineWeightMode = CoreFileViewerCadDwfLineWeightMode;
 /**
  * CAD 预览配置。
  *
- * core 默认使用 @flyfish-dev/cad-viewer，并从静态资源目录下的
- * `wasm/cad/` 按需加载 LibreDWG WASM、DWF raster WASM 与 DWG Worker。
+ * 独立 CAD renderer 会从静态资源目录下的 `wasm/cad/`
+ * 按需加载 LibreDWG WASM、DWF raster WASM 与 DWG Worker。
  * 私有化部署或静态资源路径不同的场景，可以显式覆盖对应 URL。
  */
 export type FileViewerCadOptions = CoreFileViewerCadOptions;

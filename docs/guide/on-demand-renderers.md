@@ -302,7 +302,8 @@ fileViewerRenderers({
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
-- [ ] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer` 和 Spreadsheet 等剩余重型渲染依赖；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
+- [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
+- [ ] Spreadsheet 仍是 Phase 2 最后一条留在 core 的重型渲染链路，后续继续拆到 `@file-viewer/renderer-spreadsheet`。
 
 ### Phase 3：体验与自动化
 
@@ -336,9 +337,9 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 5 个运行时依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 4 个运行时依赖：
 
-- Phase 2 还有 4 个依赖留在 core，其中 Presentation、Word、PDF、OFD、Typst、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet 或 CAD 兼容链路，继续减少默认安装面。
+- Phase 2 还有 3 个依赖留在 core，全部属于 Spreadsheet 兼容链路；Presentation、Word、PDF、OFD、Typst、Archive 和 CAD 已完成 core 直接依赖摘除，下一步优先拆 Spreadsheet，继续减少默认安装面。
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 

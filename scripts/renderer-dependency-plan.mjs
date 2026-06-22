@@ -62,7 +62,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-cad',
     phase: 2,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['cad'],
     dependencies: ['@flyfish-dev/cad-viewer'],
   },
