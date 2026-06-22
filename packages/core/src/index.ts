@@ -369,8 +369,12 @@ export const renderFileViewerOfd = async (
   target: HTMLDivElement,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderOfd } = await import('./renderers/ofd');
-  return renderOfd(buffer, target, context);
+  void buffer;
+  void target;
+  void context;
+  throw new Error(
+    'OFD rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-ofd, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerOpenDocument = async (
   buffer: ArrayBuffer,

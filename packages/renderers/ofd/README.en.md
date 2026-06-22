@@ -39,6 +39,10 @@ const options = {
 - Ship the vendor files inside the npm package for offline and intranet deployments.
 - Support unified zoom, print, HTML export, and lifecycle context integration.
 
+## Migration Note
+
+OFD rendering has moved out of `@file-viewer/core` into this package. `jszip`, `ofd-xml-parser`, and the DLTech21/ofd.js vendor files are now owned by `@file-viewer/renderer-ofd`. Installing core or a standard component package no longer pulls OFD parsing dependencies; explicitly assemble this renderer when OFD preview is needed, or use `@file-viewer/preset-all`.
+
 ## Documentation
 
 - On-demand renderer architecture: <https://doc.file-viewer.app/guide/on-demand-renderers>

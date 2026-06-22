@@ -237,7 +237,7 @@ fileViewerRenderers({
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Presentation / PPTX         | `@file-viewer/renderer-presentation` 作为标准 renderer 插件，底层复用 `@file-viewer/pptx` 原生引擎和 Worker 渐进幻灯片输出；ODP 仍归 OpenDocument 兼容链路。 | core 已移除 `@file-viewer/pptx` 直接依赖，PowerPoint 完整预览统一通过 renderer-presentation 或 preset-all 装配。 |
 | Word / DOCX / DOC / RTF / ODT | `@file-viewer/renderer-word` 作为标准 renderer 插件，底层按需加载自研 `@file-viewer/docx`、`msdoc-viewer` 和 RTF/OpenDocument 兼容链路。 | core 已移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 等 Word 直接依赖，Word 完整预览统一通过 renderer-word 或 preset-all 装配。 |
-| OFD                         | 使用 `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；当前已经拆成 `@file-viewer/renderer-ofd`，vendor 源码随包离线分发。                  | 后续清理 core 中的兼容 OFD 入口，并补充独立样例 smoke。                                                  |
+| OFD                         | 使用 `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；vendor 源码随 renderer 包离线分发。                  | core 已移除 OFD 兼容入口、`jszip`、`ofd-xml-parser` 和 OFD vendor，OFD 完整预览统一通过 renderer-ofd 或 preset-all 装配。 |
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
 | Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
@@ -269,13 +269,14 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 PDF 兼容入口和 `pdfjs-dist` 直接依赖，PDF 完整能力统一通过 `@file-viewer/renderer-pdf` 或 preset 装配；PDF worker、CMap、WASM 和 standard fonts 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-word` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 DOCX / DOC / RTF / ODT renderer。
 - [x] 建立 `@file-viewer/renderer-ofd` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OFD renderer。
+- [x] `@file-viewer/core` 已移除 OFD 兼容入口、`jszip`、`ofd-xml-parser` 和 OFD vendor，OFD 完整能力统一通过 `@file-viewer/renderer-ofd` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-presentation` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OOXML 演示文稿 renderer。
 - [x] 建立 `@file-viewer/renderer-cad` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 CAD renderer。
 - [x] 建立 `@file-viewer/renderer-typst` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Typst renderer。
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
-- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；`jszip` 当前仍因 OFD vendor 暂留 core，UMD 仍在 core 保留 `pako` 作为轻量原生解析依赖。
+- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；UMD 仍在 core 保留 `pako` 作为轻量原生解析依赖。
 - [x] `@file-viewer/core` 已移除 email 兼容入口和 `postal-mime` / `@kenjiuno/msgreader` 直接依赖，邮件完整能力统一通过 `@file-viewer/renderer-email` 或 preset 装配。
 - [x] `@file-viewer/core` 已移除 EPUB 兼容入口和 `epubjs` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
@@ -300,7 +301,7 @@ fileViewerRenderers({
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
-- [ ] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`@myriaddreamin/*`、Spreadsheet/OFD 等剩余重型渲染依赖；PDF.js 已随 `@file-viewer/renderer-pdf` 从默认 core 安装面移出。
+- [ ] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`@myriaddreamin/*` 和 Spreadsheet 等剩余重型渲染依赖；PDF.js 和 OFD 解析依赖已随独立 renderer 从默认 core 安装面移出。
 
 ### Phase 3：体验与自动化
 
@@ -334,9 +335,9 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 10 个运行时依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 8 个运行时依赖：
 
-- Phase 2 还有 9 个依赖留在 core，其中 Presentation、Word、PDF、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、OFD、Typst 或 CAD 兼容链路，继续减少默认安装面。
+- Phase 2 还有 7 个依赖留在 core，其中 Presentation、Word、PDF、OFD、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、Typst 或 CAD 兼容链路，继续减少默认安装面。
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 

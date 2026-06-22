@@ -40,7 +40,7 @@ export const rendererModularizationLines = [
     group: 'document',
     targetPackage: '@file-viewer/renderer-ofd',
     phase: 2,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['ofd'],
     dependencies: ['ofd-xml-parser', 'jszip'],
   },
