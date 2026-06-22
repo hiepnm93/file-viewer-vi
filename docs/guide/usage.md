@@ -465,11 +465,11 @@ async function useLocal(blob: Blob) {
 
 ### 音频怎么接
 
-`.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 会走浏览器原生 `<audio>` 播放器。不同浏览器对音频编码支持不完全一致，如果要保证最稳的跨端体验，建议优先输出 MP3 或 OGG。`.midi` / `.mid` 会按需加载 `@tonejs/midi`，展示轨道、时长、PPQ 和音符摘要。
+`.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 由 `@file-viewer/renderer-media` 走浏览器原生 `<audio>` 播放器。不同浏览器对音频编码支持不完全一致，如果要保证最稳的跨端体验，建议优先输出 MP3 或 OGG。`.midi` / `.mid` 命中时才按需加载 `@tonejs/midi`，展示轨道、时长、PPQ 和音符摘要。
 
 ### 视频和 HLS 怎么接
 
-`.mp4` 和 `.webm` 使用浏览器原生 `<video>` 播放器。`.m3u8` 优先使用浏览器原生 HLS 能力，不支持时再按需加载 `hls.js`。如果传入本地上传的 M3U8 文件，清单里引用的 TS/MP4 分片必须是浏览器可访问的绝对或相对 URL，否则只能展示清单加载失败。
+`.mp4` 和 `.webm` 由 `@file-viewer/renderer-media` 使用浏览器原生 `<video>` 播放器。`.m3u8` 优先使用浏览器原生 HLS 能力，不支持时再按需加载 `hls.js`。如果传入本地上传的 M3U8 文件，清单里引用的 TS/MP4 分片必须是浏览器可访问的绝对或相对 URL，否则只能展示清单加载失败。
 
 ### 字体、设计资产和数据文件怎么接
 

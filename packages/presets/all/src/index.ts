@@ -11,6 +11,7 @@ import { cadRenderer } from '@file-viewer/renderer-cad';
 import { ebookRenderer } from '@file-viewer/renderer-ebook';
 import { emailRenderer } from '@file-viewer/renderer-email';
 import { imageRenderer } from '@file-viewer/renderer-image';
+import { mediaRenderer } from '@file-viewer/renderer-media';
 import { mindmapRenderer } from '@file-viewer/renderer-mindmap';
 import { pdfRenderer } from '@file-viewer/renderer-pdf';
 import { textRenderer } from '@file-viewer/renderer-text';
@@ -23,7 +24,7 @@ const allRendererHandlers = coreBrowserRendererHandlers as readonly {
   handler: BrowserRendererHandler;
 }[];
 
-const extractedRendererIds = ['archive', 'cad', 'code', 'email', 'epub', 'image', 'markdown', 'mindmap', 'pdf', 'typst'] as const;
+const extractedRendererIds = ['archive', 'audio', 'cad', 'code', 'email', 'epub', 'image', 'markdown', 'mindmap', 'pdf', 'typst', 'video'] as const;
 
 export const fileViewerAllRendererPlugin: FileViewerRendererPlugin<BrowserRendererHandler> = {
   id: 'file-viewer-all-renderers',
@@ -35,7 +36,7 @@ export const fileViewerAllRendererPlugin: FileViewerRendererPlugin<BrowserRender
 export const allRenderers: FileViewerRendererPreset<BrowserRendererHandler> = {
   id: 'file-viewer-preset-all',
   label: 'Flyfish File Viewer full renderer preset',
-  renderers: [pdfRenderer, cadRenderer, typstRenderer, archiveRenderer, emailRenderer, ebookRenderer, textRenderer, imageRenderer, mindmapRenderer, fileViewerAllRendererPlugin],
+  renderers: [pdfRenderer, cadRenderer, typstRenderer, archiveRenderer, emailRenderer, ebookRenderer, textRenderer, imageRenderer, mediaRenderer, mindmapRenderer, fileViewerAllRendererPlugin],
 };
 
 export const fileViewerPresetAll = allRenderers;

@@ -14,7 +14,7 @@
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
-    <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、图片/HEIC、HLS、字体/数据资产和代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
+    <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、图片/HEIC、音视频/HLS/MIDI、字体/数据资产和代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
   </div>
   <div class="doc-card">
     <h3>两条输入路径</h3>
@@ -53,8 +53,8 @@
 | Markdown | `md`、`markdown` | `@file-viewer/renderer-text` | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | `@file-viewer/renderer-image` | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转成浏览器可展示图片，支持 lightbox 和统一缩放 | 图片附件、设计稿、截图、Logo、移动端照片 |
 | 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `@file-viewer/renderer-text` + `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本；Notebook、JSONC/JSON5、TOML、Proto、HTTP、Graphviz 等按最接近语言映射展示 | 配置文件、日志、代码片段、接口响应、Notebook 和工程配置 |
-| 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | 浏览器原生 `<audio>` / `@tonejs/midi` | 常见音频使用原生控件播放，MIDI 展示轨道、时长、PPQ 和音符摘要 | 录音、播客、语音附件、音效素材、MIDI 文件 |
-| 视频 | `mp4`、`webm`、`m3u8` | 浏览器原生视频播放器 / `hls.js` | MP4/WEBM 原生播放，HLS 清单优先用浏览器能力，必要时按需加载 `hls.js` | 演示视频、录屏材料、HLS 流 |
+| 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | `@file-viewer/renderer-media` + 浏览器原生 `<audio>` / `@tonejs/midi` | 常见音频使用原生控件播放，MIDI 命中时按需展示轨道、时长、PPQ 和音符摘要 | 录音、播客、语音附件、音效素材、MIDI 文件 |
+| 视频 | `mp4`、`webm`、`m3u8` | `@file-viewer/renderer-media` + 浏览器原生 `<video>` / `hls.js` | MP4/WEBM 原生播放，HLS 清单优先用浏览器能力，必要时按需加载 `hls.js` | 演示视频、录屏材料、HLS 流 |
 | 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | core 资产/数据预览器 | 字体用 FontFace 展示样张，PSD 解析画布与图层摘要，AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
 
 ## 按类型看体验和边界
@@ -168,8 +168,8 @@
 
 - 图片类支持 `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl`。当前由 `@file-viewer/renderer-image` 独立承接，普通图片走浏览器原生解码，HEIC / HEIF 只有命中格式时才会加载 `heic2any` 转换依赖，避免影响普通图片首屏。
 - `svg` 会作为图片来展示，很适合拿来放矢量图标、流程图和品牌素材。
-- 音频类支持 `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`，使用浏览器原生播放器；`midi` / `mid` 使用 `@tonejs/midi` 展示轨道、时长、PPQ 和音符摘要。不同浏览器对编码格式的支持会有差异。
-- 视频支持 `mp4`、`webm` 和 `m3u8`。HLS 清单优先走浏览器原生能力，不支持时再按需加载 `hls.js`；本地上传的 `.m3u8` 如果引用了外部分片，需要保证分片 URL 对浏览器可访问。
+- 音频类由 `@file-viewer/renderer-media` 承接，支持 `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`，使用浏览器原生播放器；`midi` / `mid` 命中时才加载 `@tonejs/midi`，展示轨道、时长、PPQ 和音符摘要。不同浏览器对编码格式的支持会有差异。
+- 视频同样由 `@file-viewer/renderer-media` 承接，支持 `mp4`、`webm` 和 `m3u8`。HLS 清单优先走浏览器原生能力，不支持时再按需加载 `hls.js`；本地上传的 `.m3u8` 如果引用了外部分片，需要保证分片 URL 对浏览器可访问。
 
 ### 字体、设计资产与结构化数据
 

@@ -115,6 +115,17 @@
       "publicSource": true
     },
     {
+      "id": "media",
+      "packageName": "@file-viewer/renderer-media",
+      "description": "Standalone audio and video renderer plugin for File Viewer with native media playback, HLS fallback, MIDI parsing, and offline-friendly lazy loading.",
+      "packageDir": "packages/renderers/media",
+      "repository": "file-viewer-renderer-media",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-media",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-media",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",
