@@ -117,7 +117,7 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '演示与图纸',
-    description: 'PPTX / CAD / Drawing',
+    description: 'PPTX / CAD',
     family: 'cad',
     items: [
       { name: 'PPTX 中文课件', url: '/example/ppt.pptx' },
@@ -126,7 +126,15 @@ const sampleGroups: SampleGroup[] = [
       { name: 'DWG', url: '/example/sample.dwg' },
       { name: 'DWF Blocks/Tables', url: '/example/samples/apache/blocks_and_tables.dwf' },
       { name: 'DWFx House', url: '/example/samples/autodesk/house.dwfx' },
-      { name: 'DWFx RobotArm', url: '/example/samples/autodesk/robot-arm.dwfx' },
+      { name: 'DWFx RobotArm', url: '/example/samples/autodesk/robot-arm.dwfx' }
+    ]
+  },
+  {
+    title: '脑图与绘图',
+    description: 'XMind / Excalidraw / draw.io',
+    family: 'drawing',
+    items: [
+      { name: 'XMind 脑图', url: '/example/mindmap.xmind' },
       { name: 'Excalidraw', url: '/example/flow.excalidraw' },
       { name: 'draw.io', url: '/example/process.drawio' }
     ]
@@ -166,14 +174,17 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '邮件与 EDA',
-    description: 'EML / MSG / OLB / DRA',
+    description: 'EML / MSG / OLB / DRA / GDS / OASIS',
     family: 'email',
     items: [
       { name: 'EML', url: '/example/sample.eml' },
       { name: 'MSG', url: '/example/sample.msg' },
       { name: 'MBOX', url: '/example/sample.mbox' },
       { name: 'OLB', url: '/example/sample.olb' },
-      { name: 'DRA', url: '/example/sample.dra' }
+      { name: 'DRA', url: '/example/sample.dra' },
+      { name: 'GDSII', url: '/example/layout.gds' },
+      { name: 'OAS', url: '/example/layout.oas' },
+      { name: 'OASIS', url: '/example/layout.oasis' }
     ]
   },
   {
@@ -286,7 +297,7 @@ const extraUploadExtensions = [
   'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp', 'shp',
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
-  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'mbox', 'olb', 'dra', 'typst',
+  'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'mbox', 'olb', 'dra', 'gds', 'oas', 'oasis', 'xmind', 'typst',
   'ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'parquet', 'avro', 'webarchive'
 ]
 
@@ -336,6 +347,7 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   dwf: { icon: 'DWF', family: 'cad' },
   dwfx: { icon: 'DWFx', family: 'cad' },
   xps: { icon: 'XPS', family: 'cad' },
+  xmind: { icon: 'XM', family: 'drawing' },
   glb: { icon: '3D', family: 'model' },
   gltf: { icon: '3D', family: 'model' },
   obj: { icon: 'OBJ', family: 'model' },
@@ -407,6 +419,9 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   mbox: { icon: 'MBOX', family: 'email' },
   olb: { icon: 'OLB', family: 'eda' },
   dra: { icon: 'DRA', family: 'eda' },
+  gds: { icon: 'GDS', family: 'eda' },
+  oas: { icon: 'OAS', family: 'eda' },
+  oasis: { icon: 'OAS', family: 'eda' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },

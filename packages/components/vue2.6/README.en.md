@@ -78,7 +78,7 @@ Every standard component package shares `@file-viewer/core` as the only common f
 
 ## Format Support Matrix
 
-The shared core currently covers 23 preview pipelines and 194 file extensions. Renderers stay lazy-loaded, and component packages only adapt their own ecosystem without nesting through another framework implementation.
+The shared core currently covers 24 preview pipelines and 198 file extensions. Renderers stay lazy-loaded, and component packages only adapt their own ecosystem without nesting through another framework implementation.
 
 | Preview pipeline | Category | Extensions | Capabilities | Loading |
 | --- | --- | --- | --- | --- |
@@ -92,11 +92,12 @@ The shared core currently covers 23 preview pipelines and 194 file extensions. R
 | Typst | document | `.typ`, `.typst` | download, print(adapter), HTML export(adapter), zoom(provider), search | lazy async |
 | Archive | archive | `.zip`, `.zipx`, `.7z`, `.rar`, `.tar`, `.gz`, `.gzip`, `.tgz`, `.bz2`, `.bzip2`, `.tbz`, `.tbz2`, `.xz`, `.txz`, `.lzma`, `.zst`, `.tzst`, `.cab`, `.ar`, `.cpio`, `.iso`, `.xar`, `.lha`, `.lzh`, `.jar`, `.war`, `.ear`, `.apk`, `.cbz`, `.cbr` | download, search | lazy async |
 | Email | email | `.eml`, `.msg`, `.mbox` | download, HTML export, search | lazy async |
-| EDA | eda | `.olb`, `.dra` | download, print, HTML export, search | lazy async |
+| EDA | eda | `.olb`, `.dra`, `.gds`, `.oas`, `.oasis` | download, print, HTML export, search | lazy async |
 | CAD | cad | `.dxf`, `.dwg`, `.dwf`, `.dwfx`, `.xps` | download, print, HTML export, zoom(provider) | lazy async |
 | 3D Model | model | `.glb`, `.gltf`, `.obj`, `.stl`, `.ply`, `.fbx`, `.dae`, `.3ds`, `.3mf`, `.amf`, `.usd`, `.usda`, `.usdc`, `.usdz`, `.kmz`, `.step`, `.stp`, `.iges`, `.igs`, `.ifc`, `.3dm`, `.pcd`, `.wrl`, `.vrml`, `.xyz`, `.vtk`, `.vtp` | download, zoom(provider) | lazy async |
 | Geospatial | geo | `.geojson`, `.kml`, `.gpx`, `.shp` | download, print, HTML export, zoom(provider), search | lazy async |
 | Drawing | drawing | `.excalidraw`, `.drawio`, `.dio` | download, print, HTML export, zoom(provider), search | lazy async |
+| Mind Map | mindmap | `.xmind` | download, print, HTML export, zoom(provider), search | lazy async |
 | EPUB | ebook | `.epub` | download, HTML export, search(provider) | lazy async |
 | UMD | ebook | `.umd` | download, print, HTML export, zoom(provider), search | lazy async |
 | Image | image | `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.tiff`, `.tif`, `.png`, `.svg`, `.webp`, `.avif`, `.ico`, `.heic`, `.heif`, `.jxl` | download, print, HTML export, zoom(provider) | lazy async |
@@ -145,7 +146,7 @@ The table below lists the real props, event channel, and customization entry for
 | `ai` | Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows. |
 | `archive` | Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits. |
 | `pdf` | PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials. |
-| `docx` / `spreadsheet` | DOCX uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with Worker opt-in. |
+| `docx` / `spreadsheet` | DOCX uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing. |
 | `typst` / `data` / `cad` | Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options. |
 | `hooks` / `beforeOperation` | Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls. |
 
@@ -203,7 +204,7 @@ For fully custom toolbars, hide the built-in toolbar and call the standard ref /
 | --- | --- |
 | Shared viewer assets | The Pure Web package ships `file-viewer-copy-assets` to copy workers, WASM, vendor files, and examples into your static directory. |
 | CAD / DWG / DXF / DWF | Configure `options.cad.wasmPath`, `workerUrl`, `dwfWasmUrl`, and `dxfEncoding` for self-hosted or intranet deployment. |
-| PDF / DOCX / Excel | Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, `options.docx.workerJsZipUrl`, and `options.spreadsheet.workerUrl`; DOCX Worker parsing is enabled by default while Excel Worker remains explicit opt-in; Excel header drag column resizing can be enabled with `options.spreadsheet.resizableColumns`. |
+| PDF / DOCX / Excel | Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, `options.docx.workerJsZipUrl`, and `options.spreadsheet.workerUrl`; DOCX Worker parsing is enabled by default, Excel Worker remains explicit opt-in, and header drag column resizing is controlled by `options.spreadsheet.resizableColumns`. |
 | Typst / SQLite / Archive | Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed; Typst renders through local WASM only and never falls back to a public CDN. |
 | Drawing | Draw.io uses the official diagrams.net offline viewer shipped with viewer assets by default; override `options.drawing.viewerScriptUrl` for custom paths, or set `preferOfficial:false` for the built-in SVG fallback. |
 | Offline deployment | Runtime preview code does not depend on public CDN or third-party online assets; `file-viewer-copy-assets` copies PDF, CAD, Typst, SQLite, archive, Draw.io, DOCX worker/JSZip, and Office worker/vendor assets. |

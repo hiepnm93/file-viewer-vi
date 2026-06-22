@@ -8,7 +8,7 @@ const MAX_STRINGS = 180
 const MAX_STREAM_STRINGS = 24
 const MAX_PROPERTIES = 420
 
-export type EdaFileType = 'olb' | 'dra'
+export type EdaFileType = 'olb' | 'dra' | 'gds' | 'oas' | 'oasis'
 export type EdaParserMode = 'cfb' | 'binary'
 export type EdaStreamKind = 'text' | 'binary' | 'storage'
 export type EdaDomainRole =
@@ -362,6 +362,15 @@ const roleFromText = (
     }
   }
 
+  if (type === 'gds' || type === 'oas' || type === 'oasis') {
+    if (/(cell|structure|strname|sref|aref|boundary|path|polygon|layer|datatype|text|xy|gds|oas|oasis|layout)/.test(haystack)) {
+      return 'geometry'
+    }
+    if (/(library|libname|units|precision|technology|property|properties)/.test(haystack)) {
+      return 'metadata'
+    }
+  }
+
   if (properties.length) {
     return 'property'
   }
@@ -463,6 +472,9 @@ const splitListValue = (value?: string) => {
 const entityRoleForStream = (stream: EdaStreamView, type: EdaFileType): EdaDomainRole | null => {
   if (type === 'olb') {
     return stream.role === 'symbol' && stream.kind !== 'storage' ? 'symbol' : null
+  }
+  if (type === 'gds' || type === 'oas' || type === 'oasis') {
+    return stream.role === 'geometry' || stream.role === 'metadata' ? 'drawing' : null
   }
   if (stream.role === 'padstack') {
     return 'padstack'
@@ -640,13 +652,16 @@ const buildDiagnostics = (
 
   const needsSymbol = type === 'olb' && !entities.some(entity => entity.role === 'symbol')
   const needsFootprint = type === 'dra' && !entities.some(entity => entity.role === 'footprint' || entity.role === 'padstack')
-  if (needsSymbol || needsFootprint) {
+  const needsLayout = (type === 'gds' || type === 'oas' || type === 'oasis') && !entities.some(entity => entity.role === 'drawing')
+  if (needsSymbol || needsFootprint || needsLayout) {
     diagnostics.push({
       level: 'warning',
       code: 'domain-candidates',
       message: type === 'olb'
         ? '未发现明确的元件符号候选，文件可能使用了私有二进制编码或需要专业工具导出 ASCII/XML 后再检查。'
-        : '未发现明确的封装、图形或 padstack 候选，文件可能使用了私有二进制数据库编码。'
+        : type === 'dra'
+          ? '未发现明确的封装、图形或 padstack 候选，文件可能使用了私有二进制数据库编码。'
+          : '未发现明确的版图结构候选。GDSII / OASIS 完整几何浏览通常需要专业版图库，当前前端包会安全展示头部、字符串、属性和二进制结构线索。'
     })
   }
 
@@ -671,7 +686,9 @@ const assembleResult = (
     parser,
     title: type === 'olb'
       ? (parser === 'cfb' ? 'OrCAD Capture Symbol Library' : 'OLB Binary Library')
-      : (parser === 'cfb' ? 'OrCAD / Allegro Drawing Library' : 'DRA Binary Drawing'),
+      : type === 'dra'
+        ? (parser === 'cfb' ? 'OrCAD / Allegro Drawing Library' : 'DRA Binary Drawing')
+        : `${type.toUpperCase()} Layout Structure`,
     byteLength: buffer.byteLength,
     streamCount,
     totalStreamBytes,
@@ -720,7 +737,11 @@ const parseBinaryFallback = (buffer: ArrayBuffer, type: EdaFileType): EdaParseRe
 }
 
 export const parseEdaFile = async (buffer: ArrayBuffer, type = 'olb') => {
-  const normalizedType: EdaFileType = type === 'dra' ? 'dra' : 'olb'
+  const normalizedType: EdaFileType = type === 'dra'
+    ? 'dra'
+    : type === 'gds' || type === 'oas' || type === 'oasis'
+      ? type
+      : 'olb'
   const bytes = toBytes(buffer)
   if (!isCfbFile(bytes)) {
     return parseBinaryFallback(buffer, normalizedType)

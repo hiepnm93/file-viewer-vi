@@ -2,6 +2,14 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 当前主线 XMind、EDA 版图与表格列宽体验补齐
+
+- 支持格式矩阵提升到 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
+- `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、搜索、缩放、打印和 HTML 导出
+- `.gds`、`.oas`、`.oasis` 进入纯前端安全结构索引，展示可读字符串、层/单元/实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
+- 表格预览新增 `options.spreadsheet.resizableColumns` 开关，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便客户拖拽表头边界查看被截断的长文本
+- Demo 新增 `mindmap.xmind`、`layout.gds`、`layout.oas`、`layout.oasis` 示例，并将样例选择器补充为脑图与绘图、邮件与 EDA 等更清晰分组
+
 ## `v2.0.11` Vanilla JS 原生组件增强版
 
 - 全生态包版本同步推进到 `2.0.11`，Demo、官网、文档站、组件 README、开源总仓库和 npm 发布统一使用最新 Vanilla JS 入口

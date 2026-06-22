@@ -27,6 +27,7 @@ export type FileViewerRendererCategory =
   | 'model'
   | 'geo'
   | 'drawing'
+  | 'mindmap'
   | 'ebook'
   | 'image'
   | 'markdown'

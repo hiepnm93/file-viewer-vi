@@ -2,7 +2,7 @@
 
 [简体中文](README.md) | [English](README.en.md)
 
-把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
+把 Word、Excel、PPT、PDF、Typst、XMind 脑图、压缩包、邮件、音视频、地理数据、工程图纸、字体、设计资产和结构化数据稳稳带进浏览器里。
 
 `@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
 
@@ -26,13 +26,13 @@
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
-- **格式覆盖完整。** 当前内置 194 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、字体、设计资产和结构化数据，能覆盖绝大多数业务附件场景。
-- **按需异步加载。** PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
+- **格式覆盖完整。** 当前内置 198 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、字体、设计资产和结构化数据，能覆盖绝大多数业务附件场景。
+- **按需异步加载。** PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关、水印 options、主题 options、搜索高亮、上一个 / 下一个命中、行级定位和 AI 友好文本切片；PDF 使用 PDF.js 原生搜索，Word / Markdown / 代码等文本类格式使用通用 DOM 搜索，避免污染 PDF 文本层、canvas 等特殊渲染结构；`theme` 支持 `light`、`dark`、`system`，默认跟随系统，浅色业务 UI 可显式锁定 `light`；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
 - **集成控制更完整。** 提供加载/卸载生命周期钩子、原生事件回调和按钮前置校验机制，下载、打印、导出前可以接入权限验证、审计确认或业务二次弹窗。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色阅读面、居中阅读和自适应缩放；DOCX 使用自研 `@file-viewer/docx`，默认走 Worker 解析、连续流式阅读和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；PDF 兼容旋转页和页面 / 目录导航，Excel 会尽量还原图片、自动文本色和可滚动的多 sheet 标签，避免“内容能打开但不好读”的落差。
 - **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
-- **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
+- **Demo 更适合验收。** 示例文件按文档、表格、图纸、脑图与绘图、邮件与 EDA、代码、图片和数据资产等类型分组展示，点击样例即可打开并自动收起选择器。
 - **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
 - **各框架体验一致。** core 聚焦底层预览能力，Vanilla JS / Pure Web、Vue3、Vue2、React、jQuery 和 Svelte 标准组件包各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
 - **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
@@ -40,7 +40,7 @@
 
 ## 支持格式
 
-当前版本内置 194 个扩展名映射，覆盖 23 条预览链路。
+当前版本内置 198 个扩展名映射，覆盖 24 条预览链路。
 
 | 类别 | 扩展名 | 当前表现 | 适合场景 |
 | --- | --- | --- | --- |
@@ -55,10 +55,11 @@
 | Typst | `typ`、`typst` | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | core 共享 archive renderer，基于 `libarchive.js` WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | EML/MBOX 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览 | 邮件归档、工单邮件、客户来信附件 |
-| EDA | `olb`、`dra` | 使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器，展示结构树、元件/封装/Padstack 候选、属性、诊断和可读字符串；退化时提供安全二进制索引 | 元件库、封装图纸、EDA 附件初筛 |
+| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | 使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器；GDSII/OASIS 等版图文件会进入安全结构索引，展示可读字符串、实体候选、层/单元/几何记录和诊断，不在浏览器内执行专业电气校核 | 元件库、封装图纸、芯片版图附件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | 基于 `@flyfish-dev/cad-viewer` 预览图纸；DWG 通过 Worker + LibreDWG WASM 解析，DXF 使用 JS parser，DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形 | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | 基于 Three.js 交互预览；工程 CAD/BIM 格式会给出不内置几何内核的原因和转换建议 | 设计模型、点云、三维资产、工程模型 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@tmcw/togeojson` / `shpjs` 转 GeoJSON 后离线 SVG 预览 | 地理附件、轨迹、边界和轻量 GIS 数据 |
+| XMind 脑图 | `xmind` | 基于 `@ljheee/xmind-parser` 解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，离线渲染多 sheet 脑图、节点、标签、备注、链接、标记、图片和目录树，支持搜索、打印、HTML 导出和缩放 | 脑图、项目规划、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | 基于官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` 输出只读预览 | 白板草图、流程草稿、产品沟通图 |
 | draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |
@@ -195,7 +196,7 @@ GitHub Release 会同步提供完整下载项:
 | `beforeOperation` | 工具栏层统一前置校验，会在 `options.beforeOperation` 后执行。返回 `false` 或抛错都会取消本次操作。 |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | 单按钮前置校验；适合下载权限、打印审计、导出水印确认等细粒度业务规则。 |
 
-共享 core 当前声明 23 条预览链路、194 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats
+共享 core 当前声明 24 条预览链路、198 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ## 支持项目与商业版
@@ -385,8 +386,9 @@ docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 - PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
-- OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
+- OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
 - `options.archive` 一般只需要配置 `cache`、`workerTimeoutMs` 和体积上限；预览器会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`。手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时时，会继续降级到 ZIP/TAR/GZIP 兼容模式，避免压缩包一直停在 loading。只有静态目录、CDN 路径或 WASM 位置特殊时，才需要显式传 `archive.workerUrl` / `archive.wasmUrl`
+- 表格列宽拖拽通过 `options.spreadsheet.resizableColumns: true` 显式开启，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便查看被截断的长文本
 - `options.theme` 支持 `light`、`dark`、`system`，默认继续跟随系统；DOCX 默认使用 `@file-viewer/docx` 的 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批挂载，可通过 `options.docx.workerUrl`、`options.docx.workerJsZipUrl` 覆盖离线资源路径；如业务明确需要页式预览，可显式设置 `options.docx.visualPagination: true`；Excel/XLSX 默认使用主线程解析，避免本地服务器、手机 WebView、MIME 或 CSP 导致 Worker 卡住，确实需要静态 Worker 时再传 `options.spreadsheet.worker: true` 和 `options.spreadsheet.workerUrl`；`options.pdf.workerUrl` 可覆盖 PDF.js Worker，适合内网、离线或 CSP 较严的私有化部署；`options.watermark` 支持文字或图片水印；`options.toolbar` 可控制下载原文件、打印完整渲染结果、导出 HTML、统一缩放按钮和操作栏位置，`toolbar.zoom` 可单独控制缩放按钮显示，`toolbar.position` 支持 `auto`、`top`、`bottom-right`，PDF 默认悬浮到右下角以避开自身导航栏；统一缩放通过渲染器内部 provider 适配 PDF、Word、PPTX、Excel 虚拟表格、图片、CAD、OFD、Typst、Markdown、代码和绘图等链路，避免业务侧外层 CSS 缩放造成表格坐标或 canvas 交互偏移；Excel 多 sheet 时标签栏按内容宽度展示并横向滚动，不会被平均压缩；`options.pdf.toolbar` 可隐藏 PDF 自身页码缩放工具栏；`options.search` 可控制搜索高亮、整词/大小写和命中数量；`options.ai` 可开启文本切片结构，返回行号、页码、锚点和 label 等溯源字段，便于业务侧做向量化、召回、AI 摘要、高亮回填和来源定位；`options.hooks` 可接收加载/卸载生命周期；`options.beforeOperation` 可在下载、打印、导出和缩放前做权限校验；打印按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Word / PDF 会生成完整页面，Excel 等虚拟表格会隐藏打印按钮，避免只打印当前视口或第一页
 
 ```ts

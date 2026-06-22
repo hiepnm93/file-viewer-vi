@@ -28,11 +28,11 @@
   </div>
   <div class="doc-card">
     <h3>覆盖真实附件场景</h3>
-    <p>内置 194 个扩展名映射和 23 条预览链路，覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体、设计资产和结构化数据。</p>
+    <p>内置 198 个扩展名映射和 24 条预览链路，覆盖 Office、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体、设计资产和结构化数据。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
-    <p>OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
+    <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
   </div>
   <div class="doc-card">
     <h3>阅读体验更完整</h3>
@@ -49,7 +49,7 @@
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
-    <p>支持格式页列出当前注册的 194 个扩展名、23 条渲染链路和真实业务里的适用边界。</p>
+    <p>支持格式页列出当前注册的 198 个扩展名、24 条渲染链路和真实业务里的适用边界。</p>
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>

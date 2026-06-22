@@ -71,7 +71,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 
 ## 格式支持矩阵
 
-共享 core 当前覆盖 23 条预览链路、194 个扩展名。所有格式都按需异步加载，组件层只做生态适配，不互相嵌套。
+共享 core 当前覆盖 24 条预览链路、198 个扩展名。所有格式都按需异步加载，组件层只做生态适配，不互相嵌套。
 
 | 预览链路 | 分类 | 扩展名 | 能力 | 加载 |
 | --- | --- | --- | --- | --- |
@@ -85,11 +85,12 @@ npx file-viewer-copy-assets ./public/file-viewer
 | Typst | document | `.typ`, `.typst` | 下载, 打印(适配器), HTML(适配器), 缩放(Provider), 搜索 | 按需异步 |
 | Archive | archive | `.zip`, `.zipx`, `.7z`, `.rar`, `.tar`, `.gz`, `.gzip`, `.tgz`, `.bz2`, `.bzip2`, `.tbz`, `.tbz2`, `.xz`, `.txz`, `.lzma`, `.zst`, `.tzst`, `.cab`, `.ar`, `.cpio`, `.iso`, `.xar`, `.lha`, `.lzh`, `.jar`, `.war`, `.ear`, `.apk`, `.cbz`, `.cbr` | 下载, 搜索 | 按需异步 |
 | Email | email | `.eml`, `.msg`, `.mbox` | 下载, HTML, 搜索 | 按需异步 |
-| EDA | eda | `.olb`, `.dra` | 下载, 打印, HTML, 搜索 | 按需异步 |
+| EDA | eda | `.olb`, `.dra`, `.gds`, `.oas`, `.oasis` | 下载, 打印, HTML, 搜索 | 按需异步 |
 | CAD | cad | `.dxf`, `.dwg`, `.dwf`, `.dwfx`, `.xps` | 下载, 打印, HTML, 缩放(Provider) | 按需异步 |
 | 3D Model | model | `.glb`, `.gltf`, `.obj`, `.stl`, `.ply`, `.fbx`, `.dae`, `.3ds`, `.3mf`, `.amf`, `.usd`, `.usda`, `.usdc`, `.usdz`, `.kmz`, `.step`, `.stp`, `.iges`, `.igs`, `.ifc`, `.3dm`, `.pcd`, `.wrl`, `.vrml`, `.xyz`, `.vtk`, `.vtp` | 下载, 缩放(Provider) | 按需异步 |
 | Geospatial | geo | `.geojson`, `.kml`, `.gpx`, `.shp` | 下载, 打印, HTML, 缩放(Provider), 搜索 | 按需异步 |
 | Drawing | drawing | `.excalidraw`, `.drawio`, `.dio` | 下载, 打印, HTML, 缩放(Provider), 搜索 | 按需异步 |
+| Mind Map | mindmap | `.xmind` | 下载, 打印, HTML, 缩放(Provider), 搜索 | 按需异步 |
 | EPUB | ebook | `.epub` | 下载, HTML, 搜索(Provider) | 按需异步 |
 | UMD | ebook | `.umd` | 下载, 打印, HTML, 缩放(Provider), 搜索 | 按需异步 |
 | Image | image | `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.tiff`, `.tif`, `.png`, `.svg`, `.webp`, `.avif`, `.ico`, `.heic`, `.heif`, `.jxl` | 下载, 打印, HTML, 缩放(Provider) | 按需异步 |
@@ -138,7 +139,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 | `ai` | 控制文本结构采集、分块大小和最大文本长度，为溯源、定位、向量化和外部 AI 流程提供基础。 |
 | `archive` | 配置压缩包 Worker/WASM、超时、缓存、包体限制和压缩包内单文件预览大小。 |
 | `pdf` | 配置 PDF.js Worker、导航栏、目录、缩略图、旋转、流式读取、Range chunk 和凭据。 |
-| `docx` / `spreadsheet` | DOCX 使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格默认保真主线程渲染，Worker 可按需显式开启。 |
+| `docx` / `spreadsheet` | DOCX 使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格默认保真主线程渲染，Worker 和表头拖拽调列宽均可按需显式开启。 |
 | `typst` / `data` / `cad` | 配置 Typst、SQLite、CAD/DWG/DXF/DWF 等 WASM、Worker、编码和渲染策略。 |
 | `hooks` / `beforeOperation` | 统一生命周期 hooks 和操作前置校验，可用于审计、权限、埋点和安全控制。 |
 
@@ -196,7 +197,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 | --- | --- |
 | 通用 viewer assets | Pure Web 包提供 `file-viewer-copy-assets`，可把 Worker、WASM、vendor 和示例资源复制到业务静态目录。 |
 | CAD / DWG / DXF / DWF | 按需配置 `options.cad.wasmPath`、`workerUrl`、`dwfWasmUrl`、`dxfEncoding`，支持自托管和内网部署。 |
-| PDF / DOCX / Excel | 按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.docx.workerJsZipUrl`、`options.spreadsheet.workerUrl`；DOCX 默认启用自研 Worker 解析，Excel Worker 需显式开启；Excel 列宽拖拽可通过 `options.spreadsheet.resizableColumns` 开启。 |
+| PDF / DOCX / Excel | 按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.docx.workerJsZipUrl`、`options.spreadsheet.workerUrl`；DOCX 默认启用自研 Worker 解析，Excel Worker 需显式开启，列宽拖拽可通过 `options.spreadsheet.resizableColumns` 显式开启。 |
 | Typst / SQLite / Archive | 按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；Typst 仅使用本地 WASM 真实渲染，不访问公共 CDN。 |
 | Drawing | Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer；路径特殊时可通过 `options.drawing.viewerScriptUrl` 覆盖，`preferOfficial:false` 才切到内置 SVG 兜底。 |
 | 离线部署 | 运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包、Draw.io、DOCX worker/JSZip 和 Office worker/vendor 资产。 |

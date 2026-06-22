@@ -2,7 +2,7 @@
 
 [Simplified Chinese](README.md) | [English](README.en.md)
 
-Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
+Bring Word, Excel, PowerPoint, PDF, Typst, XMind mind maps, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
 `@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Independent renderer packages such as `@file-viewer/pptx` own heavy format engines that can evolve separately. Vanilla JavaScript / Pure Web, Vue 3, Vue 2.7, Vue 2.6, React, React Legacy, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
 
@@ -25,8 +25,8 @@ The integration promise is simple: **one component, one line of code, fast integ
 ## Why Use It
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
-- **Broad format coverage.** The current release maps 194 extensions across 23 preview pipelines, including Office, PDF, OFD, Typst, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
-- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
+- **Broad format coverage.** The current release maps 198 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
+- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
 - **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
 - **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
@@ -53,10 +53,11 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | Typst | `typ`, `typst` | Direct Typst source rendering with browser WASM compiler and SVG pages | Technical reports, papers, engineering documents |
 | Archives | `zip`, `zipx`, `7z`, `rar`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`, `cab`, `iso`, `jar`, `apk`, `cbz`, `cbr`, and more | Shared core archive renderer with a `libarchive.js` Worker, directory listing, lazy extraction, nested preview, IndexedDB cache, and ZIP/TAR/GZIP fallback | Attachment packages and internal document bundles |
 | Email | `eml`, `msg`, `mbox` | `postal-mime` for EML/MBOX, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview | Email archives and support tickets |
-| EDA | `olb`, `dra` | CFB-based OrCAD / Allegro structure inspection, trees, symbols, footprints, padstack candidates, properties, strings, diagnostics | Component libraries and EDA attachments |
+| EDA | `olb`, `dra`, `gds`, `oas`, `oasis` | CFB-based OrCAD / Allegro inspection plus safe GDSII/OASIS structure indexing with readable strings, layer/cell/entity hints, and diagnostics | Component libraries, footprints, chip layout attachments |
 | CAD | `dwg`, `dxf`, `dwf`, `dwfx`, `xps` | `@flyfish-dev/cad-viewer` preview. DWG uses Worker + LibreDWG WASM, DXF uses a JS parser, and DWF/DWFx/XPS use the native `dwf-viewer` path for W2D/W3D/XPS graphics | Engineering drawings and AutoCAD archives |
 | Geospatial data | `geojson`, `kml`, `gpx`, `shp` | GeoJSON normalization with `@tmcw/togeojson` and `shpjs`, rendered as an offline SVG map preview | GIS exports, route tracks, map attachment review |
 | 3D models | `glb`, `gltf`, `obj`, `stl`, `ply`, `fbx`, `dae`, `3ds`, `3mf`, `amf`, `usd`, `usda`, `usdc`, `usdz`, `kmz`, `pcd`, `wrl`, `vrml`, `xyz`, `vtk`, `vtp`, `step`, `stp`, `iges`, `igs`, `ifc`, `3dm` | Three.js interactive preview, with conversion guidance for heavy CAD/BIM kernels | 3D assets, point clouds, design models |
+| XMind mind maps | `xmind` | `@ljheee/xmind-parser` parses XMind 8 XML and XMind 2020+ JSON packages; the browser renderer shows sheets, nodes, labels, notes, links, markers, images, outline, zoom, search, print, and HTML export | Mind maps, planning boards, knowledge structures, meeting notes |
 | Excalidraw | `excalidraw` | Official `@excalidraw/excalidraw` restore and `exportToSvg` read-only rendering | Whiteboard sketches and product diagrams |
 | draw.io | `drawio`, `dio` | Official diagrams.net `GraphViewer` | Flowcharts and architecture diagrams |
 | EPUB | `epub` | `epubjs` table of contents and scrolling reader | Ebooks and long training materials |
@@ -205,7 +206,7 @@ The built-in toolbar can be used as-is, or hidden with `toolbar:false` so your o
 | `beforeOperation` | Toolbar-level preflight that runs after `options.beforeOperation`. Returning `false` or throwing cancels the operation. |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | Operation-specific preflight for download permission, print audit, export confirmation, and similar business rules. |
 
-The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
+The shared core currently declares 24 preview pipelines and 198 file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ## Support, Sponsorship, and Commercial Edition

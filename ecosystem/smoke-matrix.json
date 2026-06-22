@@ -21,6 +21,7 @@
       "audio",
       "video",
       "geo",
+      "mindmap",
       "data-asset"
     ]
   },
@@ -248,6 +249,15 @@
       "assertions": ["load-complete", "structure-tree", "scrollable-tree"]
     },
     {
+      "id": "eda-gds-layout",
+      "family": "eda-layout",
+      "rendererId": "eda",
+      "extension": "gds",
+      "sample": "layout.gds",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "structure-tree", "binary-preview"]
+    },
+    {
       "id": "cad-dwg",
       "family": "cad",
       "rendererId": "cad",
@@ -300,6 +310,15 @@
       "sample": "flow.excalidraw",
       "surfaces": ["main-demo"],
       "assertions": ["load-complete", "svg-output", "zoom"]
+    },
+    {
+      "id": "mindmap-xmind",
+      "family": "mindmap",
+      "rendererId": "mindmap",
+      "extension": "xmind",
+      "sample": "mindmap.xmind",
+      "surfaces": ["main-demo"],
+      "assertions": ["load-complete", "sheet-tabs", "outline", "zoom", "search"]
     },
     {
       "id": "ebook-epub",

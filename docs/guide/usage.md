@@ -37,7 +37,7 @@ Vanilla JS / Pure Web、React、jQuery 和 Svelte 标准组件包允许直接传
 - 当 `file` 被清空后，如果 `url` 仍然存在，会自动回退到 `url`
 - 组件默认撑满父容器，因此父容器必须有稳定高度
 - 扩展名匹配会自动转成小写，所以 `PDF`、`DocX` 这类大小写差异不会影响命中
-- OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
+- OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
 - PPTX 属于浏览器端近似渲染链路，当前由独立开源的 `@file-viewer/pptx` 原生引擎承接，已增强组合图形、主题背景、图片裁剪和 EMF 矢量图片；如果业务材料大量使用复杂动画或专有 Office 特效，建议把真实样本加入上线前回归。
 - `options` 可以配置内置操作栏、水印、压缩包 Worker、缓存和体积上限。
 
@@ -391,7 +391,7 @@ Vanilla JS / Pure Web、React、jQuery 和 Svelte 接入时，搜索和定位仍
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
 - Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色文档内容，避免只打印当前视口或第一页。
-- 图片、Markdown、代码、PPTX、OFD、CAD、绘图、UMD、OLB/DRA 等可以稳定克隆当前渲染结果的格式会保留打印按钮；Excel 当前使用 `styled-exceljs` + `e-virt-table` 虚拟渲染，完整工作表不会一次性存在于 DOM 中，因此表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
+- 图片、Markdown、代码、PPTX、OFD、CAD、绘图、XMind、UMD、OLB/DRA/GDS/OASIS 等可以稳定克隆当前渲染结果的格式会保留打印按钮；Excel 当前使用 `styled-exceljs` + `e-virt-table` 虚拟渲染，完整工作表不会一次性存在于 DOM 中，因此表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
 - 导出 HTML 会尽量克隆当前渲染结果，并把 canvas 转成图片，保证图纸、绘图、文档和代码在离线 HTML 中仍有可读内容。
 - 水印会同时参与预览、打印和 HTML 导出。文字水印适合内部资料、审批流和归档场景；图片水印适合品牌 Logo 或业务系统标识。
 
@@ -434,17 +434,19 @@ async function useLocal(blob: Blob) {
 
 预览器依赖文件扩展名选择渲染器，所以无论你传入的是 URL 还是二进制结果，文件名都应该尽量带上正确扩展名。
 
-### OFD、Typst、压缩包、邮件、EDA、CAD、3D 模型、绘图和电子书怎么接
+### OFD、Typst、XMind、压缩包、邮件、EDA、CAD、3D 模型、绘图和电子书怎么接
 
 `.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。CAD 文件会使用 `@flyfish-dev/cad-viewer`：`dwg` 通过 Worker + LibreDWG WASM 解析，`dxf` 使用 JavaScript parser，`dwf` / `dwfx` / `xps` 通过 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形。私有化部署时请确认 viewer assets 目录下的 `wasm/cad/libredwg-web.js`、`wasm/cad/libredwg-web.wasm`、`wasm/cad/dwfv-render.wasm` 和 `wasm/cad/dwg-worker.js` 可访问；路径不同可通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 覆盖。
 
 `.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
+`.xmind` 会使用 `@ljheee/xmind-parser` 解析 XMind 8 XML 和 XMind 2020+ JSON 文件包，并由 core 脑图渲染器展示多 sheet、节点、标签、备注、链接、标记、目录侧栏、搜索和缩放。它是只读预览能力，不会修改脑图文件；需要编辑、协作批注或复杂布局重排时仍建议回到专业脑图软件。
+
 `.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署一般不需要手动配置 `archive.workerUrl`；如果静态目录或资源前缀特殊，可把 `worker-bundle.js` 与同目录的 `libarchive.wasm` 发布出来后配置 `options.archive.workerUrl`。当手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化失败时，组件会自动切换到 ZIP/TAR/GZIP 兼容模式，避免停留在 loading。
 
 `.eml` 使用 `postal-mime`，`.msg` 使用 `@kenjiuno/msgreader`。邮件正文会在隔离沙箱文档中展示，附件可以下载，也可以继续在线预览。
 
-`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。组件会展示结构树、流类型、元件符号、封装、Padstack、属性、可读字符串和诊断信息；它适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、规则校核和电气验证。
+`.olb` 与 `.dra` 使用 `cfb` 做 OrCAD / Allegro 常见复合文档结构预览。`.gds`、`.oas`、`.oasis` 会按芯片版图结构做安全索引，展示库名、单元、层、边界、路径、文本、可读字符串和诊断信息；它适合附件初筛和内容确认，不替代专业 EDA 软件里的封装编辑、版图编辑、DRC/LVS、规则校核和电气验证。
 
 3D 模型使用 Three.js，支持 `glb/gltf/obj/stl/ply/fbx/dae/3ds/3mf/amf/usd/usda/usdc/usdz/kmz/pcd/wrl/vrml/xyz/vtk/vtp`。如果模型有外部贴图、材质或 `.bin`，远程 `url` 预览会按原始文件目录继续加载；本地上传时更推荐使用单文件 `.glb`。`step/stp/iges/igs/ifc/3dm` 会给出需要 CAD/BIM/WASM 几何内核的原因和转换建议。
 

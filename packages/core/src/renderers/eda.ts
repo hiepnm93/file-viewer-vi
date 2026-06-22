@@ -223,7 +223,7 @@ export default async function renderEda(
   type = 'olb',
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
-  const normalizedType = type === 'dra' ? 'dra' : 'olb';
+  const normalizedType = ['dra', 'gds', 'oas', 'oasis'].includes(type) ? type : 'olb';
   const filename = context?.filename || `preview.${normalizedType}`;
   const root = createElement('section', 'eda-viewer');
   const style = createStyle();
@@ -286,7 +286,9 @@ export default async function renderEda(
     const summary = createElement('div', 'eda-summary');
     summary.append(
       createElement('strong', undefined, parsed.title),
-      createElement('p', undefined, 'OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。')
+      createElement('p', undefined, parsed.type === 'gds' || parsed.type === 'oas' || parsed.type === 'oasis'
+        ? 'GDSII / OASIS 属于芯片版图工程文件。预览器优先索引结构、属性、可读字符串和二进制线索，并在纯前端安全退化。'
+        : 'OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。')
     );
     sidebar.append(summary);
     appendStatGrid(sidebar, statsCards.slice(0, 4), 'eda-mini-grid');

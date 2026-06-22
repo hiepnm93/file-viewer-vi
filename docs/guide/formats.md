@@ -3,18 +3,18 @@
 <div class="doc-kicker">Format Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>194 个扩展名映射</strong>，覆盖 <strong>23 条预览链路</strong>。
+  当前版本内置 <strong>198 个扩展名映射</strong>，覆盖 <strong>24 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>194 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音视频、代码/文本、字体、设计资产和结构化数据等常见附件类型。</p>
+    <h3>198 个扩展名映射</h3>
+    <p>覆盖 Office、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音视频、代码/文本、字体、设计资产和结构化数据等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
-    <p>OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
+    <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
   </div>
   <div class="doc-card">
     <h3>两条输入路径</h3>
@@ -41,10 +41,11 @@
 | Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | core archive renderer + `libarchive.js` WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存、体积上限和 ZIP/TAR/GZIP 兼容降级 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；MBOX 会解析首封邮件并标注识别数量；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
-| EDA | `olb`、`dra` | `cfb` 容器解析 + EDA 结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器，展示结构树、元件/封装/Padstack 候选、属性、诊断和可读字符串；非 CFB 文件安全退化 | 元件库、封装图纸、EDA 文件初筛 |
+| EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `cfb` 容器解析 + EDA / 版图结构分析 | 优先解析 OrCAD / Allegro 常见 CFB 容器；GDSII/OASIS 会进入安全结构索引，展示可读字符串、层/单元/几何记录、实体候选和诊断；非 CFB 文件安全退化 | 元件库、封装图纸、芯片版图文件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | Three.js | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
+| XMind 脑图 | `xmind` | `@ljheee/xmind-parser` + core 脑图渲染器 | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、缩放、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | core 共享绘图渲染器按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | 官方 diagrams.net `GraphViewer` 离线预览；内置 SVG fallback | core 共享绘图渲染器默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
@@ -113,7 +114,13 @@
 - EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。
 - MBOX 会按 `From ` 分隔线识别邮件条目，并使用同一套 MIME 解析器读取首封邮件，适合邮件归档包的快速审阅。超大归档建议先在业务层拆分或提供索引，避免一次性把全部历史邮件拉入浏览器内存。
 - 邮件 HTML 正文渲染在隔离沙箱文档中，不执行脚本；如果你接收外部邮件，仍建议在业务层保留病毒扫描和附件白名单策略。
-- OLB / DRA 使用 `cfb` 读取常见复合文档容器，并按 OrCAD Capture 元件库、Allegro drawing / footprint / padstack 的内容习惯做结构树、对象候选、属性和诊断展示。复杂电气规则、封装编辑和几何校核仍应交给 OrCAD / Allegro 等专业工具。
+- OLB / DRA 使用 `cfb` 读取常见复合文档容器，并按 OrCAD Capture 元件库、Allegro drawing / footprint / padstack 的内容习惯做结构树、对象候选、属性和诊断展示。GDS / OAS / OASIS 会按版图结构进行安全索引，尽量展示库名、单元、层、边界、路径、文本和可读字符串；复杂电气规则、版图几何校核、DRC/LVS 和专业编辑仍应交给 OrCAD / Allegro / KLayout 等专业工具。
+
+### XMind 脑图
+
+- `xmind` 使用 `@ljheee/xmind-parser` 解析 XMind 8 的 `content.xml` 与 XMind 2020+ 的 `content.json`，不依赖在线服务，也不访问公共 CDN。
+- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、搜索、缩放、打印和 HTML 导出。
+- 大型脑图会限制单次渲染节点数量，避免浏览器一次性挂载过多 DOM。需要更深层编辑、重新排版或协同批注时，仍建议回到专业脑图工具。
 
 ### CAD 图纸
 

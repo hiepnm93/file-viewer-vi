@@ -131,11 +131,11 @@ const copy = {
       eyebrow: '浏览器原生文件预览超级组件',
       title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
-        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、CAD、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
+        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、Typst、XMind、CAD、EDA、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验。',
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
-      proof: ['194+ 扩展名', '按需异步加载', '多框架原生组件', 'Apache-2.0 开源']
+      proof: ['198+ 扩展名', '24 条预览链路', '多框架原生组件', 'Apache-2.0 开源']
     },
     matrixTitle: '覆盖广，不等于粗糙。每条链路都面向真实业务。',
     matrixIntro:
@@ -179,11 +179,11 @@ const copy = {
       eyebrow: 'Browser-native file preview super component',
       title: 'Turn complex files into instant product experiences.',
       subtitle:
-        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, CAD, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
+        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, Typst, XMind, CAD, EDA, archives, email, ebooks, code, media, 3D models, and data assets into the browser. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',
-      proof: ['194+ extensions', 'Lazy renderer loading', 'Native component packages', 'Apache-2.0 open source']
+      proof: ['198+ extensions', '24 preview pipelines', 'Native component packages', 'Apache-2.0 open source']
     },
     matrixTitle: 'Broad coverage, without treating fidelity as optional.',
     matrixIntro:
@@ -217,14 +217,14 @@ const copy = {
 const metrics = computed<MetricItem[]>(() =>
   isZh.value
     ? [
-        { title: '文件扩展名', value: '194+', detail: '覆盖业务附件、工程资产、媒体与数据文件', tone: 'green' },
-        { title: '预览链路', value: '23', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
+        { title: '文件扩展名', value: '198+', detail: '覆盖业务附件、脑图、工程资产、媒体与数据文件', tone: 'green' },
+        { title: '预览链路', value: '24', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
         { title: '生态组件', value: '8+', detail: 'Vanilla JS、Vue、React、jQuery、Svelte 全线可用', tone: 'violet' },
         { title: '分发形态', value: '4', detail: 'npm、Release、Docker、静态资源私有化', tone: 'amber' }
       ]
     : [
-        { title: 'Extensions', value: '194+', detail: 'Business attachments, engineering files, media, and data assets', tone: 'green' },
-        { title: 'Pipelines', value: '23', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
+        { title: 'Extensions', value: '198+', detail: 'Business attachments, mind maps, engineering files, media, and data assets', tone: 'green' },
+        { title: 'Pipelines', value: '24', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
         { title: 'Components', value: '8+', detail: 'Vanilla JS, Vue, React, jQuery, and Svelte packages', tone: 'violet' },
         { title: 'Delivery paths', value: '4', detail: 'npm, GitHub Release, Docker, and static self-hosting', tone: 'amber' }
       ]
@@ -242,8 +242,8 @@ const formatGroups = computed<FormatGroup[]>(() =>
         },
         {
           label: '工程与设计资产',
-          count: 'CAD / EDA / 3D / Drawings',
-          examples: 'dwg、dxf、dwf、dwfx、olb、dra、step、stl、excalidraw、drawio',
+          count: 'CAD / EDA / 3D / Mind Maps',
+          examples: 'dwg、dxf、dwf、dwfx、olb、dra、gds、oas、oasis、xmind、step、stl、excalidraw、drawio',
           icon: Layers3,
           tone: 'cyan'
         },
@@ -272,8 +272,8 @@ const formatGroups = computed<FormatGroup[]>(() =>
         },
         {
           label: 'Engineering and design assets',
-          count: 'CAD / EDA / 3D / Drawings',
-          examples: 'dwg, dxf, dwf, dwfx, olb, dra, step, stl, excalidraw, drawio',
+          count: 'CAD / EDA / 3D / Mind maps',
+          examples: 'dwg, dxf, dwf, dwfx, olb, dra, gds, oas, oasis, xmind, step, stl, excalidraw, drawio',
           icon: Layers3,
           tone: 'cyan'
         },
