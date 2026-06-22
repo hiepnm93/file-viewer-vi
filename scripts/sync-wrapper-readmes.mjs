@@ -139,7 +139,7 @@ function viewerOptionRows(locale) {
       ['`ai`', '控制文本结构采集、分块大小和最大文本长度，为溯源、定位、向量化和外部 AI 流程提供基础。'],
       ['`archive`', '配置压缩包 Worker/WASM、超时、缓存、包体限制和压缩包内单文件预览大小。'],
       ['`pdf`', '配置 PDF.js Worker、导航栏、目录、缩略图、旋转、流式读取、Range chunk 和凭据。'],
-      ['`docx` / `spreadsheet`', 'DOCX 由 @file-viewer/renderer-word 承接并使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格默认保真主线程渲染，Worker 和表头拖拽调列宽均可按需显式开启。'],
+      ['`docx` / `spreadsheet`', 'DOCX 由 @file-viewer/renderer-word 承接并使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格由 @file-viewer/renderer-spreadsheet 承接，默认保真主线程渲染，Worker 和表头拖拽调列宽均可按需显式开启。'],
       ['`typst` / `data` / `cad`', '配置 Typst、SQLite、CAD/DWG/DXF/DWF 等 WASM、Worker、编码和渲染策略。'],
       ['`hooks` / `beforeOperation`', '统一生命周期 hooks 和操作前置校验，可用于审计、权限、埋点和安全控制。']
     ]
@@ -152,7 +152,7 @@ function viewerOptionRows(locale) {
     ['`ai`', 'Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows.'],
     ['`archive`', 'Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits.'],
     ['`pdf`', 'PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials.'],
-    ['`docx` / `spreadsheet`', 'DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing.'],
+    ['`docx` / `spreadsheet`', 'DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet is provided by @file-viewer/renderer-spreadsheet with fidelity-first main-thread parsing, opt-in Worker loading, and opt-in header drag column resizing.'],
     ['`typst` / `data` / `cad`', 'Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options.'],
     ['`hooks` / `beforeOperation`', 'Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls.']
   ]

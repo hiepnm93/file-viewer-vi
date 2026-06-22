@@ -399,25 +399,13 @@ importers:
 
   packages/core:
     dependencies:
-      e-virt-table:
-        specifier: ^1.3.26
-        version: 1.3.26
       pako:
         specifier: ^2.1.0
         version: 2.1.0
-      styled-exceljs:
-        specifier: 0.21.1
-        version: 0.21.1
-      tinycolor2:
-        specifier: ^1.6.0
-        version: 1.6.0
     devDependencies:
       '@types/pako':
         specifier: ^2.0.4
         version: 2.0.4
-      '@types/tinycolor2':
-        specifier: ^1.4.6
-        version: 1.4.6
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -472,6 +460,9 @@ importers:
       '@file-viewer/renderer-presentation':
         specifier: workspace:^2.0.11
         version: link:../../renderers/presentation
+      '@file-viewer/renderer-spreadsheet':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/spreadsheet
       '@file-viewer/renderer-text':
         specifier: workspace:^2.0.11
         version: link:../../renderers/text
@@ -753,6 +744,28 @@ importers:
         specifier: workspace:^2.0.11
         version: link:../pptx
     devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/spreadsheet:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      e-virt-table:
+        specifier: ^1.3.26
+        version: 1.3.26
+      styled-exceljs:
+        specifier: 0.21.1
+        version: 0.21.1
+      tinycolor2:
+        specifier: ^1.6.0
+        version: 1.6.0
+    devDependencies:
+      '@types/tinycolor2':
+        specifier: ^1.4.6
+        version: 1.4.6
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

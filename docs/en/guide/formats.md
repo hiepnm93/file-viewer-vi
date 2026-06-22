@@ -26,7 +26,7 @@
 ## Engineering Renderer Notes
 
 - Word preview uses `@file-viewer/renderer-word`. The package lazy-loads the self-maintained DOCX engine, `msdoc-viewer`, and RTF/OpenDocument helpers only for DOCX/DOC/RTF/ODT files, so core-only and lightweight component installs do not pull Word engines by default.
-- XMind uses `@file-viewer/renderer-mindmap` with XMind 8 XML and XMind 2020+ JSON package parsing, plus pointer, mouse, touch drag-to-pan, mobile pinch zoom, keyboard panning, responsive fit-on-open/host-resize behavior, unified toolbar state sync after pan/navigation, and embedded WebView compatibility when PointerEvent `buttons` is reported unreliably.
+- XMind uses `@file-viewer/renderer-mindmap` with XMind 8 XML and XMind 2020+ JSON package parsing, plus pointer, mouse, touch drag-to-pan, mobile pinch zoom, keyboard panning, responsive fit-on-open/host-resize behavior, unified toolbar state sync after pan/navigation, embedded WebView compatibility when PointerEvent `buttons` is reported unreliably, and hybrid `pointerdown` + `mousemove` / `touchmove` gesture fallback.
 - EDA uses `@file-viewer/renderer-eda`. OLB and DRA are safe structure previews over common CFB/OLE2 containers, standard GDSII can render an SVG layout preview, and OASIS remains a safe structure-index preview until the dedicated WASM/WebGL layout kernel is split out.
 - CAD uses `@file-viewer/renderer-cad` and `@flyfish-dev/cad-viewer`; DWG, DWF, and DWFx assets remain self-hostable for offline deployments.
 
@@ -34,7 +34,7 @@
 
 Each renderer reports what it can safely do. The common toolbar then shows download, print, HTML export, zoom, search, and navigation only when the active file type supports those operations.
 
-This avoids pretending that every format supports the same operations. Word and PDF can use full-page print adapters, images can zoom naturally, archives can lazy-extract nested entries, and virtual spreadsheet tables avoid fragile outer CSS scaling.
+This avoids pretending that every format supports the same operations. Word and PDF can use full-page print adapters, images can zoom naturally, archives can lazy-extract nested entries, and virtual spreadsheet tables are provided by `@file-viewer/renderer-spreadsheet` to avoid fragile outer CSS scaling.
 
 ## Best Evaluation Path
 

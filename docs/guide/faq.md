@@ -88,7 +88,7 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 ## `xls` 和 `xlsx` 的样式能力有什么差异
 
-当前表格预览统一走 `styled-exceljs`，会读取文件里能表达的列宽、行高、合并单元格、边框、填充和对齐等信息。差异主要来自格式本身: `xlsx` 通常保存的样式信息更完整，而 `xls/csv/ods` 等格式可能缺少部分现代样式描述。
+当前表格预览由 `@file-viewer/renderer-spreadsheet` 承接，内部统一走 `styled-exceljs`，会读取文件里能表达的列宽、行高、合并单元格、边框、填充和对齐等信息。差异主要来自格式本身: `xlsx` 通常保存的样式信息更完整，而 `xls/csv/ods` 等格式可能缺少部分现代样式描述。
 
 ## `html` 文件为什么是按文本显示的
 

@@ -64,13 +64,6 @@ interface RendererModuleDescriptor {
   chunkName: string
 }
 
-interface PlannedRendererDescriptor {
-  id: string
-  targetPackage: string
-  formats: readonly string[]
-  note: string
-}
-
 interface MissingRendererNotice {
   format: string
   targetPackage?: string
@@ -143,6 +136,14 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     formats: ['word', 'doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'odt', 'odp', 'rtf'],
     rendererIds: ['office-word-openxml', 'office-word-binary', 'open-document'],
     chunkName: 'file-viewer-word'
+  },
+  {
+    id: 'spreadsheet',
+    packageName: '@file-viewer/renderer-spreadsheet',
+    exportName: 'spreadsheetRenderer',
+    formats: ['spreadsheet', 'excel', 'xls', 'xlsx', 'xltx', 'xlsm', 'xlsb', 'xlt', 'xltm', 'csv', 'tsv', 'ods', 'fods', 'numbers'],
+    rendererIds: ['spreadsheet-openxml'],
+    chunkName: 'file-viewer-spreadsheet'
   },
   {
     id: 'drawing',
@@ -356,24 +357,10 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
   }
 ]
 
-const plannedRenderers: readonly PlannedRendererDescriptor[] = [
-  {
-    id: 'spreadsheet',
-    targetPackage: '@file-viewer/renderer-spreadsheet',
-    formats: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv', 'ods'],
-    note: 'Spreadsheet renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-spreadsheet.'
-  },
-]
-
 const descriptorsById = new Map(rendererModules.map((descriptor) => [descriptor.id, descriptor]))
 const descriptorsByFormat = new Map<string, RendererModuleDescriptor>()
 rendererModules.forEach((descriptor) => {
   descriptor.formats.forEach((format) => descriptorsByFormat.set(format, descriptor))
-})
-const plannedByFormat = new Map<string, PlannedRendererDescriptor>()
-plannedRenderers.forEach((descriptor) => {
-  descriptor.formats.forEach((format) => plannedByFormat.set(format, descriptor))
-  plannedByFormat.set(descriptor.id, descriptor)
 })
 
 function normalizeToken(value: string) {
@@ -413,16 +400,6 @@ function selectRenderers(options: FileViewerRenderersPluginOptions): RendererSel
     const descriptor = descriptorsById.get(token) || descriptorsByFormat.get(token)
     if (descriptor) {
       selected.set(descriptor.id, descriptor)
-      return
-    }
-
-    const planned = plannedByFormat.get(token)
-    if (planned) {
-      missing.push({
-        format: token,
-        targetPackage: planned.targetPackage,
-        note: planned.note
-      })
       return
     }
 

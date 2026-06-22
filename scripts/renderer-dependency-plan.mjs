@@ -22,7 +22,7 @@ export const rendererModularizationLines = [
     group: 'office',
     targetPackage: '@file-viewer/renderer-spreadsheet',
     phase: 2,
-    status: 'planned',
+    status: 'extracted',
     renderers: ['spreadsheet-openxml'],
     dependencies: ['styled-exceljs', 'e-virt-table', 'tinycolor2'],
   },

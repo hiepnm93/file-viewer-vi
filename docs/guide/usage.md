@@ -207,7 +207,7 @@ const options = {
 | `docx.progressive` | 是否启用异步分批渲染，默认按批次让出主线程，提升大文档首屏和滚动响应 |
 | `docx.visualPagination` | 是否启用页式预览和预览层兜底分页，默认 `false`。默认 DOCX 使用连续流式阅读，避免复杂目录、表格和长段落被分页拆坏；只有业务明确需要页式效果时再设为 `true` |
 | `docx.workerTimeout` | DOCX Worker 超时时间，默认 120000ms，超时后由 `@file-viewer/renderer-word` 内部 DOCX 引擎自动回退 |
-| `spreadsheet.worker` | 是否启用表格静态 Worker 尝试，默认 `false`；默认使用同一套 `styled-exceljs` 主线程解析以避开本地服务器、手机 WebView、MIME 或 CSP 导致的 Worker 卡住问题 |
+| `spreadsheet.worker` | 是否启用表格静态 Worker 尝试，默认 `false`；`@file-viewer/renderer-spreadsheet` 默认使用同一套 `styled-exceljs` 主线程解析以避开本地服务器、手机 WebView、MIME 或 CSP 导致的 Worker 卡住问题 |
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
 | `spreadsheet.resizableColumns` | 是否允许用户在 Excel / CSV / ODS 等表格预览中拖拽表头边界调整列宽，默认 `false` 以保持历史兼容；Demo 默认开启，便于查看被截断的长文本 |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |

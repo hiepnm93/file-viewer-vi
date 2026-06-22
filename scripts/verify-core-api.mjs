@@ -418,7 +418,6 @@ const forbiddenCoreSourceExtensions = new Set(['.jsx', '.tsx', '.vue', '.svelte'
 const allowedCoreDevDependencies = new Set([
   'typescript',
   '@types/three',
-  '@types/tinycolor2',
   '@types/pako'
 ])
 const allowedCoreRendererDependencies = new Set([])

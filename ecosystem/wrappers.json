@@ -60,6 +60,17 @@
       "publicSource": true
     },
     {
+      "id": "spreadsheet",
+      "packageName": "@file-viewer/renderer-spreadsheet",
+      "description": "Standalone spreadsheet renderer plugin for File Viewer with styled-exceljs parsing, e-virt-table virtual rendering, optional worker assets, sheet tabs, zoom, and resizable columns.",
+      "packageDir": "packages/renderers/spreadsheet",
+      "repository": "file-viewer-renderer-spreadsheet",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-spreadsheet",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-spreadsheet",
+      "entryFormats": ["esm", "types", "worker"],
+      "publicSource": true
+    },
+    {
       "id": "drawing",
       "packageName": "@file-viewer/renderer-drawing",
       "description": "Standalone Draw.io and Excalidraw renderer plugin for File Viewer with official Excalidraw SVG export, diagrams.net offline viewer support, zoom, print, and HTML export.",

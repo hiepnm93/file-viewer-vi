@@ -965,9 +965,10 @@ export default async function renderXMind(
   };
 
   const onMouseMove = (event: MouseEvent) => {
-    if (!panState || panState.source !== 'mouse') {
+    if (!panState || (panState.source !== 'mouse' && !(panState.source === 'pointer' && panState.pointerType === 'mouse'))) {
       return;
     }
+    // Some embedded WebViews start with PointerEvent but keep dispatching mouse events.
     if (event.buttons === 0) {
       scheduleMouseButtonReleaseFallback();
     } else {
@@ -979,7 +980,7 @@ export default async function renderXMind(
   };
 
   const onMouseUp = (event: MouseEvent) => {
-    if (!panState || panState.source !== 'mouse') {
+    if (!panState || (panState.source !== 'mouse' && !(panState.source === 'pointer' && panState.pointerType === 'mouse'))) {
       return;
     }
     event.preventDefault();
@@ -1078,7 +1079,8 @@ export default async function renderXMind(
     if (touchGesture) {
       endTouchGesture();
     }
-    if (!panState || panState.source !== 'touch') {
+    // Some mobile WebViews start with pointerdown but only continue through touchmove.
+    if (!panState || (panState.source !== 'touch' && !(panState.source === 'pointer' && panState.pointerType === 'touch'))) {
       return;
     }
     const touch = primaryTouch(event.touches);
@@ -1098,7 +1100,7 @@ export default async function renderXMind(
       event.stopPropagation();
       return;
     }
-    if (!panState || panState.source !== 'touch') {
+    if (!panState || (panState.source !== 'touch' && !(panState.source === 'pointer' && panState.pointerType === 'touch'))) {
       return;
     }
     event.preventDefault();

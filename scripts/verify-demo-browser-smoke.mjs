@@ -123,7 +123,20 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
     const rect = stage.getBoundingClientRect()
     const startX = rect.left + rect.width * 0.52
     const startY = rect.top + rect.height * 0.48
-    const dispatchPointer = (type, clientX, clientY, buttons, pointerId) => {
+    const waitFrame = () => new Promise(resolve => requestAnimationFrame(resolve))
+    const resetView = async () => {
+      stage.dispatchEvent(new MouseEvent('dblclick', {
+        bubbles: true,
+        button: 0,
+        buttons: 0,
+        cancelable: true,
+        clientX: startX,
+        clientY: startY
+      }))
+      await waitFrame()
+      await waitFrame()
+    }
+    const dispatchPointer = (type, clientX, clientY, buttons, pointerId, pointerType = 'mouse') => {
       stage.dispatchEvent(new PointerEvent(type, {
         bubbles: true,
         button: 0,
@@ -132,20 +145,21 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         clientX,
         clientY,
         pointerId,
-        pointerType: 'mouse'
+        pointerType
       }))
     }
     const pointerDrag = async (pointerId, moveButtons = 1) => {
+      await resetView()
       const before = readTransform()
 
       stage.focus({ preventScroll: true })
       dispatchPointer('pointerdown', startX, startY, 1, pointerId)
       dispatchPointer('pointermove', startX + 180, startY + 96, moveButtons, pointerId)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchPointer('pointermove', startX + 220, startY + 118, moveButtons, pointerId)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchPointer('pointerup', startX + 220, startY + 118, 0, pointerId)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
 
       return { before, after: readTransform() }
     }
@@ -161,15 +175,30 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       }))
     }
     const mouseDrag = async () => {
+      await resetView()
       const before = readTransform()
       stage.focus({ preventScroll: true })
       dispatchMouse('mousedown', startX + 8, startY + 8, 1)
       dispatchMouse('mousemove', startX + 118, startY + 74, 1)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchMouse('mousemove', startX + 148, startY + 96, 1)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchMouse('mouseup', startX + 148, startY + 96, 0)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
+      return { before, after: readTransform() }
+    }
+
+    const pointerMouseHybridDrag = async () => {
+      await resetView()
+      const before = readTransform()
+      stage.focus({ preventScroll: true })
+      dispatchPointer('pointerdown', startX + 10, startY + 10, 1, 2321, 'mouse')
+      dispatchMouse('mousemove', startX + 116, startY + 78, 1)
+      await waitFrame()
+      dispatchMouse('mousemove', startX + 148, startY + 102, 1)
+      await waitFrame()
+      dispatchMouse('mouseup', startX + 148, startY + 102, 0)
+      await waitFrame()
       return { before, after: readTransform() }
     }
 
@@ -197,35 +226,81 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
           changedTouches: [touch]
         }))
       }
+      await resetView()
       const before = readTransform()
       stage.focus({ preventScroll: true })
       dispatchTouch('touchstart', startX + 14, startY + 14, true)
       dispatchTouch('touchmove', startX + 96, startY + 62, true)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchTouch('touchmove', startX + 128, startY + 88, true)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
       dispatchTouch('touchend', startX + 128, startY + 88, false)
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await waitFrame()
+      return { skipped: false, before, after: readTransform() }
+    }
+
+    const pointerTouchHybridDrag = async () => {
+      if (typeof Touch !== 'function' || typeof TouchEvent !== 'function') {
+        return { skipped: true, before: readTransform(), after: readTransform() }
+      }
+      const makeTouch = (clientX, clientY) => new Touch({
+        identifier: 918,
+        target: stage,
+        clientX,
+        clientY,
+        screenX: clientX,
+        screenY: clientY,
+        pageX: clientX,
+        pageY: clientY
+      })
+      const dispatchTouch = (type, clientX, clientY, active) => {
+        const touch = makeTouch(clientX, clientY)
+        stage.dispatchEvent(new TouchEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          touches: active ? [touch] : [],
+          targetTouches: active ? [touch] : [],
+          changedTouches: [touch]
+        }))
+      }
+      await resetView()
+      const before = readTransform()
+      stage.focus({ preventScroll: true })
+      dispatchPointer('pointerdown', startX + 16, startY + 16, 1, 2322, 'touch')
+      dispatchTouch('touchmove', startX + 108, startY + 76, true)
+      await waitFrame()
+      dispatchTouch('touchmove', startX + 142, startY + 104, true)
+      await waitFrame()
+      dispatchTouch('touchend', startX + 142, startY + 104, false)
+      await waitFrame()
       return { skipped: false, before, after: readTransform() }
     }
 
     const normalDrag = await pointerDrag(2319, 1)
     const zeroButtonsDrag = await pointerDrag(2320, 0)
     const mouseFallbackDrag = await mouseDrag()
+    const pointerMouseHybridFallbackDrag = await pointerMouseHybridDrag()
     const touchFallbackDrag = await touchDrag()
+    const pointerTouchHybridFallbackDrag = await pointerTouchHybridDrag()
     const touchOk = touchFallbackDrag.skipped || touchFallbackDrag.before !== touchFallbackDrag.after
+    const pointerTouchOk = pointerTouchHybridFallbackDrag.skipped ||
+      pointerTouchHybridFallbackDrag.before !== pointerTouchHybridFallbackDrag.after
     return {
       ok: nodeCount > 0 &&
         normalDrag.before !== normalDrag.after &&
         zeroButtonsDrag.before !== zeroButtonsDrag.after &&
         mouseFallbackDrag.before !== mouseFallbackDrag.after &&
-        touchOk,
+        pointerMouseHybridFallbackDrag.before !== pointerMouseHybridFallbackDrag.after &&
+        touchOk &&
+        pointerTouchOk,
       before: normalDrag.before,
-      after: touchFallbackDrag.after,
+      after: pointerTouchHybridFallbackDrag.after,
       normalDrag,
       zeroButtonsDrag,
       mouseFallbackDrag,
+      pointerMouseHybridFallbackDrag,
       touchFallbackDrag,
+      pointerTouchHybridFallbackDrag,
       nodeCount,
       reason: normalDrag.before === normalDrag.after
         ? 'XMind transform did not change after normal pointer drag'
@@ -233,9 +308,13 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
           ? 'XMind transform did not change after WebView-style zero-buttons pointer drag'
           : mouseFallbackDrag.before === mouseFallbackDrag.after
             ? 'XMind transform did not change after mouse fallback drag'
-            : !touchOk
-              ? 'XMind transform did not change after touch fallback drag'
-              : ''
+            : pointerMouseHybridFallbackDrag.before === pointerMouseHybridFallbackDrag.after
+              ? 'XMind transform did not change after pointerdown + mousemove hybrid drag'
+              : !touchOk
+                ? 'XMind transform did not change after touch fallback drag'
+                : !pointerTouchOk
+                  ? 'XMind transform did not change after pointerdown + touchmove hybrid drag'
+                  : ''
     }
   })
 

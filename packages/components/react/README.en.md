@@ -116,7 +116,7 @@ The table below lists the real props, event channel, and customization entry for
 | `ai` | Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows. |
 | `archive` | Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits. |
 | `pdf` | PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials. |
-| `docx` / `spreadsheet` | DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing. |
+| `docx` / `spreadsheet` | DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet is provided by @file-viewer/renderer-spreadsheet with fidelity-first main-thread parsing, opt-in Worker loading, and opt-in header drag column resizing. |
 | `typst` / `data` / `cad` | Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options. |
 | `hooks` / `beforeOperation` | Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls. |
 

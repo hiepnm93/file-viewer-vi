@@ -48,7 +48,7 @@ console.log(`[file-viewer] Copied @file-viewer/docx worker assets to ${docxVendo
 const workerBuilds = [
   {
     label: 'spreadsheet',
-    entry: resolve(root, 'packages/core/src/renderers/spreadsheet/worker/sheetjs/sheet.worker.ts'),
+    entry: resolve(root, 'packages/renderers/spreadsheet/src/spreadsheet/worker/sheetjs/sheet.worker.ts'),
     outDir: resolve(outputDir, 'vendor/xlsx'),
     fileName: 'sheet.worker.js'
   }

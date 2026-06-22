@@ -1,6 +1,6 @@
 # @file-viewer/renderer-mindmap
 
-Flyfish File Viewer 的独立 XMind / Mind Map renderer 包。它负责解析现代 `content.json` 和经典 `content.xml` XMind 文件，并提供支持 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、键盘平移、自适应容器尺寸、统一 toolbar 状态同步和定位的脑图画布。
+Flyfish File Viewer 的独立 XMind / Mind Map renderer 包。它负责解析现代 `content.json` 和经典 `content.xml` XMind 文件，并提供支持 Pointer / 鼠标 / 触摸拖拽、混合事件兜底、移动端双指缩放、键盘平移、自适应容器尺寸、统一 toolbar 状态同步和定位的脑图画布。
 
 ## 用法
 
@@ -33,7 +33,7 @@ const options = {
 - 支持多 sheet、节点层级、标签、备注、链接、图片资源提示、概要/标注/浮动节点状态。
 - 支持工具栏缩放、适配画布、Pointer / 鼠标 / 触摸三层拖拽平移、移动端双指缩放、按帧合并平移更新、`Ctrl` / `Command` + 滚轮指针缩放、键盘方向键平移。
 - 首次打开和容器尺寸变化时会自动适配视图；用户手动拖拽、滚轮或缩放后会保留当前画布视角，只做安全边界校正。
-- 鼠标和触摸拖拽都带 document 级兜底监听，Pointer 拖拽不依赖不稳定的 `buttons` 状态，适配移动 WebView、嵌入式浏览器和部分 Pointer Capture 释放不稳定的场景。
+- 鼠标和触摸拖拽都带 document 级兜底监听，Pointer 拖拽不依赖不稳定的 `buttons` 状态；即使嵌入式 WebView 出现 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件，也会继续平移画布。
 
 ## 迁移说明
 

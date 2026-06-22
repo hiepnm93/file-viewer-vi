@@ -51,7 +51,7 @@
 | `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/svelte` 等 | 生产可用标准组件                                                                                           | 只依赖 core 和自身生态依赖；通过 props/options 接收 renderers/presets                     |
 | `@file-viewer/renderer-*`                                           | 单条或一组强相关渲染链路                                                                                   | 自己声明真实重依赖、worker、wasm、vendor assets 和 smoke 样本                             |
 | 轻量 renderer 组合                                                  | 文本、Markdown、图片、音视频基础预览                                                                       | 使用 `@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media` 等真实包按需组合 |
-| Office / 文档 renderer 包                                           | Word、PPT、PDF、OFD；Excel 仍由 core 兼容链路承接，后续拆独立 renderer                                    | 明确引入对应文档依赖，不把 Office 相关重库放入业务无关首屏                                |
+| Office / 文档 renderer 包                                           | Word、Spreadsheet、PPT、PDF、OFD 均由独立 renderer 承接                                                   | 明确引入对应文档依赖，不把 Office 相关重库放入业务无关首屏                                |
 | 独立工程 renderer 包                                                 | CAD、3D、XMind、Draw.io、Excalidraw、Geo、EDA 结构预览                                                     | 只安装业务需要的工程格式 renderer；需要一次性装配时使用 `@file-viewer/preset-all`          |
 | `@file-viewer/preset-all`                                           | 完整能力聚合包                                                                                             | 需要全格式时一行安装，demo 和全量发行版使用                                               |
 | `@file-viewer/vite-plugin`                                          | 自动生成 renderer virtual module、复制 assets、设置 manual chunks                                          | 让业务项目按配置自动装配，不需要手写大量 import                                           |
@@ -61,7 +61,7 @@
 | 场景                            | 推荐方式                                                  | 安装体验                        | 打包体验                                 |
 | ------------------------------- | --------------------------------------------------------- | ------------------------------- | ---------------------------------------- |
 | 只预览常见轻量附件              | 安装组件包 + `@file-viewer/renderer-text` / `renderer-image` / `renderer-media` | 最快，依赖最少                  | 主包只包含轻量 renderer                  |
-| 只需要 PDF/Word/Excel           | 安装组件包 + `@file-viewer/renderer-pdf` / `renderer-word`；Excel 暂走 core 兼容链路 | Office 依赖按 renderer 分散安装 | 只会产生相关异步 chunk                   |
+| 只需要 PDF/Word/Excel           | 安装组件包 + `@file-viewer/renderer-pdf` / `renderer-word` / `renderer-spreadsheet` | Office 依赖按 renderer 分散安装 | 只会产生相关异步 chunk                   |
 | CAD/3D/Typst/Archive 等专项能力 | 安装对应 `@file-viewer/renderer-*`                        | 哪条链路用到才安装哪条          | worker/wasm 跟随 renderer asset manifest |
 | 企业内网全格式平台              | 安装组件包 + `@file-viewer/preset-all` + asset copy CLI   | 一次性完整安装                  | chunk 按 renderer 拆分，避免首屏全部执行 |
 | 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 配置 `formats`                 | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
@@ -91,11 +91,12 @@ import { FileViewer } from '@file-viewer/vue3'
 import { pdfRenderer } from '@file-viewer/renderer-pdf'
 import { ofdRenderer } from '@file-viewer/renderer-ofd'
 import { wordRenderer } from '@file-viewer/renderer-word'
+import { spreadsheetRenderer } from '@file-viewer/renderer-spreadsheet'
 import { cadRenderer } from '@file-viewer/renderer-cad'
 
 const options = {
   builtinRenderers: 'none',
-  renderers: [pdfRenderer, ofdRenderer, wordRenderer, cadRenderer]
+  renderers: [pdfRenderer, ofdRenderer, wordRenderer, spreadsheetRenderer, cadRenderer]
 }
 ```
 
@@ -297,17 +298,19 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。
 - [x] 建立 `@file-viewer/renderer-eda` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 OLB / DRA / GDSII / OASIS renderer。
+- [x] 建立 `@file-viewer/renderer-spreadsheet` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 XLSX / XLSM / XLSB / XLS / CSV / ODS / FODS / Numbers renderer。
 - [x] `@file-viewer/core` 已移除 data-asset 兼容入口和 `ag-psd` / `sql.js` / `hyparquet` / `avsc` 直接依赖，数据资产完整能力统一通过 `@file-viewer/renderer-data` 或 preset 装配；SQLite WASM 资产路径仍由 core manifest 统一发现。
 - [x] `@file-viewer/core` 已移除 EDA 兼容入口和 `cfb` 直接依赖，OLB / DRA / GDSII / OASIS 完整结构预览统一通过 `@file-viewer/renderer-eda` 或 preset 装配。
+- [x] `@file-viewer/core` 已移除 spreadsheet 兼容入口和 `styled-exceljs` / `e-virt-table` / `tinycolor2` 直接依赖，表格完整能力统一通过 `@file-viewer/renderer-spreadsheet` 或 preset 装配；Spreadsheet Worker 资产路径仍由 core manifest 统一发现。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
-- [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
-- [ ] Spreadsheet 仍是 Phase 2 最后一条留在 core 的重型渲染链路，后续继续拆到 `@file-viewer/renderer-spreadsheet`。
+- [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`styled-exceljs`、`e-virt-table` 或 `tinycolor2`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
+- [x] Phase 2 重型链路已从 core 默认安装面全部摘除，Spreadsheet 作为最后一条 Office 重链路已拆到 `@file-viewer/renderer-spreadsheet`。
 
 ### Phase 3：体验与自动化
 
-- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 Word、PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；尚未拆出的格式会给出明确缺失提示。
+- [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 Word、Spreadsheet、PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；未知格式会给出明确缺失提示。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
@@ -337,13 +340,13 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 4 个运行时依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 1 个运行时依赖：
 
-- Phase 2 还有 3 个依赖留在 core，全部属于 Spreadsheet 兼容链路；Presentation、Word、PDF、OFD、Typst、Archive 和 CAD 已完成 core 直接依赖摘除，下一步优先拆 Spreadsheet，继续减少默认安装面。
+- Phase 2 已无依赖留在 core；Presentation、Word、Spreadsheet、PDF、OFD、Typst、Archive 和 CAD 均通过独立 renderer 或 preset 装配。
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 
-这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
+这说明 renderer 包和 `preset-all` 已经具备完整重链路拆包基础。短期先保留 `preset-all` 兼容完整能力，长期验收标准是继续补齐 renderer tarball / smoke / release 自动化，并让组件包默认安装始终不拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
 
 ## 新增格式解析策略
 

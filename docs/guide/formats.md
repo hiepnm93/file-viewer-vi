@@ -33,8 +33,8 @@
 | Word | `docx`、`docm`、`dotx`、`dotm` | `@file-viewer/renderer-word` + 自研 `@file-viewer/docx` | 白色文档面显示在灰色阅读底中，支持宽度自适应；默认使用 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
 | Word | `doc`、`dot` | `@file-viewer/renderer-word` + `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
 | 兼容文档 | `rtf`、`odt` | `@file-viewer/renderer-word` + `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
-| Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式、workbook drawing 图片和可选表头拖拽调整列宽；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
-| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
+| Excel | `xlsx`、`xltx` | `@file-viewer/renderer-spreadsheet` + `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式、workbook drawing 图片和可选表头拖拽调整列宽；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
+| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `@file-viewer/renderer-spreadsheet` + `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/renderer-presentation` + `@file-viewer/pptx` / OpenDocument 兼容预览 | OOXML 演示文稿走独立 renderer 插件，内部复用 `@file-viewer/pptx` Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，vendor 随包离线分发，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
@@ -45,7 +45,7 @@
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + 离线 SVG 地图 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`，统一展示要素数量、范围和轻量地图 | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | `@file-viewer/renderer-3d` + Three.js loaders | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
-| XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、统一 toolbar 状态同步、WebView 异常 buttons 兼容、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
+| XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、统一 toolbar 状态同步、WebView 异常 buttons 和 pointer/mouse/touch 混合事件兼容、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
@@ -121,7 +121,7 @@
 ### XMind 脑图
 
 - `xmind` 使用 `@ljheee/xmind-parser` 解析 XMind 8 的 `content.xml` 与 XMind 2020+ 的 `content.json`，不依赖在线服务，也不访问公共 CDN。
-- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、适配画布、搜索、缩放、打印和 HTML 导出；首次打开和容器尺寸变化会自动适配视图，用户拖拽/缩放后保留当前画布视角；平移、目录定位和键盘移动都会同步统一 toolbar 状态，Pointer 拖拽也不依赖部分 WebView 容易错报的 `buttons` 状态。
+- 预览器会展示多 sheet 标签、主题节点、子节点、标签、备注、超链接、优先级、进度、标记、概要/标注等结构，并提供目录侧栏、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、适配画布、搜索、缩放、打印和 HTML 导出；首次打开和容器尺寸变化会自动适配视图，用户拖拽/缩放后保留当前画布视角；平移、目录定位和键盘移动都会同步统一 toolbar 状态，Pointer 拖拽不依赖部分 WebView 容易错报的 `buttons` 状态，也兼容 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的嵌入式环境。
 - 大型脑图会限制单次渲染节点数量，避免浏览器一次性挂载过多 DOM。需要更深层编辑、重新排版或协同批注时，仍建议回到专业脑图工具。
 
 ### CAD 图纸

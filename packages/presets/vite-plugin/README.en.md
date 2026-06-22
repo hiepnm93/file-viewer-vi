@@ -41,7 +41,7 @@ const options = {
 
 ## Current Boundary
 
-The plugin currently generates imports for renderer packages that have already been split out: Word, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Excel / Spreadsheet formats still use the core compatibility path and produce clear guidance until the dedicated spreadsheet renderer is extracted. You can also use `@file-viewer/preset-all` for the full official demo matrix.
+The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. You can also use `@file-viewer/preset-all` for the full official demo matrix.
 
 ## Documentation
 

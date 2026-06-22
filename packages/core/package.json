@@ -76,14 +76,10 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "e-virt-table": "^1.3.26",
-    "pako": "^2.1.0",
-    "styled-exceljs": "0.21.1",
-    "tinycolor2": "^1.6.0"
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@types/pako": "^2.0.4",
-    "@types/tinycolor2": "^1.4.6",
     "typescript": "^6.0.3"
   },
   "license": "Apache-2.0"

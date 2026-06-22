@@ -1,18 +1,14 @@
-import { resolveFileViewerSpreadsheetWorkerUrl } from '../platform/assets';
-import {
-  registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider,
-} from '../features/document/dom';
-import { createFileViewerZoomChangeEmitter as createZoomChangeEmitter } from '../features/document/zoom';
 import {
   createFileViewerWorkerController,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  resolveFileViewerSpreadsheetWorkerUrl,
+  unregisterFileViewerZoomProvider,
+  type FileRenderContext,
+  type FileViewerRenderedInstance as AppWrapper,
   type FileViewerWorkerFactory,
-} from '../platform/worker';
-import type {
-  FileRenderContext,
-  FileViewerRenderedInstance as AppWrapper,
-  FileViewerZoomState,
-} from '../contracts/types';
+  type FileViewerZoomState,
+} from '@file-viewer/core';
 import type { SheetDefinition, SheetImage, SheetModel } from './spreadsheet/worker/type';
 import {
   buildRows,

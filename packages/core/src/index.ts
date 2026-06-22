@@ -484,8 +484,13 @@ export const renderFileViewerSpreadsheet = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderSpreadsheet } = await import('./renderers/spreadsheet');
-  return renderSpreadsheet(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Spreadsheet rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-spreadsheet, or use @file-viewer/preset-all.'
+  );
 };
 export const parseEdaFile = async (
   buffer: ArrayBuffer,

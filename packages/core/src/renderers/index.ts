@@ -43,13 +43,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
       return renderUmd(buffer, target);
     },
   },
-  {
-    rendererId: 'spreadsheet-openxml',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderSpreadsheet } = await import('./spreadsheet');
-      return renderSpreadsheet(buffer, target, type, context);
-    },
-  },
 ];
 
 export const CORE_LITE_RENDERER_IDS = [

@@ -9,12 +9,12 @@ const { entries } = await loadEcosystemReleaseContext(sourceRoot)
 
 const packageBudgets = {
   '@file-viewer/core': {
-    maxPackedBytes: 330_000,
-    maxUnpackedBytes: 1_600_000,
-    maxFiles: 180,
-    maxDirectRuntimeDependencies: 37,
-    maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 2
+    maxPackedBytes: 130_000,
+    maxUnpackedBytes: 700_000,
+    maxFiles: 100,
+    maxDirectRuntimeDependencies: 1,
+    maxExternalDependencyClosure: 1,
+    maxLocalPackageClosure: 1
   },
   '@file-viewer/vue3': {
     maxPackedBytes: 1_900_000,
@@ -36,9 +36,9 @@ const packageBudgets = {
     maxPackedBytes: 10_000,
     maxUnpackedBytes: 32_000,
     maxFiles: 9,
-    maxDirectRuntimeDependencies: 19,
+    maxDirectRuntimeDependencies: 20,
     maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 21
+    maxLocalPackageClosure: 22
   },
   '@file-viewer/vite-plugin': {
     maxPackedBytes: 30_000,
@@ -69,6 +69,14 @@ const packageBudgets = {
     maxUnpackedBytes: 160_000,
     maxFiles: 18,
     maxDirectRuntimeDependencies: 5,
+    maxExternalDependencyClosure: 39,
+    maxLocalPackageClosure: 3
+  },
+  '@file-viewer/renderer-spreadsheet': {
+    maxPackedBytes: 45_000,
+    maxUnpackedBytes: 180_000,
+    maxFiles: 30,
+    maxDirectRuntimeDependencies: 4,
     maxExternalDependencyClosure: 39,
     maxLocalPackageClosure: 3
   },

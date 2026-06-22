@@ -41,7 +41,7 @@ const options = {
 
 ## 当前边界
 
-当前插件会为已经拆出的 renderer 包生成导入：Word、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。尚未拆出的 Excel / Spreadsheet 格式会继续走 core 兼容链路并给出明确提示；全量体验也可以直接使用 `@file-viewer/preset-all`。
+当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。全量体验也可以直接使用 `@file-viewer/preset-all`。
 
 ## 文档
 

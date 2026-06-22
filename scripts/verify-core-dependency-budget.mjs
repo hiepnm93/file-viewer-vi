@@ -14,10 +14,10 @@ const args = process.argv.slice(2)
 const strict = args.includes('--strict')
 
 const baseline = {
-  maxDirectDependencies: 4,
-  maxRendererDependencies: 3,
+  maxDirectDependencies: 1,
+  maxRendererDependencies: 0,
   maxPhaseDependencies: {
-    2: 3,
+    2: 0,
     3: 0,
     4: 0
   }
@@ -53,7 +53,10 @@ const phaseDependencyCount = Object.fromEntries(
   Object.entries(phaseDependencySets).map(([phase, names]) => [phase, names.size])
 )
 
-const maxDirectDependencies = strict ? 0 : numberArg('--max-direct', baseline.maxDirectDependencies)
+const retainedDependencyCount = dependencies.filter(isRetainedDependency).length
+const maxDirectDependencies = strict
+  ? retainedDependencyCount
+  : numberArg('--max-direct', baseline.maxDirectDependencies)
 const maxRendererDependencies = strict ? 0 : numberArg('--max-renderer', baseline.maxRendererDependencies)
 const maxPhaseDependencies = Object.fromEntries(
   Object.entries(baseline.maxPhaseDependencies).map(([phase, value]) => [
