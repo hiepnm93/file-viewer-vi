@@ -1,8 +1,3 @@
-declare module 'shpjs' {
-  const shp: (input: ArrayBuffer) => Promise<unknown>;
-  export default shp;
-}
-
 declare module '@kenjiuno/msgreader' {
   const MsgReader: any;
   export default MsgReader;

@@ -226,7 +226,7 @@ fileViewerRenderers({
 | ------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Phase 1 | core 插件协议、wrapper 传参、preset-all 兼容层、资产 manifest v2、迁移校验脚本 | `@file-viewer/core`、所有组件包                                                                                                                                                                                                                                                     |
 | Phase 2 | PDF、Word/DOCX/DOC/ODT/RTF、Excel、PPT、OFD、Typst、CAD、Archive               | `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word`、`@file-viewer/renderer-spreadsheet`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-archive`                      |
-| Phase 3 | XMind、Draw.io/Excalidraw、3D、Geo、Email、EPUB、Code/Markdown、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
+| Phase 3 | XMind、Geo、Draw.io/Excalidraw、3D、Email、EPUB、Code/Markdown、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
 | Phase 4 | EDA、GDSII/OASIS、OrCAD/Allegro、复杂数据资产                                  | `@file-viewer/renderer-eda`、`@file-viewer/eda-layout`、`@file-viewer/eda-orcad`、`@file-viewer/renderer-data`                                                                                                                                                                      |
 | Phase 5 | Vite 插件、自动 sample smoke matrix、安装体积预算、release pipeline 分发       | `@file-viewer/vite-plugin`、release scripts                                                                                                                                                                                                                                         |
 
@@ -241,6 +241,7 @@ fileViewerRenderers({
 | Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
+| GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，并输出离线 SVG 地图，不依赖在线瓦片服务。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
 | EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records 并生成 SVG 快速版图，OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | 大型 OASIS/GDSII 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
 
@@ -279,6 +280,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
 - [x] 建立 `@file-viewer/renderer-geo` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 GeoJSON / KML / GPX / SHP renderer。
+- [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。
 - [x] 建立 `@file-viewer/renderer-eda` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 OLB / DRA / GDSII / OASIS renderer。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
@@ -318,10 +320,10 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 30 个渲染依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 28 个渲染依赖：
 
 - Phase 2 还有 14 个依赖留在 core，其中 Presentation 和 Word 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、PDF、OFD 或剩余 Office 兼容链路，继续减少默认安装面。
-- Phase 3 还有 13 个依赖留在 core，其中 XMind 已完成 core 直接依赖摘除，后续继续拆 Drawing、3D、Geo、Email、Ebook、Text、Media 和 Image 兼容入口。
+- Phase 3 还有 11 个依赖留在 core，其中 XMind 和 Geo 已完成 core 直接依赖摘除，后续继续拆 Drawing、3D、Email、Ebook、Text、Media 和 Image 兼容入口。
 - Phase 4 还有 5 个依赖留在 core，其中 Data Asset 与 EDA 已分别建立 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb` 直接依赖。
 
 这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。

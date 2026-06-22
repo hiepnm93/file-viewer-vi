@@ -417,9 +417,6 @@ importers:
       '@myriaddreamin/typst.ts':
         specifier: 0.7.0
         version: 0.7.0(@myriaddreamin/typst-ts-renderer@0.7.0)(@myriaddreamin/typst-ts-web-compiler@0.7.0)
-      '@tmcw/togeojson':
-        specifier: ^7.1.2
-        version: 7.1.2
       '@tonejs/midi':
         specifier: ^2.0.28
         version: 2.0.28
@@ -474,9 +471,6 @@ importers:
       roughjs:
         specifier: ^4.6.6
         version: 4.6.6
-      shpjs:
-        specifier: ^6.2.0
-        version: 6.2.0
       sql.js:
         specifier: ^1.14.1
         version: 1.14.1

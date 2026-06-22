@@ -72,13 +72,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'geo',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-      const { default: renderGeo } = await import('./geo');
-      return renderGeo(buffer, target, type);
-    },
-  },
-  {
     rendererId: 'ofd',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderOfd } = await import('./ofd');

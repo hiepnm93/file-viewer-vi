@@ -98,7 +98,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-geo',
     phase: 3,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['geo'],
     dependencies: ['@tmcw/togeojson', 'shpjs'],
   },

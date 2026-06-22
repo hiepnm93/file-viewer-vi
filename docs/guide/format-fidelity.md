@@ -36,7 +36,7 @@
 | Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
 | CAD | Autodesk 官方 viewer 路线也把 DWG / DXF / DWF / DWFx 作为独立查看格式处理；前端离线链路委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
 | XMind | `@file-viewer/renderer-mindmap` 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已补 Pointer / 鼠标 / 触摸拖拽平移、滚轮锚点缩放和键盘平移 |
-| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON | 当前可作为离线地理附件快速预览；底图、投影转换和空间分析交给业务 GIS |
+| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` | 当前可作为离线地理附件快速预览；底图、投影转换和空间分析交给业务 GIS |
 | GDSII | `@file-viewer/renderer-eda` 内置 GDSII record parser，读取 library、structure、boundary、path、text、sref/aref 和坐标边界并生成 SVG | 当前可作为 GDSII 版图快速预览；更大文件和层级实例展开适合拆出 WebGL/WASM renderer |
 
 ## 当前只能作为结构预览的格式
@@ -58,7 +58,7 @@
 | STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 保留 `@file-viewer/renderer-3d` 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
 | Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
-| GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo`，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
+| GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo` 并从 core 直接依赖中移除转换库，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
 | Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |
 
 ## 外部调研依据

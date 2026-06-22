@@ -34,4 +34,4 @@ const options = {
 
 ## 迁移说明
 
-当前 `@file-viewer/core` 仍保留内置 geo renderer 以兼容历史全量包。后续会把 core 的地理数据入口切换到本包，并从 core 直接依赖中移除 `@tmcw/togeojson` 和 `shpjs`。
+`@file-viewer/core` 已不再内置 geo renderer，也不会默认安装 `@tmcw/togeojson` 和 `shpjs`。需要 GeoJSON / KML / GPX / SHP 预览时，请显式安装本包，或直接使用 `@file-viewer/preset-all` / `@file-viewer/preset-engineering` 聚合能力。

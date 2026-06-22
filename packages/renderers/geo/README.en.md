@@ -34,4 +34,4 @@ const options = {
 
 ## Migration Note
 
-`@file-viewer/core` still keeps the bundled geo renderer for compatibility with historical all-in-one builds. A later release will route geospatial preview through this package and remove `@tmcw/togeojson` and `shpjs` from direct core dependencies.
+`@file-viewer/core` no longer bundles the geo renderer and no longer installs `@tmcw/togeojson` or `shpjs` by default. Install this renderer explicitly, or use `@file-viewer/preset-all` / `@file-viewer/preset-engineering`, when GeoJSON / KML / GPX / SHP preview is required.

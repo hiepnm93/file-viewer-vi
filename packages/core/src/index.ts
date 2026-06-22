@@ -289,8 +289,12 @@ export const renderFileViewerGeo = async (
   target: HTMLDivElement,
   type?: string
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderGeo } = await import('./renderers/geo');
-  return renderGeo(buffer, target, type);
+  void buffer;
+  void target;
+  void type;
+  throw new Error(
+    'Geospatial rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-geo, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerImage = async (
   buffer: ArrayBuffer,
