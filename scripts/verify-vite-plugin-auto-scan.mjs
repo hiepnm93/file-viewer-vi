@@ -1,0 +1,89 @@
+import { existsSync } from 'node:fs'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const pluginDist = resolve(root, 'packages/presets/vite-plugin/dist/index.js')
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message)
+  }
+}
+
+assert(
+  existsSync(pluginDist),
+  'packages/presets/vite-plugin/dist/index.js is missing; run pnpm --filter @file-viewer/vite-plugin build first.'
+)
+
+const plugin = await import(`${pathToFileURL(pluginDist).href}?t=${Date.now()}`)
+const {
+  collectFileViewerRendererScanTokens,
+  extractFileViewerRendererHintTokens,
+  resolveFileViewerRendererSelection
+} = plugin
+
+const inlineTokens = extractFileViewerRendererHintTokens(`
+  export const fileViewerFormats = ['pdf', 'docx', 'dwg']
+  const upload = '<input accept=".xlsx,image/*,application/vnd.ms-powerpoint">'
+  // file-viewer-formats: typst zip xmind
+  <div data-file-viewer-renderers="geo,eda"></div>
+`)
+
+for (const token of ['pdf', 'docx', 'dwg', 'xlsx', 'image', 'ppt', 'typst', 'zip', 'xmind', 'geo', 'eda']) {
+  assert(inlineTokens.includes(token), `inline hint extraction missed ${token}`)
+}
+
+const tempRoot = await mkdtemp(join(tmpdir(), 'file-viewer-vite-scan-'))
+try {
+  await mkdir(join(tempRoot, 'src'), { recursive: true })
+  await writeFile(
+    join(tempRoot, 'src/App.vue'),
+    [
+      '<template>',
+      '  <input data-file-viewer-formats="pdf,docx,dwf" accept=".xlsx,.xmind" />',
+      '</template>',
+      '<script setup lang="ts">',
+      "const fileViewerRenderers = ['cad', 'typst']",
+      '</script>',
+      ''
+    ].join('\n')
+  )
+  await writeFile(
+    join(tempRoot, 'src/upload.ts'),
+    [
+      "export const fileViewerFormats = ['eml', 'epub', 'geojson']",
+      '// file-viewer-formats: gds oas parquet',
+      ''
+    ].join('\n')
+  )
+
+  const scanTokens = collectFileViewerRendererScanTokens(tempRoot, true)
+  for (const token of ['pdf', 'docx', 'dwf', 'xlsx', 'xmind', 'cad', 'typst', 'eml', 'epub', 'geojson', 'gds', 'oas', 'parquet']) {
+    assert(scanTokens.includes(token), `source scan missed ${token}`)
+  }
+
+  const selection = resolveFileViewerRendererSelection({ scan: true }, tempRoot)
+  const packages = new Set(selection.renderers.map(renderer => renderer.packageName))
+  for (const packageName of [
+    '@file-viewer/renderer-pdf',
+    '@file-viewer/renderer-word',
+    '@file-viewer/renderer-spreadsheet',
+    '@file-viewer/renderer-cad',
+    '@file-viewer/renderer-typst',
+    '@file-viewer/renderer-mindmap',
+    '@file-viewer/renderer-email',
+    '@file-viewer/renderer-ebook',
+    '@file-viewer/renderer-geo',
+    '@file-viewer/renderer-eda',
+    '@file-viewer/renderer-data'
+  ]) {
+    assert(packages.has(packageName), `auto scan did not select ${packageName}`)
+  }
+} finally {
+  await rm(tempRoot, { recursive: true, force: true })
+}
+
+console.log('[vite-plugin-auto-scan] Verified source hint scanning and renderer selection.')

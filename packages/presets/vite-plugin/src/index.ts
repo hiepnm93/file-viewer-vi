@@ -1,12 +1,32 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { copyFile, cp, mkdir, rm, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { dirname, extname, isAbsolute, join, resolve } from 'node:path'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 
 export type FileViewerVitePreset = 'all' | 'lite' | 'engineering'
 export type FileViewerMissingRendererMode = 'error' | 'warn' | 'ignore'
 export type FileViewerChunkStrategy = 'renderer' | 'none'
+
+export interface FileViewerRendererScanOptions {
+  /**
+   * Disable a shared scan object without branching user config.
+   */
+  enabled?: boolean
+  /**
+   * Source roots, relative to Vite root, that should be inspected for format hints.
+   * Defaults to common application source folders.
+   */
+  roots?: readonly string[]
+  /**
+   * Text-like source extensions to inspect. Values may include or omit the dot.
+   */
+  extensions?: readonly string[]
+  /**
+   * Large generated files are ignored by default to keep config/startup fast.
+   */
+  maxFileSize?: number
+}
 
 export interface FileViewerCopyAssetsOptions {
   /**
@@ -53,6 +73,13 @@ export interface FileViewerRenderersPluginOptions {
    * Copies known worker/WASM/vendor assets for selected renderer lines.
    */
   copyAssets?: boolean | FileViewerCopyAssetsOptions
+  /**
+   * Opt-in source scan. The plugin reads lightweight hints such as
+   * `fileViewerFormats = ['pdf', 'docx']`, `data-file-viewer-formats="pdf,docx"`,
+   * and upload `accept=".pdf,.docx"` declarations, then merges them with
+   * `formats` / `renderers` before generating the virtual module.
+   */
+  scan?: boolean | FileViewerRendererScanOptions
 }
 
 interface RendererModuleDescriptor {
@@ -363,12 +390,192 @@ rendererModules.forEach((descriptor) => {
   descriptor.formats.forEach((format) => descriptorsByFormat.set(format, descriptor))
 })
 
+const defaultScanRoots = ['src', 'app', 'pages', 'components']
+const defaultScanExtensions = [
+  'js',
+  'jsx',
+  'ts',
+  'tsx',
+  'vue',
+  'svelte',
+  'html',
+  'md',
+  'mdx'
+] as const
+const ignoredScanDirectories = new Set([
+  '.git',
+  '.idea',
+  '.next',
+  '.nuxt',
+  '.output',
+  '.release',
+  '.svelte-kit',
+  '.vite',
+  'coverage',
+  'dist',
+  'node_modules'
+])
+const defaultScanMaxFileSize = 1024 * 1024
+const mimeFormatHints: Record<string, string[]> = {
+  'application/pdf': ['pdf'],
+  'application/ofd': ['ofd'],
+  'application/zip': ['zip'],
+  'application/x-zip-compressed': ['zip'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+  'application/msword': ['doc'],
+  'application/vnd.ms-excel': ['xls'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
+  'application/vnd.ms-powerpoint': ['ppt'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
+  'text/markdown': ['md'],
+  'text/plain': ['txt'],
+  'image/*': ['image'],
+  'audio/*': ['audio'],
+  'video/*': ['video']
+}
+
 function normalizeToken(value: string) {
   return value.trim().toLowerCase().replace(/^\./, '')
 }
 
 function unique<T>(items: readonly T[]) {
   return [...new Set(items)]
+}
+
+function normalizeScanExtension(value: string) {
+  return normalizeToken(value)
+}
+
+function collectQuotedTokens(value: string) {
+  return [...value.matchAll(/['"`]([^'"`]+)['"`]/g)].flatMap((match) =>
+    collectDelimitedTokens(match[1])
+  )
+}
+
+function collectDelimitedTokens(value: string) {
+  return value
+    .split(/[\s,;|]+/g)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .flatMap((item) => mimeFormatHints[item.toLowerCase()] || [item])
+    .map(normalizeToken)
+    .filter(Boolean)
+}
+
+export function extractFileViewerRendererHintTokens(source: string) {
+  const tokens: string[] = []
+  const push = (items: readonly string[]) => {
+    items.forEach((item) => {
+      if (item) {
+        tokens.push(item)
+      }
+    })
+  }
+
+  // Explicit JavaScript/TypeScript hints:
+  //   const fileViewerFormats = ['pdf', 'docx']
+  //   fileViewerRenderers: ['pdf', 'cad']
+  for (const match of source.matchAll(/\bfileViewer(?:Formats?|Renderers?)\b\s*[:=]\s*\[([\s\S]*?)\]/g)) {
+    push(collectQuotedTokens(match[1]))
+  }
+
+  // HTML / template hints:
+  //   <div data-file-viewer-formats="pdf,docx"></div>
+  //   <input accept=".pdf,.docx,application/vnd.ms-excel">
+  for (const match of source.matchAll(/\bdata-file-viewer-(?:formats?|renderers?)\s*=\s*["']([^"']+)["']/g)) {
+    push(collectDelimitedTokens(match[1]))
+  }
+  for (const match of source.matchAll(/\baccept\s*=\s*["']([^"']+)["']/g)) {
+    push(collectDelimitedTokens(match[1]))
+  }
+
+  // Comment hints are useful in non-framework projects where the upload UI is
+  // assembled dynamically:
+  //   // file-viewer-formats: pdf,docx,dwg
+  for (const match of source.matchAll(/file-viewer-(?:formats?|renderers?)\s*:\s*([^\n\r<]+)/g)) {
+    push(collectDelimitedTokens(match[1]))
+  }
+
+  return unique(tokens)
+}
+
+function normalizeScanOptions(value: FileViewerRenderersPluginOptions['scan']) {
+  if (!value) {
+    return null
+  }
+  const raw = typeof value === 'object' ? value : {}
+  if (raw.enabled === false) {
+    return null
+  }
+  return {
+    roots: raw.roots?.length ? [...raw.roots] : defaultScanRoots,
+    extensions: new Set(
+      (raw.extensions?.length ? raw.extensions : defaultScanExtensions).map(normalizeScanExtension)
+    ),
+    maxFileSize: raw.maxFileSize ?? defaultScanMaxFileSize
+  }
+}
+
+function scanFile(filePath: string, extensions: ReadonlySet<string>, maxFileSize: number) {
+  const extension = normalizeScanExtension(extname(filePath))
+  if (!extensions.has(extension)) {
+    return []
+  }
+  const info = statSyncSafe(filePath)
+  if (!info?.isFile() || info.size > maxFileSize) {
+    return []
+  }
+  return extractFileViewerRendererHintTokens(readFileSync(filePath, 'utf8'))
+}
+
+function statSyncSafe(filePath: string) {
+  try {
+    return existsSync(filePath) ? statSync(filePath) : null
+  } catch {
+    return null
+  }
+}
+
+function walkScanRoot(
+  directory: string,
+  extensions: ReadonlySet<string>,
+  maxFileSize: number,
+  output: string[]
+) {
+  if (!existsSync(directory)) {
+    return
+  }
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (!ignoredScanDirectories.has(entry.name)) {
+        walkScanRoot(join(directory, entry.name), extensions, maxFileSize, output)
+      }
+      continue
+    }
+    if (entry.isFile()) {
+      output.push(...scanFile(join(directory, entry.name), extensions, maxFileSize))
+    }
+  }
+}
+
+export function collectFileViewerRendererScanTokens(
+  projectRoot: string,
+  scan: FileViewerRenderersPluginOptions['scan']
+) {
+  const normalized = normalizeScanOptions(scan)
+  if (!normalized) {
+    return []
+  }
+  const tokens: string[] = []
+  normalized.roots.forEach((root) => {
+    walkScanRoot(
+      isAbsolute(root) ? root : resolve(projectRoot, root),
+      normalized.extensions,
+      normalized.maxFileSize,
+      tokens
+    )
+  })
+  return unique(tokens)
 }
 
 function selectRenderers(options: FileViewerRenderersPluginOptions): RendererSelection {
@@ -786,16 +993,33 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
   const moduleId = options.moduleId || virtualModuleId
   const resolvedModuleId = `\0${moduleId}`
   const missingMode = options.missingRenderer || 'error'
-  const selection = selectRenderers(options)
-  const requestedFormats = unique(
-    [...(options.formats || []), ...(options.renderers || [])].map(normalizeToken).filter(Boolean)
-  )
+  const explicitFormats = [...(options.formats || []), ...(options.renderers || [])]
+    .map(normalizeToken)
+    .filter(Boolean)
+  let scanFormats: string[] = []
+  let requestedFormats = unique([...explicitFormats, ...scanFormats])
+  let selection = selectRenderers({
+    ...options,
+    formats: [...(options.formats || []), ...scanFormats]
+  })
   let resolvedConfig: ResolvedConfig | null = null
+  const refreshSelection = (projectRoot?: string) => {
+    if (projectRoot) {
+      scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan)
+    }
+    requestedFormats = unique([...explicitFormats, ...scanFormats])
+    selection = selectRenderers({
+      ...options,
+      formats: [...(options.formats || []), ...scanFormats]
+    })
+  }
 
   return {
     name: 'file-viewer-renderers',
     enforce: 'pre',
     config(userConfig) {
+      const projectRoot = resolve(process.cwd(), userConfig.root || '.')
+      refreshSelection(projectRoot)
       if ((options.chunkStrategy || 'renderer') === 'none' || hasManualChunks(userConfig)) {
         return undefined
       }
@@ -811,6 +1035,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     },
     configResolved(config) {
       resolvedConfig = config
+      refreshSelection(config.root)
     },
     buildStart() {
       assertMissingRendererPolicy(selection, missingMode)
@@ -838,6 +1063,29 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       )
       const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection))
       reportAssetCopy(results, targetRoot, missingMode)
+    },
+    handleHotUpdate(context) {
+      if (!options.scan || !resolvedConfig) {
+        return undefined
+      }
+      const previous = requestedFormats.join(',')
+      refreshSelection(resolvedConfig.root)
+      if (requestedFormats.join(',') === previous) {
+        return undefined
+      }
+      const modules = [
+        context.server.moduleGraph.getModuleById(resolvedModuleId),
+        context.server.moduleGraph.getModuleById(resolvedVirtualModuleId)
+      ].filter(Boolean)
+      modules.forEach((module) => {
+        if (module) {
+          context.server.moduleGraph.invalidateModule(module)
+        }
+      })
+      context.server.ws.send({
+        type: 'full-reload'
+      })
+      return []
     },
     async closeBundle() {
       if (!options.copyAssets || copyOptions(options.copyAssets).mode === 'dev') {
@@ -867,10 +1115,25 @@ export function createFileViewerManualChunks(options: FileViewerRenderersPluginO
   return createManualChunks(selectRenderers(options))
 }
 
-export function resolveFileViewerRendererSelection(options: FileViewerRenderersPluginOptions = {}) {
-  const selection = selectRenderers(options)
+export function resolveFileViewerRendererSelection(
+  options: FileViewerRenderersPluginOptions = {},
+  projectRoot = process.cwd()
+) {
+  const scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan)
+  const requestedFormats = unique(
+    [
+      ...(options.formats || []),
+      ...(options.renderers || []),
+      ...scanFormats
+    ].map(normalizeToken).filter(Boolean)
+  )
+  const selection = selectRenderers({
+    ...options,
+    formats: [...(options.formats || []), ...scanFormats]
+  })
   return {
     preset: selection.preset,
+    formats: requestedFormats,
     renderers: selection.descriptors.map((descriptor) => ({
       id: descriptor.id,
       packageName: descriptor.packageName,

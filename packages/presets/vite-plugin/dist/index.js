@@ -1,7 +1,7 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { copyFile, cp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, join, resolve } from 'node:path';
 const virtualModuleId = 'virtual:file-viewer-renderers';
 const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 const pluginRequire = createRequire(import.meta.url);
@@ -278,11 +278,161 @@ const descriptorsByFormat = new Map();
 rendererModules.forEach((descriptor) => {
     descriptor.formats.forEach((format) => descriptorsByFormat.set(format, descriptor));
 });
+const defaultScanRoots = ['src', 'app', 'pages', 'components'];
+const defaultScanExtensions = [
+    'js',
+    'jsx',
+    'ts',
+    'tsx',
+    'vue',
+    'svelte',
+    'html',
+    'md',
+    'mdx'
+];
+const ignoredScanDirectories = new Set([
+    '.git',
+    '.idea',
+    '.next',
+    '.nuxt',
+    '.output',
+    '.release',
+    '.svelte-kit',
+    '.vite',
+    'coverage',
+    'dist',
+    'node_modules'
+]);
+const defaultScanMaxFileSize = 1024 * 1024;
+const mimeFormatHints = {
+    'application/pdf': ['pdf'],
+    'application/ofd': ['ofd'],
+    'application/zip': ['zip'],
+    'application/x-zip-compressed': ['zip'],
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+    'application/msword': ['doc'],
+    'application/vnd.ms-excel': ['xls'],
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
+    'application/vnd.ms-powerpoint': ['ppt'],
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
+    'text/markdown': ['md'],
+    'text/plain': ['txt'],
+    'image/*': ['image'],
+    'audio/*': ['audio'],
+    'video/*': ['video']
+};
 function normalizeToken(value) {
     return value.trim().toLowerCase().replace(/^\./, '');
 }
 function unique(items) {
     return [...new Set(items)];
+}
+function normalizeScanExtension(value) {
+    return normalizeToken(value);
+}
+function collectQuotedTokens(value) {
+    return [...value.matchAll(/['"`]([^'"`]+)['"`]/g)].flatMap((match) => collectDelimitedTokens(match[1]));
+}
+function collectDelimitedTokens(value) {
+    return value
+        .split(/[\s,;|]+/g)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .flatMap((item) => mimeFormatHints[item.toLowerCase()] || [item])
+        .map(normalizeToken)
+        .filter(Boolean);
+}
+export function extractFileViewerRendererHintTokens(source) {
+    const tokens = [];
+    const push = (items) => {
+        items.forEach((item) => {
+            if (item) {
+                tokens.push(item);
+            }
+        });
+    };
+    // Explicit JavaScript/TypeScript hints:
+    //   const fileViewerFormats = ['pdf', 'docx']
+    //   fileViewerRenderers: ['pdf', 'cad']
+    for (const match of source.matchAll(/\bfileViewer(?:Formats?|Renderers?)\b\s*[:=]\s*\[([\s\S]*?)\]/g)) {
+        push(collectQuotedTokens(match[1]));
+    }
+    // HTML / template hints:
+    //   <div data-file-viewer-formats="pdf,docx"></div>
+    //   <input accept=".pdf,.docx,application/vnd.ms-excel">
+    for (const match of source.matchAll(/\bdata-file-viewer-(?:formats?|renderers?)\s*=\s*["']([^"']+)["']/g)) {
+        push(collectDelimitedTokens(match[1]));
+    }
+    for (const match of source.matchAll(/\baccept\s*=\s*["']([^"']+)["']/g)) {
+        push(collectDelimitedTokens(match[1]));
+    }
+    // Comment hints are useful in non-framework projects where the upload UI is
+    // assembled dynamically:
+    //   // file-viewer-formats: pdf,docx,dwg
+    for (const match of source.matchAll(/file-viewer-(?:formats?|renderers?)\s*:\s*([^\n\r<]+)/g)) {
+        push(collectDelimitedTokens(match[1]));
+    }
+    return unique(tokens);
+}
+function normalizeScanOptions(value) {
+    if (!value) {
+        return null;
+    }
+    const raw = typeof value === 'object' ? value : {};
+    if (raw.enabled === false) {
+        return null;
+    }
+    return {
+        roots: raw.roots?.length ? [...raw.roots] : defaultScanRoots,
+        extensions: new Set((raw.extensions?.length ? raw.extensions : defaultScanExtensions).map(normalizeScanExtension)),
+        maxFileSize: raw.maxFileSize ?? defaultScanMaxFileSize
+    };
+}
+function scanFile(filePath, extensions, maxFileSize) {
+    const extension = normalizeScanExtension(extname(filePath));
+    if (!extensions.has(extension)) {
+        return [];
+    }
+    const info = statSyncSafe(filePath);
+    if (!info?.isFile() || info.size > maxFileSize) {
+        return [];
+    }
+    return extractFileViewerRendererHintTokens(readFileSync(filePath, 'utf8'));
+}
+function statSyncSafe(filePath) {
+    try {
+        return existsSync(filePath) ? statSync(filePath) : null;
+    }
+    catch {
+        return null;
+    }
+}
+function walkScanRoot(directory, extensions, maxFileSize, output) {
+    if (!existsSync(directory)) {
+        return;
+    }
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+            if (!ignoredScanDirectories.has(entry.name)) {
+                walkScanRoot(join(directory, entry.name), extensions, maxFileSize, output);
+            }
+            continue;
+        }
+        if (entry.isFile()) {
+            output.push(...scanFile(join(directory, entry.name), extensions, maxFileSize));
+        }
+    }
+}
+export function collectFileViewerRendererScanTokens(projectRoot, scan) {
+    const normalized = normalizeScanOptions(scan);
+    if (!normalized) {
+        return [];
+    }
+    const tokens = [];
+    normalized.roots.forEach((root) => {
+        walkScanRoot(isAbsolute(root) ? root : resolve(projectRoot, root), normalized.extensions, normalized.maxFileSize, tokens);
+    });
+    return unique(tokens);
 }
 function selectRenderers(options) {
     const preset = options.preset ?? null;
@@ -552,13 +702,32 @@ export function fileViewerRenderers(options = {}) {
     const moduleId = options.moduleId || virtualModuleId;
     const resolvedModuleId = `\0${moduleId}`;
     const missingMode = options.missingRenderer || 'error';
-    const selection = selectRenderers(options);
-    const requestedFormats = unique([...(options.formats || []), ...(options.renderers || [])].map(normalizeToken).filter(Boolean));
+    const explicitFormats = [...(options.formats || []), ...(options.renderers || [])]
+        .map(normalizeToken)
+        .filter(Boolean);
+    let scanFormats = [];
+    let requestedFormats = unique([...explicitFormats, ...scanFormats]);
+    let selection = selectRenderers({
+        ...options,
+        formats: [...(options.formats || []), ...scanFormats]
+    });
     let resolvedConfig = null;
+    const refreshSelection = (projectRoot) => {
+        if (projectRoot) {
+            scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan);
+        }
+        requestedFormats = unique([...explicitFormats, ...scanFormats]);
+        selection = selectRenderers({
+            ...options,
+            formats: [...(options.formats || []), ...scanFormats]
+        });
+    };
     return {
         name: 'file-viewer-renderers',
         enforce: 'pre',
         config(userConfig) {
+            const projectRoot = resolve(process.cwd(), userConfig.root || '.');
+            refreshSelection(projectRoot);
             if ((options.chunkStrategy || 'renderer') === 'none' || hasManualChunks(userConfig)) {
                 return undefined;
             }
@@ -574,6 +743,7 @@ export function fileViewerRenderers(options = {}) {
         },
         configResolved(config) {
             resolvedConfig = config;
+            refreshSelection(config.root);
         },
         buildStart() {
             assertMissingRendererPolicy(selection, missingMode);
@@ -598,6 +768,29 @@ export function fileViewerRenderers(options = {}) {
             const targetRoot = resolveTargetDir(copyOptions(options.copyAssets).publicDir, resolvedConfig?.publicDir || 'public');
             const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection));
             reportAssetCopy(results, targetRoot, missingMode);
+        },
+        handleHotUpdate(context) {
+            if (!options.scan || !resolvedConfig) {
+                return undefined;
+            }
+            const previous = requestedFormats.join(',');
+            refreshSelection(resolvedConfig.root);
+            if (requestedFormats.join(',') === previous) {
+                return undefined;
+            }
+            const modules = [
+                context.server.moduleGraph.getModuleById(resolvedModuleId),
+                context.server.moduleGraph.getModuleById(resolvedVirtualModuleId)
+            ].filter(Boolean);
+            modules.forEach((module) => {
+                if (module) {
+                    context.server.moduleGraph.invalidateModule(module);
+                }
+            });
+            context.server.ws.send({
+                type: 'full-reload'
+            });
+            return [];
         },
         async closeBundle() {
             if (!options.copyAssets || copyOptions(options.copyAssets).mode === 'dev') {
@@ -625,10 +818,20 @@ export function fileViewerRenderers(options = {}) {
 export function createFileViewerManualChunks(options = {}) {
     return createManualChunks(selectRenderers(options));
 }
-export function resolveFileViewerRendererSelection(options = {}) {
-    const selection = selectRenderers(options);
+export function resolveFileViewerRendererSelection(options = {}, projectRoot = process.cwd()) {
+    const scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan);
+    const requestedFormats = unique([
+        ...(options.formats || []),
+        ...(options.renderers || []),
+        ...scanFormats
+    ].map(normalizeToken).filter(Boolean));
+    const selection = selectRenderers({
+        ...options,
+        formats: [...(options.formats || []), ...scanFormats]
+    });
     return {
         preset: selection.preset,
+        formats: requestedFormats,
         renderers: selection.descriptors.map((descriptor) => ({
             id: descriptor.id,
             packageName: descriptor.packageName,

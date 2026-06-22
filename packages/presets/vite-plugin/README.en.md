@@ -20,12 +20,25 @@ export default defineConfig({
   plugins: [
     fileViewerRenderers({
       formats: ['pdf', 'dwg', 'typst', 'zip', 'xmind'],
+      scan: true,
       copyAssets: true,
       chunkStrategy: 'renderer'
     })
   ]
 })
 ```
+
+`scan: true` inspects common source folders for lightweight hints and merges them with `formats`:
+
+```ts
+export const fileViewerFormats = ['pdf', 'docx', 'xlsx']
+```
+
+```html
+<input accept=".pdf,.docx" data-file-viewer-formats="dwg,xmind" />
+```
+
+This is useful when upload accept lists, sample matrices, or attachment allow-lists already live in source code: dev and production builds can generate the renderer assembly module without a second hand-written import list.
 
 ## Application Code
 
@@ -41,7 +54,7 @@ const options = {
 
 ## Current Boundary
 
-The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. You can also use `@file-viewer/preset-all` for the full official demo matrix.
+The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Declare them explicitly with `formats`, or let `scan: true` discover source hints automatically. You can also use `@file-viewer/preset-all` for the full official demo matrix.
 
 ## Documentation
 

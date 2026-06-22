@@ -195,7 +195,7 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 ```ts
 fileViewerRenderers({
   formats: ['pdf', 'docx', 'xlsx', 'dwg', 'typst'],
-  preset: 'custom',
+  scan: true,
   copyAssets: true,
   chunkStrategy: 'renderer',
   missingRenderer: 'error'
@@ -205,6 +205,7 @@ fileViewerRenderers({
 插件需要完成：
 
 - 根据 `formats` 查 `renderer manifest`，生成 `virtual:file-viewer-renderers`。
+- 支持 `scan: true` 从源码中的 `fileViewerFormats`、`fileViewerRenderers`、`data-file-viewer-formats` 和上传 `accept` 声明自动发现格式，减少手写 import 清单。
 - 如果用户选择 `preset: 'all' | 'office' | 'engineering' | 'lite'`，自动 import 对应 preset。
 - 检查 package 是否已安装；缺失时给出明确安装命令，而不是运行时报错。
 - 复制 worker/wasm/vendor assets，并生成部署清单，服务于 Cloudflare Pages、Vercel、Docker、内网静态部署。
@@ -219,7 +220,7 @@ fileViewerRenderers({
 | Wave 1 | 完成 Phase 2 重链路拆出   | Word、Spreadsheet、OFD、Presentation、PDF、Typst、CAD、Archive 全部从 core 迁到 renderer 包    | `@file-viewer/core` 不再声明这些依赖；`preset-all` 格式矩阵不掉格式 |
 | Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护                           | 默认组件安装不带相关重库；各 renderer 有独立 smoke；core 只保留普通图片等轻量原生能力 |
 | Wave 3 | 完成 Phase 4 专业内核     | Data Asset 与 EDA 结构预览已先拆出独立 renderer；OASIS 大版图、OrCAD/Allegro 高保真图形继续独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核                    |
-| Wave 4 | 工程自动化                | `@file-viewer/vite-plugin`、asset manifest、virtual module、chunk strategy、离线部署校验       | 用户按 `formats` 配置即可自动生成 renderer 装配                     |
+| Wave 4 | 工程自动化                | `@file-viewer/vite-plugin`、asset manifest、virtual module、chunk strategy、源码 hint scan、离线部署校验 | 用户按 `formats` 配置或在源码声明 hint 即可自动生成 renderer 装配    |
 | Wave 5 | 默认轻量切换              | 组件包默认 `builtinRenderers: 'lite'` 或 `none`，全量能力改由 preset 显式启用                  | 新项目 cold install 明显下降；旧全量 demo 仍完整                    |
 
 ## 当前渲染线拆分计划
@@ -311,6 +312,7 @@ fileViewerRenderers({
 ### Phase 3：体验与自动化
 
 - [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 Word、Spreadsheet、PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；未知格式会给出明确缺失提示。
+- [x] `@file-viewer/vite-plugin` 支持 `scan: true` 源码 hint 自动发现：`fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / `accept` 会合并进 renderer 选择，开发和构建阶段都能生成相同 virtual module。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [ ] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包。
 - [ ] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式。
@@ -377,6 +379,7 @@ pnpm verify:core-dependency-budget
 pnpm verify:renderer-contracts
 pnpm verify:renderer-assets
 pnpm verify:on-demand-boundaries
+pnpm verify:vite-plugin-auto-scan
 pnpm verify:install-budget
 pnpm verify:bundle-budget
 pnpm verify:format-support
@@ -393,6 +396,7 @@ pnpm build-only
 - `verify:renderer-contracts`：已落地。检查每个 renderer 包的 `exports`、`files`、README、LICENSE、dist 入口、build/type-check 脚本、wrapper 依赖隔离和 plugin 懒加载出口。
 - `verify:renderer-assets`：已落地。检查每个 renderer npm dry-run 中的入口、`new URL(..., import.meta.url)` 本地运行时资源、core asset manifest 字段，以及 `@file-viewer/web` 发布包内的 viewer worker/wasm/vendor assets。
 - `verify:on-demand-boundaries`：已落地。检查 core、renderer、preset、标准组件和兼容 alias 的依赖方向，防止组件包重新捆绑重 renderer，确保按需安装边界不会回退。
+- `verify:vite-plugin-auto-scan`：已落地。构建 Vite 插件后用临时源码项目验证 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 和注释 hint 能自动映射到对应 renderer 包。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
 - `verify:renderer-standalone-smoke`：计划中。任意单 renderer + 任意 wrapper 能独立预览对应样例。

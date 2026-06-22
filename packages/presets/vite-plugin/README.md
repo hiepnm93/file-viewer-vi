@@ -20,12 +20,25 @@ export default defineConfig({
   plugins: [
     fileViewerRenderers({
       formats: ['pdf', 'dwg', 'typst', 'zip', 'xmind'],
+      scan: true,
       copyAssets: true,
       chunkStrategy: 'renderer'
     })
   ]
 })
 ```
+
+`scan: true` 会扫描常见源码目录里的轻量 hint，并把它们合并到 `formats`：
+
+```ts
+export const fileViewerFormats = ['pdf', 'docx', 'xlsx']
+```
+
+```html
+<input accept=".pdf,.docx" data-file-viewer-formats="dwg,xmind" />
+```
+
+这适合业务把上传入口、示例矩阵或附件白名单维护在源码中时使用：开发和构建阶段插件会自动生成 renderer 装配模块，少写一份手工 import 清单。
 
 ## 业务代码
 
@@ -41,7 +54,7 @@ const options = {
 
 ## 当前边界
 
-当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。全量体验也可以直接使用 `@file-viewer/preset-all`。
+当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。可以通过 `formats` 显式声明，也可以通过 `scan: true` 从源码 hint 自动发现；全量体验也可以直接使用 `@file-viewer/preset-all`。
 
 ## 文档
 
