@@ -30,6 +30,14 @@ const pluginRendererPackageNames = new Set(
     .map(entry => entry.packageName)
     .filter(packageName => !pluginEnginePackageNames.has(packageName))
 )
+const rendererPackageNamesByRendererId = new Map(
+  rendererEntries.map(entry => [entry.renderer?.id, entry.packageName])
+)
+const presetRendererAllowList = {
+  lite: ['text', 'image', 'media'],
+  office: ['pdf', 'word', 'spreadsheet', 'presentation', 'ofd'],
+  engineering: ['cad', 'model', 'drawing', 'mindmap', 'geo', 'typst', 'archive', 'data', 'eda']
+}
 
 function assert(condition, message) {
   if (!condition) {
@@ -100,8 +108,8 @@ for (const compatibilityEntry of compatibilityEntries) {
 }
 
 for (const presetEntry of presetEntries) {
+  const dependencies = new Set(Object.keys(presetEntry.packageJson.dependencies || {}))
   if (presetEntry.packageName === '@file-viewer/preset-all') {
-    const dependencies = new Set(Object.keys(presetEntry.packageJson.dependencies || {}))
     assert(
       dependencies.has('@file-viewer/core'),
       '@file-viewer/preset-all must depend on @file-viewer/core'
@@ -112,6 +120,37 @@ for (const presetEntry of presetEntries) {
         `@file-viewer/preset-all must aggregate ${rendererPackageName}`
       )
     }
+    assertNoPackages(
+      presetEntry,
+      new Set([...wrapperPackageNames, ...compatibilityPackageNames]),
+      'wrapper or compatibility packages'
+    )
+  } else if (presetRendererAllowList[presetEntry.preset.id]) {
+    const allowedRendererPackages = new Set(
+      presetRendererAllowList[presetEntry.preset.id].map(rendererId => {
+        const packageName = rendererPackageNamesByRendererId.get(rendererId)
+        assert(
+          packageName,
+          `${presetEntry.packageName} allow-list renderer ${rendererId} is not in ecosystem/wrappers.json`
+        )
+        return packageName
+      })
+    )
+    assert(
+      dependencies.has('@file-viewer/core'),
+      `${presetEntry.packageName} must depend on @file-viewer/core`
+    )
+    for (const rendererPackageName of allowedRendererPackages) {
+      assert(
+        dependencies.has(rendererPackageName),
+        `${presetEntry.packageName} must aggregate ${rendererPackageName}`
+      )
+    }
+    assertOnlyAllowedWorkspaceDeps(
+      presetEntry,
+      new Set(['@file-viewer/core', ...allowedRendererPackages]),
+      `${presetEntry.preset.id} preset packages`
+    )
     assertNoPackages(
       presetEntry,
       new Set([...wrapperPackageNames, ...compatibilityPackageNames]),

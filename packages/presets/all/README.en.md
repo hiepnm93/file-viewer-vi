@@ -6,7 +6,7 @@ The full renderer preset for Flyfish File Viewer. It packages the current comple
 
 - You want the same full-format coverage as the official demo.
 - You are migrating from the historical all-in-one dependency model to on-demand renderer assembly.
-- You want to start with one preset, then later replace it with narrower combinations such as `renderer-text`, `renderer-image`, `renderer-word`, `renderer-pdf`, or `renderer-cad`.
+- You want to start with one complete preset, then later replace it with `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or narrower single-renderer combinations.
 
 ## Usage
 
@@ -29,6 +29,8 @@ const options = {
 ```
 
 This version first aggregates the extracted `@file-viewer/renderer-word`, `@file-viewer/renderer-spreadsheet`, `@file-viewer/renderer-pdf`, `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, `@file-viewer/renderer-image`, `@file-viewer/renderer-media`, `@file-viewer/renderer-mindmap`, and `@file-viewer/renderer-geo` packages. Core now keeps only lightweight native paths and shared contracts, while this preset remains the full aggregation layer.
+
+Use `@file-viewer/preset-lite` for lightweight attachments, `@file-viewer/preset-office` for office documents, and `@file-viewer/preset-engineering` for CAD / 3D / EDA-style engineering attachments. `preset-all` is best for the official demo, internal all-format attachment centers, or migration compatibility.
 
 ## Documentation
 

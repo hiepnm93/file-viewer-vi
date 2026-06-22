@@ -10,6 +10,19 @@ pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/renderer-pdf
 
 Install additional renderer packages when you need more formats, such as `@file-viewer/renderer-word`, `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, or `@file-viewer/renderer-text`.
 
+When you want one package for a common product shape, install a preset:
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+Available presets:
+
+- `@file-viewer/preset-lite`: text, Markdown, code, image, audio, and video.
+- `@file-viewer/preset-office`: PDF, Word, Excel, PowerPoint, OFD, RTF, and OpenDocument.
+- `@file-viewer/preset-engineering`: CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, and EDA.
+- `@file-viewer/preset-all`: the complete official demo format matrix.
+
 ## vite.config.ts
 
 ```ts
@@ -25,6 +38,15 @@ export default defineConfig({
       chunkStrategy: 'renderer'
     })
   ]
+})
+```
+
+Or use one preset package:
+
+```ts
+fileViewerRenderers({
+  preset: 'office',
+  copyAssets: true
 })
 ```
 
@@ -54,7 +76,7 @@ const options = {
 
 ## Current Boundary
 
-The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Declare them explicitly with `formats`, or let `scan: true` discover source hints automatically. You can also use `@file-viewer/preset-all` for the full official demo matrix.
+The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown, image, media, XMind, and Geo. Declare them explicitly with `formats`, or let `scan: true` discover source hints automatically. `preset: 'lite' | 'office' | 'engineering' | 'all'` imports the matching `@file-viewer/preset-*` package; when `formats` are also present, the plugin adds extra renderers outside the preset.
 
 ## Documentation
 

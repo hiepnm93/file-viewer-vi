@@ -38,6 +38,9 @@
 | 3D 模型 renderer | `@file-viewer/renderer-3d` | 无 |
 | 数据资产 renderer | `@file-viewer/renderer-data` | 无 |
 | EDA renderer | `@file-viewer/renderer-eda` | 无 |
+| 轻量 renderer preset | `@file-viewer/preset-lite` | 无 |
+| Office renderer preset | `@file-viewer/preset-office` | 无 |
+| 工程 renderer preset | `@file-viewer/preset-engineering` | 无 |
 | 全量 renderer preset | `@file-viewer/preset-all` | 无 |
 | Vite 按需装配插件 | `@file-viewer/vite-plugin` | 无 |
 | Vanilla JS / Pure Web / script 标签 | `@file-viewer/web` | `@flyfish-group/file-viewer-web` |
@@ -59,6 +62,7 @@ pnpm add @file-viewer/react
 pnpm add @file-viewer/jquery
 pnpm add @file-viewer/svelte
 pnpm add @file-viewer/renderer-word
+pnpm add @file-viewer/preset-office
 ```
 
 Vanilla JS / Pure Web:

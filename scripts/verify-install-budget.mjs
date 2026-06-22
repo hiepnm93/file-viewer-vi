@@ -276,6 +276,9 @@ if (errors.length) {
       '@file-viewer/core',
       '@file-viewer/vue3',
       '@file-viewer/web',
+      '@file-viewer/preset-lite',
+      '@file-viewer/preset-office',
+      '@file-viewer/preset-engineering',
       '@file-viewer/preset-all',
       '@file-viewer/vite-plugin'
     ].includes(report.packageName)

@@ -22,6 +22,7 @@ const plugin = await import(`${pathToFileURL(pluginDist).href}?t=${Date.now()}`)
 const {
   collectFileViewerRendererScanTokens,
   extractFileViewerRendererHintTokens,
+  fileViewerRenderers,
   resolveFileViewerRendererSelection
 } = plugin
 
@@ -82,6 +83,47 @@ try {
   ]) {
     assert(packages.has(packageName), `auto scan did not select ${packageName}`)
   }
+
+  const officePresetSelection = resolveFileViewerRendererSelection(
+    { preset: 'office', formats: ['dwg'] },
+    tempRoot
+  )
+  assert(
+    officePresetSelection.presetPackage === '@file-viewer/preset-office',
+    'office preset did not resolve to @file-viewer/preset-office'
+  )
+  assert(
+    officePresetSelection.packages.includes('@file-viewer/preset-office'),
+    'office preset package is missing from the renderer plan'
+  )
+  assert(
+    officePresetSelection.packages.includes('@file-viewer/renderer-cad'),
+    'office preset should allow additional explicit renderer packages'
+  )
+  for (const rendererId of ['pdf', 'office-word-openxml', 'spreadsheet-openxml', 'cad']) {
+    assert(
+      officePresetSelection.rendererIds.includes(rendererId),
+      `office preset selection missed renderer id ${rendererId}`
+    )
+  }
+
+  const officePlugin = fileViewerRenderers({ preset: 'office', formats: ['dwg'] })
+  await officePlugin.buildStart?.()
+  const officeModuleId = officePlugin.resolveId?.('virtual:file-viewer-renderers')
+  assert(typeof officeModuleId === 'string', 'office preset virtual module did not resolve')
+  const officeVirtualCode = await officePlugin.load?.(officeModuleId)
+  assert(
+    officeVirtualCode.includes("@file-viewer/preset-office"),
+    'office preset virtual module must import @file-viewer/preset-office'
+  )
+  assert(
+    officeVirtualCode.includes("@file-viewer/renderer-cad"),
+    'office preset virtual module must import explicitly added CAD renderer'
+  )
+  assert(
+    !officeVirtualCode.includes("import { pdfRenderer"),
+    'office preset virtual module must not re-import renderer packages covered by the preset'
+  )
 } finally {
   await rm(tempRoot, { recursive: true, force: true })
 }

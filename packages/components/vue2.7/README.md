@@ -108,10 +108,10 @@ English README: [README.en.md](./README.en.md)。
 
 ## 工程级按需 renderer 装配
 
-一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐把组件包、`@file-viewer/core`、`@file-viewer/vite-plugin` 和业务实际需要的 renderer 包组合安装，Vite 插件负责生成 `virtual:file-viewer-renderers`，业务代码只传同一套 `options`。
+一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐优先按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`，需要极致裁剪时再安装单个 renderer 包。Vite 插件负责生成 `virtual:file-viewer-renderers`，业务代码只传同一套 `options`。
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf @file-viewer/renderer-word
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
@@ -120,7 +120,7 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default {
   plugins: [
     fileViewerRenderers({
-      formats: ['pdf', 'docx'],
+      preset: 'office',
       scan: true,
       copyAssets: true
     })
@@ -139,6 +139,8 @@ const options = {
 ```
 
 - Vue、React、Svelte、jQuery、Vanilla JS / Pure Web 都传同一份 `options`，只是在各自生态中映射为 props、hook、action、plugin 或 `mountViewer(...)` 参数。
+- `preset-lite` 面向文本、Markdown、代码、图片和音视频；`preset-office` 面向 PDF / Word / Excel / PowerPoint / OFD；`preset-engineering` 面向 CAD / 3D / 绘图 / XMind / Geo / Typst / EDA / Data。
+- 想要最小包体时，可以不用 preset，直接安装 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` 等单个 renderer，并用 `formats` 精确生成 import。
 - `scan:true` 会识别 `fileViewerFormats`、`data-file-viewer-formats` 和上传控件 `accept`，调试与打包时自动选择 renderer。
 - `copyAssets:true` 会复制 PDF/CAD/Typst/Archive/Data 等 worker、WASM 和 vendor 资源，满足离线和企业内网部署。
 - 想一次性拥有官方 Demo 的完整能力时，可以安装 `@file-viewer/preset-all` 并把 `allRenderers` 传给 `renderers`；这适合 demo 和后台运维工具，不建议作为所有业务默认入口。

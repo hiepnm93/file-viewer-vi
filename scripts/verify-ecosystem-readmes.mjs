@@ -39,6 +39,9 @@ const localeReadmes = [
     requiredTerms: [
       '工程级按需 renderer 装配',
       '@file-viewer/vite-plugin',
+      '@file-viewer/preset-lite',
+      '@file-viewer/preset-office',
+      '@file-viewer/preset-engineering',
       'virtual:file-viewer-renderers',
       'configuredFileViewerRenderers',
       'rendererMode',
@@ -58,6 +61,9 @@ const localeReadmes = [
     requiredTerms: [
       'Engineering-Grade On-Demand Renderer Assembly',
       '@file-viewer/vite-plugin',
+      '@file-viewer/preset-lite',
+      '@file-viewer/preset-office',
+      '@file-viewer/preset-engineering',
       'virtual:file-viewer-renderers',
       'configuredFileViewerRenderers',
       'rendererMode',
@@ -78,6 +84,9 @@ const wrapperReadmeConfigs = [
     requiredTerms: [
       '工程级按需 renderer 装配',
       '@file-viewer/vite-plugin',
+      '@file-viewer/preset-lite',
+      '@file-viewer/preset-office',
+      '@file-viewer/preset-engineering',
       'virtual:file-viewer-renderers',
       'configuredFileViewerRenderers',
       'rendererMode',
@@ -109,6 +118,9 @@ const wrapperReadmeConfigs = [
     requiredTerms: [
       'Engineering-Grade On-Demand Renderer Assembly',
       '@file-viewer/vite-plugin',
+      '@file-viewer/preset-lite',
+      '@file-viewer/preset-office',
+      '@file-viewer/preset-engineering',
       'virtual:file-viewer-renderers',
       'configuredFileViewerRenderers',
       'rendererMode',

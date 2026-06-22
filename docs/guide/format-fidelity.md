@@ -20,7 +20,7 @@
 
 | 格式线 | 复核结论 | 当前落点 |
 | --- | --- | --- |
-| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；官方 SDK 对 Browser 标注为 not fully supported，SimpleMindMap 文档也确认可解包读取 `content.json` 后转换。浏览器端更稳的路线是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移、双击适配视图、首次打开/容器 resize 自动适配、用户交互后视角保留、平移后的统一 toolbar 状态同步、WebView `PointerEvent.buttons` 异常兼容，以及 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件兜底；浏览器 smoke 已把 `.xmind` pan 写成显式验收。 |
+| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`。官方 `xmind-viewer` 明确可把 `.xmind` 渲染成 SVG，但当前 npm 包同时带有 `canvas` / `jsdom` / `svgdom` 等 Node/服务端依赖，不适合作为浏览器组件的默认链路；SimpleMindMap 文档也确认可解包读取 `content.json` 后转换。浏览器端更稳的路线是“轻量解析包结构 + 自有只读交互画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | core 已不再默认安装 XMind parser；保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、移动端双指缩放、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移、双击适配视图、首次打开/容器 resize 自动适配、用户交互后视角保留、平移后的统一 toolbar 状态同步、WebView `PointerEvent.buttons` 异常兼容，以及 `pointerdown` 后续只派发 `mousemove` / `touchmove` 的混合事件兜底；浏览器 smoke 已把 `.xmind` pan 写成显式验收。 |
 | Typst | 官方 Typst 编译器是 Rust 开源编译器，浏览器稳定路线仍是 WASM 编译后输出 SVG/PDF；`@myriaddreamin/typst.ts` 与 compiler/renderer WASM 最新 npm 版本为 `0.7.0`。 | 保持 `@file-viewer/renderer-typst`，直接读取源 `.typ` / `.typst`，按页 SVG 预览，不做 sidecar PDF 替换。 |
 | Archive | `libarchive.js` 是 libarchive 的 browser / WASM port，最新 npm 版本为 `2.0.2`，继续是多压缩包格式最稳的离线方向。 | 保持 `@file-viewer/renderer-archive` 的 Worker + WASM 优先策略，并保留 ZIP/TAR/GZIP 兼容降级。 |
 | Email | `postal-mime` 最新 npm 版本为 `2.7.4`，支持 Node、browser、Web Worker 和 serverless；`@kenjiuno/msgreader` 最新 npm 版本为 `1.28.0`，适合作为 MSG 读取层。 | 保持 `@file-viewer/renderer-email` 分别处理 EML/MBOX 与 MSG，正文沙箱化，附件继续复用统一预览器。 |
@@ -70,7 +70,8 @@
 - diagrams.net 官方文档推荐把 `viewer-static.min.js` 从仓库复制到企业可访问位置自托管，适合内网离线场景: <https://www.drawio.com/docs/integrations/atlassian/confluence/customise/configure-javascript-viewer-drawio-confluence-server/>
 - diagrams.net 官方集成文档说明 embed/viewer 模式通过 iframe/window 和 HTML5 Messaging API 控制，企业离线部署应自托管官方静态资源: <https://jgraph.github.io/drawio-integration/>
 - Autodesk 官方查看器页面明确提供 DWG / DWF / DXF 等 2D/3D 设计文件查看路线，可作为 CAD 预览能力和真实样例来源的外部口径: <https://www.autodesk.com/viewers>
-- XMind 官方 SDK 支持 Node.js，Browser 标注为 not fully supported，因此 viewer 继续使用解析器 + 自有只读渲染更稳: <https://github.com/xmindltd/xmind-sdk-js>
+- XMind 官方 `xmind-viewer` 能解析 `.xmind` 并输出 SVG，但其 npm 依赖不适合成为浏览器预览器默认安装链路，因此 viewer 继续使用轻量解析器 + 自有只读交互画布: <https://github.com/xmindltd/xmind-viewer>
+- XMind 官方 SDK 主要面向创建/读写 XMind 文件，可作为格式结构参考: <https://github.com/xmindltd/xmind-sdk-js>
 - SimpleMindMap 文档也确认 `.xmind` 可以按 ZIP 解包并读取 `content.json` 转换为脑图数据: <https://wanglin2.github.io/mind-map-docs/en/api/xmind.html>
 - Mind Elixir 是成熟的交互式脑图内核，适合作为未来“更强交互/编辑级阅读”的候选，但不直接替代当前 XMind 文件解析链路: <https://www.npmjs.com/package/mind-elixir>
 - Panzoom 是轻量成熟的 DOM/SVG 平移缩放库，可作为未来进一步替换自研手势状态机的候选；当前保持自有渲染和事件修复，避免破坏 XMind 搜索、打印和 HTML 导出链路: <https://github.com/timmywil/panzoom>

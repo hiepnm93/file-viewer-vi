@@ -28,6 +28,10 @@
 | --- | --- | --- | --- |
 | 底层能力 | `@file-viewer/core` | 自研组件、二次封装、框架适配 | 纯 TypeScript 预览能力、格式矩阵、事件、搜索、缩放、打印、导出和共享类型 |
 | PPTX 引擎 | `@file-viewer/pptx` | 单独优化或验证 PPTX 渲染 | 独立原生 PPTX renderer、Worker 渐进解析和样式文件 |
+| 轻量 preset | `@file-viewer/preset-lite` | 常见轻附件预览 | 文本、Markdown、代码、图片、音频和视频的轻量组合 |
+| 文档 preset | `@file-viewer/preset-office` | PDF / Office / OFD 文档平台 | PDF、Word、Excel、PowerPoint、OFD、RTF 和 OpenDocument |
+| 工程 preset | `@file-viewer/preset-engineering` | CAD、研发、设计、工程和 EDA 附件平台 | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data 和 EDA |
+| 全量 preset | `@file-viewer/preset-all` | 官方 Demo、内部全格式附件中心 | 当前完整格式矩阵 |
 | Word renderer | `@file-viewer/renderer-word` | 只需要 DOCX/DOC/RTF/ODT 的业务 | 标准 renderer 插件，按需加载自研 DOCX、老 DOC 和 RTF/OpenDocument 链路 |
 | Vanilla JS / Pure Web | `@file-viewer/web` | 无框架页面、微前端壳、传统系统 | `<flyfish-file-viewer>` 原生组件、`mountViewer(container, options)`、IIFE script 标签包、资源复制 CLI |
 | Vue 3 | `@file-viewer/vue3` | Vue 3.3+ | Vue 插件、`<file-viewer>` 组件、props、事件、ref/controller 和完整类型 |
@@ -45,7 +49,7 @@
 - `@file-viewer/core` 是 framework-neutral 底座，不依赖 Vue、React、Svelte 或 jQuery。
 - 各标准组件包只依赖 core 和自己的生态依赖，不嵌套其他框架实现。
 - 所有组件包共享同一套 `ViewerMountOptions`、`FileViewerOptions`、生命周期事件、操作回调、搜索、缩放、水印、打印和导出语义。
-- Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。
+- Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。常见业务优先选 `preset-lite`、`preset-office`、`preset-engineering`，极致裁剪再安装单个 renderer。
 - 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
 
 ## 组件属性与定制入口

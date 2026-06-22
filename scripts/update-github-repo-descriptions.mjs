@@ -52,6 +52,11 @@ const records = [
     description: renderer.description,
     homepage: 'https://doc.file-viewer.app'
   })),
+  ...(ecosystemManifest.presets || []).map(preset => ({
+    github: preset.github,
+    description: preset.description,
+    homepage: 'https://doc.file-viewer.app'
+  })),
   ...ecosystemManifest.wrappers.map(component => ({
     github: component.github,
     description: component.description,

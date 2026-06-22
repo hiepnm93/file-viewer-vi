@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-export type FileViewerVitePreset = 'all' | 'lite' | 'engineering';
+export type FileViewerVitePreset = 'all' | 'lite' | 'office' | 'engineering';
 export type FileViewerMissingRendererMode = 'error' | 'warn' | 'ignore';
 export type FileViewerChunkStrategy = 'renderer' | 'none';
 export interface FileViewerRendererScanOptions {
@@ -45,8 +45,8 @@ export interface FileViewerRenderersPluginOptions {
      */
     renderers?: readonly string[];
     /**
-     * `all` imports @file-viewer/preset-all. `lite` and `engineering` expand to
-     * already extracted renderer packages and remain tree-shakeable.
+     * Presets import their dedicated @file-viewer/preset-* package. Add
+     * `formats` / `renderers` when you need to extend a preset with extra lines.
      */
     preset?: FileViewerVitePreset;
     /**
@@ -84,7 +84,10 @@ export declare function fileViewerRenderers(options?: FileViewerRenderersPluginO
 export declare function createFileViewerManualChunks(options?: FileViewerRenderersPluginOptions): (id: string) => string | undefined;
 export declare function resolveFileViewerRendererSelection(options?: FileViewerRenderersPluginOptions, projectRoot?: string): {
     preset: FileViewerVitePreset | null;
+    presetPackage: string | null;
     formats: string[];
+    packages: string[];
+    rendererIds: string[];
     renderers: {
         id: string;
         packageName: string;

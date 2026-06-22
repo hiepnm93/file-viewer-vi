@@ -5,6 +5,7 @@ import { dirname, extname, isAbsolute, join, resolve } from 'node:path';
 const virtualModuleId = 'virtual:file-viewer-renderers';
 const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 const pluginRequire = createRequire(import.meta.url);
+let workspacePackageJsonCache = null;
 const rendererModules = [
     {
         id: 'pdf',
@@ -278,6 +279,52 @@ const descriptorsByFormat = new Map();
 rendererModules.forEach((descriptor) => {
     descriptor.formats.forEach((format) => descriptorsByFormat.set(format, descriptor));
 });
+const presetRendererIds = {
+    all: rendererModules.map((descriptor) => descriptor.id),
+    lite: ['text', 'image', 'media'],
+    office: ['pdf', 'word', 'spreadsheet', 'presentation', 'ofd'],
+    engineering: [
+        'cad',
+        'model',
+        'drawing',
+        'mindmap',
+        'geo',
+        'typst',
+        'archive',
+        'data',
+        'eda'
+    ]
+};
+const presetModules = {
+    all: {
+        id: 'all',
+        packageName: '@file-viewer/preset-all',
+        exportName: 'allRenderers',
+        rendererIds: presetRendererIds.all,
+        chunkName: 'file-viewer-preset-all'
+    },
+    lite: {
+        id: 'lite',
+        packageName: '@file-viewer/preset-lite',
+        exportName: 'liteRenderers',
+        rendererIds: presetRendererIds.lite,
+        chunkName: 'file-viewer-preset-lite'
+    },
+    office: {
+        id: 'office',
+        packageName: '@file-viewer/preset-office',
+        exportName: 'officeRenderers',
+        rendererIds: presetRendererIds.office,
+        chunkName: 'file-viewer-preset-office'
+    },
+    engineering: {
+        id: 'engineering',
+        packageName: '@file-viewer/preset-engineering',
+        exportName: 'engineeringRenderers',
+        rendererIds: presetRendererIds.engineering,
+        chunkName: 'file-viewer-preset-engineering'
+    }
+};
 const defaultScanRoots = ['src', 'app', 'pages', 'components'];
 const defaultScanExtensions = [
     'js',
@@ -436,28 +483,18 @@ export function collectFileViewerRendererScanTokens(projectRoot, scan) {
 }
 function selectRenderers(options) {
     const preset = options.preset ?? null;
+    const presetCoveredIds = new Set(preset ? presetRendererIds[preset] : []);
     const selected = new Map();
     const missing = [];
-    if (preset === 'all') {
-        return { preset, descriptors: [], missing };
-    }
-    const presetRendererIds = {
-        lite: ['text', 'image', 'media'],
-        engineering: ['cad', 'mindmap', 'geo']
-    };
-    (preset ? presetRendererIds[preset] : []).forEach((id) => {
-        const descriptor = descriptorsById.get(id);
-        if (descriptor) {
-            selected.set(descriptor.id, descriptor);
-        }
-    });
     const requestedTokens = [...(options.renderers || []), ...(options.formats || [])]
         .map(normalizeToken)
         .filter(Boolean);
     requestedTokens.forEach((token) => {
         const descriptor = descriptorsById.get(token) || descriptorsByFormat.get(token);
         if (descriptor) {
-            selected.set(descriptor.id, descriptor);
+            if (!presetCoveredIds.has(descriptor.id)) {
+                selected.set(descriptor.id, descriptor);
+            }
             return;
         }
         missing.push({
@@ -485,34 +522,40 @@ function assertMissingRendererPolicy(selection, mode) {
     }
     throw new Error(`[file-viewer:vite-plugin]\n${message}`);
 }
+function expandDescriptorRendererIds(ids) {
+    return unique(ids.flatMap((id) => {
+        const descriptor = descriptorsById.get(id);
+        return descriptor ? [...descriptor.rendererIds] : [id];
+    }));
+}
 function renderVirtualModule(selection, formats) {
-    if (selection.preset === 'all') {
-        return [
-            "import { allRenderers } from '@file-viewer/preset-all';",
-            '',
-            'export const configuredFileViewerRenderers = allRenderers;',
-            `export const fileViewerRendererPlan = ${JSON.stringify({
-                preset: 'all',
-                formats,
-                rendererIds: ['preset-all'],
-                packages: ['@file-viewer/preset-all'],
-                generatedBy: '@file-viewer/vite-plugin'
-            }, null, 2)};`,
-            'export default configuredFileViewerRenderers;',
-            ''
-        ].join('\n');
-    }
-    const imports = selection.descriptors.map((descriptor, index) => `import { ${descriptor.exportName} as renderer${index} } from '${descriptor.packageName}';`);
-    const rendererNames = selection.descriptors.map((_descriptor, index) => `renderer${index}`);
+    const presetModule = selection.preset ? presetModules[selection.preset] : null;
+    const presetImport = presetModule
+        ? `import { ${presetModule.exportName} as presetRenderers } from '${presetModule.packageName}';`
+        : null;
+    const rendererImports = selection.descriptors.map((descriptor, index) => `import { ${descriptor.exportName} as renderer${index} } from '${descriptor.packageName}';`);
+    const rendererNames = [
+        ...(presetModule ? ['presetRenderers'] : []),
+        ...selection.descriptors.map((_descriptor, index) => `renderer${index}`)
+    ];
+    const rendererIds = unique([
+        ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+        ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
+    ]);
+    const packages = unique([
+        ...(presetModule ? [presetModule.packageName] : []),
+        ...selection.descriptors.map((descriptor) => descriptor.packageName)
+    ]);
     const plan = {
         preset: selection.preset,
         formats,
-        rendererIds: unique(selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)),
-        packages: selection.descriptors.map((descriptor) => descriptor.packageName),
+        rendererIds,
+        packages,
         generatedBy: '@file-viewer/vite-plugin'
     };
     return [
-        ...imports,
+        ...[presetImport].filter(Boolean),
+        ...rendererImports,
         '',
         `export const configuredFileViewerRenderers = [${rendererNames.join(', ')}];`,
         `export const fileViewerRendererPlan = ${JSON.stringify(plan, null, 2)};`,
@@ -528,12 +571,20 @@ function hasManualChunks(config) {
     return Boolean(output?.manualChunks);
 }
 function createManualChunks(selection) {
-    const descriptors = selection.preset === 'all' ? rendererModules : selection.descriptors;
     const packageToChunk = new Map();
-    descriptors.forEach((descriptor) => {
+    if (selection.preset) {
+        const presetModule = presetModules[selection.preset];
+        packageToChunk.set(presetModule.packageName, presetModule.chunkName);
+        presetModule.rendererIds
+            .map((id) => descriptorsById.get(id))
+            .filter((descriptor) => Boolean(descriptor))
+            .forEach((descriptor) => {
+            packageToChunk.set(descriptor.packageName, descriptor.chunkName);
+        });
+    }
+    selection.descriptors.forEach((descriptor) => {
         packageToChunk.set(descriptor.packageName, descriptor.chunkName);
     });
-    packageToChunk.set('@file-viewer/preset-all', 'file-viewer-preset-all');
     return (id) => {
         const normalized = id.replace(/\\/g, '/');
         for (const [packageName, chunkName] of packageToChunk) {
@@ -573,9 +624,52 @@ function tryResolvePackageJson(packageName, requireFn) {
         }
     }
 }
+function collectWorkspacePackageJsons(root) {
+    const packageJsons = new Map();
+    const ignoredDirectoryNames = new Set(['node_modules', 'dist', 'vendor', '.git']);
+    const scanRoots = ['packages', 'apps'].map((item) => join(root, item));
+    const visit = (directory, depth) => {
+        if (depth < 0 || !existsSync(directory)) {
+            return;
+        }
+        const packageJsonPath = join(directory, 'package.json');
+        if (existsSync(packageJsonPath)) {
+            try {
+                const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+                if (packageJson.name) {
+                    packageJsons.set(packageJson.name, packageJsonPath);
+                }
+            }
+            catch {
+                // Ignore malformed package.json files in unrelated workspace folders.
+            }
+        }
+        for (const entry of readdirSync(directory)) {
+            if (ignoredDirectoryNames.has(entry)) {
+                continue;
+            }
+            const candidate = join(directory, entry);
+            if (statSync(candidate).isDirectory()) {
+                visit(candidate, depth - 1);
+            }
+        }
+    };
+    scanRoots.forEach((scanRoot) => visit(scanRoot, 4));
+    return packageJsons;
+}
+function resolveWorkspacePackageJson(packageName) {
+    if (!workspacePackageJsonCache) {
+        workspacePackageJsonCache = collectWorkspacePackageJsons(process.cwd());
+    }
+    return workspacePackageJsonCache.get(packageName) || null;
+}
 function resolvePackageJson(packageName, anchorPackages = []) {
     const requireFns = [projectRequire(), pluginRequire];
-    anchorPackages.forEach((anchorPackage) => {
+    const effectiveAnchorPackages = unique([
+        ...anchorPackages,
+        ...Object.values(presetModules).map((preset) => preset.packageName)
+    ]);
+    effectiveAnchorPackages.forEach((anchorPackage) => {
         const anchorPackageJson = requireFns
             .map((requireFn) => tryResolvePackageJson(anchorPackage, requireFn))
             .find(Boolean);
@@ -589,7 +683,7 @@ function resolvePackageJson(packageName, anchorPackages = []) {
             return packageJson;
         }
     }
-    return null;
+    return resolveWorkspacePackageJson(packageName);
 }
 function resolvePackageRoot(packageName, anchorPackages = []) {
     const packageJson = resolvePackageJson(packageName, anchorPackages);
@@ -674,10 +768,13 @@ function copyOptions(value) {
     return typeof value === 'object' ? value : {};
 }
 function collectAssetRendererIds(selection) {
-    if (selection.preset === 'all') {
-        return ['pdf', 'cad', 'typst', 'archive', 'data-asset', 'eda'];
-    }
-    return unique(selection.descriptors.flatMap((descriptor) => descriptor.rendererIds));
+    const presetIds = selection.preset
+        ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds)
+        : [];
+    return unique([
+        ...presetIds,
+        ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
+    ]);
 }
 function reportAssetCopy(results, targetRoot, mode) {
     const failedRequired = results.filter((result) => !result.copied && ['pdf', 'cad', 'typst'].includes(result.rendererId));
@@ -747,12 +844,13 @@ export function fileViewerRenderers(options = {}) {
         },
         buildStart() {
             assertMissingRendererPolicy(selection, missingMode);
-            const packages = selection.preset === 'all'
-                ? ['@file-viewer/preset-all']
-                : selection.descriptors.map((descriptor) => descriptor.packageName);
+            const packages = unique([
+                ...(selection.preset ? [presetModules[selection.preset].packageName] : []),
+                ...selection.descriptors.map((descriptor) => descriptor.packageName)
+            ]);
             const missingPackages = packages.filter((packageName) => !resolvePackageJson(packageName));
             if (missingPackages.length && missingMode !== 'ignore') {
-                const message = `Missing File Viewer renderer package(s): ${missingPackages.join(', ')}. Install them or remove the matching formats from @file-viewer/vite-plugin.`;
+                const message = `Missing File Viewer preset/renderer package(s): ${missingPackages.join(', ')}. Install them or remove the matching preset/formats from @file-viewer/vite-plugin.`;
                 if (missingMode === 'warn') {
                     console.warn(`[file-viewer:vite-plugin] ${message}`);
                 }
@@ -829,9 +927,20 @@ export function resolveFileViewerRendererSelection(options = {}, projectRoot = p
         ...options,
         formats: [...(options.formats || []), ...scanFormats]
     });
+    const presetModule = selection.preset ? presetModules[selection.preset] : null;
+    const packages = unique([
+        ...(presetModule ? [presetModule.packageName] : []),
+        ...selection.descriptors.map((descriptor) => descriptor.packageName)
+    ]);
     return {
         preset: selection.preset,
+        presetPackage: presetModule?.packageName ?? null,
         formats: requestedFormats,
+        packages,
+        rendererIds: unique([
+            ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+            ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
+        ]),
         renderers: selection.descriptors.map((descriptor) => ({
             id: descriptor.id,
             packageName: descriptor.packageName,

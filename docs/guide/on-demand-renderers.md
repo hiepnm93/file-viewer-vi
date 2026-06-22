@@ -50,9 +50,9 @@
 | `@file-viewer/core`                                                 | 纯 TS 核心：类型、格式注册表、source loader、dispatcher、生命周期、搜索、缩放、打印/导出 API、资产解析协议 | 只保留无渲染重依赖的基础代码；不依赖 Vue/React/Svelte，不依赖 Office/CAD/PDF/Typst 等重库 |
 | `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/svelte` 等 | 生产可用标准组件                                                                                           | 只依赖 core 和自身生态依赖；通过 props/options 接收 renderers/presets                     |
 | `@file-viewer/renderer-*`                                           | 单条或一组强相关渲染链路                                                                                   | 自己声明真实重依赖、worker、wasm、vendor assets 和 smoke 样本                             |
-| 轻量 renderer 组合                                                  | 文本、Markdown、图片、音视频基础预览                                                                       | 使用 `@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media` 等真实包按需组合 |
-| Office / 文档 renderer 包                                           | Word、Spreadsheet、PPT、PDF、OFD 均由独立 renderer 承接                                                   | 明确引入对应文档依赖，不把 Office 相关重库放入业务无关首屏                                |
-| 独立工程 renderer 包                                                 | CAD、3D、XMind、Draw.io、Excalidraw、Geo、EDA 结构预览                                                     | 只安装业务需要的工程格式 renderer；需要一次性装配时使用 `@file-viewer/preset-all`          |
+| `@file-viewer/preset-lite`                                          | 文本、Markdown、图片、音视频基础预览                                                                       | 聚合 `renderer-text`、`renderer-image`、`renderer-media`，适合常见轻附件场景               |
+| `@file-viewer/preset-office`                                        | Word、Spreadsheet、PPT、PDF、OFD 均由独立 renderer 承接                                                   | 聚合文档链路，避免业务手写多个 Office renderer import                                    |
+| `@file-viewer/preset-engineering`                                   | CAD、3D、XMind、Draw.io、Excalidraw、Geo、Typst、Archive、EDA 和 Data 结构预览                            | 聚合工程附件链路；仍比 `preset-all` 更窄                                                  |
 | `@file-viewer/preset-all`                                           | 完整能力聚合包                                                                                             | 需要全格式时一行安装，demo 和全量发行版使用                                               |
 | `@file-viewer/vite-plugin`                                          | 自动生成 renderer virtual module、复制 assets、设置 manual chunks                                          | 让业务项目按配置自动装配，不需要手写大量 import                                           |
 
@@ -60,9 +60,9 @@
 
 | 场景                            | 推荐方式                                                  | 安装体验                        | 打包体验                                 |
 | ------------------------------- | --------------------------------------------------------- | ------------------------------- | ---------------------------------------- |
-| 只预览常见轻量附件              | 安装组件包 + `@file-viewer/renderer-text` / `renderer-image` / `renderer-media` | 最快，依赖最少                  | 主包只包含轻量 renderer                  |
-| 只需要 PDF/Word/Excel           | 安装组件包 + `@file-viewer/renderer-pdf` / `renderer-word` / `renderer-spreadsheet` | Office 依赖按 renderer 分散安装 | 只会产生相关异步 chunk                   |
-| CAD/3D/Typst/Archive 等专项能力 | 安装对应 `@file-viewer/renderer-*`                        | 哪条链路用到才安装哪条          | worker/wasm 跟随 renderer asset manifest |
+| 只预览常见轻量附件              | 安装组件包 + `@file-viewer/preset-lite` 或 text/image/media 单 renderer | 最快，依赖最少                  | 主包只包含轻量 renderer                  |
+| 只需要 PDF/Word/Excel/PPT/OFD   | 安装组件包 + `@file-viewer/preset-office`，极致裁剪时再按 renderer 安装 | Office 依赖按文档 preset 聚合   | 只会产生文档相关异步 chunk               |
+| CAD/3D/Typst/Archive 等专项能力 | 安装组件包 + `@file-viewer/preset-engineering` 或对应单 renderer | 工程链路按产品形态聚合          | worker/wasm 跟随 renderer asset manifest |
 | 企业内网全格式平台              | 安装组件包 + `@file-viewer/preset-all` + asset copy CLI   | 一次性完整安装                  | chunk 按 renderer 拆分，避免首屏全部执行 |
 | 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 配置 `formats`                 | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
 
@@ -262,7 +262,7 @@ fileViewerRenderers({
 - [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
 - [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
-- [x] `pnpm verify:on-demand-boundaries` 守住按需加载边界：core 不依赖 renderer/preset/wrapper，标准组件包不依赖 renderer/preset，compat 包只 alias 到目标组件，preset-all 才聚合完整 renderer。
+- [x] `pnpm verify:on-demand-boundaries` 守住按需加载边界：core 不依赖 renderer/preset/wrapper，标准组件包不依赖 renderer/preset，compat 包只 alias 到目标组件，`preset-lite` / `preset-office` / `preset-engineering` 只能聚合各自白名单 renderer，`preset-all` 才聚合完整 renderer。
 
 ### Phase 2：第一批重链路拆包
 
@@ -304,7 +304,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 EDA 兼容入口和 `cfb` 直接依赖，OLB / DRA / GDSII / OASIS 完整结构预览统一通过 `@file-viewer/renderer-eda` 或 preset 装配。
 - [x] `@file-viewer/core` 已移除 spreadsheet 兼容入口和 `styled-exceljs` / `e-virt-table` / `tinycolor2` 直接依赖，表格完整能力统一通过 `@file-viewer/renderer-spreadsheet` 或 preset 装配；Spreadsheet Worker 资产路径仍由 core manifest 统一发现。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
-- [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
+- [x] demo 使用 `preset-all`，业务组件 README 默认展示 `preset-lite` / `preset-office` / `preset-engineering` 和单 renderer 精确裁剪两种路线；`verify:ecosystem-readmes` 会检查这些 preset 包名、`@file-viewer/vite-plugin` 和 `virtual:file-viewer-renderers` 口径。
 - [x] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵；`verify:format-support`、`verify:compatibility-api` 和 `verify:compatibility-readmes` 纳入迁移门禁。
 - [x] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`styled-exceljs`、`e-virt-table` 或 `tinycolor2`；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
 - [x] Phase 2 重型链路已从 core 默认安装面全部摘除，Spreadsheet 作为最后一条 Office 重链路已拆到 `@file-viewer/renderer-spreadsheet`。
@@ -313,6 +313,7 @@ fileViewerRenderers({
 
 - [x] `@file-viewer/vite-plugin` 能按 `formats` 自动生成 `virtual:file-viewer-renderers`，已覆盖 Word、Spreadsheet、PDF、OFD、Presentation、CAD、Drawing、3D、Typst、Archive、Email、EPUB、Text、Image、Media、XMind、Geo、Data 和 EDA；未知格式会给出明确缺失提示。
 - [x] `@file-viewer/vite-plugin` 支持 `scan: true` 源码 hint 自动发现：`fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / `accept` 会合并进 renderer 选择，开发和构建阶段都能生成相同 virtual module。
+- [x] `@file-viewer/vite-plugin` 支持 `preset: 'lite' | 'office' | 'engineering' | 'all'`，会导入对应 `@file-viewer/preset-*` 包；同时声明 `formats` 时只补充 preset 外的额外 renderer，适配 pnpm 严格依赖模型。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [x] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包；`verify:bundle-budget` 会检查主 Demo、文档比对入口和异步 renderer chunk。
 - [x] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式；生成器会同步到 Vanilla JS / Pure Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、jQuery 和 Svelte 的中英文 README。
@@ -323,14 +324,14 @@ fileViewerRenderers({
 - [x] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立结构预览入口、README 和解析边界说明。
 - [ ] OASIS/GDSII 大文件走 WebGL 或 WASM，不进入 core 首屏链路。
 - [ ] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 能独立发布、独立回归。
-- [ ] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导。
+- [x] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导；`format-fidelity` 已按 XMind、Typst、Draw.io、EDA、OASIS、OLB/DRA、OpenDocument 等格式线写明成熟库、WASM 路线和当前边界。
 
 ### Phase 5：发布与质量门禁
 
 - [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时保留为后续增强。
 - [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；lite/office/engineering preset 分项预算保留为后续增强。
 - [x] 新增 release 校验：`verify:renderer-contracts`、`verify:renderer-assets`、`verify:ecosystem-tarballs` 和 `release:ecosystem:list` 会检查 renderer 包 exports、README、发布文件、assets manifest、npm dry-run tarball 和生态 release 清单。
-- [ ] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包和 `@file-viewer/preset-all`。
+- [x] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 和 `@file-viewer/preset-all`；官网视觉站、文档站、README 和生态总览均已补齐，并由 `verify:ecosystem-readmes` / `site:build` / `docs:build` 纳入回归。
 - [x] 迁移完成后 `@file-viewer/core` 的 `dependencies` 只保留真正跨 renderer 的轻量工具，重依赖直接数量接近 0；`verify:core-dependency-budget` 当前要求 core 只有 1 个直接运行时依赖且 0 个 renderer 依赖。
 
 ## 当前状态
@@ -348,7 +349,7 @@ pnpm audit:renderer-deps -- --json
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 
-这说明 renderer 包和 `preset-all` 已经具备完整重链路拆包基础。短期先保留 `preset-all` 兼容完整能力，长期验收标准是继续补齐 renderer tarball / smoke / release 自动化，并让组件包默认安装始终不拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
+这说明 renderer 包、分层 preset 和 `preset-all` 已经具备完整重链路拆包基础。短期先保留 `preset-all` 兼容完整能力，常见业务优先使用 `preset-lite`、`preset-office`、`preset-engineering`，长期验收标准是继续补齐 renderer tarball / smoke / release 自动化，并让组件包默认安装始终不拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
 
 ## 新增格式解析策略
 
@@ -401,7 +402,7 @@ pnpm build-only
 - `verify:renderer-standalone-smoke`：已落地全 renderer plugin 独立安装 smoke。它用本地 tarball 构造隔离业务项目，安装 core、Vite 插件、19 个独立 renderer plugin 以及 `@file-viewer/pptx` 等本地依赖闭包；逐个验证 renderer 注册、handler 挂载、Vite selection 映射和 virtual module 只导入当前 renderer 包。后续可扩展为 wrapper 矩阵与真实样例渲染 smoke。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
-- `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的真实冷安装耗时。
+- `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 和 `@file-viewer/preset-all` 的真实冷安装耗时。
 
 ## 外部参考
 

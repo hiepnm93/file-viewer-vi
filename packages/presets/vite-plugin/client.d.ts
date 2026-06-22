@@ -2,8 +2,7 @@ declare module 'virtual:file-viewer-renderers' {
   import type {
     FileRenderHandler,
     FileViewerRenderedInstance,
-    FileViewerRendererPlugin,
-    FileViewerRendererPreset,
+    FileViewerRendererPluginInput,
   } from '@file-viewer/core';
 
   type BrowserRendererHandler = FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>;
@@ -16,9 +15,7 @@ declare module 'virtual:file-viewer-renderers' {
     generatedBy: '@file-viewer/vite-plugin';
   }
 
-  export const configuredFileViewerRenderers:
-    | readonly FileViewerRendererPlugin<BrowserRendererHandler>[]
-    | FileViewerRendererPreset<BrowserRendererHandler>;
+  export const configuredFileViewerRenderers: FileViewerRendererPluginInput<BrowserRendererHandler>;
   export const fileViewerRendererPlan: ConfiguredFileViewerRendererPlan;
   export default configuredFileViewerRenderers;
 }

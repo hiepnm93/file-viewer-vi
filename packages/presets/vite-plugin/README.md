@@ -10,6 +10,19 @@ pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/renderer-pdf
 
 需要更多格式时安装对应 renderer 包，例如 `@file-viewer/renderer-word`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-text`。
 
+如果你希望用一个包完成常见场景装配，可以安装 preset：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+可选 preset：
+
+- `@file-viewer/preset-lite`: 文本、Markdown、代码、图片、音频、视频。
+- `@file-viewer/preset-office`: PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument。
+- `@file-viewer/preset-engineering`: CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA。
+- `@file-viewer/preset-all`: 官方 demo 完整格式矩阵。
+
 ## vite.config.ts
 
 ```ts
@@ -25,6 +38,15 @@ export default defineConfig({
       chunkStrategy: 'renderer'
     })
   ]
+})
+```
+
+或者使用 preset 一包装配：
+
+```ts
+fileViewerRenderers({
+  preset: 'office',
+  copyAssets: true
 })
 ```
 
@@ -54,7 +76,7 @@ const options = {
 
 ## 当前边界
 
-当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。可以通过 `formats` 显式声明，也可以通过 `scan: true` 从源码 hint 自动发现；全量体验也可以直接使用 `@file-viewer/preset-all`。
+当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown、图片、媒体、XMind 和 Geo。可以通过 `formats` 显式声明，也可以通过 `scan: true` 从源码 hint 自动发现。`preset: 'lite' | 'office' | 'engineering' | 'all'` 会导入对应 `@file-viewer/preset-*` 包；如果同时声明 `formats`，插件会在 preset 之外补充额外 renderer。
 
 ## 文档
 

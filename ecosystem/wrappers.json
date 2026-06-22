@@ -249,6 +249,39 @@
       "publicSource": true
     },
     {
+      "id": "lite",
+      "packageName": "@file-viewer/preset-lite",
+      "description": "Lite renderer preset for Flyfish File Viewer with text, Markdown, code, image, audio, and video preview lines.",
+      "packageDir": "packages/presets/lite",
+      "repository": "file-viewer-preset-lite",
+      "github": "https://github.com/flyfish-dev/file-viewer-preset-lite",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-preset-lite",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
+      "id": "office",
+      "packageName": "@file-viewer/preset-office",
+      "description": "Office renderer preset for Flyfish File Viewer with PDF, Word, spreadsheet, presentation, OFD, and OpenDocument preview lines.",
+      "packageDir": "packages/presets/office",
+      "repository": "file-viewer-preset-office",
+      "github": "https://github.com/flyfish-dev/file-viewer-preset-office",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-preset-office",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
+      "id": "engineering",
+      "packageName": "@file-viewer/preset-engineering",
+      "description": "Engineering renderer preset for Flyfish File Viewer with CAD, 3D, drawing, mind map, geospatial, Typst, EDA, archive, and data asset preview lines.",
+      "packageDir": "packages/presets/engineering",
+      "repository": "file-viewer-preset-engineering",
+      "github": "https://github.com/flyfish-dev/file-viewer-preset-engineering",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-preset-engineering",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "vite-plugin",
       "packageName": "@file-viewer/vite-plugin",
       "description": "Vite plugin for File Viewer on-demand renderer assembly, virtual renderer modules, renderer chunk planning, and offline worker/WASM asset deployment.",

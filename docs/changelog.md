@@ -45,6 +45,7 @@
 - 地理数据预览迁移为 `@file-viewer/renderer-geo` 独立 renderer 包，GeoJSON 直接读取，KML / GPX 按需加载 `@tmcw/togeojson`，SHP 按需加载 `shpjs`，并由 `@file-viewer/preset-all` 自动聚合
 - 新增 `@file-viewer/vite-plugin` 工程化入口，支持按 `formats` 自动生成 `virtual:file-viewer-renderers`、renderer chunk 分组、缺失 renderer 提示，并复制 PDF/CAD/Typst/Archive 离线 worker/WASM/vendor 资源和部署 manifest
 - `@file-viewer/vite-plugin` 新增 `scan: true` 源码 hint 自动装配能力，可从 `fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / 上传 `accept` 声明提取格式并选择对应 renderer；新增 `verify:vite-plugin-auto-scan` 防止自动化装配链路回退
+- 新增 `@file-viewer/preset-lite`、`@file-viewer/preset-office` 和 `@file-viewer/preset-engineering` 三个标准 preset 包；`@file-viewer/vite-plugin` 支持 `preset: 'lite' | 'office' | 'engineering' | 'all'`，会导入对应 `@file-viewer/preset-*` 包，并可继续用 `formats` 补充 preset 外 renderer，兼容 pnpm 严格依赖模型
 - `verify:renderer-standalone-smoke` 从 PDF-only 升级为全独立 renderer plugin 门禁，使用本地 tarball 构造隔离业务项目，安装 core、Vite 插件、19 个 renderer plugin 以及本地依赖闭包，逐个验证 renderer 注册、handler 挂载、Vite selection 映射和 virtual module 不误引入无关 renderer 包
 - 标准组件 README 与开源总仓 README 新增“工程级按需 renderer 装配”双语片段，统一说明 `@file-viewer/vite-plugin`、`virtual:file-viewer-renderers`、`builtinRenderers:'none'`、`rendererMode:'replace'`、`scan:true`、`copyAssets:true` 和 `@file-viewer/preset-all` 的推荐使用边界，并由 `verify:ecosystem-readmes` 纳入自动校验
 - STEP / IGES / IFC / 3DM 等重型工程格式完成浏览器 WASM 路线调研，后续适合按 OpenCascade、web-ifc、rhino3dm 等独立按需包维护，不进入 core 首屏链路
