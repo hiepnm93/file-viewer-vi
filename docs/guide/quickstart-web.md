@@ -151,7 +151,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 | 原生事件 | `viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`，以及 `viewer-load-complete`、`viewer-search-change` 等按事件类型派发的细分事件 |
 | 实例方法 | `load`、`update`、`reload`、`destroy`、`downloadOriginalFile`、`printRenderedHtml`、`exportRenderedHtml`、`zoomIn`、`zoomOut`、`resetZoom`、`searchDocument`、`nextSearchResult`、`previousSearchResult`、`collectDocumentAnchors`、`scrollToAnchor`、`scrollToLine`、`getDocumentTextChunks`、`getOperationAvailability`、`getZoomState`、`getSearchState`、`subscribe` |
 
-`options` 与 Vue、React、jQuery、Svelte 标准组件包保持一致，支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks、压缩包缓存和格式专项参数。
+`options` 与 Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包保持一致，支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks、压缩包缓存和格式专项参数。
 
 ## 常见问题
 

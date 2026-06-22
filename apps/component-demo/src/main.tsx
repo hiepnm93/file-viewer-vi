@@ -58,16 +58,16 @@ function App() {
 
       <section className="viewer-grid" aria-label="Component preview">
         <article className="viewer-panel">
-          <h2>React</h2>
+          <h2>Vanilla JS / Web</h2>
           <div className="viewer-frame">
-            <FileViewer url={docxPreviewUrl} data-testid="react-viewer" />
+            <WebViewerPanel />
           </div>
         </article>
 
         <article className="viewer-panel">
-          <h2>Web</h2>
+          <h2>React</h2>
           <div className="viewer-frame">
-            <WebViewerPanel />
+            <FileViewer url={docxPreviewUrl} data-testid="react-viewer" />
           </div>
         </article>
       </section>

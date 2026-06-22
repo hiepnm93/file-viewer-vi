@@ -110,5 +110,5 @@ Vue2.7 / Vue2.6 标准包共享同一套 core 预览能力，包括 Word、Excel
 历史包名 `@flyfish-group/file-viewer` 仍同步维护，对应 Vue2.7 线；新项目建议优先使用标准包名。
 
 <div class="doc-note">
-  如果一个预览能力需要被多个不同技术栈系统复用，建议统一使用标准组件包线，让 Vue、React、Pure Web、jQuery 和 Svelte 共享同一套 core 能力和运行参数。完整矩阵见 <a href="/guide/ecosystem">生态组件总览</a>。
+  如果一个预览能力需要被多个不同技术栈系统复用，建议统一使用标准组件包线，让 Vanilla JS / Pure Web、Vue、React、jQuery 和 Svelte 共享同一套 core 能力和运行参数。完整矩阵见 <a href="/guide/ecosystem">生态组件总览</a>。
 </div>

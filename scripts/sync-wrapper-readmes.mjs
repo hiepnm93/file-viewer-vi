@@ -114,7 +114,7 @@ function mountOptionRows(locale) {
       ['`type`', '显式指定扩展名或 MIME 线索，覆盖自动识别结果。'],
       ['`size`', '文件大小提示，用于生命周期上下文、加载状态和安全限制展示。'],
       ['`options`', '完整 `FileViewerOptions`，所有框架包保持同一套参数语义。'],
-      ['`onEvent` / `onStateChange`', 'Pure Web、React、Svelte 等命令式包装层的统一事件和状态订阅；Vue 组件会映射为原生 emit。']
+      ['`onEvent` / `onStateChange`', 'Vanilla JS / Pure Web、React、Svelte 等命令式包装层的统一事件和状态订阅；Vue 组件会映射为原生 emit。']
     ]
   }
   return [
@@ -125,7 +125,7 @@ function mountOptionRows(locale) {
     ['`type`', 'Explicit extension or MIME hint that overrides automatic detection.'],
     ['`size`', 'File size hint used in lifecycle context, loading states, and safety limits.'],
     ['`options`', 'The shared `FileViewerOptions` surface. Every component package keeps the same semantics.'],
-    ['`onEvent` / `onStateChange`', 'Unified event and state subscriptions for imperative wrappers such as Pure Web, React, and Svelte. Vue maps the same events to native emits.']
+    ['`onEvent` / `onStateChange`', 'Unified event and state subscriptions for imperative wrappers such as Vanilla JavaScript / Pure Web, React, and Svelte. Vue maps the same events to native emits.']
   ]
 }
 
@@ -162,6 +162,12 @@ function componentSurfaceRows(locale) {
   if (locale === 'zh') {
     return [
       [
+        'Vanilla JS / Pure Web `@file-viewer/web`',
+        '`<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)`',
+        '`viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()`',
+        'Custom Element 实例暴露完整 controller handle；IIFE script 标签会自动注册元素，同时保留 `mountViewer` 命令式挂载和资源复制 CLI。'
+      ],
+      [
         'Vue 3 `@file-viewer/vue3`',
         '`url`、`file`、`options`',
         '`load-start`、`load-complete`、`unload-start`、`unload-complete`、`operation-before`、`operation-cancel`、`operation-availability-change`、`search-change`、`location-change`、`zoom-change`',
@@ -192,12 +198,6 @@ function componentSurfaceRows(locale) {
         '面向 React 16.8 / 17；组件名和默认导出保持 legacy 生态友好。'
       ],
       [
-        'Pure Web `@file-viewer/web`',
-        '`<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)`',
-        '`viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()`',
-        'Custom Element 实例暴露完整 controller handle；IIFE script 标签会自动注册元素，同时保留 `mountViewer` 命令式挂载和资源复制 CLI。'
-      ],
-      [
         'jQuery `@file-viewer/jquery`',
         '`$(el).fileViewer(ViewerMountOptions & { replace?: boolean })`',
         '`onEvent`、`onStateChange` 或 `getFileViewerController(el).subscribe()`',
@@ -213,6 +213,12 @@ function componentSurfaceRows(locale) {
   }
 
   return [
+    [
+      'Vanilla JS / Pure Web `@file-viewer/web`',
+      '`<flyfish-file-viewer>` attributes: `src/url`, `filename/name`, `type`, `size`, `theme`, `toolbar`, `toolbar-position`, `watermark`, `search`, `options`; also supports `mountViewer(...)`',
+      '`viewer-ready`, `viewer-event`, `viewer-state-change`, `viewer-error`, `onEvent`, `onStateChange`, `controller.subscribe()`',
+      'The Custom Element instance exposes the full controller handle; the IIFE script auto-registers it while keeping imperative `mountViewer` and the asset copy CLI.'
+    ],
     [
       'Vue 3 `@file-viewer/vue3`',
       '`url`, `file`, `options`',
@@ -242,12 +248,6 @@ function componentSurfaceRows(locale) {
       'Same as the React package',
       '`onEvent`, `onStateChange`',
       'Targets React 16.8 / 17 with a legacy-friendly component export.'
-    ],
-    [
-      'Pure Web `@file-viewer/web`',
-      '`<flyfish-file-viewer>` attributes: `src/url`, `filename/name`, `type`, `size`, `theme`, `toolbar`, `toolbar-position`, `watermark`, `search`, `options`; also supports `mountViewer(...)`',
-      '`viewer-ready`, `viewer-event`, `viewer-state-change`, `viewer-error`, `onEvent`, `onStateChange`, `controller.subscribe()`',
-      'The Custom Element instance exposes the full controller handle; the IIFE script auto-registers it while keeping imperative `mountViewer` and the asset copy CLI.'
     ],
     [
       'jQuery `@file-viewer/jquery`',
@@ -288,19 +288,19 @@ function toolbarOptionRows(locale) {
 function customToolbarRows(locale) {
   if (locale === 'zh') {
     return [
+      ['Vanilla JS / Pure Web', '`<flyfish-file-viewer toolbar="false">` 或 `mountViewer(container, { options:{ toolbar:false }, onStateChange })`；外部 DOM 按钮可直接调用元素实例 / controller 的 `zoomIn()`、`printRenderedHtml()`、`searchDocument()` 等方法，复杂场景用 `viewer-state-change` 或 `controller.subscribe()` 同步状态。'],
       ['Vue 3', '传 `:options="{ toolbar: false }"` 隐藏内置工具栏，通过模板 `ref` 调用 `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()`；用 `@operation-availability-change` 和 `@zoom-change` 同步按钮显隐与比例。'],
       ['Vue 2.7 / 2.6', '同样设置 `toolbar:false`，通过 `$refs.viewer` 调用实例方法；监听 `@viewer-event`，在 `event.type === "operation-availability-change"` 或 `event.type === "zoom-change"` 时更新外部工具栏。'],
       ['React / React Legacy', '推荐 `useFileViewer({ options:{ toolbar:false } })`，把 `viewer.props` 传给组件，把按钮绑定到 `viewer.handle`，并读取 `viewer.state.availability` / `viewer.state.zoom` 控制禁用状态。'],
-      ['Pure Web', '`<flyfish-file-viewer toolbar="false">` 或 `mountViewer(container, { options:{ toolbar:false }, onStateChange })`；外部 DOM 按钮可直接调用元素实例 / controller 的 `zoomIn()`、`printRenderedHtml()`、`searchDocument()` 等方法，复杂场景用 `viewer-state-change` 或 `controller.subscribe()` 同步状态。'],
       ['jQuery', '`$("#viewer").fileViewer({ options:{ toolbar:false } })`；按钮调用 `$("#viewer").fileViewer("zoomIn")` 或通过 `getFileViewerController($("#viewer")).subscribe()` 获取能力状态。'],
       ['Svelte', '`<FileViewer bind:this={viewer} options={{ toolbar:false }} />`；按钮直接调用 `viewer.zoomIn()`、`viewer.printRenderedHtml()`，并用 `on:viewerEvent` / `onStateChange` 同步状态。']
     ]
   }
   return [
+    ['Vanilla JS / Pure Web', 'Use `<flyfish-file-viewer toolbar="false">` or `mountViewer(container, { options:{ toolbar:false }, onStateChange })`; custom DOM buttons can call `zoomIn()`, `printRenderedHtml()`, `searchDocument()`, and other element / controller methods directly. Use `viewer-state-change` or `controller.subscribe()` for advanced state sync.'],
     ['Vue 3', 'Pass `:options="{ toolbar: false }"`, call `downloadOriginalFile()`, `printRenderedHtml()`, `exportRenderedHtml()`, `zoomIn()`, `zoomOut()`, and `resetZoom()` through the template ref, and sync buttons with `@operation-availability-change` plus `@zoom-change`.'],
     ['Vue 2.7 / 2.6', 'Use `toolbar:false`, call instance methods through `$refs.viewer`, and listen to `@viewer-event` for `operation-availability-change` or `zoom-change`.'],
     ['React / React Legacy', 'Prefer `useFileViewer({ options:{ toolbar:false } })`; pass `viewer.props` to the component, bind custom buttons to `viewer.handle`, and read `viewer.state.availability` / `viewer.state.zoom`.'],
-    ['Pure Web', 'Use `<flyfish-file-viewer toolbar="false">` or `mountViewer(container, { options:{ toolbar:false }, onStateChange })`; custom DOM buttons can call `zoomIn()`, `printRenderedHtml()`, `searchDocument()`, and other element / controller methods directly. Use `viewer-state-change` or `controller.subscribe()` for advanced state sync.'],
     ['jQuery', 'Use `$("#viewer").fileViewer({ options:{ toolbar:false } })`; buttons can call `$("#viewer").fileViewer("zoomIn")` or read capability state through `getFileViewerController($("#viewer")).subscribe()`.'],
     ['Svelte', 'Use `<FileViewer bind:this={viewer} options={{ toolbar:false }} />`; buttons call `viewer.zoomIn()` / `viewer.printRenderedHtml()`, with `on:viewerEvent` or `onStateChange` for state sync.']
   ]
@@ -429,7 +429,7 @@ function generatedWrapperBlock(locale) {
       '',
       '## 实际组件属性',
       '',
-      '下面列的是每个标准组件包当前真实暴露的属性、事件和控制入口。需要 `buffer`、`name`、`type`、`size` 这类命令式挂载参数时，优先选择 React、Pure Web、Svelte、jQuery 或 Vue2 组件；Vue3 声明式组件保持 `url` / `file` / `options` 的简洁入口，复杂二进制来源请包装成带文件名的 `File`。',
+      '下面列的是每个标准组件包当前真实暴露的属性、事件和控制入口。需要 `buffer`、`name`、`type`、`size` 这类命令式挂载参数时，优先选择 Vanilla JS / Pure Web、React、Svelte、jQuery 或 Vue2 组件；Vue3 声明式组件保持 `url` / `file` / `options` 的简洁入口，复杂二进制来源请包装成带文件名的 `File`。',
       '',
       markdownTable(['组件', '实际属性 / 入口', '事件入口', '定制入口'], componentSurfaceRows('zh')),
       '',
@@ -496,7 +496,7 @@ function generatedWrapperBlock(locale) {
     '',
     '## Actual Component Props',
     '',
-    'The table below lists the real props, event channel, and customization entry for every standard package. If you need imperative mount fields such as `buffer`, `name`, `type`, or `size`, prefer React, Pure Web, Svelte, jQuery, or Vue 2. The Vue 3 declarative component intentionally keeps the compact `url` / `file` / `options` entry; wrap raw binary input as a named `File` when extension detection matters.',
+    'The table below lists the real props, event channel, and customization entry for every standard package. If you need imperative mount fields such as `buffer`, `name`, `type`, or `size`, prefer Vanilla JavaScript / Pure Web, React, Svelte, jQuery, or Vue 2. The Vue 3 declarative component intentionally keeps the compact `url` / `file` / `options` entry; wrap raw binary input as a named `File` when extension detection matters.',
     '',
     markdownTable(['Component', 'Actual props / entry', 'Event channel', 'Customization entry'], componentSurfaceRows('en')),
     '',
@@ -555,7 +555,7 @@ function generatedPublicBlock(locale) {
       '',
       '### 组件属性与工具栏定制摘要',
       '',
-      '每个生态包都暴露原生接入方式。Vue3 保持轻量声明式 props；React、Pure Web、Svelte、jQuery 和 Vue2 适合需要 `buffer`、`name`、`type`、`size` 等命令式挂载参数的场景。完整示例见官方文档: https://doc.file-viewer.app/guide/ecosystem',
+      '每个生态包都暴露原生接入方式。Vanilla JS / Pure Web 优先面向非框架、Custom Element 和 script 标签场景；Vue3 保持轻量声明式 props；React、Svelte、jQuery 和 Vue2 适合需要 `buffer`、`name`、`type`、`size` 等命令式挂载参数的场景。完整示例见官方文档: https://doc.file-viewer.app/guide/ecosystem',
       '',
       markdownTable(['组件', '实际属性 / 入口', '事件入口', '定制入口'], componentSurfaceRows('zh')),
       '',
@@ -583,7 +583,7 @@ function generatedPublicBlock(locale) {
     '',
     '### Component Props and Toolbar Customization Summary',
     '',
-    'Every ecosystem package exposes a native integration surface. Vue 3 keeps a compact declarative prop API; React, Pure Web, Svelte, jQuery, and Vue 2 are better when you need imperative mount fields such as `buffer`, `name`, `type`, and `size`. See the full examples in the official documentation: https://doc.file-viewer.app/guide/ecosystem',
+    'Every ecosystem package exposes a native integration surface. Vanilla JavaScript / Pure Web is the first stop for framework-free pages, Custom Elements, and script tags; Vue 3 keeps a compact declarative prop API; React, Svelte, jQuery, and Vue 2 are better when you need imperative mount fields such as `buffer`, `name`, `type`, and `size`. See the full examples in the official documentation: https://doc.file-viewer.app/guide/ecosystem',
     '',
     markdownTable(['Component', 'Actual props / entry', 'Event channel', 'Customization entry'], componentSurfaceRows('en')),
     '',

@@ -83,6 +83,18 @@
   ],
   "wrappers": [
     {
+      "id": "web",
+      "framework": "Vanilla JS / Pure Web",
+      "packageName": "@file-viewer/web",
+      "description": "Framework-free File Viewer package with Custom Element, ESM APIs, script-tag IIFE, worker/WASM viewer assets, and an asset copy CLI.",
+      "packageDir": "packages/components/web",
+      "repository": "file-viewer-web",
+      "github": "https://github.com/flyfish-dev/file-viewer-web",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-web",
+      "entryFormats": ["esm", "types", "iife", "viewer-assets", "copy-assets-cli"],
+      "historicalPackages": ["@flyfish-group/file-viewer-web"]
+    },
+    {
       "id": "vue3",
       "framework": "Vue 3",
       "packageName": "@file-viewer/vue3",
@@ -141,18 +153,6 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-legacy",
       "entryFormats": ["esm", "types"],
       "historicalPackages": []
-    },
-    {
-      "id": "web",
-      "framework": "Pure Web",
-      "packageName": "@file-viewer/web",
-      "description": "Framework-free File Viewer package with ESM APIs, script-tag IIFE, worker/WASM viewer assets, and an asset copy CLI.",
-      "packageDir": "packages/components/web",
-      "repository": "file-viewer-web",
-      "github": "https://github.com/flyfish-dev/file-viewer-web",
-      "gitee": "https://gitee.com/flyfish-dev/file-viewer-web",
-      "entryFormats": ["esm", "types", "iife", "viewer-assets", "copy-assets-cli"],
-      "historicalPackages": ["@flyfish-group/file-viewer-web"]
     },
     {
       "id": "jquery",

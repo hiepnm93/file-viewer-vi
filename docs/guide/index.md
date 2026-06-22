@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和开源分发说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和开源分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和开源分发。
 </p>
 
 <div class="doc-link-row">
@@ -53,7 +53,7 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 和 Svelte 都有独立标准包；各包只依赖 core 和自身生态依赖，适合私有化部署和多系统复用。</p>
+    <p>Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 都有独立标准包；各包只依赖 core 和自身生态依赖，适合私有化部署和多系统复用。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
@@ -87,10 +87,10 @@
 | 想确认所有格式 | [支持格式](/guide/formats) |
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
 | 想并排比对两份文件 | [Demo 说明: 文档比对页](/guide/demo#文档比对页) |
+| 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |
 | 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想在 React 中接入 | [React 集成](/guide/quickstart-react) |
-| 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |
 | 想在 Svelte 中接入 | [Svelte 集成](/guide/ecosystem#svelte) |
 | 想在 jQuery 老后台中接入 | [jQuery 集成](/guide/ecosystem#jquery) |
 | 想基于 core 自研组件 | [Core 自定义接入](/guide/ecosystem#core) |
@@ -100,5 +100,5 @@
 | 想下载源码、release 或了解支持 | [发布与开源分发](/guide/distribution) |
 
 <div class="doc-note">
-  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">demo.file-viewer.app</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React、Pure Web、jQuery 和 Svelte 组件会在业务页面中原生挂载，不依赖官网 Demo。
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">demo.file-viewer.app</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。Vanilla JS / Pure Web、React、jQuery 和 Svelte 组件会在业务页面中原生挂载，不依赖官网 Demo。
 </div>
