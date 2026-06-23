@@ -211,10 +211,21 @@ async function assertReleaseStatus(repoDir) {
     assert(typeof detail.externalBlocker === 'boolean', 'Release status gap detail externalBlocker flag missing')
     assert(typeof detail.nextAction === 'string' && detail.nextAction, 'Release status gap detail next action missing')
   }
+  const packageRepositoryTargets = [
+    wrapperManifest.corePackage,
+    ...wrapperManifest.wrappers
+  ]
   assert(
-    status.componentRepositories.length === wrapperManifest.wrappers.length + 1,
-    `Release status component repository count ${status.componentRepositories.length} !== ${wrapperManifest.wrappers.length + 1}`
+    status.componentRepositories.length === packageRepositoryTargets.length,
+    `Release status package repository count ${status.componentRepositories.length} !== ${packageRepositoryTargets.length}`
   )
+  const packageRepositoryRows = new Map(status.componentRepositories.map(row => [row.packageName, row]))
+  for (const target of packageRepositoryTargets) {
+    const row = packageRepositoryRows.get(target.packageName)
+    assert(row, `Release status missing package repository row for ${target.packageName}`)
+    assert(row.github?.url === target.github, `${target.packageName} GitHub repository URL drifted`)
+    assert(row.github?.ok === true, `${target.packageName} GitHub repository is not reachable`)
+  }
   assert(
     status.npmPackages.length === ecosystemPackageEntries.length,
     `Release status npm package count ${status.npmPackages.length} !== ${ecosystemPackageEntries.length}`

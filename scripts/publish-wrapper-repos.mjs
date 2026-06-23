@@ -81,16 +81,6 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
   }
   return true
 })
-const renderers = (wrapperManifest.renderers || []).filter(renderer => {
-  if (selectedPackages.size && !selectedPackages.has(renderer.packageName)) {
-    return false
-  }
-  if (selectedIds.size && !selectedIds.has(renderer.id)) {
-    return false
-  }
-  return true
-})
-
 const targets = [
   ...(includeCore
     ? [{
@@ -101,13 +91,6 @@ const targets = [
         gitee: corePackage.gitee
       }]
     : []),
-  ...renderers.map(renderer => ({
-    kind: 'renderer',
-    packageName: renderer.packageName,
-    repository: renderer.repository,
-    github: renderer.github,
-    gitee: renderer.gitee
-  })),
   ...wrappers.map(wrapper => ({
     kind: 'component',
     packageName: wrapper.packageName,
@@ -217,28 +200,13 @@ const ensureRemote = (cwd, name, url) => {
 }
 
 const verifyPackageRepos = () => {
-  const hasCoreOrComponents = targets.some(target => target.kind === 'core' || target.kind === 'component')
-  const hasRenderers = targets.some(target => target.kind === 'renderer')
-
-  if (hasCoreOrComponents) {
-    console.log('Verifying core and component repositories before publishing...')
-    run(
-      'node',
-      ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
-      sourceRoot,
-      { mutates: false }
-    )
-  }
-
-  if (hasRenderers) {
-    console.log('Verifying renderer repositories before publishing...')
-    run(
-      'node',
-      ['scripts/verify-renderer-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
-      sourceRoot,
-      { mutates: false }
-    )
-  }
+  console.log('Verifying core and component repositories before publishing...')
+  run(
+    'node',
+    ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
+    sourceRoot,
+    { mutates: false }
+  )
 }
 
 verifyPackageRepos()

@@ -544,13 +544,6 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
         historicalPackages: wrapper?.historicalPackages ?? []
       }
     }),
-    rendererRepositories: (wrapperManifest.renderers || []).map(renderer => ({
-      packageName: renderer.packageName,
-      repository: renderer.repository,
-      github: renderer.github,
-      gitee: renderer.gitee,
-      entryFormats: renderer.entryFormats
-    })),
     wrapperRepositories: wrapperManifest.wrappers.map(wrapper => ({
       framework: wrapper.framework,
       packageName: wrapper.packageName,
