@@ -1,5 +1,9 @@
 import type { FileRenderContext, FileViewerRenderedInstance } from '@file-viewer/core';
 import {
+  createEdaLayoutWebglBatch,
+  type EdaLayoutWebglBatch,
+} from '@file-viewer/eda-layout';
+import {
   parseEdaFile,
   type EdaDomainRole,
   type EdaEntity,
@@ -99,6 +103,10 @@ const edaStyle = `
 .eda-layout-meta span{border-radius:999px;padding:6px 10px;background:#eef6f7;color:#0b7480;font-size:12px;font-weight:800}
 .eda-layout-canvas{flex:1;min-height:320px;overflow:auto;background:#111827}
 .eda-layout-svg{display:block;min-width:860px;min-height:420px;background:#111827}
+.eda-layout-webgl-wrap{position:relative;display:inline-block;min-width:860px;min-height:420px;background:#111827}
+.eda-layout-webgl{display:block;background:#111827}
+.eda-layout-label-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.eda-layout-label-layer span{position:absolute;max-width:220px;transform:translate(8px,-18px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d9f99d;text-shadow:0 1px 3px #020617;font:700 12px ui-sans-serif,system-ui,sans-serif}
 .eda-layout-svg polygon{fill-opacity:.28;stroke-width:1.4;vector-effect:non-scaling-stroke}
 .eda-layout-svg polyline{fill:none;stroke-width:2;vector-effect:non-scaling-stroke}
 .eda-layout-svg circle{stroke-width:1.4;vector-effect:non-scaling-stroke}
@@ -198,9 +206,24 @@ const layoutPalette = [
   '#67e8f9',
 ];
 
+const WEBGL_LAYOUT_ELEMENT_THRESHOLD = 360;
+const WEBGL_LAYOUT_VERTEX_THRESHOLD = 1800;
+const WEBGL_FLOATS_PER_VERTEX = 5;
+
 const layoutColor = (element: EdaLayoutElement) => {
   const layer = Number.isFinite(element.layer) ? Number(element.layer) : 0;
   return layoutPalette[Math.abs(layer) % layoutPalette.length];
+};
+
+const countLayoutVertices = (layout: EdaLayoutPreview) => {
+  return layout.elements.reduce((total, element) => total + element.xy.length, 0);
+};
+
+const shouldUseWebglLayoutPreview = (layout: EdaLayoutPreview) => {
+  return layout.format === 'gdsii' && (
+    layout.elements.length >= WEBGL_LAYOUT_ELEMENT_THRESHOLD ||
+    countLayoutVertices(layout) >= WEBGL_LAYOUT_VERTEX_THRESHOLD
+  );
 };
 
 const formatOptionalNumber = (value?: number) => {
@@ -219,6 +242,159 @@ const createSvgElement = <K extends keyof SVGElementTagNameMap>(
     element.setAttribute(key, String(value));
   });
   return element;
+};
+
+const createWebglShader = (gl: WebGLRenderingContext, type: number, source: string) => {
+  const shader = gl.createShader(type);
+  if (!shader) {
+    return null;
+  }
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    gl.deleteShader(shader);
+    return null;
+  }
+  return shader;
+};
+
+const createWebglProgram = (gl: WebGLRenderingContext) => {
+  const vertexShader = createWebglShader(gl, gl.VERTEX_SHADER, `
+    attribute vec2 a_position;
+    attribute vec3 a_color;
+    varying vec3 v_color;
+    void main() {
+      gl_Position = vec4(a_position, 0.0, 1.0);
+      gl_PointSize = 5.0;
+      v_color = a_color;
+    }
+  `);
+  const fragmentShader = createWebglShader(gl, gl.FRAGMENT_SHADER, `
+    precision mediump float;
+    varying vec3 v_color;
+    uniform float u_alpha;
+    void main() {
+      gl_FragColor = vec4(v_color, u_alpha);
+    }
+  `);
+  if (!vertexShader || !fragmentShader) {
+    return null;
+  }
+  const program = gl.createProgram();
+  if (!program) {
+    return null;
+  }
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  gl.deleteShader(vertexShader);
+  gl.deleteShader(fragmentShader);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    gl.deleteProgram(program);
+    return null;
+  }
+  return program;
+};
+
+const drawWebglVertices = (
+  gl: WebGLRenderingContext,
+  program: WebGLProgram,
+  vertices: Float32Array,
+  mode: number,
+  alpha: number
+) => {
+  if (!vertices.length) {
+    return;
+  }
+  const buffer = gl.createBuffer();
+  if (!buffer) {
+    return;
+  }
+  const stride = WEBGL_FLOATS_PER_VERTEX * Float32Array.BYTES_PER_ELEMENT;
+  const positionLocation = gl.getAttribLocation(program, 'a_position');
+  const colorLocation = gl.getAttribLocation(program, 'a_color');
+  const alphaLocation = gl.getUniformLocation(program, 'u_alpha');
+  if (positionLocation < 0 || colorLocation < 0 || !alphaLocation) {
+    gl.deleteBuffer(buffer);
+    return;
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(positionLocation);
+  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, stride, 0);
+  gl.enableVertexAttribArray(colorLocation);
+  gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, stride, 2 * Float32Array.BYTES_PER_ELEMENT);
+  gl.uniform1f(alphaLocation, alpha);
+  gl.drawArrays(mode, 0, vertices.length / WEBGL_FLOATS_PER_VERTEX);
+  gl.deleteBuffer(buffer);
+};
+
+const renderWebglBatch = (
+  gl: WebGLRenderingContext,
+  batch: EdaLayoutWebglBatch,
+  width: number,
+  height: number
+) => {
+  const program = createWebglProgram(gl);
+  if (!program) {
+    return false;
+  }
+  gl.viewport(0, 0, width, height);
+  gl.clearColor(0.066, 0.094, 0.153, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(program);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  drawWebglVertices(gl, program, batch.triangleVertices, gl.TRIANGLES, 0.32);
+  drawWebglVertices(gl, program, batch.lineVertices, gl.LINES, 0.92);
+  drawWebglVertices(gl, program, batch.pointVertices, gl.POINTS, 0.98);
+  gl.deleteProgram(program);
+  return true;
+};
+
+const createWebglLayoutPreview = (
+  layout: EdaLayoutPreview,
+  width: number,
+  height: number
+) => {
+  const batch = createEdaLayoutWebglBatch(layout, { palette: layoutPalette });
+  const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const wrap = createElement('div', 'eda-layout-webgl-wrap');
+  wrap.style.width = `${width}px`;
+  wrap.style.height = `${height}px`;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'eda-layout-webgl';
+  canvas.width = Math.max(1, Math.round(width * devicePixelRatio));
+  canvas.height = Math.max(1, Math.round(height * devicePixelRatio));
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  const gl = canvas.getContext('webgl', {
+    alpha: false,
+    antialias: true,
+    preserveDrawingBuffer: true,
+  }) || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
+  if (!gl || !renderWebglBatch(gl, batch, canvas.width, canvas.height)) {
+    return null;
+  }
+
+  if (batch.labels.length) {
+    const labelLayer = createElement('div', 'eda-layout-label-layer');
+    batch.labels.forEach(label => {
+      const item = createElement('span', undefined, label.text);
+      item.title = label.text;
+      item.style.left = `${((label.clipX + 1) / 2) * width}px`;
+      item.style.top = `${((1 - label.clipY) / 2) * height}px`;
+      labelLayer.append(item);
+    });
+    wrap.append(canvas, labelLayer);
+  } else {
+    wrap.append(canvas);
+  }
+
+  return {
+    element: wrap,
+    batch,
+  };
 };
 
 const createLayoutPreview = (layout: EdaLayoutPreview) => {
@@ -262,6 +438,22 @@ const createLayoutPreview = (layout: EdaLayoutPreview) => {
     .join(' ');
 
   const canvas = createElement('div', 'eda-layout-canvas');
+  const webglPreview = shouldUseWebglLayoutPreview(layout)
+    ? createWebglLayoutPreview(layout, svgWidth, svgHeight)
+    : null;
+  if (webglPreview) {
+    meta.append(createElement('span', undefined, `Renderer: WebGL · ${webglPreview.batch.elementCount} elements`));
+    webglPreview.batch.warnings.forEach(item => {
+      const warning = createElement('div', 'eda-warning');
+      warning.append(createElement('p', undefined, item));
+      panel.append(warning);
+    });
+    canvas.append(webglPreview.element);
+    panel.append(canvas);
+    return panel;
+  }
+
+  meta.append(createElement('span', undefined, 'Renderer: SVG'));
   const svg = createSvgElement('svg', {
     class: 'eda-layout-svg',
     width: svgWidth,
@@ -442,7 +634,7 @@ export default async function renderEda(
       createElement('strong', undefined, parsed.title),
       createElement('p', undefined, parsed.type === 'gds' || parsed.type === 'oas' || parsed.type === 'oasis'
         ? parsed.layout
-          ? 'GDSII 属于芯片版图工程文件。预览器已在浏览器端解析标准记录并生成 SVG 版图预览，同时保留结构、字符串和诊断索引。'
+          ? 'GDSII 属于芯片版图工程文件。预览器已在浏览器端解析标准记录，小图生成 SVG，大图自动切换 WebGL canvas，同时保留结构、字符串和诊断索引。'
           : 'GDSII / OASIS 属于芯片版图工程文件。预览器优先索引结构、属性、可读字符串和二进制线索，并在纯前端安全退化。'
         : 'OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。')
     );

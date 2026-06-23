@@ -21,6 +21,16 @@ const GDS_RECORD = {
     TEXTTYPE: 0x16,
     STRING: 0x19,
 };
+const DEFAULT_WEBGL_PALETTE = [
+    '#5eead4',
+    '#93c5fd',
+    '#c4b5fd',
+    '#f9a8d4',
+    '#fde68a',
+    '#86efac',
+    '#fdba74',
+    '#67e8f9',
+];
 const cleanupText = (text) => {
     return text
         .replace(/\u0000/g, '')
@@ -83,6 +93,30 @@ const updateLayoutBounds = (bounds, points) => {
         next.maxY = Math.max(next.maxY, point.y);
     });
     return next;
+};
+const normalizeHexColor = (value) => {
+    const normalized = value.trim().replace(/^#/, '');
+    if (/^[0-9a-f]{3}$/i.test(normalized)) {
+        return normalized.split('').map(part => `${part}${part}`).join('');
+    }
+    return /^[0-9a-f]{6}$/i.test(normalized) ? normalized : '5eead4';
+};
+const colorForLayer = (layer, palette) => {
+    const normalizedLayer = Number.isFinite(layer) ? Math.abs(Number(layer)) : 0;
+    const color = normalizeHexColor(palette[normalizedLayer % palette.length] || DEFAULT_WEBGL_PALETTE[0]);
+    return {
+        r: parseInt(color.slice(0, 2), 16) / 255,
+        g: parseInt(color.slice(2, 4), 16) / 255,
+        b: parseInt(color.slice(4, 6), 16) / 255,
+    };
+};
+const withoutClosingPoint = (points) => {
+    if (points.length < 2) {
+        return [...points];
+    }
+    const first = points[0];
+    const last = points[points.length - 1];
+    return first.x === last.x && first.y === last.y ? points.slice(0, -1) : [...points];
 };
 export const parseGdsLayout = (bytes) => {
     const structures = [];
@@ -220,6 +254,99 @@ export const parseGdsLayout = (bytes) => {
         structureCount: structures.length,
         structures,
         elements,
+        bounds,
+        warnings,
+    };
+};
+export const createEdaLayoutWebglBatch = (layout, options = {}) => {
+    var _a, _b, _c;
+    const warnings = [];
+    const triangleVertices = [];
+    const lineVertices = [];
+    const pointVertices = [];
+    const labels = [];
+    const palette = ((_a = options.palette) === null || _a === void 0 ? void 0 : _a.length) ? options.palette : DEFAULT_WEBGL_PALETTE;
+    const maxElements = (_b = options.maxElements) !== null && _b !== void 0 ? _b : 18000;
+    const maxLabels = (_c = options.maxLabels) !== null && _c !== void 0 ? _c : 600;
+    const bounds = layout.bounds;
+    if (layout.format !== 'gdsii' || !bounds) {
+        return {
+            format: 'gdsii',
+            elementCount: 0,
+            triangleVertices: new Float32Array(),
+            lineVertices: new Float32Array(),
+            pointVertices: new Float32Array(),
+            labels,
+            bounds,
+            warnings: ['WebGL batches are currently generated for parsed GDSII geometry only.'],
+        };
+    }
+    const rawWidth = Math.max(1, bounds.maxX - bounds.minX);
+    const rawHeight = Math.max(1, bounds.maxY - bounds.minY);
+    const toClip = (point) => ({
+        x: ((point.x - bounds.minX) / rawWidth) * 2 - 1,
+        y: ((point.y - bounds.minY) / rawHeight) * 2 - 1,
+    });
+    const pushVertex = (target, point, color) => {
+        const mapped = toClip(point);
+        target.push(mapped.x, mapped.y, color.r, color.g, color.b);
+    };
+    const pushLine = (from, to, color) => {
+        pushVertex(lineVertices, from, color);
+        pushVertex(lineVertices, to, color);
+    };
+    const elements = layout.elements.slice(0, maxElements);
+    if (layout.elements.length > maxElements) {
+        warnings.push(`Layout contains ${layout.elements.length} elements; WebGL preview batched the first ${maxElements} elements to protect browser memory.`);
+    }
+    elements.forEach(element => {
+        const color = colorForLayer(element.layer, palette);
+        const points = withoutClosingPoint(element.xy);
+        if ((element.kind === 'boundary' || element.kind === 'aref') && points.length >= 3) {
+            for (let index = 1; index < points.length - 1; index += 1) {
+                pushVertex(triangleVertices, points[0], color);
+                pushVertex(triangleVertices, points[index], color);
+                pushVertex(triangleVertices, points[index + 1], color);
+            }
+            for (let index = 0; index < points.length; index += 1) {
+                pushLine(points[index], points[(index + 1) % points.length], color);
+            }
+            return;
+        }
+        if (element.kind === 'path' && points.length >= 2) {
+            for (let index = 0; index < points.length - 1; index += 1) {
+                pushLine(points[index], points[index + 1], color);
+            }
+            return;
+        }
+        const anchor = points[0];
+        if (!anchor) {
+            return;
+        }
+        pushVertex(pointVertices, anchor, color);
+        const label = element.text || element.reference;
+        if (label && labels.length < maxLabels) {
+            const mapped = toClip(anchor);
+            labels.push({
+                text: label,
+                layer: element.layer,
+                x: anchor.x,
+                y: anchor.y,
+                clipX: mapped.x,
+                clipY: mapped.y,
+            });
+        }
+    });
+    if (labels.length >= maxLabels) {
+        warnings.push(`Only the first ${maxLabels} layout labels are shown in the WebGL overlay.`);
+    }
+    return {
+        format: 'gdsii',
+        elementCount: elements.length,
+        triangleVertices: new Float32Array(triangleVertices),
+        lineVertices: new Float32Array(lineVertices),
+        pointVertices: new Float32Array(pointVertices),
+        labels,
         bounds,
         warnings,
     };

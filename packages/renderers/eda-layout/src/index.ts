@@ -44,6 +44,32 @@ export interface EdaOasisInspection {
   warnings: string[];
 }
 
+export interface EdaLayoutWebglLabel {
+  text: string;
+  layer?: number;
+  x: number;
+  y: number;
+  clipX: number;
+  clipY: number;
+}
+
+export interface EdaLayoutWebglBatch {
+  format: 'gdsii';
+  elementCount: number;
+  triangleVertices: Float32Array;
+  lineVertices: Float32Array;
+  pointVertices: Float32Array;
+  labels: readonly EdaLayoutWebglLabel[];
+  bounds?: EdaLayoutBounds;
+  warnings: readonly string[];
+}
+
+export interface CreateEdaLayoutWebglBatchOptions {
+  maxElements?: number;
+  maxLabels?: number;
+  palette?: readonly string[];
+}
+
 const GDS_RECORD = {
   BGNLIB: 0x01,
   LIBNAME: 0x02,
@@ -66,6 +92,17 @@ const GDS_RECORD = {
   TEXTTYPE: 0x16,
   STRING: 0x19,
 } as const;
+
+const DEFAULT_WEBGL_PALETTE = [
+  '#5eead4',
+  '#93c5fd',
+  '#c4b5fd',
+  '#f9a8d4',
+  '#fde68a',
+  '#86efac',
+  '#fdba74',
+  '#67e8f9',
+] as const;
 
 const cleanupText = (text: string) => {
   return text
@@ -142,6 +179,33 @@ const updateLayoutBounds = (
     next.maxY = Math.max(next.maxY, point.y);
   });
   return next;
+};
+
+const normalizeHexColor = (value: string) => {
+  const normalized = value.trim().replace(/^#/, '');
+  if (/^[0-9a-f]{3}$/i.test(normalized)) {
+    return normalized.split('').map(part => `${part}${part}`).join('');
+  }
+  return /^[0-9a-f]{6}$/i.test(normalized) ? normalized : '5eead4';
+};
+
+const colorForLayer = (layer: number | undefined, palette: readonly string[]) => {
+  const normalizedLayer = Number.isFinite(layer) ? Math.abs(Number(layer)) : 0;
+  const color = normalizeHexColor(palette[normalizedLayer % palette.length] || DEFAULT_WEBGL_PALETTE[0]);
+  return {
+    r: parseInt(color.slice(0, 2), 16) / 255,
+    g: parseInt(color.slice(2, 4), 16) / 255,
+    b: parseInt(color.slice(4, 6), 16) / 255,
+  };
+};
+
+const withoutClosingPoint = (points: readonly EdaPoint[]) => {
+  if (points.length < 2) {
+    return [...points];
+  }
+  const first = points[0];
+  const last = points[points.length - 1];
+  return first.x === last.x && first.y === last.y ? points.slice(0, -1) : [...points];
 };
 
 export const parseGdsLayout = (bytes: Uint8Array): EdaLayoutPreview | undefined => {
@@ -284,6 +348,110 @@ export const parseGdsLayout = (bytes: Uint8Array): EdaLayoutPreview | undefined 
     structureCount: structures.length,
     structures,
     elements,
+    bounds,
+    warnings,
+  };
+};
+
+export const createEdaLayoutWebglBatch = (
+  layout: EdaLayoutPreview,
+  options: CreateEdaLayoutWebglBatchOptions = {}
+): EdaLayoutWebglBatch => {
+  const warnings: string[] = [];
+  const triangleVertices: number[] = [];
+  const lineVertices: number[] = [];
+  const pointVertices: number[] = [];
+  const labels: EdaLayoutWebglLabel[] = [];
+  const palette = options.palette?.length ? options.palette : DEFAULT_WEBGL_PALETTE;
+  const maxElements = options.maxElements ?? 18_000;
+  const maxLabels = options.maxLabels ?? 600;
+  const bounds = layout.bounds;
+
+  if (layout.format !== 'gdsii' || !bounds) {
+    return {
+      format: 'gdsii',
+      elementCount: 0,
+      triangleVertices: new Float32Array(),
+      lineVertices: new Float32Array(),
+      pointVertices: new Float32Array(),
+      labels,
+      bounds,
+      warnings: ['WebGL batches are currently generated for parsed GDSII geometry only.'],
+    };
+  }
+
+  const rawWidth = Math.max(1, bounds.maxX - bounds.minX);
+  const rawHeight = Math.max(1, bounds.maxY - bounds.minY);
+  const toClip = (point: EdaPoint) => ({
+    x: ((point.x - bounds.minX) / rawWidth) * 2 - 1,
+    y: ((point.y - bounds.minY) / rawHeight) * 2 - 1,
+  });
+  const pushVertex = (target: number[], point: EdaPoint, color: ReturnType<typeof colorForLayer>) => {
+    const mapped = toClip(point);
+    target.push(mapped.x, mapped.y, color.r, color.g, color.b);
+  };
+  const pushLine = (from: EdaPoint, to: EdaPoint, color: ReturnType<typeof colorForLayer>) => {
+    pushVertex(lineVertices, from, color);
+    pushVertex(lineVertices, to, color);
+  };
+
+  const elements = layout.elements.slice(0, maxElements);
+  if (layout.elements.length > maxElements) {
+    warnings.push(`Layout contains ${layout.elements.length} elements; WebGL preview batched the first ${maxElements} elements to protect browser memory.`);
+  }
+
+  elements.forEach(element => {
+    const color = colorForLayer(element.layer, palette);
+    const points = withoutClosingPoint(element.xy);
+    if ((element.kind === 'boundary' || element.kind === 'aref') && points.length >= 3) {
+      for (let index = 1; index < points.length - 1; index += 1) {
+        pushVertex(triangleVertices, points[0], color);
+        pushVertex(triangleVertices, points[index], color);
+        pushVertex(triangleVertices, points[index + 1], color);
+      }
+      for (let index = 0; index < points.length; index += 1) {
+        pushLine(points[index], points[(index + 1) % points.length], color);
+      }
+      return;
+    }
+
+    if (element.kind === 'path' && points.length >= 2) {
+      for (let index = 0; index < points.length - 1; index += 1) {
+        pushLine(points[index], points[index + 1], color);
+      }
+      return;
+    }
+
+    const anchor = points[0];
+    if (!anchor) {
+      return;
+    }
+    pushVertex(pointVertices, anchor, color);
+    const label = element.text || element.reference;
+    if (label && labels.length < maxLabels) {
+      const mapped = toClip(anchor);
+      labels.push({
+        text: label,
+        layer: element.layer,
+        x: anchor.x,
+        y: anchor.y,
+        clipX: mapped.x,
+        clipY: mapped.y,
+      });
+    }
+  });
+
+  if (labels.length >= maxLabels) {
+    warnings.push(`Only the first ${maxLabels} layout labels are shown in the WebGL overlay.`);
+  }
+
+  return {
+    format: 'gdsii',
+    elementCount: elements.length,
+    triangleVertices: new Float32Array(triangleVertices),
+    lineVertices: new Float32Array(lineVertices),
+    pointVertices: new Float32Array(pointVertices),
+    labels,
     bounds,
     warnings,
   };

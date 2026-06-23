@@ -36,5 +36,29 @@ export interface EdaOasisInspection {
     byteLength: number;
     warnings: string[];
 }
+export interface EdaLayoutWebglLabel {
+    text: string;
+    layer?: number;
+    x: number;
+    y: number;
+    clipX: number;
+    clipY: number;
+}
+export interface EdaLayoutWebglBatch {
+    format: 'gdsii';
+    elementCount: number;
+    triangleVertices: Float32Array;
+    lineVertices: Float32Array;
+    pointVertices: Float32Array;
+    labels: readonly EdaLayoutWebglLabel[];
+    bounds?: EdaLayoutBounds;
+    warnings: readonly string[];
+}
+export interface CreateEdaLayoutWebglBatchOptions {
+    maxElements?: number;
+    maxLabels?: number;
+    palette?: readonly string[];
+}
 export declare const parseGdsLayout: (bytes: Uint8Array) => EdaLayoutPreview | undefined;
+export declare const createEdaLayoutWebglBatch: (layout: EdaLayoutPreview, options?: CreateEdaLayoutWebglBatchOptions) => EdaLayoutWebglBatch;
 export declare const inspectOasisLayout: (bytes: Uint8Array) => EdaOasisInspection;

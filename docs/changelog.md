@@ -14,8 +14,8 @@
 - 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-data` 独立 renderer 包，承接字体、PSD、AI/EPS、SQLite、Parquet、Avro、WASM 和 WebArchive 的安全结构预览，SQLite WASM 由 `@file-viewer/vite-plugin` 复制到离线 assets
-- 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
-- 新增 `@file-viewer/eda-layout` 与 `@file-viewer/eda-orcad` 两个 EDA engine package；GDSII/OASIS 版图底层能力、OrCAD/Allegro 二进制检查能力从 UI renderer 中拆出，后续 WebGL/WASM 或逐步 TS 移植可以独立发布、独立回归
+- 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，大元素集会自动切到 WebGL canvas，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
+- 新增 `@file-viewer/eda-layout` 与 `@file-viewer/eda-orcad` 两个 EDA engine package；GDSII/OASIS 版图底层能力、OrCAD/Allegro 二进制检查能力从 UI renderer 中拆出，GDSII WebGL typed-array 批次已有独立门禁，后续 OASIS WASM 或逐步 TS 移植可以独立发布、独立回归
 - 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer、Mouse、Touch 和 WebView 混合事件拖拽路径
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
 - 支持格式矩阵保持 199 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件；`brep` 进入 3D 工程模型入口
@@ -36,7 +36,7 @@
 - CAD 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@flyfish-dev/cad-viewer`；DWG / DXF / DWF / DWFx / XPS 完整预览统一由 `@file-viewer/renderer-cad` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 5 降到 4，Phase 2 依赖预算从 4 降到 3
 - Spreadsheet 预览从 core 兼容入口中彻底移出，新增 `@file-viewer/renderer-spreadsheet` 独立 renderer 包承接 XLSX / XLSM / XLSB / XLS / CSV / ODS / FODS / Numbers 等表格格式；`@file-viewer/core` 不再默认安装 `styled-exceljs`、`e-virt-table` 和 `tinycolor2`，完整表格能力统一由 `@file-viewer/renderer-spreadsheet` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 4 降到 1，Phase 2 依赖预算从 3 降到 0
 - XMind 画布拖拽进一步兼容老 WebView、嵌入式浏览器和非标准鼠标事件：聚焦改为安全降级，`MouseEvent.buttons` 错报为 `0` 时延迟释放拖拽会话，避免实际拖动画布没有响应
-- `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
+- `.gds` 新增标准 GDSII 记录解析、SVG 版图预览和大元素集 WebGL canvas，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
 - OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - EPUB 预览迁移为 `@file-viewer/renderer-ebook` 独立 renderer 包，继续使用 `epubjs` 提供目录、滚动阅读、章节跳转和阅读进度，并由 `@file-viewer/preset-all` 自动聚合
