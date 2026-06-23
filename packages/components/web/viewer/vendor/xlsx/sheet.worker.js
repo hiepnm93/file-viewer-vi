@@ -19800,7 +19800,7 @@ function m_(e) {
 	};
 }
 //#endregion
-//#region packages/core/src/renderers/spreadsheet/worker/sheetjs/color.ts
+//#region packages/renderers/spreadsheet/src/spreadsheet/worker/sheetjs/color.ts
 var h_ = /* @__PURE__ */ "FF000000.FFFFFFFF.FFFF0000.FF00FF00.FF0000FF.FFFFFF00.FFFF00FF.FF00FFFF.FF000000.FFFFFFFF.FFFF0000.FF00FF00.FF0000FF.FFFFFF00.FFFF00FF.FF00FFFF.FF800000.FF008000.FF000080.FF808000.FF800080.FF008080.FFC0C0C0.FF808080.FF9999FF.FF993366.FFFFFFCC.FFCCFFFF.FF660066.FFFF8080.FF0066CC.FFCCCCFF.FF000080.FFFF00FF.FFFFFF00.FF00FFFF.FF800080.FF800000.FF008080.FF0000FF.FF00CCFF.FFCCFFFF.FFCCFFCC.FFFFFF99.FF99CCFF.FFFF99CC.FFCC99FF.FFFFCC99.FF3366FF.FF33CCCC.FF99CC00.FFFFCC00.FFFF9900.FFFF6600.FF666699.FF969696.FF003366.FF339966.FF003300.FF333300.FF993300.FF993366.FF333399.FF333333".split("."), g_ = 240, __ = 255;
 function v_(e, t, n) {
 	let r = Math.max(e, t, n), i = Math.min(e, t, n), a = r + i, o = r - i, s = a / 2, c, l;
@@ -19842,7 +19842,7 @@ function S_(e, t) {
 	return `FF${b_(n, x_(t, r), i)}`;
 }
 //#endregion
-//#region packages/core/src/renderers/spreadsheet/worker/sheetjs/SheetJsModel.ts
+//#region packages/renderers/spreadsheet/src/spreadsheet/worker/sheetjs/SheetJsModel.ts
 var C_, w_ = 8.43, T_ = 15, E_ = "#202124", D_ = 9525, O_ = 480, k_ = 288, A_ = 24, j_ = 8, M_ = (e) => typeof e == "number" && Number.isFinite(e) ? e : void 0, N_ = {
 	rowHeight: (() => {
 		var e;
@@ -20222,7 +20222,7 @@ var C_, w_ = 8.43, T_ = 15, E_ = "#202124", D_ = 9525, O_ = 480, k_ = 288, A_ = 
 };
 C_ = Q_, C_.defaults = N_;
 //#endregion
-//#region packages/core/src/renderers/spreadsheet/worker/sheetjs/parser.ts
+//#region packages/renderers/spreadsheet/src/spreadsheet/worker/sheetjs/parser.ts
 var $_ = {
 	type: "array",
 	dense: !0,
@@ -20306,12 +20306,15 @@ var $_ = {
 		case "parseSheet": return iv(e, t.payload);
 		default: return [];
 	}
-}, ov = self, sv = ev();
-ov.onmessage = async (e) => {
-	av(sv, e.data).forEach((e) => {
-		ov.postMessage(e);
-	});
-}, ov.onerror = (e) => {
-	console.error(e);
-};
+}, ov = typeof self > "u" ? null : self;
+if (ov) {
+	let e = ev();
+	ov.onmessage = async (t) => {
+		av(e, t.data).forEach((e) => {
+			ov.postMessage(e);
+		});
+	}, ov.onerror = (e) => {
+		console.error(e);
+	};
+}
 //#endregion
