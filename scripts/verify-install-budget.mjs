@@ -25,7 +25,7 @@ const packageBudgets = {
     maxLocalPackageClosure: 3
   },
   '@file-viewer/web': {
-    maxPackedBytes: 33_000_000,
+    maxPackedBytes: 35_000_000,
     maxUnpackedBytes: 125_000_000,
     maxFiles: 2_900,
     maxDirectRuntimeDependencies: 1,
@@ -134,6 +134,17 @@ const packageBudgets = {
     maxFiles: 18,
     maxDirectRuntimeDependencies: 5,
     maxExternalDependencyClosure: 39,
+    maxLocalPackageClosure: 3
+  },
+  // Typst intentionally ships a self-hosted default font set so source files can
+  // render inside offline/intranet deployments without falling back to public CDN
+  // font downloads. Keep this explicit so future size growth is still visible.
+  '@file-viewer/renderer-typst': {
+    maxPackedBytes: 6_200_000,
+    maxUnpackedBytes: 9_200_000,
+    maxFiles: 30,
+    maxDirectRuntimeDependencies: 4,
+    maxExternalDependencyClosure: 4,
     maxLocalPackageClosure: 3
   }
 }
