@@ -3,6 +3,10 @@ import {
   DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
   DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL,
   DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_PDF_CMAP_PATH,
+  DEFAULT_FILE_VIEWER_PDF_STANDARD_FONT_PATH,
+  DEFAULT_FILE_VIEWER_PDF_WASM_PATH,
+  DEFAULT_FILE_VIEWER_PDF_WORKER_PATH,
   DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH,
   DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL,
   DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL,
@@ -12,6 +16,7 @@ import {
   resolveFileViewerCadAssetUrls,
   resolveFileViewerDataSqlWasmUrl,
   resolveFileViewerDocxWorkerUrl,
+  resolveFileViewerPdfAssetUrls,
   resolveFileViewerSpreadsheetWorkerUrl,
   resolveFileViewerTypstCompilerWasmUrl,
   resolveFileViewerTypstRendererWasmUrl
@@ -79,6 +84,23 @@ describe('@file-viewer/core asset URL helpers', () => {
       workerUrl: 'https://cdn.example.com/file-viewer/sheet.worker.js'
     }, 'https://viewer.example.com/app/index.html')).toBe(
       'https://cdn.example.com/file-viewer/sheet.worker.js'
+    )
+  })
+
+  it('resolves PDF default assets from the site root instead of router paths', () => {
+    expect(resolveFileViewerPdfAssetUrls(undefined, 'https://viewer.example.com/dev/file').workerUrl).toBe(
+      `https://viewer.example.com/${DEFAULT_FILE_VIEWER_PDF_WORKER_PATH}`
+    )
+    expect(resolveFileViewerPdfAssetUrls(undefined, 'https://viewer.example.com/dev/file/')).toEqual({
+      workerUrl: `https://viewer.example.com/${DEFAULT_FILE_VIEWER_PDF_WORKER_PATH}`,
+      cMapUrl: `https://viewer.example.com/${DEFAULT_FILE_VIEWER_PDF_CMAP_PATH}`,
+      wasmUrl: `https://viewer.example.com/${DEFAULT_FILE_VIEWER_PDF_WASM_PATH}`,
+      standardFontDataUrl: `https://viewer.example.com/${DEFAULT_FILE_VIEWER_PDF_STANDARD_FONT_PATH}`
+    })
+    expect(resolveFileViewerPdfAssetUrls({
+      workerUrl: 'assets/pdf.worker.mjs'
+    }, 'https://viewer.example.com/dev/file/').workerUrl).toBe(
+      'https://viewer.example.com/dev/file/assets/pdf.worker.mjs'
     )
   })
 

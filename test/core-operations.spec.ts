@@ -31,6 +31,7 @@ import {
   executeFileViewerPrintOperation,
   FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
   hasVisibleFileViewerToolbarActions,
+  isFileViewerToolbarOperationPermitted,
   isFileViewerZoomButtonDisabled,
   normalizeFileViewerToolbar,
   reportFileViewerLifecycleHookError,
@@ -818,6 +819,40 @@ describe('@file-viewer/core operation helpers', () => {
     ]);
   });
 
+  it('blocks public operations through toolbar permission maps before custom hooks run', async () => {
+    const events: string[] = [];
+    const context = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'url',
+      url: '/secure.pdf',
+      version: 1,
+      timestamp: 10,
+    });
+    const operationContext = buildFileViewerOperationContext('print', context, 12);
+
+    const allowed = await runFileViewerBeforeOperation({
+      context: operationContext,
+      options: {
+        beforeOperation: nextContext => {
+          events.push(`global:${nextContext.operation}`);
+        },
+        toolbar: {
+          permissions: {
+            print: false,
+          },
+        },
+      },
+      onBefore: nextContext => events.push(`before:${nextContext.operation}`),
+      onCancel: nextContext => events.push(`cancel:${nextContext.operation}`),
+    });
+
+    expect(allowed).toBe(false);
+    expect(events).toEqual([
+      'before:print',
+      'cancel:print',
+    ]);
+  });
+
   it('normalizes toolbar visibility and operation availability in core', () => {
     expect(normalizeFileViewerToolbar(undefined)).toEqual({
       download: true,
@@ -830,6 +865,37 @@ describe('@file-viewer/core operation helpers', () => {
       print: false,
       exportHtml: false,
       zoom: false,
+    });
+    expect(normalizeFileViewerToolbar({
+      toolbar: {
+        download: true,
+        print: true,
+        exportHtml: true,
+        zoom: true,
+        items: {
+          print: false,
+          'zoom-out': false,
+        },
+        permissions: {
+          'export-html': false,
+          'zoom-reset': false,
+        },
+        position: 'bottom-right',
+      },
+    })).toMatchObject({
+      download: true,
+      print: false,
+      exportHtml: false,
+      zoom: true,
+      items: {
+        print: false,
+        'zoom-out': false,
+      },
+      permissions: {
+        'export-html': false,
+        'zoom-reset': false,
+      },
+      position: 'bottom-right',
     });
 
     const availability = resolveFileViewerOperationAvailability({
@@ -943,6 +1009,66 @@ describe('@file-viewer/core operation helpers', () => {
       toolbarPosition: 'bottom-right',
       toolbarDisabled: true,
     });
+    const permissionState = resolveFileViewerToolbarState({
+      extension: 'pdf',
+      hasOriginalSource: true,
+      renderedReady: true,
+      adapter: { toHtml: () => '<main>pdf</main>' },
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: true,
+        canReset: true,
+      },
+      toolbar: normalizeFileViewerToolbar({
+        toolbar: {
+          download: true,
+          print: true,
+          exportHtml: true,
+          zoom: true,
+          permissions: {
+            download: false,
+            'zoom-in': false,
+          },
+        },
+      }),
+      options: {
+        toolbar: {
+          permissions: {
+            download: false,
+            'zoom-in': false,
+          },
+        },
+      },
+    });
+    expect(permissionState.operationAvailability).toMatchObject({
+      download: false,
+      print: true,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: false,
+      zoomOut: true,
+      zoomReset: true,
+    });
+    expect(permissionState.visibleToolbar).toMatchObject({
+      download: false,
+      print: true,
+      exportHtml: true,
+      zoom: true,
+    });
+    expect(isFileViewerToolbarOperationPermitted({ permissions: { print: false } }, 'print')).toBe(false);
+    expect(isFileViewerZoomButtonDisabled({
+      action: 'canZoomIn',
+      availability: permissionState.operationAvailability,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: true,
+        canReset: true,
+      },
+    })).toBe(true);
     expect(resolveFileViewerOperationAvailability({
       extension: 'docx',
       source: {

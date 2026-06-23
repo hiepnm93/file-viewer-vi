@@ -35,6 +35,24 @@ const applyMarkdownZoom = (host, zoom) => {
     host.style.setProperty('--markdown-padding', `${45 * zoom}px`);
     host.style.setProperty('--markdown-font-size', `${16 * zoom}px`);
 };
+export const stripMarkdownFrontmatter = (text) => {
+    const input = text.replace(/^\uFEFF/, '');
+    if (!input.startsWith('---')) {
+        return input;
+    }
+    const firstLineEnd = input.indexOf('\n');
+    const firstLine = firstLineEnd >= 0 ? input.slice(0, firstLineEnd).trim() : input.trim();
+    if (firstLine !== '---') {
+        return input;
+    }
+    const closePattern = /\r?\n(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/g;
+    closePattern.lastIndex = firstLineEnd >= 0 ? firstLineEnd : 3;
+    const match = closePattern.exec(input);
+    if (!match) {
+        return input;
+    }
+    return input.slice(match.index + match[0].length).replace(/^\r?\n/, '');
+};
 export default async function renderMarkdown(buffer, target) {
     const text = await readText(buffer);
     let zoom = 1;
@@ -44,7 +62,7 @@ export default async function renderMarkdown(buffer, target) {
     root.dataset.viewerZoomProvider = 'markdown';
     const article = document.createElement('article');
     article.className = 'markdown-body';
-    article.innerHTML = await marked(text);
+    article.innerHTML = await marked(stripMarkdownFrontmatter(text));
     applyMarkdownZoom(root, zoom);
     root.append(article);
     target.replaceChildren(createStyle(), root);
