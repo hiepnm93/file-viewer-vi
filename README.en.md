@@ -28,7 +28,15 @@
   <img alt="Ecosystem packages" src="https://img.shields.io/badge/npm%20targets-42-0f766e" />
 </p>
 
+---
+
+## Live Demo
+
 ![Flyfish Viewer demo showing Word, PDF, PPTX, and document comparison](docs/public/_media/flyfish-viewer-demo.gif)
+
+Open [demo.file-viewer.app](https://demo.file-viewer.app) to try the complete sample matrix, upload preview, toolbar behavior, document comparison, and offline asset loading. The demo uses the same rendering pipeline as the npm packages, so it is the best first validation step before integration.
+
+## Positioning
 
 Bring Word, Excel, PowerPoint, PDF, Typst, XMind mind maps, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
@@ -38,17 +46,16 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 The integration promise is simple: **one component, one line of code, fast integration**. Pick the standard package for your stack, then use the same options, events, search, zoom, print, export, and watermark capabilities everywhere.
 
-- Standard npm packages: `@file-viewer/core`, `@file-viewer/pptx`, `@file-viewer/renderer-word`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, `@file-viewer/preset-all`, `@file-viewer/vite-plugin`, `@file-viewer/web`, `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`, `@file-viewer/react`, `@file-viewer/react-legacy`, `@file-viewer/jquery`, `@file-viewer/svelte`
-- Historical compatibility packages: `@flyfish-group/file-viewer3`, `file-viewer3`, `@flyfish-group/file-viewer`, `@flyfish-group/file-viewer-react`, `@flyfish-group/file-viewer-web`
-- Official website: [file-viewer.app](https://file-viewer.app)
-- Official documentation: [doc.file-viewer.app](https://doc.file-viewer.app)
-- Ecosystem integration guide: [doc.file-viewer.app/guide/ecosystem](https://doc.file-viewer.app/guide/ecosystem)
-- Online demo: [demo.file-viewer.app](https://demo.file-viewer.app)
-- Document comparison demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
-- Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
-- GitHub open-source main repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-- Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
-- Sponsorship and priority support: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+| Entry | URL |
+| --- | --- |
+| Official site | [file-viewer.app](https://file-viewer.app) |
+| Documentation | [doc.file-viewer.app](https://doc.file-viewer.app) |
+| Quickstart | [doc.file-viewer.app/guide/quickstart](https://doc.file-viewer.app/guide/quickstart) |
+| Live demo | [demo.file-viewer.app](https://demo.file-viewer.app) |
+| Comparison demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
+| Release downloads | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
+| Docker image | `flyfishdev/file-viewer:latest` |
+| Sponsorship and priority support | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
 
 ## Why Use It
 

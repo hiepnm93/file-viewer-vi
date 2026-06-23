@@ -28,7 +28,15 @@
   <img alt="Ecosystem packages" src="https://img.shields.io/badge/npm%20targets-42-0f766e" />
 </p>
 
+---
+
+## 在线效果
+
 ![Flyfish Viewer 演示: Word、PDF、PPTX 与文档比对](docs/public/_media/flyfish-viewer-demo.gif)
+
+打开 [demo.file-viewer.app](https://demo.file-viewer.app) 可以直接体验完整样例矩阵、上传预览、工具栏、文档比对和离线资产加载效果。Demo 使用与 npm 包一致的渲染链路，适合作为接入前的第一轮验收。
+
+## 项目定位
 
 把 Word、Excel、PPT、PDF、Typst、XMind 脑图、压缩包、邮件、音视频、地理数据、工程图纸、字体、设计资产和结构化数据稳稳带进浏览器里。
 
@@ -38,18 +46,16 @@
 
 接入主张很简单: **一个组件，一行代码，快速集成**。先选择对应技术栈的标准组件包，再用同一套 options、事件、搜索、缩放、打印、导出和水印能力完成业务接入。
 
-- 标准 npm 包: `@file-viewer/core`、`@file-viewer/pptx`、`@file-viewer/renderer-word`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering`、`@file-viewer/preset-all`、`@file-viewer/vite-plugin`、`@file-viewer/web`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/jquery`、`@file-viewer/svelte`
-- 历史兼容 npm 包: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`
-- 官方网站: [file-viewer.app](https://file-viewer.app)
-- 官方文档: [doc.file-viewer.app](https://doc.file-viewer.app)
-- 生态接入指南: [doc.file-viewer.app/guide/ecosystem](https://doc.file-viewer.app/guide/ecosystem)
-- 在线 Demo: [demo.file-viewer.app](https://demo.file-viewer.app)
-- 文档比对 Demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
-- Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
-- Docker 镜像发布目标: `flyfishdev/file-viewer:latest`
-- 开源总仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-- 开源总仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
-- 打赏与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+| 入口 | 地址 |
+| --- | --- |
+| 官方网站 | [file-viewer.app](https://file-viewer.app) |
+| 官方文档 | [doc.file-viewer.app](https://doc.file-viewer.app) |
+| 快速开始 | [doc.file-viewer.app/guide/quickstart](https://doc.file-viewer.app/guide/quickstart) |
+| 在线 Demo | [demo.file-viewer.app](https://demo.file-viewer.app) |
+| 文档比对 Demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
+| Release 下载 | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
+| Docker 镜像 | `flyfishdev/file-viewer:latest` |
+| 打赏与优先支持 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
 
 ## 为什么值得接入
 

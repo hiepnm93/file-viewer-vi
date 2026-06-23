@@ -93,6 +93,7 @@ type QuickStartItem = {
 }
 
 const docsUrl = 'https://doc.file-viewer.app/'
+const docsQuickstartUrl = `${docsUrl}guide/quickstart`
 const demoUrl = 'https://demo.file-viewer.app/'
 const compareUrl = 'https://demo.file-viewer.app/compare.html'
 const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
@@ -147,13 +148,13 @@ const copy = {
       '从 OA 审批到工程图纸，从客服工单到 AI 文档工作台，File Viewer 更关注真实文件、复杂网络、私有化部署和用户每天都会遇到的细节。',
     ecosystemTitle: 'Core 负责底层预览能力，标准组件负责原生体验。',
     ecosystemIntro:
-      '一个组件，一行代码，快速集成。2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
-    demoTitle: '无需跳转，直接在官网阅读完整文档。',
+      '一个组件，一行代码，快速集成。业务侧只需要先选择宿主技术栈，再按实际格式装配 lite、office、engineering 或自定义 renderer。首页只展示最常用接入路径，完整生态能力交给文档承载。',
+    demoTitle: '先看真实 Demo，再决定如何接入。',
     demoIntro:
-      'file-viewer.app 作为组件门户，直接嵌入 doc.file-viewer.app 的文档站。用户可以在主页了解定位、生态、商业版和打赏入口，也能立刻阅读最小化引入、组合引入、模块化架构、格式矩阵和部署说明。',
-    docsTitle: '文档站与产品门户保持同一套信息架构。',
+      '在线 Demo 使用与生产包一致的渲染链路、样例文件、上传入口、工具栏和文档比对页。客户可以直接打开 Word、PDF、PPTX、CAD、Typst、压缩包、图形、代码和媒体样例，验证体验后再进入接入文档。',
+    docsTitle: '文档从快速开始进入，细节往下查。',
     docsIntro:
-      'doc.file-viewer.app 覆盖快速开始、生态组件、模块化装配、格式支持、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。主页负责决策入口，文档负责落地细节。',
+      'doc.file-viewer.app 默认引导到快速开始，再继续展开模块化装配、格式支持、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。官网顶部导航负责滚动定位，文档站负责落地细节。',
     commercialTitle: '需要更高还原度和极致性能？选择商业版原生文档引擎。',
     commercialIntro:
       '商业版来自本地 office 产品线，采用自研原生文档引擎，面向严肃企业场景提供 Word、Excel、PowerPoint 的高还原渲染、Worker 解析、分页布局、虚拟滚动和更稳定的大文件体验。',
@@ -195,13 +196,13 @@ const copy = {
       'From approvals to engineering drawings, support tickets, and AI document workflows, File Viewer focuses on real files, private networks, self-hosted delivery, and the details users meet every day.',
     ecosystemTitle: 'Core owns preview capability. Standard components own native framework experience.',
     ecosystemIntro:
-      'One component, one line of code, fast integration. The 2.x architecture no longer treats iframe integration as the primary path. Every standard component depends only on @file-viewer/core and exposes idiomatic props, hooks, refs/controllers, events, and complete types for its ecosystem.',
-    demoTitle: 'Read the complete docs without leaving the product site.',
+      'One component, one line of code, fast integration. Pick the host stack first, then compose lite, office, engineering, or exact renderer packages by the formats your product actually needs. The homepage keeps the path focused; the docs carry the full ecosystem details.',
+    demoTitle: 'Try the real demo before choosing an integration path.',
     demoIntro:
-      'file-viewer.app is the component portal and embeds doc.file-viewer.app directly. Users can understand positioning, ecosystem packages, the commercial edition, and sponsorship, then read minimal imports, composed imports, modular architecture, format coverage, and deployment guidance in place.',
+      'The live demo uses the same rendering pipeline, sample files, upload entry, toolbar, and comparison page as the production packages. Open Word, PDF, PPTX, CAD, Typst, archives, diagrams, code, media, and data samples first, then move into integration docs.',
     docsTitle: 'The docs site and product portal share one information architecture.',
     docsIntro:
-      'doc.file-viewer.app covers quick start, component packages, modular assembly, format support, themes, watermarking, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
+      'doc.file-viewer.app starts from quickstart, then expands into modular assembly, format support, theme and watermark options, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
     commercialTitle: 'Need higher fidelity and extreme performance? Choose the commercial native document engine.',
     commercialIntro:
       'The commercial edition is powered by the local office product line: a self-developed native document engine for serious enterprise Word, Excel, and PowerPoint rendering, Worker parsing, pagination, virtual scrolling, and stable large-file performance.',
@@ -405,22 +406,6 @@ const portalLinks = computed<LinkItem[]>(() =>
       ]
 )
 
-const ecosystem = [
-  '@file-viewer/core',
-  '@file-viewer/preset-lite',
-  '@file-viewer/preset-office',
-  '@file-viewer/preset-engineering',
-  '@file-viewer/preset-all',
-  '@file-viewer/web',
-  '@file-viewer/vue3',
-  '@file-viewer/vue2.7',
-  '@file-viewer/vue2.6',
-  '@file-viewer/react',
-  '@file-viewer/react-legacy',
-  '@file-viewer/jquery',
-  '@file-viewer/svelte'
-]
-
 function snippetImport(statement: string) {
   return `im${'port'} ${statement}`
 }
@@ -456,13 +441,13 @@ viewer.addEventListener('viewer-load-complete', event => {
 viewer.zoomIn()`
   },
   {
-    label: isZh.value ? 'Vue 3' : 'Vue 3',
+    label: isZh.value ? 'Vue / React' : 'Vue / React',
     packageName: '@file-viewer/vue3',
-    install: 'npm install vue @file-viewer/vue3',
-    title: isZh.value ? '插件安装后直接使用原生组件' : 'Install the plugin and use the native component',
+    install: isZh.value ? '选择对应框架组件包' : 'Choose the native package for your framework',
+    title: isZh.value ? '框架项目使用原生组件，不走 iframe 黑盒' : 'Framework projects use native components, not iframe boxes',
     summary: isZh.value
-      ? '适合 Vue 3 业务系统，props、事件、ref/controller 和完整类型都保持原生体验。'
-      : 'For Vue 3 products with native props, events, refs/controllers, and complete types.',
+      ? 'Vue、React、Svelte、jQuery 和 Vue2 都共享同一套 options，首页不堆包名，完整差异在文档中展开。'
+      : 'Vue, React, Svelte, jQuery, and Vue 2 share the same options model; detailed package differences live in the docs.',
     language: 'Vue SFC',
     href: `${docsUrl}guide/quickstart-vue3`,
     tone: 'green',
@@ -484,124 +469,52 @@ createApp(App).use(FileViewer).mount('#app')
 />`
   },
   {
-    label: isZh.value ? 'Vue 2' : 'Vue 2',
-    packageName: '@file-viewer/vue2.7 / vue2.6',
-    install: 'npm install vue@2.7 @file-viewer/vue2.7',
-    title: isZh.value ? 'Vue.use 接入，能力与 Vue3 对齐' : 'Use Vue.use with the same capability set as Vue 3',
+    label: isZh.value ? '按需装配' : 'On-demand',
+    packageName: '@file-viewer/preset-office',
+    install: isZh.value ? '按格式选择 renderer 或 preset' : 'Select renderers or presets by real formats',
+    title: isZh.value ? '按产品体量选择 lite / office / engineering' : 'Choose lite, office, or engineering by product scope',
     summary: isZh.value
-      ? 'Vue 2.7 与 Vue 2.6 分线维护，适合仍在运行的传统后台和存量业务系统。'
-      : 'Separate Vue 2.7 and Vue 2.6 packages for legacy business systems that still need the full viewer.',
-    language: 'Vue 2',
-    href: `${docsUrl}guide/quickstart-vue2`,
+      ? '业务只接 PDF 就只装 PDF renderer；办公平台选 office；工程附件平台选 engineering；完整样例矩阵才用 all。'
+      : 'A PDF-only app installs the PDF renderer; office workspaces use office; engineering portals use engineering; only full demos need all.',
+    language: 'Vite',
+    href: `${docsUrl}guide/on-demand-renderers`,
     tone: 'blue',
     icon: Layers3,
-    code: `${snippetImport("Vue from 'vue'")}
-${snippetImport("FileViewerPlugin from '@file-viewer/vue2.7'")}
+    code: `${snippetImport("{ defineConfig } from 'vite'")}
+${snippetImport("{ fileViewerRenderers } from '@file-viewer/vite-plugin'")}
 
-Vue.use(FileViewerPlugin)
-
-export default {
-  methods: {
-    handleViewerEvent(event) {
-      console.log(event.type, event.payload)
-    }
-  }
-}
-
-<FileViewer
-  ref="viewer"
-  url="/files/report.docx"
-  :options="{ theme: 'light', toolbar: { position: 'bottom-right' } }"
-  @viewer-event="handleViewerEvent"
-/>`
-  },
-  {
-    label: 'React',
-    packageName: '@file-viewer/react',
-    install: 'npm install react react-dom @file-viewer/react',
-    title: isZh.value ? 'React 组件与 ref API 原生可控' : 'Native React component with ref APIs',
-    summary: isZh.value
-      ? 'React 18/19 使用标准包，React 16.8/17 使用 legacy 包，业务侧无需 Vue 或 iframe 转接。'
-      : 'Use the standard package for React 18/19 and the legacy package for React 16.8/17 without Vue or iframe bridges.',
-    language: 'TSX',
-    href: `${docsUrl}guide/quickstart-react`,
-    tone: 'cyan',
-    icon: Boxes,
-    code: `${snippetImport("{ useRef } from 'react'")}
-${snippetImport("FileViewer, { type FileViewerHandle } from '@file-viewer/react'")}
-
-export function Preview() {
-  const viewerRef = useRef<FileViewerHandle>(null)
-
-  return (
-    <section style={{ height: '100vh' }}>
-      <FileViewer
-        ref={viewerRef}
-        url="/files/quarterly.pptx"
-        options={{
-          theme: 'light',
-          toolbar: { position: 'bottom-right', zoom: true }
-        }}
-      />
-    </section>
-  )
-}`
-  },
-  {
-    label: 'jQuery',
-    packageName: '@file-viewer/jquery',
-    install: 'npm install jquery @file-viewer/jquery',
-    title: isZh.value ? '传统系统保持插件式调用' : 'Plugin-style API for classic systems',
-    summary: isZh.value
-      ? '保留 jQuery 项目熟悉的调用方式，同时底层不牺牲搜索、缩放、打印和导出能力。'
-      : 'Keeps the familiar jQuery API while preserving search, zoom, print, and export support.',
-    language: 'jQuery',
-    href: `${docsUrl}guide/ecosystem#jquery`,
-    tone: 'amber',
-    icon: Wrench,
-    code: `${snippetImport("$ from 'jquery'")}
-${snippetImport("{ installJQueryFileViewer } from '@file-viewer/jquery'")}
-
-installJQueryFileViewer($)
-
-$('#viewer').fileViewer({
-  url: '/files/archive.zip',
-  options: {
-    theme: 'light',
-    toolbar: { position: 'bottom-right' }
-  }
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
 })
 
-$('#viewer').fileViewer('update', {
-  url: '/files/mail.eml'
-})`
+// PDF-only projects can replace preset with formats: ['pdf'].`
   },
   {
-    label: 'Svelte',
-    packageName: '@file-viewer/svelte',
-    install: 'npm install @file-viewer/svelte',
-    title: isZh.value ? '组件和 action 两种原生入口' : 'Native component and action entry points',
+    label: isZh.value ? '离线部署' : 'Offline',
+    packageName: 'file-viewer-copy-assets',
+    install: isZh.value ? '复制 worker / wasm / font / vendor 资产' : 'Copy worker / wasm / font / vendor assets',
+    title: isZh.value ? '企业内网和严格 CSP 场景可自托管' : 'Self-host assets for intranet and strict CSP',
     summary: isZh.value
-      ? 'Svelte 项目可以用组件，也可以用 action 挂载到已有 DOM，SSR 下只在浏览器端运行。'
-      : 'Use either the component or the action; SSR projects mount only in the browser.',
-    language: 'Svelte',
-    href: `${docsUrl}guide/ecosystem#svelte`,
-    tone: 'rose',
-    icon: FileCode2,
-    code: `<script lang="ts">
-  ${snippetImport("FileViewer from '@file-viewer/svelte'")}
+      ? 'PDF、CAD、Typst、Archive、Draw.io、DOCX、表格和 SQLite 等资源都可复制到业务自己的静态目录。'
+      : 'PDF, CAD, Typst, Archive, Draw.io, DOCX, spreadsheet, and SQLite assets can live under your own static path.',
+    language: 'Shell',
+    href: `${docsUrl}guide/distribution`,
+    tone: 'cyan',
+    icon: Boxes,
+    code: `npx file-viewer-copy-assets ./public/file-viewer
 
-  let viewer: FileViewer
-${'<'}\/script>
-
-<section style="height: 100vh">
-  <FileViewer
-    bind:this={viewer}
-    url="/files/manual.ofd"
-    options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
-    on:viewerEvent={(event) => console.log(event.detail.payload)}
-  />
-</section>`
+# Then serve these files from your own domain.
+# Configure paths only when your static prefix is custom:
+# options.typst.compilerWasmUrl
+# options.pdf.workerUrl
+# options.archive.wasmUrl
+# options.drawing.viewerScriptUrl`
   }
 ])
 
@@ -1030,11 +943,12 @@ onBeforeUnmount(() => {
       </a>
       <div class="topbar-links">
         <a href="#formats" @click="scrollToSection($event, 'formats')">{{ currentCopy.nav.formats }}</a>
+        <a href="#demo" @click="scrollToSection($event, 'demo')">{{ currentCopy.nav.demo }}</a>
         <a href="#solutions" @click="scrollToSection($event, 'solutions')">{{ currentCopy.nav.solutions }}</a>
         <a href="#ecosystem" @click="scrollToSection($event, 'ecosystem')">{{ currentCopy.nav.ecosystem }}</a>
+        <a href="#docs" @click="scrollToSection($event, 'docs')">{{ currentCopy.nav.docs }}</a>
         <a href="#commercial" @click="scrollToSection($event, 'commercial')">{{ currentCopy.nav.commercial }}</a>
         <a href="#delivery" @click="scrollToSection($event, 'delivery')">{{ currentCopy.nav.delivery }}</a>
-        <a href="#support" @click="scrollToSection($event, 'support')">{{ currentCopy.nav.support }}</a>
       </div>
       <div class="topbar-actions">
         <a class="nav-icon-button" :href="githubUrl" target="_blank" rel="noreferrer" aria-label="GitHub repository">
@@ -1130,6 +1044,7 @@ onBeforeUnmount(() => {
     </section>
 
     <section
+      id="demo"
       ref="demoReveal"
       class="demo-reveal-section"
       :class="{ 'demo-reveal-active': demoRevealActive }"
@@ -1138,47 +1053,47 @@ onBeforeUnmount(() => {
       <div class="demo-reveal-stage">
         <div class="demo-reveal-copy">
           <div>
-            <p class="section-kicker">Documentation hub</p>
+            <p class="section-kicker">Live demo</p>
             <h2 id="demo-title">{{ currentCopy.demoTitle }}</h2>
             <p>{{ currentCopy.demoIntro }}</p>
           </div>
           <div class="inline-actions">
-            <a class="button primary" :href="docsUrl" target="_blank" rel="noreferrer">
-              <span>{{ currentCopy.nav.docs }}</span>
-              <BookOpen :size="18" />
-            </a>
-            <a class="button secondary" :href="demoUrl" target="_blank" rel="noreferrer">
+            <a class="button primary" :href="demoUrl" target="_blank" rel="noreferrer">
               <span>{{ currentCopy.nav.demo }}</span>
               <MonitorPlay :size="18" />
+            </a>
+            <a class="button secondary" :href="compareUrl" target="_blank" rel="noreferrer">
+              <span>{{ isZh ? '文档比对' : 'Compare Demo' }}</span>
+              <PanelTop :size="18" />
             </a>
           </div>
         </div>
 
         <div class="demo-reveal-window">
           <div class="demo-seam demo-seam-top">
-            <span>{{ isZh ? '官网门户' : 'product portal' }}</span>
+            <span>{{ isZh ? '完整预览器' : 'full viewer' }}</span>
           </div>
           <div class="demo-browser demo-browser-wide">
             <div class="demo-browser-bar">
               <span />
               <span />
               <span />
-              <strong>doc.file-viewer.app</strong>
+              <strong>demo.file-viewer.app</strong>
             </div>
             <iframe
               v-if="demoFrameLoaded"
-              :src="docsUrl"
-              title="Flyfish File Viewer documentation"
+              :src="demoUrl"
+              title="Flyfish File Viewer live demo"
               loading="lazy"
             ></iframe>
             <div v-else class="demo-frame-placeholder">
-              <BookOpen :size="28" />
-              <strong>{{ isZh ? '滚动到这里后加载完整文档' : 'Documentation loads when this section opens' }}</strong>
-              <span>{{ isZh ? '避免首屏被文档站资源拖慢' : 'Keeping the first view fast and focused' }}</span>
+              <MonitorPlay :size="28" />
+              <strong>{{ isZh ? '正在准备在线 Demo' : 'Preparing the live demo' }}</strong>
+              <span>{{ isZh ? '预览器在进入视区后加载，保持首屏轻快' : 'The viewer loads when this section enters the viewport' }}</span>
             </div>
           </div>
           <div class="demo-seam demo-seam-bottom">
-            <span>{{ isZh ? '完整文档工作台' : 'complete documentation workspace' }}</span>
+            <span>{{ isZh ? '真实样例矩阵' : 'real sample matrix' }}</span>
           </div>
         </div>
       </div>
@@ -1210,9 +1125,6 @@ onBeforeUnmount(() => {
         <p class="section-kicker">Native components</p>
         <h2 id="ecosystem-title">{{ currentCopy.ecosystemTitle }}</h2>
         <p>{{ currentCopy.ecosystemIntro }}</p>
-        <div class="ecosystem-tags">
-          <span v-for="item in ecosystem" :key="item">{{ item }}</span>
-        </div>
         <div class="quickstart-tabs" role="tablist" aria-label="Ecosystem quick start examples">
           <button
             v-for="(item, index) in quickStartItems"
@@ -1234,7 +1146,7 @@ onBeforeUnmount(() => {
             </span>
             <span class="quickstart-tab-copy">
               <strong>{{ item.label }}</strong>
-              <em>{{ item.packageName }}</em>
+              <em>{{ item.title }}</em>
             </span>
           </button>
         </div>
@@ -1295,11 +1207,39 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
+    <section id="docs" class="band docs-section" aria-labelledby="docs-title">
+      <div class="section-heading compact">
+        <p class="section-kicker">Documentation</p>
+        <h2 id="docs-title">{{ currentCopy.docsTitle }}</h2>
+        <p>{{ currentCopy.docsIntro }}</p>
+      </div>
+      <div class="docs-quick-nav" aria-label="Documentation shortcuts">
+        <a :href="docsQuickstartUrl" target="_blank" rel="noreferrer">{{ isZh ? '快速开始' : 'Quickstart' }}</a>
+        <a :href="`${docsUrl}guide/on-demand-renderers`" target="_blank" rel="noreferrer">{{ isZh ? '按需装配' : 'On-demand' }}</a>
+        <a :href="`${docsUrl}guide/formats`" target="_blank" rel="noreferrer">{{ isZh ? '支持格式' : 'Formats' }}</a>
+        <a :href="`${docsUrl}guide/usage`" target="_blank" rel="noreferrer">{{ isZh ? '组件参数' : 'Options' }}</a>
+        <a :href="`${docsUrl}guide/distribution`" target="_blank" rel="noreferrer">{{ isZh ? '部署分发' : 'Distribution' }}</a>
+      </div>
+      <div class="docs-frame-card">
+        <div class="demo-browser-bar">
+          <span />
+          <span />
+          <span />
+          <strong>doc.file-viewer.app / guide / quickstart</strong>
+        </div>
+        <iframe
+          :src="docsQuickstartUrl"
+          title="Flyfish File Viewer quickstart documentation"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </section>
+
     <section class="band architecture-section" aria-labelledby="architecture-title">
       <div class="section-heading compact">
         <p class="section-kicker">Architecture</p>
-        <h2 id="architecture-title">{{ currentCopy.docsTitle }}</h2>
-        <p>{{ currentCopy.docsIntro }}</p>
+        <h2 id="architecture-title">{{ isZh ? '架构边界清晰，长期维护才稳。' : 'Clear boundaries keep the project maintainable.' }}</h2>
+        <p>{{ isZh ? 'core、renderer、preset、组件包和静态资产各司其职，避免把框架、重型引擎或资源路径揉进同一个入口。' : 'Core, renderers, presets, component packages, and static assets stay separated so framework code, heavy engines, and resource paths do not collapse into one entry point.' }}</p>
       </div>
       <div class="capability-grid">
         <article v-for="capability in capabilities" :key="capability.title" class="capability-card">

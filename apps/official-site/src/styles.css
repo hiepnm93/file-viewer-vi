@@ -110,9 +110,17 @@ button {
 .topbar-links {
   justify-content: center;
   gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topbar-links::-webkit-scrollbar {
+  display: none;
 }
 
 .topbar-links a {
+  flex: 0 0 auto;
   padding: 10px 11px;
   border-radius: 8px;
   color: #4e5d72;
@@ -859,23 +867,6 @@ h1 {
   color: rgba(238, 249, 255, 0.76);
 }
 
-.ecosystem-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 26px;
-}
-
-.ecosystem-tags span {
-  padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  color: #e9fbff;
-  background: rgba(255, 255, 255, 0.08);
-  font-size: 13px;
-  font-weight: 730;
-}
-
 .quickstart-tabs {
   display: grid;
   gap: 10px;
@@ -997,6 +988,10 @@ h1 {
   font-size: 12px;
   font-style: normal;
   line-height: 1.4;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .quickstart-tab.is-active .quickstart-tab-copy em {
@@ -1246,6 +1241,61 @@ code {
 .quickstart-active .quickstart-tab:hover,
 .quickstart-active .quickstart-tab:focus-visible {
   transform: translateX(4px);
+}
+
+.docs-section {
+  position: relative;
+}
+
+.docs-quick-nav {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 159, 103, 0.42) rgba(31, 159, 103, 0.08);
+}
+
+.docs-quick-nav a {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(31, 159, 103, 0.18);
+  border-radius: 8px;
+  color: #17436a;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 820;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.docs-quick-nav a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(31, 159, 103, 0.34);
+  background: #fff;
+}
+
+.docs-frame-card {
+  overflow: hidden;
+  border: 1px solid rgba(37, 57, 83, 0.16);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 22px 64px rgba(28, 64, 60, 0.12);
+}
+
+.docs-frame-card iframe {
+  display: block;
+  width: 100%;
+  height: min(780px, calc(100vh - 150px));
+  min-height: 520px;
+  border: 0;
+  background: #f8fafc;
 }
 
 .architecture-section {
