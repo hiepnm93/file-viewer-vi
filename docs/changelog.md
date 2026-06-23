@@ -2,6 +2,15 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.0` 模块化架构与文档门户专业化
+
+- 全仓 workspace、标准组件包、renderer、preset、兼容 alias、Demo、官网和文档站版本统一推进到 `2.1.0`
+- 对外重点明确为模块化架构：`@file-viewer/core` 负责底层协议和统一 API，重型格式能力进入独立 renderer，`preset-lite` / `preset-office` / `preset-engineering` / `preset-all` 按产品形态组合，各生态组件保持原生体验
+- README 头部补齐品牌图标、GitHub / npm / Docs / Demo / Release / Docker / License / 格式矩阵 badge，并把 Demo GIF 前置，降低用户理解成本
+- README 与文档站补齐最小化引入和组合引入的详细步骤，说明 `@file-viewer/vite-plugin`、`formats`、`preset`、`copyAssets`、`virtual:file-viewer-renderers`、`builtinRenderers:'none'` 和 `rendererMode:'replace'` 的推荐搭配
+- 文档站首页移除嵌入 Demo 的 iframe，改为 GIF 展示、模块化接入路径和更专业的文档导览；官网 `file-viewer.app` 改为嵌入 `doc.file-viewer.app`，让门户和文档站关系更紧密
+- 对外 npm 生态口径更新为 42 个发布目标：37 个标准组件/核心/renderer/preset/工程插件包 + 5 个历史兼容 alias
+
 ## 当前主线 XMind、EDA 版图与表格列宽体验补齐
 
 - 新增 PSD 高保真图层预览，`@file-viewer/renderer-data` 在命中 `.psd` 时才按需加载 `ag-psd`，支持图层选择显隐、画布重绘、统一缩放、主题隔离和 HTML 导出边界说明
@@ -104,9 +113,9 @@
 - Draw.io 默认切换为随 viewer assets 分发的官方 diagrams.net 离线 viewer，加载超时后自动切换本地 SVG 安全预览，保证 `drawio` / `dio` 样例不会因 viewer 初始化卡住而长期 loading
 - PDF 预览新增 `options.pdf.thumbnails`，页面导航可切换为真实页面缩略图；缩略图使用 IntersectionObserver 按可见区域懒渲染，避免大文档一次性生成所有 canvas
 - PDF 视图会在页面初始化、缩放、旋转和渲染后写回传统 `px` 页面尺寸，兼容不支持 CSS `round()` 的 360 极速、华为浏览器等 Chromium 分支
-- Typst compiler / renderer WASM 改为默认随 viewer assets 本地分发，并新增 `options.typst.renderTimeoutMs`；默认超时提升到 60 秒，浏览器端始终走真实 SVG 预览链路，不再用源码视图冒充成功
-- Cloudflare Pages 部署脚本会对超过单文件限制的 Typst compiler WASM 自动做 Brotli 预压缩并写入 `_headers`，保证生产环境仍通过原始 `.wasm` URL 稳定加载
-- 运行时不再提供公共 CDN 或第三方在线资源 fallback；Typst 本地 WASM 不可用时会显示明确部署错误，Draw.io 默认走官方离线 viewer 并在异常时回退内置 SVG，适合企业内网和纯离线部署
+- Typst compiler / renderer WASM 和默认字体资产改为随 viewer assets 本地分发，并新增 `options.typst.fontAssetsUrl` / `options.typst.renderTimeoutMs`；默认加载 / 编译超时提升到 180 秒，浏览器端始终走真实 SVG 预览链路，不再用源码视图冒充成功，也不再为默认字体访问公共 CDN
+- Cloudflare Pages 部署脚本会对超过单文件限制的 Typst compiler WASM 自动做 Brotli 预压缩并写入 `_headers`，补齐 `Content-Encoding: br`、`Vary: Accept-Encoding`、WASM MIME 和长期缓存策略；新增 `pnpm verify:cloudflare-compression` 用于上线后验证官网、文档站、Demo 和 Typst WASM 的 Cloudflare 压缩响应
+- 运行时不再提供公共 CDN 或第三方在线资源 fallback；Typst 本地 WASM 或字体目录不可用时会显示明确部署错误，Draw.io 默认走官方离线 viewer 并在异常时回退内置 SVG，适合企业内网和纯离线部署
 - PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，构建脚本会同步复制并校验，避免 PDF 预览隐式访问公网静态资源
 - SQLite 预览默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，构建脚本同步复制并校验 sql.js WASM，减少移动端 WebView、本地服务器和 CSP 环境下的加载不确定性
 - PDF 样式注入会去除 PDF.js 内置外部图片引用，避免静态产物部署时因 `images/shadow.png` / `loading-icon.gif` 缺失导致 404 或控制台噪声

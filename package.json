@@ -1,10 +1,10 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.0.11",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
-  "description": "Flyfish File Viewer monorepo: official site, core, standard component packages, compatibility aliases, demo, and documentation",
+  "description": "Flyfish File Viewer modular monorepo: TypeScript core, on-demand renderers, presets, standard component packages, demos, official site, and documentation",
   "keywords": [
     "file-viewer",
     "vue3",
@@ -91,6 +91,7 @@
     "verify:experience-baseline": "node scripts/verify-experience-baseline.mjs",
     "verify:ecosystem-tarballs": "node scripts/verify-ecosystem-tarballs.mjs",
     "verify:ecosystem-versions": "node scripts/verify-ecosystem-versions.mjs",
+    "verify:cloudflare-compression": "node scripts/verify-cloudflare-compression.mjs",
     "verify:npm-registry-release": "node scripts/verify-npm-registry-release.mjs",
     "verify:release-status-schema": "node scripts/verify-release-status-schema.mjs",
     "verify:public-main": "node scripts/verify-public-main.mjs",

@@ -18,6 +18,7 @@ const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'flyfish-file-viewer
 // by the default release commands.
 const branch = process.env.CLOUDFLARE_PAGES_BRANCH
 const outputDir = process.env.CLOUDFLARE_PAGES_OUTPUT_DIR || 'apps/viewer-demo/dist'
+const dryRun = process.env.CLOUDFLARE_PAGES_DRY_RUN === '1' || process.argv.includes('--dry-run')
 
 function commandExists(command, args = ['--version']) {
   const result = spawnSync(command, args, {
@@ -56,8 +57,13 @@ function writeCompressedAssetHeaders(targetDir) {
   const additions = compressedFiles
     .map(file => [
       toUrlPath(file.path),
+      '  ! Content-Type',
+      '  ! Cache-Control',
+      '  ! X-Content-Type-Options',
       '  Content-Type: application/wasm',
       '  Content-Encoding: br',
+      '  Vary: Accept-Encoding',
+      '  X-Content-Type-Options: nosniff',
       '  Cache-Control: public, max-age=31536000, immutable'
     ].join('\n'))
     .join('\n\n')
@@ -158,6 +164,11 @@ if (skippedFiles.length) {
   }
 }
 
+if (dryRun) {
+  console.log(`[cloudflare-pages] Dry run prepared ${uploadDir}`)
+  process.exit(0)
+}
+
 const args = [
   ...(usePnpmDlx ? ['dlx'] : ['--yes']),
   'wrangler',
@@ -165,7 +176,8 @@ const args = [
   'deploy',
   uploadDir,
   '--project-name',
-  projectName
+  projectName,
+  '--commit-dirty=true'
 ]
 
 if (branch) {

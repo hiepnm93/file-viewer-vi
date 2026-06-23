@@ -16,6 +16,7 @@ export interface ArchiveEntryView {
     };
 }
 export declare const getArchiveEntryExtension: (name: string) => string;
+export declare const isArchiveSystemMetadataPath: (path: string) => boolean;
 export declare const isArchiveExtension: (extension: string) => boolean;
 export declare const isPreviewableArchiveEntry: (name: string) => boolean;
 export declare const formatArchiveBytes: (value: number) => string;

@@ -1,5 +1,6 @@
 import {
   getArchiveEntryExtension,
+  isArchiveSystemMetadataPath,
   isPreviewableArchiveEntry,
   type ArchiveEntryView,
 } from './archiveShared.js';
@@ -107,7 +108,7 @@ const parseTarEntries = (bytes: Uint8Array) => {
     const dataOffset = offset + TAR_BLOCK_SIZE;
     const nextOffset = dataOffset + Math.ceil(size / TAR_BLOCK_SIZE) * TAR_BLOCK_SIZE;
 
-    if (path && typeFlag !== '5') {
+    if (path && typeFlag !== '5' && !isArchiveSystemMetadataPath(path)) {
       const fileBytes = bytes.slice(dataOffset, dataOffset + size);
       entries.push(createEntryView({
         path,
@@ -157,6 +158,9 @@ const loadZipEntries = async (data: ArrayBuffer) => {
       };
     };
     const normalizedPath = normalizeArchivePath(relativePath);
+    if (isArchiveSystemMetadataPath(normalizedPath)) {
+      return;
+    }
     entries.push(createEntryView({
       path: normalizedPath,
       size: metadata._data?.uncompressedSize || 0,

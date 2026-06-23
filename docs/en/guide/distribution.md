@@ -97,7 +97,13 @@ Copy browser runtime assets into your app:
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-This copies and verifies worker, WASM, PDF, CAD, Typst, SQLite, archive, Office, Draw.io, and other renderer assets. Runtime options can point each renderer to those self-hosted URLs.
+This copies and verifies worker, WASM, PDF, CAD, Typst WASM/fonts, SQLite, archive, Office, Draw.io, and other renderer assets. Runtime options can point each renderer to those self-hosted URLs.
+
+For Cloudflare Pages, edge compression is enabled according to the visitor `Accept-Encoding` header. `scripts/deploy-cloudflare-pages.mjs` also Brotli-compresses oversized WASM files before Direct Upload and writes `Content-Encoding: br`, `Vary: Accept-Encoding`, `Content-Type: application/wasm`, and long-term cache headers into `_headers`. This keeps large assets such as the Typst compiler WASM deployable under the original `.wasm` URL. After deployment, verify the live headers with:
+
+```bash
+pnpm verify:cloudflare-compression
+```
 
 ## Sponsorship
 

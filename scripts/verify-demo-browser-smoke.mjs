@@ -496,6 +496,69 @@ const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
   }
 }
 
+const verifyArchiveNestedPreviewInteraction = async (page, samplePath) => {
+  const nestedChecks = [
+    {
+      label: 'code.ts',
+      selector: '.archive-nested-target .code-viewer pre code.hljs',
+      expectedText: 'PreviewStatus'
+    },
+    {
+      label: 'sample.pdf',
+      selector: '.archive-nested-target .pdfViewer .page, .archive-nested-target .pdf-page, .archive-nested-target canvas'
+    },
+    {
+      label: 'sample.docx',
+      selector: '.archive-nested-target .docx-wrapper, .archive-nested-target .docx-document, .archive-nested-target [data-docx-root]'
+    }
+  ]
+
+  for (const check of nestedChecks) {
+    const clicked = await page.evaluate(label => {
+      const entries = [...document.querySelectorAll('.archive-entry')]
+      const target = entries.find(entry =>
+        entry.querySelector('.entry-copy strong')?.textContent?.trim() === label
+      )
+      if (!(target instanceof HTMLButtonElement)) {
+        return false
+      }
+      target.click()
+      return true
+    }, check.label)
+
+    if (!clicked) {
+      throw new Error(`Sample ${samplePath} archive smoke is missing nested entry ${check.label}.`)
+    }
+
+    await page.waitForSelector(check.selector, { timeout: sampleTimeout })
+    await page.waitForFunction(
+      () => !document.querySelector('.archive-state:not(.archive-hidden)'),
+      undefined,
+      { timeout: sampleTimeout }
+    )
+
+    const result = await page.evaluate(({ selector, expectedText }) => {
+      const nestedTarget = document.querySelector('.archive-nested-target')
+      const text = (nestedTarget?.textContent || '').replace(/\s+/g, ' ').trim()
+      const visibleError = document.querySelector('.archive-error:not(.archive-hidden)')
+      const selected = document.querySelector('.archive-entry.active')
+      return {
+        ok: Boolean(document.querySelector(selector)) &&
+          !visibleError &&
+          !text.includes('不支持.') &&
+          (!expectedText || text.includes(expectedText)),
+        selected: selected?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 160),
+        text: text.slice(0, 360),
+        visibleError: visibleError?.textContent?.replace(/\s+/g, ' ').trim()
+      }
+    }, check)
+
+    if (!result.ok) {
+      throw new Error(`Sample ${samplePath} failed archive nested preview smoke for ${check.label}: ${JSON.stringify(result, null, 2)}`)
+    }
+  }
+}
+
 const verifyFormatSpecificInteraction = async (page, samplePath) => {
   const normalized = samplePath.toLowerCase()
   if (normalized.endsWith('.xmind')) {
@@ -515,6 +578,9 @@ const verifyFormatSpecificInteraction = async (page, samplePath) => {
       window.__fileViewerExpectedEdaLayoutLabel = label
     }, normalized.endsWith('.gds') ? 'GDSII' : 'OASIS')
     await verifyGdsLayoutRenderInteraction(page, samplePath)
+  }
+  if (/archive\.(?:zip|tar\.gz)$/.test(normalized)) {
+    await verifyArchiveNestedPreviewInteraction(page, samplePath)
   }
 }
 

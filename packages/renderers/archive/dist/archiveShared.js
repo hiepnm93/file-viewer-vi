@@ -5,6 +5,19 @@ export const getArchiveEntryExtension = (name) => {
     const dot = clean.lastIndexOf('.');
     return dot === -1 ? '' : clean.slice(dot + 1).toLowerCase();
 };
+const ARCHIVE_SYSTEM_METADATA_FILENAMES = new Set([
+    '.ds_store',
+    'desktop.ini',
+    'thumbs.db',
+]);
+export const isArchiveSystemMetadataPath = (path) => {
+    var _a;
+    const normalized = path.replace(/^\/+/, '').replace(/\\/g, '/');
+    const parts = normalized.split('/').filter(Boolean);
+    const filename = ((_a = parts[parts.length - 1]) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+    return parts.some(part => part === '__MACOSX' || part.startsWith('._')) ||
+        ARCHIVE_SYSTEM_METADATA_FILENAMES.has(filename);
+};
 export const isArchiveExtension = (extension) => (ARCHIVE_EXTENSIONS.includes(extension.toLowerCase()));
 export const isPreviewableArchiveEntry = (name) => {
     const extension = getArchiveEntryExtension(name);
@@ -37,6 +50,9 @@ export const flattenArchiveObject = (input, prefix = '') => {
     const entries = [];
     Object.entries(input).forEach(([key, value]) => {
         const path = prefix ? `${prefix}/${key}` : key;
+        if (isArchiveSystemMetadataPath(path)) {
+            return;
+        }
         if (isCompressedFile(value)) {
             const name = value.name || key;
             const extension = getArchiveEntryExtension(name);
