@@ -243,10 +243,10 @@ fileViewerRenderers({
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
 | Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
-| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供 Pointer / 鼠标 / 触摸可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
+| XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层使用 `@panzoom/panzoom` 提供可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
 | GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，并输出离线 SVG 地图，不依赖在线瓦片服务。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
-| EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records，小图生成 SVG 快速版图，大元素集使用 `@file-viewer/eda-layout` 的 WebGL typed-array 批次和 canvas 渲染；OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | OASIS 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
+| EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records，小图生成 SVG 快速版图，大元素集使用 `@file-viewer/eda-layout` 的 WebGL typed-array 批次和 canvas 渲染；OASIS 文本夹具可生成 SVG，真实二进制 OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | OASIS 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
 
 调研结论是：能用成熟官方或事实标准开源链路的格式不手搓；规格复杂、二进制重、需要长期迭代的能力，应该像 PPTX 一样拆成独立内核和独立 renderer 包持续维护。
 
@@ -284,7 +284,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 EPUB 兼容入口和 `epubjs` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
-- [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
+- [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 与真实鼠标拖拽回归确认 Panzoom 画布可平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
 - [x] `@file-viewer/core` 已移除 drawing renderer 兼容入口和 `@excalidraw/excalidraw` / `roughjs` 直接依赖，绘图完整能力统一通过 `@file-viewer/renderer-drawing` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
@@ -323,7 +323,7 @@ fileViewerRenderers({
 ### Phase 4：专业格式独立内核
 
 - [x] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立结构预览入口、README 和解析边界说明。
-- [x] GDSII 大元素集会在 `@file-viewer/eda-layout` 生成 WebGL triangle/line/point typed arrays，并由 `@file-viewer/renderer-eda` 自动使用 WebGL canvas；OASIS 仍保持结构索引和后续 WASM/增量渲染边界，不进入 core 首屏链路。
+- [x] GDSII 大元素集会在 `@file-viewer/eda-layout` 生成 WebGL triangle/line/point typed arrays，并由 `@file-viewer/renderer-eda` 自动使用 WebGL canvas；OASIS 文本夹具可生成 SVG，真实二进制 OASIS 仍保持结构索引和后续 WASM/增量渲染边界，不进入 core 首屏链路。
 - [x] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 已作为独立 engine package 建立 package manifest、README、类型导出、安装预算和发布合同；`@file-viewer/renderer-eda` 只负责 UI renderer 协议。
 - [x] `@file-viewer/geometry-engine` 已作为独立 geometry engine boundary package 建立 STEP / IGES / IFC / 3DM / BREP 的签名检查、推荐 WASM 内核路线和安装预算；OpenCascade、web-ifc、rhino3dm 不进入 core、标准组件或普通 3D renderer 的默认安装路径。
 - [x] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导；`format-fidelity` 已按 XMind、Typst、Draw.io、EDA、OASIS、OLB/DRA、OpenDocument 等格式线写明成熟库、WASM 路线和当前边界。
@@ -359,12 +359,12 @@ pnpm audit:renderer-deps -- --json
 
 | 格式族 | 当前策略 | 后续演进 |
 | --- | --- | --- |
-| XMind | `.xmind` 按 ZIP 容器读取，现代文件优先解析 `content.json`，经典文件解析 `content.xml`；交互由 `@file-viewer/renderer-mindmap` 维护。 | 继续补多结构布局、更多 marker 图标和复杂图片资源还原，交互回归覆盖 Pointer / 鼠标 / 触摸 / WebView。 |
+| XMind | `.xmind` 按 ZIP 容器读取，现代文件优先解析 `content.json`，经典文件解析 `content.xml`；Panzoom 交互由 `@file-viewer/renderer-mindmap` 维护。 | 继续补多结构布局、更多 marker 图标和复杂图片资源还原，交互回归覆盖 Pointer、真实鼠标、触摸和移动端双指缩放。 |
 | Archive | `@file-viewer/renderer-archive` 使用 `libarchive.js` Worker + WASM，Worker 不可用时降级 ZIP/TAR/GZIP。 | 保持 Worker 超时、IndexedDB 缓存和体积上限，不把压缩包依赖带回 core。 |
 | Email | `@file-viewer/renderer-email` 使用 `postal-mime` 和 `@kenjiuno/msgreader`，邮件附件复用统一嵌套预览。 | 增强 MSG 边界样例和附件安全策略。 |
 | EPUB/UMD | EPUB 使用 `@file-viewer/renderer-ebook` + `epubjs`；UMD 仍作为 core 轻量解析链路，保留 `pako`。 | EPUB 继续独立维护阅读体验；如果 UMD 复杂度继续上升，再拆出独立 ebook 内核。 |
 | OLB/DRA | `@file-viewer/renderer-eda` 当前基于 CFB 和二进制线索做安全结构树、实体候选、属性、字符串和诊断展示。 | OrCAD/Allegro 属于专业私有工程格式，完整几何/电气语义会像 PPTX 一样拆独立引擎长期维护，必要时引入自研 WASM。 |
-| GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
+| GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 文本夹具可输出 SVG，真实二进制 OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
 | Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译和 SVG 渲染。 | 保持离线 WASM 配置入口，后续评估更轻量只读渲染内核。 |
 | Draw.io / Excalidraw | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路。 | 保持 vendor 离线随包分发，避免企业内网依赖公共 CDN。 |

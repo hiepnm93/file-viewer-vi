@@ -2,6 +2,7 @@ import type { CFB$Entry } from 'cfb'
 import {
   inspectOasisLayout,
   parseGdsLayout,
+  parseOasisTextLayout,
   type EdaLayoutElement,
   type EdaLayoutPreview,
 } from '@file-viewer/eda-layout'
@@ -536,7 +537,9 @@ const buildDiagnostics = (
     level: 'info',
     code: 'parser',
     message: layout
-      ? '已识别为标准 GDSII 二进制版图记录，并在浏览器端解析几何预览和结构索引。'
+      ? layout.format === 'oasis'
+        ? '已识别为 OASIS 文本结构夹具，并在浏览器端解析几何预览和结构索引；真实 SEMI 二进制 OASIS 仍走安全索引与后续独立内核路线。'
+        : '已识别为标准 GDSII 二进制版图记录，并在浏览器端解析几何预览和结构索引。'
       : parser === 'cfb'
       ? '已识别为 Microsoft Compound File / OLE2 复合文档容器，并在浏览器端解析目录与流。'
       : '未识别为 CFB 容器，已使用二进制字符串索引模式展示可读信息。'
@@ -549,8 +552,8 @@ const buildDiagnostics = (
   if (layout) {
     diagnostics.push({
       level: 'info',
-      code: 'gds-layout',
-      message: `已解析 GDSII 版图: ${layout.structureCount} 个 structure、${layout.elements.length} 个几何/引用/文本元素，可在版图预览面板中拖动查看。`
+      code: `${layout.format}-layout`,
+      message: `已解析 ${layout.format === 'oasis' ? 'OASIS 结构夹具' : 'GDSII 版图'}: ${layout.structureCount} 个 structure、${layout.elements.length} 个几何/引用/文本元素，可在版图预览面板中拖动查看。`
     })
   }
 
@@ -639,7 +642,11 @@ const parseCfbContainer = async (buffer: ArrayBuffer, type: EdaFileType): Promis
 const parseBinaryFallback = (buffer: ArrayBuffer, type: EdaFileType): EdaParseResult => {
   const bytes = toBytes(buffer)
   const stream = buildStreamView(type, `${type}.${type}`, `${type}.${type}`, buffer.byteLength, 'binary', bytes)
-  const layout = type === 'gds' ? parseGdsLayout(bytes) : undefined
+  const layout = type === 'gds'
+    ? parseGdsLayout(bytes)
+    : type === 'oas' || type === 'oasis'
+      ? parseOasisTextLayout(bytes)
+      : undefined
   const oasis = type === 'oas' || type === 'oasis' ? inspectOasisLayout(bytes) : undefined
   const warnings = layout
     ? layout.warnings

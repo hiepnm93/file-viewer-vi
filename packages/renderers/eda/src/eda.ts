@@ -399,7 +399,8 @@ const createWebglLayoutPreview = (
 
 const createLayoutPreview = (layout: EdaLayoutPreview) => {
   const panel = createElement('section', 'eda-panel eda-layout-panel');
-  appendPanelHead(panel, '版图预览', `${layout.structureCount || layout.structures.length} structures · ${layout.elements.length} elements`);
+  const layoutLabel = layout.format === 'oasis' ? 'OASIS' : 'GDSII';
+  appendPanelHead(panel, '版图预览', `${layoutLabel} · ${layout.structureCount || layout.structures.length} structures · ${layout.elements.length} elements`);
 
   const meta = createElement('div', 'eda-layout-meta');
   [
@@ -410,7 +411,7 @@ const createLayoutPreview = (layout: EdaLayoutPreview) => {
   panel.append(meta);
 
   if (!layout.bounds || !layout.elements.length) {
-    panel.append(createEmpty('没有可绘制几何', '已读取 GDSII 头部和 structure 信息，但未发现 boundary、path、text 或 reference 元素。'));
+    panel.append(createEmpty('没有可绘制几何', `已读取 ${layoutLabel} 头部和 structure 信息，但未发现 boundary、path、text 或 reference 元素。`));
     return panel;
   }
 
@@ -460,7 +461,7 @@ const createLayoutPreview = (layout: EdaLayoutPreview) => {
     height: svgHeight,
     viewBox: `0 0 ${svgWidth} ${svgHeight}`,
     role: 'img',
-    'aria-label': 'GDSII layout preview',
+    'aria-label': `${layoutLabel} layout preview`,
   });
   svg.append(createSvgElement('rect', {
     x: 0,
@@ -634,7 +635,7 @@ export default async function renderEda(
       createElement('strong', undefined, parsed.title),
       createElement('p', undefined, parsed.type === 'gds' || parsed.type === 'oas' || parsed.type === 'oasis'
         ? parsed.layout
-          ? 'GDSII 属于芯片版图工程文件。预览器已在浏览器端解析标准记录，小图生成 SVG，大图自动切换 WebGL canvas，同时保留结构、字符串和诊断索引。'
+          ? `${parsed.layout.format === 'oasis' ? 'OASIS' : 'GDSII'} 属于芯片版图工程文件。预览器已在浏览器端解析可识别几何，小图生成 SVG，大图自动切换 WebGL canvas，同时保留结构、字符串和诊断索引。`
           : 'GDSII / OASIS 属于芯片版图工程文件。预览器优先索引结构、属性、可读字符串和二进制线索，并在纯前端安全退化。'
         : 'OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。')
     );

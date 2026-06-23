@@ -44,6 +44,12 @@ export interface EdaOasisInspection {
   warnings: string[];
 }
 
+interface OasisTextParseState {
+  structure: string;
+  layer?: number;
+  datatype?: number;
+}
+
 export interface EdaLayoutWebglLabel {
   text: string;
   layer?: number;
@@ -133,6 +139,29 @@ const readGdsString = (bytes: Uint8Array, offset: number, length: number) => {
       .decode(bytes.slice(offset, offset + length))
       .replace(/\u0000+$/g, '')
   );
+};
+
+const isMostlyPrintableText = (bytes: Uint8Array) => {
+  const sample = bytes.slice(0, Math.min(bytes.length, 4096));
+  if (!sample.length) {
+    return false;
+  }
+  let printable = 0;
+  for (const byte of sample) {
+    if (byte === 9 || byte === 10 || byte === 13 || (byte >= 32 && byte <= 126)) {
+      printable += 1;
+    }
+  }
+  return printable / sample.length > 0.9;
+};
+
+const parseNumberToken = (value: string | undefined) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parseQuotedText = (line: string) => {
+  return line.match(/"([^"]+)"/)?.[1] || line.split(/\s+/).slice(3).join(' ');
 };
 
 const readGdsReal8 = (bytes: Uint8Array, offset: number) => {
@@ -347,6 +376,136 @@ export const parseGdsLayout = (bytes: Uint8Array): EdaLayoutPreview | undefined 
     databaseUnit,
     structureCount: structures.length,
     structures,
+    elements,
+    bounds,
+    warnings,
+  };
+};
+
+export const parseOasisTextLayout = (bytes: Uint8Array): EdaLayoutPreview | undefined => {
+  if (!isMostlyPrintableText(bytes)) {
+    return undefined;
+  }
+
+  const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+  if (!/%SEMI-OASIS/i.test(text) && !/\bOASIS\b/i.test(text)) {
+    return undefined;
+  }
+
+  const structures: string[] = [];
+  const elements: EdaLayoutElement[] = [];
+  const warnings: string[] = [
+    'Parsed an ASCII OASIS-like structure fixture. Full SEMI binary OASIS geometry requires the dedicated layout kernel path.',
+  ];
+  const state: OasisTextParseState = { structure: 'TOP' };
+  let userUnit: number | undefined;
+  let bounds: EdaLayoutPreview['bounds'];
+
+  const pushElement = (element: EdaLayoutElement) => {
+    elements.push(element);
+    bounds = updateLayoutBounds(bounds, element.xy);
+  };
+
+  text.split(/\r?\n/).forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      return;
+    }
+    const parts = line.split(/\s+/);
+    const command = (parts[0] || '').toUpperCase();
+
+    if (command === 'START') {
+      const unitMatch = line.match(/\bunit=([0-9.eE+-]+)/);
+      userUnit = parseNumberToken(unitMatch?.[1]);
+      return;
+    }
+    if (command === 'CELL') {
+      state.structure = parts[1] || `CELL_${structures.length + 1}`;
+      if (!structures.includes(state.structure)) {
+        structures.push(state.structure);
+      }
+      return;
+    }
+    if (command === 'LAYER') {
+      state.layer = parseNumberToken(parts[1]);
+      const datatypeIndex = parts.findIndex(part => part.toUpperCase() === 'DATATYPE');
+      state.datatype = parseNumberToken(parts[datatypeIndex + 1]);
+      return;
+    }
+    if (command === 'RECT') {
+      const x = parseNumberToken(parts[1]);
+      const y = parseNumberToken(parts[2]);
+      const width = parseNumberToken(parts[3]);
+      const height = parseNumberToken(parts[4]);
+      if ([x, y, width, height].some(value => value === undefined)) {
+        warnings.push(`Skipped malformed RECT record: ${line}`);
+        return;
+      }
+      pushElement({
+        kind: 'boundary',
+        structure: state.structure,
+        layer: state.layer,
+        datatype: state.datatype,
+        xy: [
+          { x: x!, y: y! },
+          { x: x! + width!, y: y! },
+          { x: x! + width!, y: y! + height! },
+          { x: x!, y: y! + height! },
+          { x: x!, y: y! },
+        ],
+      });
+      return;
+    }
+    if (command === 'PATH' || command === 'POLYGON') {
+      const values = parts.slice(1).map(parseNumberToken);
+      if (values.length < 4 || values.some(value => value === undefined)) {
+        warnings.push(`Skipped malformed ${command} record: ${line}`);
+        return;
+      }
+      const xy: EdaPoint[] = [];
+      for (let index = 0; index + 1 < values.length; index += 2) {
+        xy.push({ x: values[index]!, y: values[index + 1]! });
+      }
+      if (command === 'POLYGON' && xy.length >= 3) {
+        xy.push({ ...xy[0] });
+      }
+      pushElement({
+        kind: command === 'PATH' ? 'path' : 'boundary',
+        structure: state.structure,
+        layer: state.layer,
+        datatype: state.datatype,
+        xy,
+      });
+      return;
+    }
+    if (command === 'TEXT') {
+      const x = parseNumberToken(parts[1]);
+      const y = parseNumberToken(parts[2]);
+      if (x === undefined || y === undefined) {
+        warnings.push(`Skipped malformed TEXT record: ${line}`);
+        return;
+      }
+      pushElement({
+        kind: 'text',
+        structure: state.structure,
+        layer: state.layer,
+        datatype: state.datatype,
+        text: cleanupText(parseQuotedText(line)),
+        xy: [{ x, y }],
+      });
+    }
+  });
+
+  if (!elements.length && !structures.length) {
+    return undefined;
+  }
+
+  return {
+    format: 'oasis',
+    libraryName: 'OASIS text fixture',
+    userUnit,
+    structureCount: structures.length || 1,
+    structures: structures.length ? structures : [state.structure],
     elements,
     bounds,
     warnings,

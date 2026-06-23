@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import Panzoom, { type PanzoomObject } from '@panzoom/panzoom';
 import {
   parseXmind8Xml,
   parseXmind2020Json,
@@ -98,7 +99,7 @@ const WHEEL_ZOOM_STEP = 0.12;
 const KEYBOARD_PAN_STEP = 42;
 const KEYBOARD_PAN_FAST_STEP = 96;
 const CLICK_SUPPRESSION_MS = 120;
-const PINCH_MIN_DISTANCE = 24;
+const PANZOOM_EXCLUDE_CLASS = 'xmind-pan-exclude';
 
 const xmindStyle = `
 .xmind-viewer{height:100%;min-height:0;display:flex;flex-direction:column;background:#eef3f7;color:#172033}
@@ -402,7 +403,7 @@ const createNodeElement = (
   }
   if (node.hyperlink) {
     const link = document.createElement('a');
-    link.className = 'xmind-link';
+    link.className = `xmind-link ${PANZOOM_EXCLUDE_CLASS}`;
     link.textContent = node.hyperlink;
     link.href = node.hyperlink.startsWith('http') ? node.hyperlink : '#';
     link.target = '_blank';
@@ -440,30 +441,10 @@ export default async function renderXMind(
   let suppressNodeClick = false;
   let spacePanning = false;
   let userAdjustedViewport = false;
-  let lostPointerCaptureTimer: number | undefined;
-  let mouseButtonReleaseTimer: number | undefined;
   let resizeFrame: number | undefined;
-  let panFrame: number | undefined;
-  let queuedPanPoint: { clientX: number; clientY: number } | null = null;
-  let lastPanMoveAt = 0;
-  let touchGesture: {
-    centerX: number;
-    centerY: number;
-    distance: number;
-    logicalX: number;
-    logicalY: number;
-    zoom: number;
-  } | null = null;
-  let panState: {
-    source: 'pointer' | 'mouse' | 'touch';
-    pointerId?: number;
-    pointerType?: string;
-    startX: number;
-    startY: number;
-    startPanX: number;
-    startPanY: number;
-    moved: boolean;
-  } | null = null;
+  let panzoom: PanzoomObject | null = null;
+  let programmaticPanzoomUpdate = false;
+  let panStartState: { x: number; y: number; scale: number } | null = null;
 
   const root = createElement('section', 'xmind-viewer');
   root.dataset.viewerZoomProvider = 'xmind';
@@ -549,17 +530,49 @@ export default async function renderXMind(
     panY = Math.min(yBounds.max, Math.max(yBounds.min, panY));
   };
 
+  const syncPanzoomState = (markUserAdjusted: boolean) => {
+    if (!panzoom) {
+      return;
+    }
+    const pan = panzoom.getPan();
+    panX = Number.isFinite(pan.x) ? pan.x : panX;
+    panY = Number.isFinite(pan.y) ? pan.y : panY;
+    zoom = clampZoom(panzoom.getScale());
+    zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+    if (markUserAdjusted) {
+      userAdjustedViewport = true;
+    }
+    zoomEmitter.emit();
+  };
+
+  const updatePanzoom = (update: () => void) => {
+    programmaticPanzoomUpdate = true;
+    try {
+      update();
+    } finally {
+      programmaticPanzoomUpdate = false;
+    }
+    syncPanzoomState(false);
+  };
+
   const applyZoom = () => {
     const sheet = sheets[activeSheetIndex];
     if (sheet) {
-      zoomBox.style.width = '100%';
-      zoomBox.style.height = '100%';
+      zoomBox.style.width = `${sheet.width}px`;
+      zoomBox.style.height = `${sheet.height}px`;
       surface.style.width = `${sheet.width}px`;
       surface.style.height = `${sheet.height}px`;
     }
     clampPan();
-    zoomBox.style.transform = `translate3d(${panX}px, ${panY}px, 0)`;
-    surface.style.transform = `scale(${zoom})`;
+    surface.style.transform = '';
+    if (panzoom) {
+      updatePanzoom(() => {
+        panzoom?.zoom(zoom, { animate: false, force: true });
+        panzoom?.pan(panX, panY, { animate: false, force: true });
+      });
+    } else {
+      zoomBox.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${zoom})`;
+    }
     zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
   };
 
@@ -578,16 +591,22 @@ export default async function renderXMind(
     }
 
     userAdjustedViewport = true;
-    const rect = stage.getBoundingClientRect();
-    const viewportX = clientX - rect.left;
-    const viewportY = clientY - rect.top;
-    const logicalX = (viewportX - panX) / zoom;
-    const logicalY = (viewportY - panY) / zoom;
-    zoom = nextZoom;
-    panX = viewportX - logicalX * zoom;
-    panY = viewportY - logicalY * zoom;
-    applyZoom();
-    zoomEmitter.emit();
+    if (panzoom) {
+      updatePanzoom(() => {
+        panzoom?.zoomToPoint(nextZoom, { clientX, clientY }, { animate: false, force: true });
+      });
+    } else {
+      const rect = stage.getBoundingClientRect();
+      const viewportX = clientX - rect.left;
+      const viewportY = clientY - rect.top;
+      const logicalX = (viewportX - panX) / zoom;
+      const logicalY = (viewportY - panY) / zoom;
+      zoom = nextZoom;
+      panX = viewportX - logicalX * zoom;
+      panY = viewportY - logicalY * zoom;
+      applyZoom();
+      zoomEmitter.emit();
+    }
     return getZoomState();
   };
 
@@ -758,79 +777,6 @@ export default async function renderXMind(
     return !element?.closest('a[href],button,input,textarea,select,[contenteditable="true"]');
   };
 
-  const applyPanPoint = (clientX: number, clientY: number) => {
-    if (!panState) {
-      return;
-    }
-    const deltaX = clientX - panState.startX;
-    const deltaY = clientY - panState.startY;
-    if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
-      panState.moved = true;
-      userAdjustedViewport = true;
-    }
-    lastPanMoveAt = Date.now();
-    panX = panState.startPanX + deltaX;
-    panY = panState.startPanY + deltaY;
-    applyZoom();
-  };
-
-  const flushQueuedPanPoint = () => {
-    if (panFrame !== undefined) {
-      ownerWindow.cancelAnimationFrame(panFrame);
-      panFrame = undefined;
-    }
-    const point = queuedPanPoint;
-    queuedPanPoint = null;
-    if (point) {
-      applyPanPoint(point.clientX, point.clientY);
-    }
-  };
-
-  const queuePanPoint = (clientX: number, clientY: number) => {
-    queuedPanPoint = { clientX, clientY };
-    if (panFrame !== undefined) {
-      return;
-    }
-    panFrame = ownerWindow.requestAnimationFrame(() => {
-      panFrame = undefined;
-      const point = queuedPanPoint;
-      queuedPanPoint = null;
-      if (point) {
-        applyPanPoint(point.clientX, point.clientY);
-      }
-    });
-  };
-
-  const clearPanState = (event?: PointerEvent) => {
-    if (!panState) {
-      return;
-    }
-    flushQueuedPanPoint();
-    if (lostPointerCaptureTimer !== undefined) {
-      ownerWindow.clearTimeout(lostPointerCaptureTimer);
-      lostPointerCaptureTimer = undefined;
-    }
-    clearMouseButtonReleaseTimer();
-    const moved = panState.moved;
-    const pointerId = panState.pointerId;
-    if (event && pointerId !== undefined && stage.hasPointerCapture?.(pointerId)) {
-      try {
-        stage.releasePointerCapture(pointerId);
-      } catch {
-        // Pointer capture can already be released by WebView scrolling or synthetic browser smoke events.
-      }
-    }
-    panState = null;
-    stage.classList.remove('is-panning');
-    if (moved) {
-      suppressNodeClick = true;
-      zoomEmitter.emit();
-      ownerWindow.setTimeout(() => {
-        suppressNodeClick = false;
-      }, CLICK_SUPPRESSION_MS);
-    }
-  };
-
   const setSpacePanning = (enabled: boolean) => {
     spacePanning = enabled;
     stage.classList.toggle('is-space-panning', enabled);
@@ -848,264 +794,65 @@ export default async function renderXMind(
     }
   };
 
-  const clearMouseButtonReleaseTimer = () => {
-    if (mouseButtonReleaseTimer === undefined) {
-      return;
-    }
-    ownerWindow.clearTimeout(mouseButtonReleaseTimer);
-    mouseButtonReleaseTimer = undefined;
+  const suppressNextNodeClick = () => {
+    suppressNodeClick = true;
+    ownerWindow.setTimeout(() => {
+      suppressNodeClick = false;
+    }, CLICK_SUPPRESSION_MS);
   };
 
-  const scheduleMouseButtonReleaseFallback = () => {
-    clearMouseButtonReleaseTimer();
-    mouseButtonReleaseTimer = ownerWindow.setTimeout(() => {
-      if (panState?.source === 'mouse') {
-        clearPanState();
-      }
-    }, 900);
-  };
-
-  const beginPan = (
-    clientX: number,
-    clientY: number,
-    source: 'pointer' | 'mouse' | 'touch',
-    targetValue: EventTarget | null
-  ) => {
-    if (status !== 'ready' || (!spacePanning && isPanBlockedTarget(targetValue))) {
-      return false;
-    }
+  const onPanzoomStart = () => {
     focusStage();
-    lastPanMoveAt = Date.now();
-    panState = {
-      source,
-      startX: clientX,
-      startY: clientY,
-      startPanX: panX,
-      startPanY: panY,
-      moved: false,
-    };
-    stage.classList.add('is-panning');
-    return true;
-  };
-
-  const onPanStart = (event: PointerEvent) => {
-    if ((event.pointerType === 'mouse' && event.button !== 0) || panState) {
-      return;
-    }
-    if (!beginPan(event.clientX, event.clientY, 'pointer', event.target)) {
-      return;
-    }
-    if (shouldPreventPanStartDefault(event.target)) {
-      event.preventDefault();
-    }
-    event.stopPropagation();
-    panState!.pointerId = event.pointerId;
-    panState!.pointerType = event.pointerType;
-    try {
-      stage.setPointerCapture?.(event.pointerId);
-    } catch {
-      // Embedded browsers and synthetic events may not support pointer capture.
-    }
-  };
-
-  const onPanMove = (event: PointerEvent) => {
-    if (!panState || panState.pointerId !== event.pointerId) {
-      return;
-    }
-    // Some embedded browsers and mobile WebViews report PointerEvent.buttons as
-    // 0 while a captured pointer is still moving. Pointer sessions are ended by
-    // pointerup, pointercancel, blur, or visibilitychange instead.
-    queuePanPoint(event.clientX, event.clientY);
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const onPanEnd = (event: PointerEvent) => {
-    if (!panState || panState.pointerId !== event.pointerId) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    clearPanState(event);
-  };
-
-  const onLostPointerCapture = (event: PointerEvent) => {
-    if (!panState || panState.pointerId !== event.pointerId) {
-      return;
-    }
-    if (lostPointerCaptureTimer !== undefined) {
-      ownerWindow.clearTimeout(lostPointerCaptureTimer);
-    }
-    // Some mobile WebViews release pointer capture while the finger is still moving.
-    // Keep the pan session alive; window/document listeners will end it on pointerup/cancel.
-    lostPointerCaptureTimer = ownerWindow.setTimeout(() => {
-      if (!panState || panState.pointerId !== event.pointerId) {
-        return;
-      }
-      if (Date.now() - lastPanMoveAt < 1_500) {
-        return;
-      }
-      if (panState.pointerType === 'mouse') {
-        clearPanState();
-      }
-    }, 1_600);
-  };
-
-  const onMouseDown = (event: MouseEvent) => {
-    if (event.button !== 0 || panState) {
-      return;
-    }
-    if (!beginPan(event.clientX, event.clientY, 'mouse', event.target)) {
-      return;
-    }
-    if (shouldPreventPanStartDefault(event.target)) {
-      event.preventDefault();
-    }
-    event.stopPropagation();
-  };
-
-  const onMouseMove = (event: MouseEvent) => {
-    if (!panState || (panState.source !== 'mouse' && !(panState.source === 'pointer' && panState.pointerType === 'mouse'))) {
-      return;
-    }
-    // Some embedded WebViews start with PointerEvent but keep dispatching mouse events.
-    if (event.buttons === 0) {
-      scheduleMouseButtonReleaseFallback();
-    } else {
-      clearMouseButtonReleaseTimer();
-    }
-    queuePanPoint(event.clientX, event.clientY);
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const onMouseUp = (event: MouseEvent) => {
-    if (!panState || (panState.source !== 'mouse' && !(panState.source === 'pointer' && panState.pointerType === 'mouse'))) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    clearPanState();
-  };
-
-  const primaryTouch = (touches: TouchList) => touches.length === 1 ? touches.item(0) : null;
-
-  const getTouchPair = (touches: TouchList) => {
-    const first = touches.item(0);
-    const second = touches.item(1);
-    return first && second ? [first, second] as const : null;
-  };
-
-  const getTouchMetrics = (first: Touch, second: Touch) => {
-    const centerX = (first.clientX + second.clientX) / 2;
-    const centerY = (first.clientY + second.clientY) / 2;
-    const deltaX = second.clientX - first.clientX;
-    const deltaY = second.clientY - first.clientY;
-    return {
-      centerX,
-      centerY,
-      distance: Math.max(PINCH_MIN_DISTANCE, Math.hypot(deltaX, deltaY)),
-    };
-  };
-
-  const beginTouchGesture = (first: Touch, second: Touch) => {
-    const rect = stage.getBoundingClientRect();
-    const metrics = getTouchMetrics(first, second);
-    const viewportX = metrics.centerX - rect.left;
-    const viewportY = metrics.centerY - rect.top;
-    clearPanState();
-    touchGesture = {
-      ...metrics,
-      logicalX: (viewportX - panX) / zoom,
-      logicalY: (viewportY - panY) / zoom,
-      zoom,
-    };
+    panStartState = { x: panX, y: panY, scale: zoom };
     stage.classList.add('is-panning');
   };
 
-  const updateTouchGesture = (first: Touch, second: Touch) => {
-    if (!touchGesture) {
-      beginTouchGesture(first, second);
-      return;
-    }
-
-    const rect = stage.getBoundingClientRect();
-    const metrics = getTouchMetrics(first, second);
-    const ratio = metrics.distance / touchGesture.distance;
-    zoom = clampZoom(touchGesture.zoom * ratio);
-    panX = metrics.centerX - rect.left - touchGesture.logicalX * zoom;
-    panY = metrics.centerY - rect.top - touchGesture.logicalY * zoom;
-    applyZoom();
-    zoomEmitter.emit();
+  const onPanzoomChange = () => {
+    syncPanzoomState(!programmaticPanzoomUpdate);
   };
 
-  const endTouchGesture = () => {
-    if (!touchGesture) {
-      return;
-    }
-    touchGesture = null;
+  const onPanzoomEnd = () => {
+    syncPanzoomState(!programmaticPanzoomUpdate);
     stage.classList.remove('is-panning');
+    if (panStartState) {
+      const moved = Math.abs(panX - panStartState.x) +
+        Math.abs(panY - panStartState.y) +
+        Math.abs(zoom - panStartState.scale) * 100;
+      if (moved > PAN_CLICK_THRESHOLD) {
+        suppressNextNodeClick();
+      }
+    }
+    panStartState = null;
   };
 
-  const onTouchStart = (event: TouchEvent) => {
-    const pair = getTouchPair(event.touches);
-    if (pair) {
-      beginTouchGesture(pair[0], pair[1]);
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    if (panState || touchGesture) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    const touch = primaryTouch(event.touches);
-    if (!touch || !beginPan(touch.clientX, touch.clientY, 'touch', event.target)) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const onTouchMove = (event: TouchEvent) => {
-    const pair = getTouchPair(event.touches);
-    if (pair) {
-      updateTouchGesture(pair[0], pair[1]);
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    if (touchGesture) {
-      endTouchGesture();
-    }
-    // Some mobile WebViews start with pointerdown but only continue through touchmove.
-    if (!panState || (panState.source !== 'touch' && !(panState.source === 'pointer' && panState.pointerType === 'touch'))) {
-      return;
-    }
-    const touch = primaryTouch(event.touches);
-    if (!touch) {
-      clearPanState();
-      return;
-    }
-    queuePanPoint(touch.clientX, touch.clientY);
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const onTouchEnd = (event: TouchEvent) => {
-    if (touchGesture) {
-      endTouchGesture();
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    if (!panState || (panState.source !== 'touch' && !(panState.source === 'pointer' && panState.pointerType === 'touch'))) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    clearPanState();
+  const initializePanzoom = () => {
+    panzoom = Panzoom(zoomBox, {
+      canvas: true,
+      cursor: 'grab',
+      minScale: 0.25,
+      maxScale: 2.5,
+      step: 0.15,
+      animate: false,
+      origin: '0 0',
+      touchAction: 'none',
+      excludeClass: PANZOOM_EXCLUDE_CLASS,
+      handleStartEvent: event => {
+        if (status !== 'ready' || (!spacePanning && isPanBlockedTarget(event.target))) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        if (shouldPreventPanStartDefault(event.target)) {
+          event.preventDefault();
+        }
+        event.stopPropagation();
+        focusStage();
+      },
+    });
+    zoomBox.addEventListener('panzoomstart', onPanzoomStart);
+    zoomBox.addEventListener('panzoomchange', onPanzoomChange);
+    zoomBox.addEventListener('panzoomend', onPanzoomEnd);
+    applyZoom();
   };
 
   const onStageWheel = (event: WheelEvent) => {
@@ -1115,10 +862,20 @@ export default async function renderXMind(
     event.preventDefault();
     if (!event.ctrlKey && !event.metaKey) {
       userAdjustedViewport = true;
-      panX -= event.deltaX;
-      panY -= event.deltaY;
-      applyZoom();
-      zoomEmitter.emit();
+      if (panzoom) {
+        updatePanzoom(() => {
+          panzoom?.pan(-event.deltaX, -event.deltaY, {
+            animate: false,
+            force: true,
+            relative: true,
+          });
+        });
+      } else {
+        panX -= event.deltaX;
+        panY -= event.deltaY;
+        applyZoom();
+        zoomEmitter.emit();
+      }
       return;
     }
     const direction = event.deltaY > 0 ? -1 : 1;
@@ -1154,8 +911,14 @@ export default async function renderXMind(
     } else {
       return;
     }
-    applyZoom();
-    zoomEmitter.emit();
+    if (panzoom) {
+      updatePanzoom(() => {
+        panzoom?.pan(panX, panY, { animate: false, force: true });
+      });
+    } else {
+      applyZoom();
+      zoomEmitter.emit();
+    }
     event.preventDefault();
   };
 
@@ -1179,21 +942,21 @@ export default async function renderXMind(
   };
 
   const onStageContextMenu = (event: MouseEvent) => {
-    if (panState?.moved) {
+    if (stage.classList.contains('is-panning')) {
       event.preventDefault();
       event.stopPropagation();
     }
   };
 
   const onStageSelectStart = (event: Event) => {
-    if (panState) {
+    if (stage.classList.contains('is-panning')) {
       event.preventDefault();
     }
   };
 
   const stopPanInteractions = () => {
-    clearPanState();
-    endTouchGesture();
+    panStartState = null;
+    stage.classList.remove('is-panning');
     setSpacePanning(false);
   };
 
@@ -1231,16 +994,7 @@ export default async function renderXMind(
   resizeObserver?.observe(stage);
   ownerWindow.addEventListener('resize', scheduleViewportRefresh);
 
-  stage.addEventListener('pointerdown', onPanStart, true);
-  stage.addEventListener('pointermove', onPanMove);
-  stage.addEventListener('pointerup', onPanEnd);
-  stage.addEventListener('pointercancel', onPanEnd);
-  stage.addEventListener('lostpointercapture', onLostPointerCapture);
-  stage.addEventListener('mousedown', onMouseDown, true);
-  stage.addEventListener('touchstart', onTouchStart, { passive: false, capture: true });
-  stage.addEventListener('touchmove', onTouchMove, { passive: false });
-  stage.addEventListener('touchend', onTouchEnd);
-  stage.addEventListener('touchcancel', onTouchEnd);
+  initializePanzoom();
   stage.addEventListener('wheel', onStageWheel, { passive: false });
   stage.addEventListener('keydown', onStageKeyDown);
   stage.addEventListener('keyup', onStageKeyUp);
@@ -1248,19 +1002,6 @@ export default async function renderXMind(
   stage.addEventListener('dragstart', onStageDragStart);
   stage.addEventListener('contextmenu', onStageContextMenu);
   stage.addEventListener('selectstart', onStageSelectStart);
-  ownerWindow.addEventListener('pointermove', onPanMove);
-  ownerWindow.addEventListener('pointerup', onPanEnd);
-  ownerWindow.addEventListener('pointercancel', onPanEnd);
-  ownerDocument.addEventListener('pointermove', onPanMove, true);
-  ownerDocument.addEventListener('pointerup', onPanEnd, true);
-  ownerDocument.addEventListener('pointercancel', onPanEnd, true);
-  ownerWindow.addEventListener('mousemove', onMouseMove);
-  ownerWindow.addEventListener('mouseup', onMouseUp);
-  ownerDocument.addEventListener('mousemove', onMouseMove, true);
-  ownerDocument.addEventListener('mouseup', onMouseUp, true);
-  ownerDocument.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
-  ownerDocument.addEventListener('touchend', onTouchEnd, true);
-  ownerDocument.addEventListener('touchcancel', onTouchEnd, true);
   ownerWindow.addEventListener('keyup', onStageKeyUp);
   ownerWindow.addEventListener('blur', stopPanInteractions);
   ownerDocument.addEventListener('visibilitychange', onDocumentVisibilityChange);
@@ -1274,32 +1015,17 @@ export default async function renderXMind(
     $el: root,
     unmount() {
       disposed = true;
-      if (lostPointerCaptureTimer !== undefined) {
-        ownerWindow.clearTimeout(lostPointerCaptureTimer);
-        lostPointerCaptureTimer = undefined;
-      }
-      clearMouseButtonReleaseTimer();
-      if (panFrame !== undefined) {
-        ownerWindow.cancelAnimationFrame(panFrame);
-        panFrame = undefined;
-      }
       if (resizeFrame !== undefined) {
         ownerWindow.cancelAnimationFrame(resizeFrame);
         resizeFrame = undefined;
       }
-      queuedPanPoint = null;
       resizeObserver?.disconnect();
       unregisterFileViewerZoomProvider(root);
-      stage.removeEventListener('pointerdown', onPanStart, true);
-      stage.removeEventListener('pointermove', onPanMove);
-      stage.removeEventListener('pointerup', onPanEnd);
-      stage.removeEventListener('pointercancel', onPanEnd);
-      stage.removeEventListener('lostpointercapture', onLostPointerCapture);
-      stage.removeEventListener('mousedown', onMouseDown, true);
-      stage.removeEventListener('touchstart', onTouchStart, true);
-      stage.removeEventListener('touchmove', onTouchMove);
-      stage.removeEventListener('touchend', onTouchEnd);
-      stage.removeEventListener('touchcancel', onTouchEnd);
+      zoomBox.removeEventListener('panzoomstart', onPanzoomStart);
+      zoomBox.removeEventListener('panzoomchange', onPanzoomChange);
+      zoomBox.removeEventListener('panzoomend', onPanzoomEnd);
+      panzoom?.destroy();
+      panzoom = null;
       stage.removeEventListener('wheel', onStageWheel);
       stage.removeEventListener('keydown', onStageKeyDown);
       stage.removeEventListener('keyup', onStageKeyUp);
@@ -1307,19 +1033,6 @@ export default async function renderXMind(
       stage.removeEventListener('dragstart', onStageDragStart);
       stage.removeEventListener('contextmenu', onStageContextMenu);
       stage.removeEventListener('selectstart', onStageSelectStart);
-      ownerWindow.removeEventListener('pointermove', onPanMove);
-      ownerWindow.removeEventListener('pointerup', onPanEnd);
-      ownerWindow.removeEventListener('pointercancel', onPanEnd);
-      ownerDocument.removeEventListener('pointermove', onPanMove, true);
-      ownerDocument.removeEventListener('pointerup', onPanEnd, true);
-      ownerDocument.removeEventListener('pointercancel', onPanEnd, true);
-      ownerWindow.removeEventListener('mousemove', onMouseMove);
-      ownerWindow.removeEventListener('mouseup', onMouseUp);
-      ownerDocument.removeEventListener('mousemove', onMouseMove, true);
-      ownerDocument.removeEventListener('mouseup', onMouseUp, true);
-      ownerDocument.removeEventListener('touchmove', onTouchMove, true);
-      ownerDocument.removeEventListener('touchend', onTouchEnd, true);
-      ownerDocument.removeEventListener('touchcancel', onTouchEnd, true);
       ownerWindow.removeEventListener('keyup', onStageKeyUp);
       ownerWindow.removeEventListener('resize', scheduleViewportRefresh);
       ownerWindow.removeEventListener('blur', stopPanInteractions);

@@ -60,5 +60,6 @@ export interface CreateEdaLayoutWebglBatchOptions {
     palette?: readonly string[];
 }
 export declare const parseGdsLayout: (bytes: Uint8Array) => EdaLayoutPreview | undefined;
+export declare const parseOasisTextLayout: (bytes: Uint8Array) => EdaLayoutPreview | undefined;
 export declare const createEdaLayoutWebglBatch: (layout: EdaLayoutPreview, options?: CreateEdaLayoutWebglBatchOptions) => EdaLayoutWebglBatch;
 export declare const inspectOasisLayout: (bytes: Uint8Array) => EdaOasisInspection;

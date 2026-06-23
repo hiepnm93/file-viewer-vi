@@ -188,118 +188,6 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       }
     }
 
-    const dispatchMouse = (type, clientX, clientY, buttons) => {
-      stage.dispatchEvent(new MouseEvent(type, {
-        bubbles: true,
-        button: 0,
-        buttons,
-        cancelable: true,
-        clientX,
-        clientY
-      }))
-    }
-    const mouseDrag = async () => {
-      await resetView()
-      const before = readTransform()
-      stage.focus({ preventScroll: true })
-      dispatchMouse('mousedown', startX + 8, startY + 8, 1)
-      dispatchMouse('mousemove', startX + 118, startY + 74, 1)
-      await waitFrame()
-      dispatchMouse('mousemove', startX + 148, startY + 96, 1)
-      await waitFrame()
-      dispatchMouse('mouseup', startX + 148, startY + 96, 0)
-      await waitFrame()
-      return { before, after: readTransform() }
-    }
-
-    const pointerMouseHybridDrag = async () => {
-      await resetView()
-      const before = readTransform()
-      stage.focus({ preventScroll: true })
-      dispatchPointer(stage, 'pointerdown', startX + 10, startY + 10, 1, 2321, 'mouse')
-      dispatchMouse('mousemove', startX + 116, startY + 78, 1)
-      await waitFrame()
-      dispatchMouse('mousemove', startX + 148, startY + 102, 1)
-      await waitFrame()
-      dispatchMouse('mouseup', startX + 148, startY + 102, 0)
-      await waitFrame()
-      return { before, after: readTransform() }
-    }
-
-    const touchDrag = async () => {
-      if (typeof Touch !== 'function' || typeof TouchEvent !== 'function') {
-        return { skipped: true, before: readTransform(), after: readTransform() }
-      }
-      const makeTouch = (clientX, clientY) => new Touch({
-        identifier: 917,
-        target: stage,
-        clientX,
-        clientY,
-        screenX: clientX,
-        screenY: clientY,
-        pageX: clientX,
-        pageY: clientY
-      })
-      const dispatchTouch = (type, clientX, clientY, active) => {
-        const touch = makeTouch(clientX, clientY)
-        stage.dispatchEvent(new TouchEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          touches: active ? [touch] : [],
-          targetTouches: active ? [touch] : [],
-          changedTouches: [touch]
-        }))
-      }
-      await resetView()
-      const before = readTransform()
-      stage.focus({ preventScroll: true })
-      dispatchTouch('touchstart', startX + 14, startY + 14, true)
-      dispatchTouch('touchmove', startX + 96, startY + 62, true)
-      await waitFrame()
-      dispatchTouch('touchmove', startX + 128, startY + 88, true)
-      await waitFrame()
-      dispatchTouch('touchend', startX + 128, startY + 88, false)
-      await waitFrame()
-      return { skipped: false, before, after: readTransform() }
-    }
-
-    const pointerTouchHybridDrag = async () => {
-      if (typeof Touch !== 'function' || typeof TouchEvent !== 'function') {
-        return { skipped: true, before: readTransform(), after: readTransform() }
-      }
-      const makeTouch = (clientX, clientY) => new Touch({
-        identifier: 918,
-        target: stage,
-        clientX,
-        clientY,
-        screenX: clientX,
-        screenY: clientY,
-        pageX: clientX,
-        pageY: clientY
-      })
-      const dispatchTouch = (type, clientX, clientY, active) => {
-        const touch = makeTouch(clientX, clientY)
-        stage.dispatchEvent(new TouchEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          touches: active ? [touch] : [],
-          targetTouches: active ? [touch] : [],
-          changedTouches: [touch]
-        }))
-      }
-      await resetView()
-      const before = readTransform()
-      stage.focus({ preventScroll: true })
-      dispatchPointer(stage, 'pointerdown', startX + 16, startY + 16, 1, 2322, 'touch')
-      dispatchTouch('touchmove', startX + 108, startY + 76, true)
-      await waitFrame()
-      dispatchTouch('touchmove', startX + 142, startY + 104, true)
-      await waitFrame()
-      dispatchTouch('touchend', startX + 142, startY + 104, false)
-      await waitFrame()
-      return { skipped: false, before, after: readTransform() }
-    }
-
     const wheelPan = async () => {
       await resetView()
       const before = readTransform()
@@ -326,14 +214,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
     const normalDrag = await pointerDrag(2319, 1)
     const zeroButtonsDrag = await pointerDrag(2320, 0)
     const nodeStartDrag = await pointerDrag(2323, 1, document.querySelector('.xmind-node') || stage)
-    const mouseFallbackDrag = await mouseDrag()
-    const pointerMouseHybridFallbackDrag = await pointerMouseHybridDrag()
-    const touchFallbackDrag = await touchDrag()
-    const pointerTouchHybridFallbackDrag = await pointerTouchHybridDrag()
     const wheelFallbackPan = await wheelPan()
-    const touchOk = touchFallbackDrag.skipped || touchFallbackDrag.before !== touchFallbackDrag.after
-    const pointerTouchOk = pointerTouchHybridFallbackDrag.skipped ||
-      pointerTouchHybridFallbackDrag.before !== pointerTouchHybridFallbackDrag.after
     return {
       ok: nodeCount > 0 &&
         normalDrag.before !== normalDrag.after &&
@@ -342,10 +223,6 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         zeroButtonsDrag.nodeMoved &&
         nodeStartDrag.before !== nodeStartDrag.after &&
         nodeStartDrag.nodeMoved &&
-        mouseFallbackDrag.before !== mouseFallbackDrag.after &&
-        pointerMouseHybridFallbackDrag.before !== pointerMouseHybridFallbackDrag.after &&
-        touchOk &&
-        pointerTouchOk &&
         wheelFallbackPan.before !== wheelFallbackPan.after &&
         wheelFallbackPan.nodeMoved,
       before: normalDrag.before,
@@ -353,10 +230,6 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       normalDrag,
       zeroButtonsDrag,
       nodeStartDrag,
-      mouseFallbackDrag,
-      pointerMouseHybridFallbackDrag,
-      touchFallbackDrag,
-      pointerTouchHybridFallbackDrag,
       wheelFallbackPan,
       nodeCount,
       reason: normalDrag.before === normalDrag.after
@@ -371,24 +244,69 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
             ? 'XMind transform did not change after node-start pointer drag'
           : !nodeStartDrag.nodeMoved
             ? 'XMind node position did not change after node-start pointer drag'
-            : mouseFallbackDrag.before === mouseFallbackDrag.after
-              ? 'XMind transform did not change after mouse fallback drag'
-              : pointerMouseHybridFallbackDrag.before === pointerMouseHybridFallbackDrag.after
-                ? 'XMind transform did not change after pointerdown + mousemove hybrid drag'
-                : !touchOk
-                  ? 'XMind transform did not change after touch fallback drag'
-                  : !pointerTouchOk
-                    ? 'XMind transform did not change after pointerdown + touchmove hybrid drag'
-                    : wheelFallbackPan.before === wheelFallbackPan.after
-                      ? 'XMind transform did not change after wheel pan'
-                      : !wheelFallbackPan.nodeMoved
-                        ? 'XMind node position did not change after wheel pan'
-                        : ''
+            : wheelFallbackPan.before === wheelFallbackPan.after
+              ? 'XMind transform did not change after wheel pan'
+              : !wheelFallbackPan.nodeMoved
+                ? 'XMind node position did not change after wheel pan'
+                : ''
     }
   })
 
   if (!result.ok) {
     throw new Error(`Sample ${samplePath} failed XMind pan smoke: ${JSON.stringify(result, null, 2)}`)
+  }
+
+  const dragTarget = await page.evaluate(async () => {
+    const stage = document.querySelector('.xmind-stage')
+    const zoomBox = document.querySelector('.xmind-zoom-box')
+    if (!(stage instanceof HTMLElement) || !(zoomBox instanceof HTMLElement)) {
+      return null
+    }
+    const waitFrame = () => new Promise(resolve => requestAnimationFrame(resolve))
+    const rect = stage.getBoundingClientRect()
+    const startX = rect.left + rect.width * 0.52
+    const startY = rect.top + rect.height * 0.48
+    stage.dispatchEvent(new MouseEvent('dblclick', {
+      bubbles: true,
+      button: 0,
+      buttons: 0,
+      cancelable: true,
+      clientX: startX,
+      clientY: startY
+    }))
+    await waitFrame()
+    await waitFrame()
+    return {
+      before: window.getComputedStyle(zoomBox).transform || zoomBox.style.transform,
+      startX,
+      startY
+    }
+  })
+
+  if (!dragTarget) {
+    throw new Error(`Sample ${samplePath} failed XMind real mouse smoke: missing drag target`)
+  }
+
+  await page.mouse.move(dragTarget.startX, dragTarget.startY)
+  await page.mouse.down()
+  await page.mouse.move(dragTarget.startX + 160, dragTarget.startY + 86, { steps: 8 })
+  await page.mouse.up()
+  await page.waitForTimeout(80)
+
+  const realMouse = await page.evaluate(before => {
+    const zoomBox = document.querySelector('.xmind-zoom-box')
+    const after = zoomBox instanceof HTMLElement
+      ? window.getComputedStyle(zoomBox).transform || zoomBox.style.transform
+      : ''
+    return {
+      ok: Boolean(after) && before !== after,
+      before,
+      after
+    }
+  }, dragTarget.before)
+
+  if (!realMouse.ok) {
+    throw new Error(`Sample ${samplePath} failed XMind real mouse smoke: ${JSON.stringify(realMouse, null, 2)}`)
   }
 }
 
@@ -539,6 +457,7 @@ const verifyCadRenderInteraction = async (page, samplePath) => {
 }
 
 const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
+  const expectedLabel = samplePath.toLowerCase().endsWith('.gds') ? 'GDSII' : 'OASIS'
   const result = await page.evaluate(() => {
     const layoutSvg = document.querySelector('.eda-layout-svg')
     const tree = document.querySelector('.eda-tree')
@@ -561,7 +480,7 @@ const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
         rect.height > 100 &&
         geometryCount > 0 &&
         treeRowCount > 0 &&
-        ariaLabel.includes('GDSII'),
+        ariaLabel.includes(window.__fileViewerExpectedEdaLayoutLabel || 'GDSII'),
       rect: {
         width: Number(rect.width.toFixed(2)),
         height: Number(rect.height.toFixed(2))
@@ -573,7 +492,7 @@ const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
   })
 
   if (!result.ok) {
-    throw new Error(`Sample ${samplePath} failed GDSII layout render smoke: ${JSON.stringify(result, null, 2)}`)
+    throw new Error(`Sample ${samplePath} failed ${expectedLabel} layout render smoke: ${JSON.stringify(result, null, 2)}`)
   }
 }
 
@@ -591,7 +510,10 @@ const verifyFormatSpecificInteraction = async (page, samplePath) => {
   if (/\.(?:dwg|dxf|dwf|dwfx|xps)$/.test(normalized)) {
     await verifyCadRenderInteraction(page, samplePath)
   }
-  if (normalized.endsWith('.gds')) {
+  if (/\.(?:gds|oas|oasis)$/.test(normalized)) {
+    await page.evaluate(label => {
+      window.__fileViewerExpectedEdaLayoutLabel = label
+    }, normalized.endsWith('.gds') ? 'GDSII' : 'OASIS')
     await verifyGdsLayoutRenderInteraction(page, samplePath)
   }
 }

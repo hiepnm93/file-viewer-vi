@@ -4,6 +4,9 @@
 
 ## 当前主线 XMind、EDA 版图与表格列宽体验补齐
 
+- XMind 画布交互切换为轻量成熟的 `@panzoom/panzoom`，保留 `@ljheee/xmind-parser` 的 XMind 8 XML / XMind 2020+ JSON 解析链路，拖拽平移、节点起手拖拽、移动端双指缩放、滚轮锚点缩放、键盘平移、适配画布和 toolbar 状态同步由统一 Panzoom 状态驱动；浏览器 smoke 已加入真实鼠标拖拽断言
+- `@file-viewer/eda-layout` 新增 OASIS 可读文本夹具解析，OAS/OASIS demo 不再只是结构提示，能够在浏览器里输出 SVG 版图；真实 SEMI 二进制 OASIS 仍保持安全结构索引、可读字符串、实体候选和诊断边界，后续完整几何继续走独立 WASM/增量渲染内核路线
+
 - 新增 `@file-viewer/renderer-presentation` 独立 renderer 包，基于 `@file-viewer/pptx` 提供 PPTX / PPTM / POTX / POTM / PPSX / PPSM 按需预览、缩放、打印和 HTML 导出；`@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 已优先聚合该包，ODP 继续走 OpenDocument 兼容链路
 - `@file-viewer/core` 移除 `@file-viewer/pptx` 直接依赖和内置 PPTX handler，PowerPoint 完整预览统一通过 `@file-viewer/renderer-presentation` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 37 降到 36
 - 新增 `@file-viewer/renderer-word` 独立 renderer 包，承接 DOCX / DOCM / DOTX / DOTM、DOC / DOT、RTF 和 ODT 预览链路；`@file-viewer/core` 移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 和 `@xmldom/xmldom` 直接依赖，Word 完整预览统一通过 `@file-viewer/renderer-word` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 36 降到 31
@@ -16,12 +19,12 @@
 - 新增 `@file-viewer/renderer-data` 独立 renderer 包，承接字体、PSD、AI/EPS、SQLite、Parquet、Avro、WASM 和 WebArchive 的安全结构预览，SQLite WASM 由 `@file-viewer/vite-plugin` 复制到离线 assets
 - 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，大元素集会自动切到 WebGL canvas，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
 - 新增 `@file-viewer/eda-layout` 与 `@file-viewer/eda-orcad` 两个 EDA engine package；GDSII/OASIS 版图底层能力、OrCAD/Allegro 二进制检查能力从 UI renderer 中拆出，GDSII WebGL typed-array 批次已有独立门禁，后续 OASIS WASM 或逐步 TS 移植可以独立发布、独立回归
-- 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer、Mouse、Touch 和 WebView 混合事件拖拽路径
+- 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS 文本夹具可真实出图，真实二进制 OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer 与真实鼠标拖拽路径
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
 - 支持格式矩阵保持 199 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件；`brep` 进入 3D 工程模型入口
-- `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
-- 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，并兼容部分 WebView 在 PointerEvent 移动期间把 `buttons` 错报为 `0` 的情况，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
-- XMind 继续补齐嵌入式浏览器混合事件兼容：当宿主只派发 `pointerdown`，后续改走 `mousemove` 或 `touchmove` 时，画布仍会保持拖拽平移；浏览器 smoke 已增加 pointer/mouse 与 pointer/touch hybrid 断言
+- `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Panzoom 拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
+- 优化 XMind 画布平移体验，使用 Panzoom 替代脆弱的手写输入状态机，支持移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘
+- XMind 浏览器 smoke 已增加 Pointer、节点起手、滚轮平移和真实鼠标拖拽断言
 - XMind 平移、目录定位和键盘方向键移动后会同步通知统一缩放 toolbar，外部 `resetZoom()` / `getZoomState()` 能正确感知“已平移但比例未变化”的状态
 - XMind 官方 Demo 样例已通过真实浏览器回归：`.xmind` 能由 `@file-viewer/renderer-mindmap` 正常接管，拖拽后画布 transform 发生平移变化，证明组件层 preset 装配和 renderer 内部 pan 交互同时生效；浏览器冒烟脚本也会对 `.xmind` 执行 PointerEvent 拖拽断言
 - XMind 增加 ResizeObserver 视口适配策略：首次打开和宿主容器尺寸变化会自动适配画布，用户手动拖拽、滚轮或缩放后保留当前视角，只做安全边界校正，避免脑图在移动端、嵌入容器和响应式布局中“拖不动”或 resize 后视角丢失
@@ -35,8 +38,7 @@
 - Typst 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@myriaddreamin/typst.ts`、`@myriaddreamin/typst-ts-renderer` 和 `@myriaddreamin/typst-ts-web-compiler`；Typst 源文件编译、按页 SVG 渲染、缩放、打印和导出统一由 `@file-viewer/renderer-typst` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 8 降到 5，Phase 2 依赖预算从 7 降到 4
 - CAD 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@flyfish-dev/cad-viewer`；DWG / DXF / DWF / DWFx / XPS 完整预览统一由 `@file-viewer/renderer-cad` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 5 降到 4，Phase 2 依赖预算从 4 降到 3
 - Spreadsheet 预览从 core 兼容入口中彻底移出，新增 `@file-viewer/renderer-spreadsheet` 独立 renderer 包承接 XLSX / XLSM / XLSB / XLS / CSV / ODS / FODS / Numbers 等表格格式；`@file-viewer/core` 不再默认安装 `styled-exceljs`、`e-virt-table` 和 `tinycolor2`，完整表格能力统一由 `@file-viewer/renderer-spreadsheet` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 4 降到 1，Phase 2 依赖预算从 3 降到 0
-- XMind 画布拖拽进一步兼容老 WebView、嵌入式浏览器和非标准鼠标事件：聚焦改为安全降级，`MouseEvent.buttons` 错报为 `0` 时延迟释放拖拽会话，避免实际拖动画布没有响应
-- `.gds` 新增标准 GDSII 记录解析、SVG 版图预览和大元素集 WebGL canvas，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
+- `.gds` 新增标准 GDSII 记录解析、SVG 版图预览和大元素集 WebGL canvas，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 文本夹具可生成 SVG 版图，真实 SEMI 二进制 OASIS 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
 - OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - EPUB 预览迁移为 `@file-viewer/renderer-ebook` 独立 renderer 包，继续使用 `epubjs` 提供目录、滚动阅读、章节跳转和阅读进度，并由 `@file-viewer/preset-all` 自动聚合

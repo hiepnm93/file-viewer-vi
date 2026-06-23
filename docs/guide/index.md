@@ -71,7 +71,7 @@
 - OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
 - 压缩包使用 `libarchive.js` Worker 读取目录，点击内部文件后按需解压、缓存并继续复用统一预览器。
 - EML / MSG / MBOX 邮件支持头信息、HTML/文本正文、附件下载和附件继续预览。
-- OLB / DRA / GDSII / OASIS 由 `@file-viewer/renderer-eda` 独立承接；GDSII 可生成 SVG 快速版图，OASIS / Cadence 高保真几何保留独立 WASM 内核路线。
+- OLB / DRA / GDSII / OASIS 由 `@file-viewer/renderer-eda` 独立承接；GDSII 可生成 SVG / WebGL 快速版图，OASIS 文本夹具可生成 SVG，真实二进制 OASIS / Cadence 高保真几何保留独立 WASM 内核路线。
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
 - 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
 - 3D 模型走 `@file-viewer/renderer-3d` + Three.js loaders，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
