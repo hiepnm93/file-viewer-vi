@@ -232,7 +232,39 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     id: 'archive',
     packageName: '@file-viewer/renderer-archive',
     exportName: 'archiveRenderer',
-    formats: ['archive', 'zip', 'rar', '7z', 'tar', 'gz', 'tgz', 'bz2', 'xz'],
+    formats: [
+      'archive',
+      'zip',
+      'zipx',
+      '7z',
+      'rar',
+      'tar',
+      'gz',
+      'gzip',
+      'tgz',
+      'bz2',
+      'bzip2',
+      'tbz',
+      'tbz2',
+      'xz',
+      'txz',
+      'lzma',
+      'zst',
+      'tzst',
+      'cab',
+      'ar',
+      'cpio',
+      'iso',
+      'xar',
+      'lha',
+      'lzh',
+      'jar',
+      'war',
+      'ear',
+      'apk',
+      'cbz',
+      'cbr'
+    ],
     rendererIds: ['archive'],
     chunkName: 'file-viewer-archive'
   },
@@ -264,6 +296,8 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'md',
       'markdown',
       'js',
+      'mjs',
+      'cjs',
       'jsx',
       'ts',
       'tsx',
@@ -275,6 +309,7 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'yml',
       'toml',
       'ini',
+      'htm',
       'html',
       'css',
       'vue',
@@ -284,9 +319,11 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'rs',
       'c',
       'cpp',
+      'cc',
       'h',
       'hpp',
       'cs',
+      'diff',
       'php',
       'rb',
       'swift',
@@ -294,10 +331,14 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'sh',
       'bash',
       'sql',
+      'json5',
       'proto',
+      'hcl',
       'tex',
+      'gv',
       'graphviz',
       'http',
+      'react',
       'ipynb'
     ],
     rendererIds: ['code', 'markdown'],
@@ -316,6 +357,8 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'webp',
       'svg',
       'bmp',
+      'tiff',
+      'tif',
       'avif',
       'ico',
       'heic',
@@ -334,13 +377,17 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'audio',
       'video',
       'mp3',
+      'mpeg',
       'wav',
       'ogg',
+      'oga',
+      'opus',
       'flac',
       'aac',
       'm4a',
       'mp4',
       'webm',
+      'weba',
       'mov',
       'm3u8',
       'midi',
@@ -402,8 +449,10 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
 
 const descriptorsById = new Map(rendererModules.map((descriptor) => [descriptor.id, descriptor]))
 const descriptorsByFormat = new Map<string, RendererModuleDescriptor>()
+const descriptorsByRendererId = new Map<string, RendererModuleDescriptor>()
 rendererModules.forEach((descriptor) => {
   descriptor.formats.forEach((format) => descriptorsByFormat.set(format, descriptor))
+  descriptor.rendererIds.forEach((rendererId) => descriptorsByRendererId.set(rendererId, descriptor))
 })
 
 const presetRendererIds: Record<FileViewerVitePreset, readonly string[]> = {
@@ -491,10 +540,27 @@ const mimeFormatHints: Record<string, string[]> = {
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
   'application/vnd.ms-powerpoint': ['ppt'],
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
+  'application/json': ['json'],
+  'application/x-ndjson': ['json'],
+  'application/xml': ['xml'],
+  'application/x-tar': ['tar'],
+  'application/gzip': ['gz'],
+  'application/x-7z-compressed': ['7z'],
+  'application/vnd.rar': ['rar'],
   'text/markdown': ['md'],
+  'text/csv': ['csv'],
+  'text/html': ['html'],
+  'text/css': ['css'],
   'text/plain': ['txt'],
   'image/*': ['image'],
+  'image/tiff': ['tiff'],
+  'image/heic': ['heic'],
+  'image/heif': ['heif'],
   'audio/*': ['audio'],
+  'audio/mpeg': ['mp3'],
+  'audio/ogg': ['ogg'],
+  'audio/flac': ['flac'],
+  'audio/midi': ['midi'],
   'video/*': ['video']
 }
 
@@ -653,7 +719,10 @@ function selectRenderers(options: FileViewerRenderersPluginOptions): RendererSel
     .filter(Boolean)
 
   requestedTokens.forEach((token) => {
-    const descriptor = descriptorsById.get(token) || descriptorsByFormat.get(token)
+    const descriptor =
+      descriptorsById.get(token) ||
+      descriptorsByRendererId.get(token) ||
+      descriptorsByFormat.get(token)
     if (descriptor) {
       if (!presetCoveredIds.has(descriptor.id)) {
         selected.set(descriptor.id, descriptor)

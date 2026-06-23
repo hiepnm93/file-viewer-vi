@@ -216,7 +216,7 @@
     {
       "id": "eda-layout",
       "packageName": "@file-viewer/eda-layout",
-      "description": "Framework-neutral EDA layout engine package with GDSII quick preview primitives and OASIS WASM/WebGL upgrade boundaries.",
+      "description": "Framework-neutral EDA layout engine package with GDSII record parsing, WebGL draw-batch primitives, and OASIS WASM/WebGL upgrade boundaries.",
       "packageDir": "packages/renderers/eda-layout",
       "repository": "eda-layout",
       "github": "https://github.com/flyfish-dev/eda-layout",
@@ -249,7 +249,7 @@
     {
       "id": "eda",
       "packageName": "@file-viewer/renderer-eda",
-      "description": "Standalone EDA renderer plugin for File Viewer with OLB, DRA, GDSII, and OASIS structure previews plus SVG layout preview for standard GDSII.",
+      "description": "Standalone EDA renderer plugin for File Viewer with OLB, DRA, GDSII, and OASIS structure previews plus SVG/WebGL layout preview for standard GDSII.",
       "packageDir": "packages/renderers/eda",
       "repository": "file-viewer-renderer-eda",
       "github": "https://github.com/flyfish-dev/file-viewer-renderer-eda",
