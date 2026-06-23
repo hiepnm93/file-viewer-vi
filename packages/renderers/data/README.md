@@ -36,7 +36,7 @@ SQLite 预览依赖 `sql.js` WASM。默认路径仍由 `@file-viewer/core/assets
 
 ## 能力边界
 
-- PSD 使用 `ag-psd` 读取画布和图层摘要。
+- PSD 使用 `ag-psd` 读取画布和图层，支持图层选择显隐、重绘和统一缩放。
 - SQLite 使用 `sql.js` 读取表结构和首个表的示例数据。
 - Parquet 使用 `hyparquet` 读取列式元数据和示例行。
 - Avro 使用 `avsc` 读取对象容器 schema 与示例数据。

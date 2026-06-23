@@ -1,4 +1,4 @@
 export {
   createSpreadsheetParserContext,
   handleSpreadsheetWorkerRequest
-} from './parser'
+} from './parser.js'

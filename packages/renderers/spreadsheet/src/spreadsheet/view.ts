@@ -8,7 +8,7 @@ import type {
   VerticalAlign
 } from 'e-virt-table'
 import tinycolor from 'tinycolor2'
-import type { SheetModel } from './worker/type'
+import type { SheetModel } from './worker/type.js'
 import {
   displayCellKey,
   getDataKey,
@@ -21,7 +21,7 @@ import {
   type VirtualRow,
   type VirtualSheetState,
   RowState
-} from './state'
+} from './state.js'
 
 export const INDEX_COLUMN_WIDTH = 68
 const TABLE_FONT_FAMILY = 'Aptos, Calibri, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'

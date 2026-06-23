@@ -1,6 +1,6 @@
 # @file-viewer/preset-engineering
 
-The engineering renderer preset for Flyfish File Viewer. It targets professional attachment workflows such as CAD, 3D models, Draw.io / Excalidraw, XMind, geospatial files, Typst, EDA, archives, and structured data assets.
+The engineering renderer preset for Flyfish File Viewer. It targets professional attachment workflows such as CAD, 3D models, Draw.io / Excalidraw / Mermaid / PlantUML, XMind, geospatial files, Typst, EDA, archives, and structured data assets.
 
 ## When To Use
 

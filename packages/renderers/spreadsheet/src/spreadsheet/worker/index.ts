@@ -1,5 +1,5 @@
 export {
   createSpreadsheetParserContext,
   handleSpreadsheetWorkerRequest
-} from './sheetjs'
-export type { default as SheetJsModel } from './sheetjs/SheetJsModel'
+} from './sheetjs/index.js'
+export type { default as SheetJsModel } from './sheetjs/SheetJsModel.js'

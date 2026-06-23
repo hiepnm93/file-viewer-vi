@@ -3,12 +3,14 @@
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "Standalone Draw.io and Excalidraw renderer plugin for Flyfish File Viewer with offline diagrams.net viewer support.",
+  "description": "Standalone Draw.io, Excalidraw, Mermaid, and PlantUML renderer plugin for Flyfish File Viewer with pan/zoom support.",
   "keywords": [
     "file-viewer",
     "renderer",
     "drawio",
     "excalidraw",
+    "mermaid",
+    "plantuml",
     "diagram",
     "document-preview",
     "document-viewer",
@@ -60,6 +62,9 @@
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
     "@file-viewer/core": "workspace:^2.0.11",
+    "@panzoom/panzoom": "^4.6.2",
+    "mermaid": "^11.15.0",
+    "plantuml-encoder": "^1.4.0",
     "roughjs": "^4.6.6"
   },
   "devDependencies": {

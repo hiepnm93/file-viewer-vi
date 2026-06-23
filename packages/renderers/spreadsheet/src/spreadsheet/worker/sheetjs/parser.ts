@@ -1,7 +1,7 @@
 import type { WorkBook } from 'styled-exceljs';
 import { read, utils } from 'styled-exceljs';
-import SheetJsModel from './SheetJsModel';
-import type { SheetDefinition } from '../type';
+import SheetJsModel from './SheetJsModel.js';
+import type { SheetDefinition } from '../type.js';
 
 export interface SpreadsheetParserContext {
   workbook: WorkBook | null;

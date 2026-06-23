@@ -39,7 +39,7 @@ const heavyRendererGroups = [
   { id: 'typst', pattern: /^(?:typst|compiler|renderer|global-compiler|global-renderer)-/i },
   { id: 'cad', pattern: /^cad-/i },
   { id: 'archive', pattern: /^(?:archive|libarchive)-/i },
-  { id: 'drawing', pattern: /^(?:drawing|mermaid-parser|prod)-|excalidraw/i },
+  { id: 'drawing', pattern: /^(?:drawing|mermaid-parser|prod|plantuml)-|excalidraw|mermaid/i },
   {
     id: 'model',
     pattern:
@@ -49,7 +49,7 @@ const heavyRendererGroups = [
   { id: 'geo', pattern: /^(?:geo|togeojson)-|shp/i },
   { id: 'email', pattern: /^(?:email|postal-mime)-/i },
   { id: 'ebook', pattern: /^epub-/i },
-  { id: 'text', pattern: /^(?:code|markdown)-|highlight|marked/i },
+  { id: 'text', pattern: /^(?:code|markdown|patch|gitBundle)-|highlight|marked|diff2html/i },
   { id: 'media', pattern: /^(?:audio|video|hls|Midi)-/i },
   { id: 'image', pattern: /^(?:image|heic2any)-/i },
   { id: 'data', pattern: /^data-/i },

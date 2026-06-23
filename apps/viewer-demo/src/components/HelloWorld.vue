@@ -132,10 +132,12 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '脑图与绘图',
-    description: 'XMind / Excalidraw / draw.io',
+    description: 'XMind / Mermaid / PlantUML / draw.io',
     family: 'drawing',
     items: [
       { name: 'XMind 脑图', url: '/example/mindmap.xmind' },
+      { name: 'Mermaid 架构图', url: '/example/architecture.mermaid' },
+      { name: 'PlantUML 时序图', url: '/example/sequence.plantuml' },
       { name: 'Excalidraw', url: '/example/flow.excalidraw' },
       { name: 'draw.io', url: '/example/process.drawio' }
     ]
@@ -229,7 +231,9 @@ const sampleGroups: SampleGroup[] = [
       { name: 'TeX', url: '/example/formula.tex' },
       { name: 'Graphviz', url: '/example/graph.gv' },
       { name: 'HTTP', url: '/example/request.http' },
-      { name: 'DIFF', url: '/example/change.diff' }
+      { name: 'DIFF', url: '/example/change.diff' },
+      { name: 'PATCH 左右比对', url: '/example/change.patch' },
+      { name: 'Git Bundle', url: '/example/repository.bundle' }
     ]
   },
   {
@@ -263,6 +267,7 @@ const sampleGroups: SampleGroup[] = [
     items: [
       { name: 'SQLite', url: '/example/sample.sqlite' },
       { name: 'WASM', url: '/example/module.wasm' },
+      { name: 'PSD 图层', url: '/example/design.psd' },
       { name: 'ICO', url: '/example/icon.ico' }
     ]
   },
@@ -299,6 +304,7 @@ const extraUploadExtensions = [
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
   'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'mbox', 'olb', 'dra', 'gds', 'oas', 'oasis', 'xmind', 'typst',
+  'mermaid', 'mmd', 'plantuml', 'puml', 'patch', 'bundle', 'bdl',
   'ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'parquet', 'avro', 'webarchive'
 ]
 
@@ -349,6 +355,10 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   dwfx: { icon: 'DWFx', family: 'cad' },
   xps: { icon: 'XPS', family: 'cad' },
   xmind: { icon: 'XM', family: 'drawing' },
+  mermaid: { icon: 'MER', family: 'drawing' },
+  mmd: { icon: 'MER', family: 'drawing' },
+  plantuml: { icon: 'UML', family: 'drawing' },
+  puml: { icon: 'UML', family: 'drawing' },
   glb: { icon: '3D', family: 'model' },
   gltf: { icon: '3D', family: 'model' },
   obj: { icon: 'OBJ', family: 'model' },
@@ -464,6 +474,9 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   hpp: { icon: 'H++', family: 'code' },
   cs: { icon: 'CS', family: 'code' },
   diff: { icon: 'DIFF', family: 'code' },
+  patch: { icon: 'PATCH', family: 'code' },
+  bundle: { icon: 'GIT', family: 'code' },
+  bdl: { icon: 'GIT', family: 'code' },
   java: { icon: 'JV', family: 'code' },
   py: { icon: 'PY', family: 'code' },
   rb: { icon: 'RB', family: 'code' },
@@ -652,6 +665,7 @@ const viewerOptions = computed((): FileViewerOptions => {
     resizableColumns: true,
     ...runtime.spreadsheet
   }
+  options.drawing = { ...runtime.drawing }
   options.toolbar = hidden.value ? runtime.toolbar ?? true : false
   options.watermark = watermarkEnabled.value
     ? {

@@ -82,7 +82,7 @@ export const rendererModularizationLines = [
     phase: 3,
     status: 'extracted',
     renderers: ['drawing'],
-    dependencies: ['@excalidraw/excalidraw', 'roughjs'],
+    dependencies: ['@excalidraw/excalidraw', 'roughjs', 'mermaid', 'plantuml-encoder', '@panzoom/panzoom'],
   },
   {
     id: 'engineering-mindmap',
@@ -135,17 +135,8 @@ export const rendererModularizationLines = [
     targetPackage: '@file-viewer/renderer-ebook',
     phase: 3,
     status: 'extracted',
-    renderers: ['epub'],
-    dependencies: ['epubjs'],
-  },
-  {
-    id: 'ebook-umd-core',
-    group: 'coreNative',
-    targetPackage: '@file-viewer/core',
-    phase: 0,
-    status: 'retained',
-    renderers: ['umd'],
-    dependencies: ['pako'],
+    renderers: ['epub', 'umd'],
+    dependencies: ['epubjs', 'pako'],
   },
   {
     id: 'code-markdown',
@@ -154,7 +145,7 @@ export const rendererModularizationLines = [
     phase: 3,
     status: 'extracted',
     renderers: ['code', 'markdown'],
-    dependencies: ['highlight.js', 'marked'],
+    dependencies: ['highlight.js', 'marked', 'diff2html', 'pako'],
   },
   {
     id: 'media',

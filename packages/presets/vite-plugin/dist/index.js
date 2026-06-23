@@ -67,7 +67,7 @@ const rendererModules = [
         id: 'drawing',
         packageName: '@file-viewer/renderer-drawing',
         exportName: 'drawingRenderer',
-        formats: ['drawing', 'drawio', 'dio', 'excalidraw'],
+        formats: ['drawing', 'drawio', 'dio', 'excalidraw', 'mermaid', 'mmd', 'plantuml', 'puml'],
         rendererIds: ['drawing'],
         chunkName: 'file-viewer-drawing'
     },
@@ -162,8 +162,8 @@ const rendererModules = [
         id: 'ebook',
         packageName: '@file-viewer/renderer-ebook',
         exportName: 'ebookRenderer',
-        formats: ['ebook', 'epub'],
-        rendererIds: ['epub'],
+        formats: ['ebook', 'epub', 'umd'],
+        rendererIds: ['epub', 'umd'],
         chunkName: 'file-viewer-ebook'
     },
     {
@@ -206,6 +206,9 @@ const rendererModules = [
             'hpp',
             'cs',
             'diff',
+            'patch',
+            'bundle',
+            'bdl',
             'php',
             'rb',
             'swift',

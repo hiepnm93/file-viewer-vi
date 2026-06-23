@@ -1,6 +1,6 @@
 # @file-viewer/preset-engineering
 
-Flyfish File Viewer 的工程类 renderer preset。它面向 CAD、三维模型、Draw.io / Excalidraw、XMind、地理数据、Typst、EDA、压缩包和数据资产等专业附件场景。
+Flyfish File Viewer 的工程类 renderer preset。它面向 CAD、三维模型、Draw.io / Excalidraw / Mermaid / PlantUML、XMind、地理数据、Typst、EDA、压缩包和数据资产等专业附件场景。
 
 ## 何时使用
 

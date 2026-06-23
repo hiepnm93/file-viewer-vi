@@ -12,6 +12,7 @@ import type {
   FileViewerRenderedInstance,
   FileViewerZoomState,
 } from '@file-viewer/core';
+import type { DiagramController } from './diagram.js';
 
 declare global {
   interface Window {
@@ -23,7 +24,7 @@ declare global {
 }
 
 type DrawingStatus = 'loading' | 'ready' | 'error';
-type DrawingKind = 'excalidraw' | 'drawio';
+type DrawingKind = 'excalidraw' | 'drawio' | 'mermaid' | 'plantuml';
 type ExcalidrawElement = Record<string, any>;
 type ExcalidrawPoint = [number, number];
 
@@ -48,6 +49,12 @@ const drawingStyle = `
 .drawing-canvas{width:100%;min-height:420px;transition:transform .18s ease,zoom .18s ease}
 .drawing-canvas .drawing-svg,.drawing-canvas svg{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:10px;background:#fff;box-shadow:0 18px 42px rgba(15,23,42,.12)}
 .drawing-canvas .drawing-mxgraph{min-height:420px;overflow:hidden;border-radius:10px;background:#fff;box-shadow:0 18px 42px rgba(15,23,42,.12)}
+.drawing-diagram-shell{display:flex;min-height:100%;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;background:linear-gradient(135deg,#f8fafc,#eef6f4);box-shadow:0 18px 42px rgba(15,23,42,.12)}
+.drawing-diagram-pan{display:inline-flex;min-width:240px;min-height:180px;align-items:center;justify-content:center;padding:32px;cursor:grab;touch-action:none}
+.drawing-diagram-pan:active{cursor:grabbing}
+.drawing-diagram-pan .drawing-diagram-svg{margin:0;box-shadow:none}
+.file-viewer[data-viewer-theme='dark'] .drawing-diagram-shell{background:linear-gradient(135deg,#111827,#0f172a)}
+@media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .drawing-diagram-shell{background:linear-gradient(135deg,#111827,#0f172a)}}
 .drawing-state{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:24px;color:#64748b;font-size:14px;font-weight:700;text-align:center}
 .drawing-state[hidden]{display:none!important}
 .drawing-state.error{color:#b42318}
@@ -81,7 +88,17 @@ const createSvgElement = <T extends SVGElement>(documentRef: Document, tagName: 
 };
 
 const normalizeDrawingType = (type?: string): DrawingKind => {
-  return type?.toLowerCase() === 'excalidraw' ? 'excalidraw' : 'drawio';
+  const normalized = type?.toLowerCase();
+  if (normalized === 'excalidraw') {
+    return 'excalidraw';
+  }
+  if (normalized === 'mermaid' || normalized === 'mmd') {
+    return 'mermaid';
+  }
+  if (normalized === 'plantuml' || normalized === 'puml') {
+    return 'plantuml';
+  }
+  return 'drawio';
 };
 
 const formatDrawingLabel = (type?: string) => {
@@ -917,6 +934,7 @@ export default async function renderDrawing(
   let errorMessage = '';
   let zoom = 1;
   let disposed = false;
+  let diagramController: DiagramController | null = null;
 
   const root = createElement(documentRef, 'div', 'drawing-viewer');
   root.dataset.viewerZoomProvider = 'drawing';
@@ -927,7 +945,11 @@ export default async function renderDrawing(
     createElement(documentRef, 'span', undefined, formatDrawingLabel(type)),
     createElement(documentRef, 'strong', undefined, kind === 'excalidraw'
       ? 'Excalidraw 官方 SVG 预览'
-      : 'Draw.io 离线 SVG 预览')
+      : kind === 'mermaid'
+        ? 'Mermaid SVG 预览'
+        : kind === 'plantuml'
+          ? 'PlantUML SVG 预览'
+          : 'Draw.io 离线 SVG 预览')
   );
   const actions = createElement(documentRef, 'div', 'drawing-actions');
   const zoomOutButton = createElement(documentRef, 'button', undefined, '-') as HTMLButtonElement;
@@ -953,6 +975,8 @@ export default async function renderDrawing(
   target.replaceChildren(createStyle(documentRef), root);
 
   const clearStage = () => {
+    diagramController?.destroy();
+    diagramController = null;
     delete canvas.dataset.drawingRendered;
     canvas.replaceChildren();
   };
@@ -968,6 +992,11 @@ export default async function renderDrawing(
   });
 
   const applyZoom = () => {
+    if (diagramController) {
+      diagramController.setZoom(zoom);
+      zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+      return;
+    }
     if (kind === 'excalidraw') {
       canvas.style.transform = `scale(${zoom})`;
       canvas.style.transformOrigin = 'top center';
@@ -1010,6 +1039,16 @@ export default async function renderDrawing(
       }
       if (kind === 'excalidraw') {
         await renderExcalidraw(documentRef, text, canvas);
+      } else if (kind === 'mermaid' || kind === 'plantuml') {
+        const { renderDiagram } = await import('./diagram.js');
+        diagramController = await renderDiagram({
+          documentRef,
+          text,
+          target: canvas,
+          kind,
+          options: context?.options?.drawing,
+          theme: context?.options?.theme,
+        });
       } else {
         await renderDrawio(documentRef, text, canvas, context?.options?.drawing);
       }
@@ -1048,6 +1087,7 @@ export default async function renderDrawing(
     $el: root,
     unmount() {
       disposed = true;
+      diagramController?.destroy();
       unregisterFileViewerZoomProvider(root);
       target.replaceChildren();
     },

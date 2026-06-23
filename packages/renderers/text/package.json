@@ -3,13 +3,15 @@
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "Standalone code, text, and Markdown renderer plugin for Flyfish File Viewer powered by highlight.js and marked.",
+  "description": "Standalone code, text, Markdown, patch diff, and Git bundle renderer plugin for Flyfish File Viewer.",
   "keywords": [
     "file-viewer",
     "renderer",
     "text",
     "code",
     "markdown",
+    "patch",
+    "git-bundle",
     "highlight.js",
     "document-preview",
     "document-viewer",
@@ -60,8 +62,10 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^2.0.11",
+    "diff2html": "^3.4.56",
     "highlight.js": "^11.11.1",
-    "marked": "^18.0.5"
+    "marked": "^18.0.5",
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

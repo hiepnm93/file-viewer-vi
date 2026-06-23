@@ -9,7 +9,7 @@ import {
   type FileViewerWorkerFactory,
   type FileViewerZoomState,
 } from '@file-viewer/core';
-import type { SheetDefinition, SheetImage, SheetModel } from './spreadsheet/worker/type';
+import type { SheetDefinition, SheetImage, SheetModel } from './spreadsheet/worker/type.js';
 import {
   buildRows,
   clampWindowStart,
@@ -25,7 +25,7 @@ import {
   WINDOW_SIZE,
   type ScrollDirection,
   type VirtualSheetState,
-} from './spreadsheet/state';
+} from './spreadsheet/state.js';
 import {
   buildColumns,
   createTableConfig,
@@ -37,7 +37,7 @@ import {
   normalizeCellStyle,
   normalizeRowHeight,
   RESIZABLE_COLUMN_MIN_WIDTH,
-} from './spreadsheet/view';
+} from './spreadsheet/view.js';
 
 type EVirtTableInstance = {
   ctx: {
@@ -150,8 +150,8 @@ class MainThreadSpreadsheetWorker {
   private destroyed = false;
   private readonly listeners = new Map<string, Set<SpreadsheetMessageListener>>();
   private readonly targetWindow: Window | null;
-  private parserPromise: Promise<typeof import('./spreadsheet/worker/sheetjs/parser')> | null = null;
-  private context: import('./spreadsheet/worker/sheetjs/parser').SpreadsheetParserContext | null = null;
+  private parserPromise: Promise<typeof import('./spreadsheet/worker/sheetjs/parser.js')> | null = null;
+  private context: import('./spreadsheet/worker/sheetjs/parser.js').SpreadsheetParserContext | null = null;
 
   constructor(targetWindow: Window | null) {
     this.targetWindow = targetWindow;
@@ -179,7 +179,7 @@ class MainThreadSpreadsheetWorker {
 
   private async loadParser() {
     if (!this.parserPromise) {
-      this.parserPromise = import('./spreadsheet/worker/sheetjs/parser');
+      this.parserPromise = import('./spreadsheet/worker/sheetjs/parser.js');
     }
     const parser = await this.parserPromise;
     if (!this.context) {
@@ -223,7 +223,7 @@ class MainThreadSpreadsheetWorker {
       const parser = await this.loadParser();
       parser.handleSpreadsheetWorkerRequest(
         this.context || parser.createSpreadsheetParserContext(),
-        message as import('./spreadsheet/worker/sheetjs/parser').SpreadsheetWorkerRequest
+        message as import('./spreadsheet/worker/sheetjs/parser.js').SpreadsheetWorkerRequest
       ).forEach(response => {
         if (!this.destroyed) {
           this.dispatchMessage(response);

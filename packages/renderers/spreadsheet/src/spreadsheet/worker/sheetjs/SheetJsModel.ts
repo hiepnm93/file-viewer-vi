@@ -11,8 +11,8 @@ import type {
   WorkSheet
 } from 'styled-exceljs'
 import { utils } from 'styled-exceljs'
-import type { CellMerge, SheetColumn, SheetImage, SheetModel, SheetStructure, SheetWindow } from '../type'
-import { getTintColor, indexedColors } from './color'
+import type { CellMerge, SheetColumn, SheetImage, SheetModel, SheetStructure, SheetWindow } from '../type.js'
+import { getTintColor, indexedColors } from './color.js'
 
 const EXCEL_DEFAULT_COLUMN_WIDTH = 8.43
 const EXCEL_DEFAULT_ROW_HEIGHT_PT = 15

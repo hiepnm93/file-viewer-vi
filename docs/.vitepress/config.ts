@@ -73,7 +73,7 @@ const enSearch = {
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 198 个扩展名和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 206 个扩展名和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
   cleanUrls: true,
   lastUpdated: true,
   locales: {

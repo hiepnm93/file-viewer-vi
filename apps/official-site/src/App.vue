@@ -104,6 +104,7 @@ const commercialUrl = 'https://product.flyfish.group/'
 const commercialDemoUrl = 'https://office.flyfish.dev/'
 
 const locale = ref<Locale>('zh')
+const localeStorageKey = 'flyfish-file-viewer-site-locale'
 const heroCanvas = ref<HTMLCanvasElement | null>(null)
 const demoReveal = ref<HTMLElement | null>(null)
 const quickStartSection = ref<HTMLElement | null>(null)
@@ -131,11 +132,11 @@ const copy = {
       eyebrow: '浏览器原生文件预览超级组件',
       title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
-        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、Typst、XMind、CAD、EDA、压缩包、邮件、电子书、代码、媒体、3D 与数据资产带进浏览器。XMind 支持拖拽平移，标准 GDSII 支持 SVG 版图预览；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验，并可通过 lite / office / engineering / all preset 按产品形态装配。',
+        'Flyfish File Viewer 以纯 TypeScript core 为底座，把 Office、PDF、OFD、Typst、XMind、CAD、EDA、压缩包、邮件、电子书、Mermaid、PlantUML、Git patch/bundle、PSD 图层、代码、媒体、3D 与数据资产带进浏览器。XMind 与绘图类格式支持拖拽平移和缩放，标准 GDSII 支持 SVG 版图预览；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 等标准组件保持同一套参数、事件、搜索、缩放、打印、导出、水印与私有化部署体验，并可通过 lite / office / engineering / all preset 按产品形态装配。',
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
-      proof: ['199+ 扩展名', '24 条预览链路', '多框架原生组件', 'Apache-2.0 开源']
+      proof: ['206 个扩展名', '24 条预览链路', '多框架原生组件', 'Apache-2.0 开源']
     },
     matrixTitle: '覆盖广，不等于粗糙。每条链路都面向真实业务。',
     matrixIntro:
@@ -179,11 +180,11 @@ const copy = {
       eyebrow: 'Browser-native file preview super component',
       title: 'Turn complex files into instant product experiences.',
       subtitle:
-        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, Typst, XMind, CAD, EDA, archives, email, ebooks, code, media, 3D models, and data assets into the browser. XMind supports drag-to-pan, standard GDSII gets an SVG layout preview, and Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model with lite / office / engineering / all presets.',
+        'Flyfish File Viewer uses a framework-neutral TypeScript core to bring Office, PDF, OFD, Typst, XMind, CAD, EDA, archives, email, ebooks, Mermaid, PlantUML, Git patch/bundle, PSD layers, code, media, 3D models, and data assets into the browser. XMind and diagram formats support drag panning and zooming, standard GDSII gets an SVG layout preview, and Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte components share the same options, events, search, zoom, print, export, watermark, and self-hosted deployment model with lite / office / engineering / all presets.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',
-      proof: ['199+ extensions', '24 preview pipelines', 'Native component packages', 'Apache-2.0 open source']
+      proof: ['206 extensions', '24 preview pipelines', 'Native component packages', 'Apache-2.0 open source']
     },
     matrixTitle: 'Broad coverage, without treating fidelity as optional.',
     matrixIntro:
@@ -217,13 +218,13 @@ const copy = {
 const metrics = computed<MetricItem[]>(() =>
   isZh.value
     ? [
-        { title: '文件扩展名', value: '199+', detail: '覆盖业务附件、脑图、工程资产、媒体与数据文件', tone: 'green' },
+        { title: '文件扩展名', value: '206', detail: '覆盖业务附件、脑图、工程资产、绘图、媒体与数据文件', tone: 'green' },
         { title: '预览链路', value: '24', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
         { title: 'Preset 层级', value: '4', detail: 'lite、office、engineering、all 按产品形态装配', tone: 'violet' },
         { title: '分发形态', value: '4', detail: 'npm、Release、Docker、静态资源私有化', tone: 'amber' }
       ]
     : [
-        { title: 'Extensions', value: '199+', detail: 'Business attachments, mind maps, engineering files, media, and data assets', tone: 'green' },
+        { title: 'Extensions', value: '206', detail: 'Business attachments, mind maps, engineering files, diagrams, media, and data assets', tone: 'green' },
         { title: 'Pipelines', value: '24', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
         { title: 'Preset tiers', value: '4', detail: 'lite, office, engineering, and all product-shaped bundles', tone: 'violet' },
         { title: 'Delivery paths', value: '4', detail: 'npm, GitHub Release, Docker, and static self-hosting', tone: 'amber' }
@@ -643,8 +644,21 @@ const qrItems = computed<QrItem[]>(() =>
 
 const currentCopy = computed(() => copy[locale.value])
 
+function resolveInitialLocale(): Locale {
+  const stored = window.localStorage.getItem(localeStorageKey)
+  if (stored === 'zh' || stored === 'en') {
+    return stored
+  }
+
+  const languages = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language].filter(Boolean)
+  return languages.some(language => language.toLowerCase().startsWith('zh')) ? 'zh' : 'en'
+}
+
 function toggleLocale() {
   locale.value = isZh.value ? 'en' : 'zh'
+  window.localStorage.setItem(localeStorageKey, locale.value)
 }
 
 function selectQuickStart(index: number) {
@@ -953,6 +967,7 @@ let demoRevealObserver: IntersectionObserver | undefined
 let quickStartObserver: IntersectionObserver | undefined
 
 onMounted(async () => {
+  locale.value = resolveInitialLocale()
   await nextTick()
   if (window.location.hash === '#ecosystem') {
     quickStartSectionActive.value = true

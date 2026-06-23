@@ -1,5 +1,5 @@
 import type { Align, Column, VerticalAlign } from 'e-virt-table'
-import type { CellMerge } from './worker/type'
+import type { CellMerge } from './worker/type.js'
 
 export const WINDOW_SIZE = 500
 export const PREFETCH_AHEAD = 3

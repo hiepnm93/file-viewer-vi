@@ -113,15 +113,6 @@ const readMagic = (buffer: ArrayBuffer, length = 12) => {
   return String.fromCharCode(...new Uint8Array(buffer.slice(0, length)));
 };
 
-const imageDataToUrl = (documentRef: Document, imageData: ImageData) => {
-  const canvas = documentRef.createElement('canvas');
-  canvas.width = imageData.width;
-  canvas.height = imageData.height;
-  const context = canvas.getContext('2d');
-  context?.putImageData(imageData, 0, 0);
-  return canvas.toDataURL('image/png');
-};
-
 const getWindowSqlWasmOverride = (documentRef: Document) => {
   return documentRef.defaultView?.__FLYFISH_DATA_SQL_WASM_URL__ ||
     (typeof window !== 'undefined' ? window.__FLYFISH_DATA_SQL_WASM_URL__ : undefined);
@@ -150,29 +141,6 @@ const renderFont = async (
       { label: '大小', value: formatBytes(buffer.byteLength) },
       { label: '渲染方式', value: 'Browser FontFace API' },
     ],
-  };
-};
-
-const renderPsd = async (documentRef: Document, buffer: ArrayBuffer): Promise<DataPreview> => {
-  const { readPsd } = await import('ag-psd');
-  const psd = readPsd(buffer, { useImageData: true });
-  const image = psd.imageData ? imageDataToUrl(documentRef, psd.imageData as ImageData) : undefined;
-  return {
-    title: 'PSD 图像结构预览',
-    image,
-    summary: [
-      { label: '画布', value: `${psd.width || 0} x ${psd.height || 0}` },
-      { label: '图层', value: String(psd.children?.length || 0) },
-      { label: '渲染方式', value: 'ag-psd' },
-    ],
-    rows: makeRows((psd.children || []).map((layer: any) => ({
-      name: layer.name || '-',
-      left: layer.left,
-      top: layer.top,
-      right: layer.right,
-      bottom: layer.bottom,
-      hidden: Boolean(layer.hidden),
-    }))),
   };
 };
 
@@ -307,9 +275,6 @@ const buildPreview = async (
   if (type in fontMimeMap) {
     return renderFont(documentRef, buffer, type);
   }
-  if (type === 'psd') {
-    return renderPsd(documentRef, buffer);
-  }
   if (type === 'sqlite') {
     return renderSqlite(documentRef, buffer, context);
   }
@@ -440,6 +405,11 @@ export default async function renderDataAsset(
     if (rendered) {
       return rendered;
     }
+  }
+
+  if (normalizedType === 'psd') {
+    const { default: renderPsdAsset } = await import('./psd.js');
+    return renderPsdAsset(buffer, target);
   }
 
   const preview = await buildPreview(documentRef, buffer, normalizedType, context);

@@ -3,14 +3,14 @@
 <div class="doc-kicker">Format Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>199 个扩展名映射</strong>，覆盖 <strong>24 条预览链路</strong>。
+  当前版本内置 <strong>206 个扩展名映射</strong>，覆盖 <strong>24 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>199 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音视频、代码/文本、字体、设计资产和结构化数据等常见附件类型。</p>
+    <h3>206 个扩展名映射</h3>
+    <p>覆盖 Office、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、图片、音视频、代码/文本、Git patch/bundle、字体、PSD 图层资产和结构化数据等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
@@ -48,14 +48,16 @@
 | XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` + `@panzoom/panzoom` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏，并通过成熟 Panzoom 画布提供拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、统一 toolbar 状态同步、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
+| Mermaid | `mermaid`、`mmd` | `@file-viewer/renderer-drawing` + 官方 `mermaid` | 命中 Mermaid 时才按需加载官方渲染器，输出主题适配 SVG，并使用 `@panzoom/panzoom` 支持拖动、Ctrl/Command 滚轮缩放、统一缩放工具栏和重置 | 架构图、流程图、状态图、序列图 |
+| PlantUML | `plantuml`、`puml` | `@file-viewer/renderer-drawing` + 离线 SVG 源码预览 + 可自托管 PlantUML SVG 服务 | 默认不访问外网并显示源码预览；需要完整图形时可通过 `options.drawing.plantumlServerUrl` 指向内网 PlantUML SVG 服务；预览层支持拖动、缩放和主题容器适配 | UML 时序图、组件图、部署图 |
 | 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
-| 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
+| 电子书 | `umd` | `@file-viewer/renderer-ebook` + UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | `@file-viewer/renderer-text` | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | `@file-viewer/renderer-image` | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转成浏览器可展示图片，支持 lightbox 和统一缩放 | 图片附件、设计稿、截图、Logo、移动端照片 |
-| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `@file-viewer/renderer-text` + `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本；Notebook、JSONC/JSON5、TOML、Proto、HTTP、Graphviz 等按最接近语言映射展示 | 配置文件、日志、代码片段、接口响应、Notebook 和工程配置 |
+| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff`、`patch`、`bundle`、`bdl` | `@file-viewer/renderer-text` + `highlight.js` / `diff2html` / Git bundle parser | 普通源码按需高亮；patch 使用左右比对视图；git bundle 解析 bundle header、refs、commit 历史、文件树、可读 blob 和常规 OFS_DELTA / REF_DELTA；超大包或依赖外部 prerequisite 的包会给出边界提示 | 配置文件、日志、代码片段、代码评审、Git 交付包 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | `@file-viewer/renderer-media` + 浏览器原生 `<audio>` / `@tonejs/midi` | 常见音频使用原生控件播放，MIDI 命中时按需展示轨道、时长、PPQ 和音符摘要 | 录音、播客、语音附件、音效素材、MIDI 文件 |
 | 视频 | `mp4`、`webm`、`m3u8` | `@file-viewer/renderer-media` + 浏览器原生 `<video>` / `hls.js` | MP4/WEBM 原生播放，HLS 清单优先用浏览器能力，必要时按需加载 `hls.js` | 演示视频、录屏材料、HLS 流 |
-| 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | `@file-viewer/renderer-data` | 字体用 FontFace 展示样张，PSD 解析画布与图层摘要，AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
+| 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | `@file-viewer/renderer-data` | 字体用 FontFace 展示样张，PSD 使用 `ag-psd` 解析画布和图层，支持图层选择显隐、重绘和统一缩放；AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
 
 ## 按类型看体验和边界
 

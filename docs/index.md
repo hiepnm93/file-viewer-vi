@@ -10,7 +10,7 @@ titleTemplate: false
 <div class="doc-eyebrow">Official Docs And Component Home</div>
 <h1>Flyfish Viewer</h1>
 <p>
-纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音视频、字体、设计资产和结构化数据预览能力放进浏览器端，
+纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码、Git patch/bundle、图片、音视频、字体、PSD 图层资产和结构化数据预览能力放进浏览器端，
 同时提供 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 原生集成路径。
 一个组件，一行代码，快速集成。
 </p>
@@ -25,7 +25,7 @@ titleTemplate: false
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
 <div>
-<strong>199</strong>
+<strong>206</strong>
 <span>个扩展名映射</span>
 </div>
 <div>
@@ -82,6 +82,30 @@ titleTemplate: false
 </div>
 </section>
 
+<section class="doc-section doc-demo-embed">
+<div class="doc-section-heading">
+<span>Live Workbench</span>
+<h2>无需离开文档，即可打开完整 Demo</h2>
+<p>
+下方嵌入的是 <code>demo.file-viewer.app</code> 的生产 Demo。它会在独立 iframe 中运行，保留完整示例矩阵、上传预览和文档比对入口；你也可以单独打开 Demo，用更大的视口做真实文件验收。
+</p>
+</div>
+<div class="doc-demo-frame-shell">
+<div class="doc-demo-frame-bar">
+<span></span>
+<span></span>
+<span></span>
+<strong>demo.file-viewer.app</strong>
+<a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">单独打开</a>
+</div>
+<iframe
+  src="https://demo.file-viewer.app/?embed=docs-home"
+  title="Flyfish File Viewer 在线 Demo"
+  loading="lazy"
+></iframe>
+</div>
+</section>
+
 <section class="doc-section doc-section-muted">
 <div class="doc-section-heading">
 <span>Why It Works</span>
@@ -96,7 +120,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音视频、字体、PSD、SQLite、WASM、Parquet、Avro 和 WebArchive；XMind 使用 Panzoom 支持拖拽平移、移动端双指缩放和适配画布，结构化数据由独立 <code>@file-viewer/renderer-data</code> 承接，EDA 由独立 <code>@file-viewer/renderer-eda</code> 承接，标准 GDSII 可生成 SVG / WebGL 版图预览，OASIS 文本夹具可生成 SVG，PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码、日志、配置文件、Git patch/bundle、音视频、字体、PSD 图层、SQLite、WASM、Parquet、Avro 和 WebArchive；XMind / Mermaid / PlantUML 使用 Panzoom 支持拖拽平移、移动端双指缩放和适配画布，结构化数据由独立 <code>@file-viewer/renderer-data</code> 承接，EDA 由独立 <code>@file-viewer/renderer-eda</code> 承接，标准 GDSII 可生成 SVG / WebGL 版图预览，OASIS 文本夹具可生成 SVG，PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>

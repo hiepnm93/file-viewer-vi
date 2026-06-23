@@ -24,7 +24,7 @@ No document conversion backend, no Office server, no iframe-only black box.
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer key metrics">
 <div>
-<strong>199</strong>
+<strong>206</strong>
 <span>registered extensions</span>
 </div>
 <div>
@@ -77,6 +77,30 @@ The demo opens real sample files, switches renderers on demand, keeps toolbar op
 <p>Workers, WASM files, PDF assets, CAD assets, and offline diagram viewers can be copied into your own static directory for intranet and strict-CSP deployments.</p>
 </article>
 </div>
+</div>
+</section>
+
+<section class="doc-section doc-demo-embed">
+<div class="doc-section-heading">
+<span>Live Workbench</span>
+<h2>Try the full demo without leaving the docs</h2>
+<p>
+The frame below embeds the production <code>demo.file-viewer.app</code> experience. It keeps the full sample matrix, upload preview, and comparison entry in an isolated iframe, while the standalone demo remains available for large-viewport validation.
+</p>
+</div>
+<div class="doc-demo-frame-shell">
+<div class="doc-demo-frame-bar">
+<span></span>
+<span></span>
+<span></span>
+<strong>demo.file-viewer.app</strong>
+<a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">Open standalone</a>
+</div>
+<iframe
+  src="https://demo.file-viewer.app/?embed=docs-home"
+  title="Flyfish File Viewer live demo"
+  loading="lazy"
+></iframe>
 </div>
 </section>
 

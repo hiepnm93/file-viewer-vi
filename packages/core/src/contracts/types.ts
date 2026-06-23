@@ -208,6 +208,19 @@ export interface FileViewerDrawingOptions {
    * built-in SVG fallback over the official diagrams.net viewer runtime.
    */
   preferOfficial?: boolean;
+  /**
+   * PlantUML SVG endpoint. When omitted, the renderer stays fully offline and
+   * shows an SVG source preview. When provided, the renderer appends the
+   * encoded PlantUML payload to this base URL. Self-host this endpoint for
+   * intranet preview.
+   *
+   * Example: `/plantuml/svg/`.
+   */
+  plantumlServerUrl?: string;
+  /**
+   * Request timeout for server-rendered PlantUML SVG.
+   */
+  plantumlTimeoutMs?: number;
 }
 
 export type FileViewerCadRenderer = 'auto' | 'webgl' | 'canvas2d';

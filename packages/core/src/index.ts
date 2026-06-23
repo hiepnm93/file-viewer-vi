@@ -437,8 +437,11 @@ export const renderFileViewerUmd = async (
   buffer: ArrayBuffer,
   target: HTMLDivElement
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderUmd } = await import('./renderers/umd');
-  return renderUmd(buffer, target);
+  void buffer;
+  void target;
+  throw new Error(
+    'UMD ebook rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-ebook, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerVideo = async (
   buffer: ArrayBuffer,

@@ -75,11 +75,7 @@
     "build": "node scripts/clean-dist.mjs && tsc -b tsconfig.json --force && node scripts/fix-core-esm-extensions.mjs",
     "type-check": "tsc -b tsconfig.json"
   },
-  "dependencies": {
-    "pako": "^2.1.0"
-  },
   "devDependencies": {
-    "@types/pako": "^2.0.4",
     "typescript": "^6.0.3"
   },
   "license": "Apache-2.0"

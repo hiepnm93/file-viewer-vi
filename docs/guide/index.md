@@ -30,7 +30,7 @@
   </div>
   <div class="doc-card">
     <h3>覆盖真实附件场景</h3>
-    <p>内置 199 个扩展名映射和 24 条预览链路，覆盖 Office、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体、设计资产和结构化数据。</p>
+    <p>内置 206 个扩展名映射和 24 条预览链路，覆盖 Office、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码/文本、Git patch/bundle、图片、音视频、字体、PSD 图层资产和结构化数据。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
@@ -51,7 +51,7 @@
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
-    <p>支持格式页列出当前注册的 199 个扩展名、24 条渲染链路和真实业务里的适用边界。</p>
+    <p>支持格式页列出当前注册的 206 个扩展名、24 条渲染链路和真实业务里的适用边界。</p>
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
@@ -75,9 +75,9 @@
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
 - 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
 - 3D 模型走 `@file-viewer/renderer-3d` + Three.js loaders，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
-- Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走随 viewer assets 分发的官方 diagrams.net 离线 viewer，异常时回退内置 SVG。
+- Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走随 viewer assets 分发的官方 diagrams.net 离线 viewer，Mermaid 走官方 `mermaid` SVG 渲染，PlantUML 默认离线源码预览，也可配置自托管 SVG 服务；这些绘图链路都支持拖拽平移和统一缩放。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
-- 代码和文本由 `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。
+- 代码和文本由 `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；patch 会进入左右比对视图，git bundle 会展示 refs、历史记录、文件树和可读文件内容；HTML 会按源码展示。
 - 字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro 和 WebArchive 走 `@file-viewer/renderer-data` 独立资产/数据预览链路，优先展示结构摘要、字体样张、图层或数据预览，不执行不可信内容。
 - 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位，适合上线前核对两份附件的视觉差异。
 

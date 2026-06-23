@@ -8,6 +8,9 @@ const languageMap = {
     cs: 'csharp',
     css: 'css',
     diff: 'diff',
+    patch: 'diff',
+    bundle: 'plaintext',
+    bdl: 'plaintext',
     gv: 'plaintext',
     go: 'go',
     h: 'cpp',
@@ -157,8 +160,17 @@ const lineCountOf = (value) => {
  * @param type 文件扩展名，用于选择 highlight.js 语言
  */
 export default async function renderText(buffer, target, type) {
-    const text = await readText(buffer);
     const extension = type || 'txt';
+    const normalizedExtension = extension.trim().toLowerCase();
+    if (normalizedExtension === 'patch') {
+        const { default: renderPatch } = await import('./patch.js');
+        return renderPatch(buffer, target, extension);
+    }
+    if (normalizedExtension === 'bundle' || normalizedExtension === 'bdl') {
+        const { default: renderGitBundle } = await import('./gitBundle.js');
+        return renderGitBundle(buffer, target, extension);
+    }
+    const text = await readText(buffer);
     const language = resolveLanguage(extension);
     let disposed = false;
     let zoom = 1;

@@ -4,6 +4,11 @@
 
 ## 当前主线 XMind、EDA 版图与表格列宽体验补齐
 
+- 新增 PSD 高保真图层预览，`@file-viewer/renderer-data` 在命中 `.psd` 时才按需加载 `ag-psd`，支持图层选择显隐、画布重绘、统一缩放、主题隔离和 HTML 导出边界说明
+- 新增 Mermaid / PlantUML 绘图预览，`@file-viewer/renderer-drawing` 在命中 `.mermaid` / `.mmd` / `.plantuml` / `.puml` 时才分别加载官方 Mermaid renderer、`plantuml-encoder` 与 Panzoom；PlantUML 默认离线源码预览，需要完整服务端 SVG 时可通过 `options.drawing.plantumlServerUrl` 指向自托管服务
+- 新增 Git patch 和 Git bundle 预览，`@file-viewer/renderer-text` 对 `.patch` 按需加载 `diff2html` 输出左右比对，对 `.bundle` / `.bdl` 解析 refs、提交历史、文件树和可读 blob 内容，并在浏览器端还原常规 OFS_DELTA / REF_DELTA 对象
+- UMD 电子书从 core 迁移到 `@file-viewer/renderer-ebook`，与 EPUB 共用电子书 renderer 包；`@file-viewer/core` 运行时依赖归零，`pako` 仅在打开 UMD / Git bundle 等相关 renderer chunk 时加载
+- 支持格式矩阵更新为 206 个扩展名、24 条预览链路；Demo 新增 PSD、Mermaid、PlantUML、patch 和 git bundle 示例，Vite 插件、bundle budget、组件 README 与文档站口径同步
 - XMind 画布交互切换为轻量成熟的 `@panzoom/panzoom`，保留 `@ljheee/xmind-parser` 的 XMind 8 XML / XMind 2020+ JSON 解析链路，拖拽平移、节点起手拖拽、移动端双指缩放、滚轮锚点缩放、键盘平移、适配画布和 toolbar 状态同步由统一 Panzoom 状态驱动；浏览器 smoke 已加入真实鼠标拖拽断言
 - `@file-viewer/eda-layout` 新增 OASIS 可读文本夹具解析，OAS/OASIS demo 不再只是结构提示，能够在浏览器里输出 SVG 版图；真实 SEMI 二进制 OASIS 仍保持安全结构索引、可读字符串、实体候选和诊断边界，后续完整几何继续走独立 WASM/增量渲染内核路线
 
@@ -21,7 +26,7 @@
 - 新增 `@file-viewer/eda-layout` 与 `@file-viewer/eda-orcad` 两个 EDA engine package；GDSII/OASIS 版图底层能力、OrCAD/Allegro 二进制检查能力从 UI renderer 中拆出，GDSII WebGL typed-array 批次已有独立门禁，后续 OASIS WASM 或逐步 TS 移植可以独立发布、独立回归
 - 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS 文本夹具可真实出图，真实二进制 OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer 与真实鼠标拖拽路径
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
-- 支持格式矩阵保持 199 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件；`brep` 进入 3D 工程模型入口
+- 支持格式矩阵保持 206 个扩展名、24 条预览链路，新增 XMind 脑图、Mermaid / PlantUML、Git patch / bundle 和 PSD 图层预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件；`brep` 进入 3D 工程模型入口
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Panzoom 拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
 - 优化 XMind 画布平移体验，使用 Panzoom 替代脆弱的手写输入状态机，支持移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘
 - XMind 浏览器 smoke 已增加 Pointer、节点起手、滚轮平移和真实鼠标拖拽断言
@@ -30,7 +35,7 @@
 - XMind 增加 ResizeObserver 视口适配策略：首次打开和宿主容器尺寸变化会自动适配画布，用户手动拖拽、滚轮或缩放后保留当前视角，只做安全边界校正，避免脑图在移动端、嵌入容器和响应式布局中“拖不动”或 resize 后视角丢失
 - 代码与 Markdown 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `highlight.js` 和 `marked`；完整文本预览统一由 `@file-viewer/renderer-text` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 27 降到 25，Phase 3 依赖预算从 10 降到 8
 - 音视频预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `hls.js` 和 `@tonejs/midi`；MP3/WAV/OGG/MIDI/MP4/WEBM/HLS 完整媒体能力统一由 `@file-viewer/renderer-media` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 25 降到 23，Phase 3 依赖预算从 8 降到 6
-- 3D 模型与绘图预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `three`、`@excalidraw/excalidraw` 和 `roughjs`；GLB/GLTF/STL/OBJ/FBX/DAE/3MF/VTK 等模型由 `@file-viewer/renderer-3d` 装配，Draw.io / Excalidraw 由 `@file-viewer/renderer-drawing` 装配，core 直接渲染依赖从 23 降到 20，Phase 3 依赖预算从 6 降到 3
+- 3D 模型与绘图预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `three`、`@excalidraw/excalidraw` 和 `roughjs`；GLB/GLTF/STL/OBJ/FBX/DAE/3MF/VTK 等模型由 `@file-viewer/renderer-3d` 装配，Draw.io / Excalidraw / Mermaid / PlantUML 由 `@file-viewer/renderer-drawing` 装配，core 直接渲染依赖从 23 降到 20，Phase 3 依赖预算从 6 降到 3
 - 压缩包、邮件和 EPUB 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `libarchive.js`、`postal-mime`、`@kenjiuno/msgreader` 和 `epubjs`；Archive / Email / EPUB 完整能力统一由 `@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 20 降到 16，Phase 3 依赖预算从 3 降到 0
 - 数据资产与 EDA 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb`；PSD / SQLite / Parquet / Avro / OLB / DRA / GDSII / OASIS 完整能力统一由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 16 降到 11，Phase 4 依赖预算归零
 - PDF 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `pdfjs-dist`；PDF 页面渲染、导航、目录、搜索、缩放、打印和导出统一由 `@file-viewer/renderer-pdf` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 11 降到 10，Phase 2 依赖预算从 10 降到 9

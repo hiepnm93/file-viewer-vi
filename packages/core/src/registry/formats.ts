@@ -15,8 +15,9 @@ export const MODEL_EXTENSIONS = [
 export const TEXT_EXTENSIONS = [
   'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx', 'ts',
   'tsx', 'xml', 'log', 'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs',
-  'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff', 'jsonc', 'json5', 'ipynb', 'toml',
-  'proto', 'hcl', 'tex', 'gv', 'http', 'react', 'rb', 'swift', 'kt',
+  'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff', 'patch', 'bundle', 'bdl',
+  'jsonc', 'json5', 'ipynb', 'toml', 'proto', 'hcl', 'tex', 'gv', 'http', 'react',
+  'rb', 'swift', 'kt',
 ] as const;
 
 export const IMAGE_EXTENSIONS = [
@@ -141,7 +142,7 @@ export const DEFAULT_RENDERER_DEFINITIONS = [
     id: 'drawing',
     label: 'Drawing',
     category: 'drawing',
-    extensions: ['excalidraw', 'drawio', 'dio'],
+    extensions: ['excalidraw', 'drawio', 'dio', 'mermaid', 'mmd', 'plantuml', 'puml'],
     async: true,
     capabilities: { download: true, print: true, exportHtml: true, zoom: 'provider', search: true },
   },

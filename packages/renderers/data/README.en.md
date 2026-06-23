@@ -36,7 +36,7 @@ SQLite preview depends on the `sql.js` WASM file. The default URL is still resol
 
 ## Scope
 
-- PSD uses `ag-psd` for canvas and layer summary previews.
+- PSD uses `ag-psd` for canvas and layer previews with layer visibility toggles, redraw, and unified zoom.
 - SQLite uses `sql.js` for table metadata and sample rows.
 - Parquet uses `hyparquet` for column metadata and sample rows.
 - Avro uses `avsc` for object container schema and sample data.

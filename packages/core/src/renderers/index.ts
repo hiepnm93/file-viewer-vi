@@ -36,18 +36,10 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
       return renderImage(buffer, target, type);
     },
   },
-  {
-    rendererId: 'umd',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      const { default: renderUmd } = await import('./umd');
-      return renderUmd(buffer, target);
-    },
-  },
 ];
 
 export const CORE_LITE_RENDERER_IDS = [
   'image',
-  'umd',
 ] as const;
 
 export const coreLiteBrowserRendererHandlers = coreBrowserRendererHandlers.filter(handler =>

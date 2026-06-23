@@ -77,7 +77,7 @@ import { FileViewer } from '@file-viewer/vue3'
 
 // Vue / React / Svelte / jQuery / Vanilla JS 都保持同一套 options 语义。
 const options = {
-  // 当前已可用: 只启用图片和 UMD 这类 core 原生轻量链路。
+  // 当前已可用: 只启用图片这类 core 原生轻量链路。
   // 音视频请额外装配 @file-viewer/renderer-media。
   // 代码、文本和 Markdown 请额外装配 @file-viewer/renderer-text。
   builtinRenderers: 'lite'
@@ -229,7 +229,7 @@ fileViewerRenderers({
 | ------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Phase 1 | core 插件协议、wrapper 传参、preset-all 兼容层、资产 manifest v2、迁移校验脚本 | `@file-viewer/core`、所有组件包                                                                                                                                                                                                                                                     |
 | Phase 2 | PDF、Word/DOCX/DOC/ODT/RTF、Excel、PPT、OFD、Typst、CAD、Archive               | `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word`、`@file-viewer/renderer-spreadsheet`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-archive`                      |
-| Phase 3 | XMind、Geo、Draw.io/Excalidraw、3D、Email、EPUB、Code/Markdown、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
+| Phase 3 | XMind、Geo、Draw.io/Excalidraw/Mermaid/PlantUML、3D、Email、EPUB、Code/Markdown/Patch/Git Bundle、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
 | Phase 4 | EDA、GDSII/OASIS、OrCAD/Allegro、复杂数据资产                                  | `@file-viewer/renderer-eda`、`@file-viewer/eda-layout`、`@file-viewer/eda-orcad`、`@file-viewer/renderer-data`                                                                                                                                                                      |
 | Phase 5 | Vite 插件、自动 sample smoke matrix、安装体积预算、release pipeline 分发       | `@file-viewer/vite-plugin`、release scripts                                                                                                                                                                                                                                         |
 
@@ -241,7 +241,7 @@ fileViewerRenderers({
 | Word / DOCX / DOC / RTF / ODT | `@file-viewer/renderer-word` 作为标准 renderer 插件，底层按需加载自研 `@file-viewer/docx`、`msdoc-viewer` 和 RTF/OpenDocument 兼容链路。 | core 已移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 等 Word 直接依赖，Word 完整预览统一通过 renderer-word 或 preset-all 装配。 |
 | OFD                         | 使用 `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；vendor 源码随 renderer 包离线分发。                  | core 已移除 OFD 兼容入口、`jszip`、`ofd-xml-parser` 和 OFD vendor，OFD 完整预览统一通过 renderer-ofd 或 preset-all 装配。 |
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
-| Draw.io / diagrams.net      | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、`viewer-static.min.js` 和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。       | 后续在该包内继续统一 Mermaid / PlantUML 等绘图资产。                                                      |
+| Draw.io / diagrams.net / Mermaid / PlantUML | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、Excalidraw 官方导出、Mermaid 官方 SVG 渲染和 PlantUML 离线源码预览 / 可配置 SVG 服务为基准，优先保证离线或自托管预览，不依赖公网 CDN。 | 绘图类格式统一在该包内维护 pan/zoom、主题适配、打印和 HTML 导出；PlantUML 需要完整图形渲染时再配置自托管 `plantumlServerUrl`。 |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层使用 `@panzoom/panzoom` 提供可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
 | GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，并输出离线 SVG 地图，不依赖在线瓦片服务。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
@@ -260,13 +260,13 @@ fileViewerRenderers({
 - [x] `FileViewerOptions.builtinRenderers` 支持 `all`、`lite`、`none`，为默认轻量化和显式全量装配提供稳定开关。
 - [x] wrapper README 和开源总仓 README 补齐 `renderers` / `rendererMode` / `builtinRenderers` 的按需装配示例，并由 `verify:ecosystem-readmes` 校验 `@file-viewer/vite-plugin`、`virtual:file-viewer-renderers` 和 `configuredFileViewerRenderers` 等关键接入口径。
 - [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
-- [x] `@file-viewer/preset-all` 能复现当前 199 个扩展名的完整能力。
+- [x] `@file-viewer/preset-all` 能复现当前 206 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
 - [x] `pnpm verify:on-demand-boundaries` 守住按需加载边界：core 不依赖 renderer/preset/wrapper，标准组件包不依赖 renderer/preset，compat 包只 alias 到目标组件，`preset-lite` / `preset-office` / `preset-engineering` 只能聚合各自白名单 renderer，`preset-all` 才聚合完整 renderer。
 
 ### Phase 2：第一批重链路拆包
 
-- [x] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD 等剩余重链路直接依赖；当前 core 运行时依赖仅保留 UMD 轻量解析所需的 `pako`。
+- [x] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD/UMD 等剩余重链路直接依赖；当前 core 运行时依赖为 0。
 - [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [x] `@file-viewer/core` 已移除 PDF 兼容入口和 `pdfjs-dist` 直接依赖，PDF 完整能力统一通过 `@file-viewer/renderer-pdf` 或 preset 装配；PDF worker、CMap、WASM 和 standard fonts 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-word` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 DOCX / DOC / RTF / ODT renderer。
@@ -278,14 +278,14 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 Typst 兼容入口和 `@myriaddreamin/*` 直接依赖，Typst 真实 WASM 预览统一通过 `@file-viewer/renderer-typst` 或 preset 装配；compiler / renderer WASM 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
-- [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
-- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；UMD 仍在 core 保留 `pako` 作为轻量原生解析依赖。
+- [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB / UMD renderer。
+- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；UMD 已迁移到 `@file-viewer/renderer-ebook`，不再让 core 保留 `pako`。
 - [x] `@file-viewer/core` 已移除 email 兼容入口和 `postal-mime` / `@kenjiuno/msgreader` 直接依赖，邮件完整能力统一通过 `@file-viewer/renderer-email` 或 preset 装配。
-- [x] `@file-viewer/core` 已移除 EPUB 兼容入口和 `epubjs` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
+- [x] `@file-viewer/core` 已移除 EPUB / UMD 兼容入口和 `epubjs` / `pako` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
 - [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 与真实鼠标拖拽回归确认 Panzoom 画布可平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
-- [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
+- [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw / Mermaid / PlantUML renderer。
 - [x] `@file-viewer/core` 已移除 drawing renderer 兼容入口和 `@excalidraw/excalidraw` / `roughjs` 直接依赖，绘图完整能力统一通过 `@file-viewer/renderer-drawing` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
 - [x] `@file-viewer/core` 已移除 3D model renderer 兼容入口和 `three` 直接依赖，模型完整能力统一通过 `@file-viewer/renderer-3d` 或 preset 装配。
@@ -362,12 +362,12 @@ pnpm audit:renderer-deps -- --json
 | XMind | `.xmind` 按 ZIP 容器读取，现代文件优先解析 `content.json`，经典文件解析 `content.xml`；Panzoom 交互由 `@file-viewer/renderer-mindmap` 维护。 | 继续补多结构布局、更多 marker 图标和复杂图片资源还原，交互回归覆盖 Pointer、真实鼠标、触摸和移动端双指缩放。 |
 | Archive | `@file-viewer/renderer-archive` 使用 `libarchive.js` Worker + WASM，Worker 不可用时降级 ZIP/TAR/GZIP。 | 保持 Worker 超时、IndexedDB 缓存和体积上限，不把压缩包依赖带回 core。 |
 | Email | `@file-viewer/renderer-email` 使用 `postal-mime` 和 `@kenjiuno/msgreader`，邮件附件复用统一嵌套预览。 | 增强 MSG 边界样例和附件安全策略。 |
-| EPUB/UMD | EPUB 使用 `@file-viewer/renderer-ebook` + `epubjs`；UMD 仍作为 core 轻量解析链路，保留 `pako`。 | EPUB 继续独立维护阅读体验；如果 UMD 复杂度继续上升，再拆出独立 ebook 内核。 |
+| EPUB/UMD | EPUB 使用 `@file-viewer/renderer-ebook` + `epubjs`；UMD 同样由 `@file-viewer/renderer-ebook` 维护结构解析和 `pako` 解压。 | 电子书能力统一在 ebook renderer 中维护，core 保持零运行时依赖。 |
 | OLB/DRA | `@file-viewer/renderer-eda` 当前基于 CFB 和二进制线索做安全结构树、实体候选、属性、字符串和诊断展示。 | OrCAD/Allegro 属于专业私有工程格式，完整几何/电气语义会像 PPTX 一样拆独立引擎长期维护，必要时引入自研 WASM。 |
 | GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 文本夹具可输出 SVG，真实二进制 OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
 | Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译和 SVG 渲染。 | 保持离线 WASM 配置入口，后续评估更轻量只读渲染内核。 |
-| Draw.io / Excalidraw | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路。 | 保持 vendor 离线随包分发，避免企业内网依赖公共 CDN。 |
+| Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可接入自托管 SVG 服务。 | 保持 vendor 离线随包分发；PlantUML 需要完整图形渲染时推荐企业内网自托管服务端点，避免依赖公共公网服务。 |
 | OpenDocument | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析和 Office renderer 兼容链路。 | 复杂版式继续评估 WebODF / LibreOffice WASM，不进入 core 默认依赖。 |
 
 ## 终态验收门禁
