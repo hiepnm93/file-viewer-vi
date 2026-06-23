@@ -34,10 +34,49 @@ const enSidebar = {
       text: 'Start Here',
       items: [
         { text: 'Docs Home', link: '/en/guide/' },
+        { text: 'Overview', link: '/en/guide/overview' },
+        { text: 'Demo Guide', link: '/en/guide/demo' },
         { text: 'Quickstart', link: '/en/guide/quickstart' },
+      ]
+    },
+    {
+      text: 'Integration',
+      items: [
         { text: 'Ecosystem Packages', link: '/en/guide/ecosystem' },
+        { text: 'Modular Assembly', link: '/en/guide/on-demand-renderers' },
+        { text: 'Vanilla JS / Script Tag', link: '/en/guide/quickstart-web' },
+        { text: 'Vue 3', link: '/en/guide/quickstart-vue3' },
+        { text: 'Vue 2.7 / 2.6', link: '/en/guide/quickstart-vue2' },
+        { text: 'React', link: '/en/guide/quickstart-react' },
+        { text: 'React Legacy', link: '/en/guide/ecosystem#react-legacy' },
+        { text: 'jQuery', link: '/en/guide/ecosystem#jquery' },
+        { text: 'Svelte', link: '/en/guide/ecosystem#svelte' },
+        { text: 'Core API', link: '/en/guide/ecosystem#core-api' },
+        { text: 'PPTX Engine', link: '/en/guide/ecosystem#pptx-engine' },
+        { text: 'Component Options', link: '/en/guide/usage' }
+      ]
+    },
+    {
+      text: 'Capability',
+      items: [
         { text: 'Supported Formats', link: '/en/guide/formats' },
+        { text: 'Format Fidelity', link: '/en/guide/format-fidelity' },
+        { text: 'FAQ', link: '/en/guide/faq' }
+      ]
+    },
+    {
+      text: 'Development And Release',
+      items: [
+        { text: 'Local Development', link: '/en/guide/development' },
+        { text: 'Docker Deployment', link: '/en/guide/docker' },
         { text: 'Distribution', link: '/en/guide/distribution' }
+      ]
+    },
+    {
+      text: 'More',
+      items: [
+        { text: 'Changelog', link: '/changelog' },
+        { text: 'Sponsor', link: '/donate' }
       ]
     }
   ]
@@ -73,7 +112,7 @@ const enSearch = {
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 206 个扩展名和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 206 个扩展名、24 条预览链路和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
   cleanUrls: true,
   lastUpdated: true,
   locales: {
@@ -86,7 +125,7 @@ export default defineConfig({
       lang: 'en-US',
       link: '/en/',
       title: 'Flyfish Viewer',
-      description: 'Offline-first frontend file preview for Office, PDF, CAD, archives, email, EPUB, 3D, code, media, and more.',
+      description: 'Offline-first frontend file preview with 206 extensions, 24 preview pipelines, and native Vanilla JS, Vue, React, jQuery, and Svelte integrations.',
       themeConfig: {
         logo: '/_media/logo.svg',
         nav: enNav,
@@ -150,6 +189,7 @@ export default defineConfig({
           text: '集成方式',
           items: [
             { text: '生态组件总览', link: '/guide/ecosystem' },
+            { text: '模块化与按需装配', link: '/guide/on-demand-renderers#_2-1-0-推荐接入步骤' },
             { text: '纯 JS / Script 标签集成', link: '/guide/quickstart-web' },
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
             { text: 'Vue2.7 / 2.6 集成', link: '/guide/quickstart-vue2' },

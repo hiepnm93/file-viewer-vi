@@ -50,7 +50,7 @@
 - 各标准组件包只依赖 core 和自己的生态依赖，不嵌套其他框架实现。
 - 所有组件包共享同一套 `ViewerMountOptions`、`FileViewerOptions`、生命周期事件、操作回调、搜索、缩放、水印、打印和导出语义。
 - Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。常见业务优先选 `preset-lite`、`preset-office`、`preset-engineering`，极致裁剪再安装单个 renderer。
-- 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
+- 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst WASM/字体、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
 
 ## 组件属性与定制入口
 
@@ -519,7 +519,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 | PDF.js worker / CMap / WASM / standard fonts | `file-viewer/vendor/pdf/` |
 | Draw.io 官方离线 viewer | `file-viewer/vendor/drawio/` |
 | CAD DWG / DWF / DWFx WASM | `file-viewer/wasm/cad/` |
-| Typst compiler / renderer WASM | `file-viewer/wasm/typst/` |
+| Typst compiler / renderer WASM / 默认字体 | `file-viewer/wasm/typst/`、`file-viewer/wasm/typst/fonts/` |
 | SQLite WASM | `file-viewer/wasm/sqlite/` |
 | libarchive Worker / WASM | `file-viewer/vendor/libarchive/` |
 | Office Worker | `file-viewer/vendor/docx/`、`file-viewer/vendor/xlsx/` |

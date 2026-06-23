@@ -148,12 +148,12 @@ const copy = {
     ecosystemTitle: 'Core 负责底层预览能力，标准组件负责原生体验。',
     ecosystemIntro:
       '一个组件，一行代码，快速集成。2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
-    demoTitle: '无需跳转，直接在官网体验完整 Demo。',
+    demoTitle: '无需跳转，直接在官网阅读完整文档。',
     demoIntro:
-      'Demo 站与产品主页同属 file-viewer.app 域名体系，支持示例矩阵、上传预览、文档比对和生产构建验证。需要深入接入时，再进入文档站查看 API 与部署说明。',
+      'file-viewer.app 作为组件门户，直接嵌入 doc.file-viewer.app 的文档站。用户可以在主页了解定位、生态、商业版和打赏入口，也能立刻阅读最小化引入、组合引入、模块化架构、格式矩阵和部署说明。',
     docsTitle: '文档站与产品门户保持同一套信息架构。',
     docsIntro:
-      'doc.file-viewer.app 覆盖快速开始、生态组件、格式支持、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。主页负责决策入口，文档负责落地细节。',
+      'doc.file-viewer.app 覆盖快速开始、生态组件、模块化装配、格式支持、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。主页负责决策入口，文档负责落地细节。',
     commercialTitle: '需要更高还原度和极致性能？选择商业版原生文档引擎。',
     commercialIntro:
       '商业版来自本地 office 产品线，采用自研原生文档引擎，面向严肃企业场景提供 Word、Excel、PowerPoint 的高还原渲染、Worker 解析、分页布局、虚拟滚动和更稳定的大文件体验。',
@@ -196,12 +196,12 @@ const copy = {
     ecosystemTitle: 'Core owns preview capability. Standard components own native framework experience.',
     ecosystemIntro:
       'One component, one line of code, fast integration. The 2.x architecture no longer treats iframe integration as the primary path. Every standard component depends only on @file-viewer/core and exposes idiomatic props, hooks, refs/controllers, events, and complete types for its ecosystem.',
-    demoTitle: 'Try the complete demo without leaving the product site.',
+    demoTitle: 'Read the complete docs without leaving the product site.',
     demoIntro:
-      'The demo and product portal share the file-viewer.app domain family. It includes the sample matrix, upload preview, document comparison, and production build verification. Use the docs when you are ready to integrate deeply.',
+      'file-viewer.app is the component portal and embeds doc.file-viewer.app directly. Users can understand positioning, ecosystem packages, the commercial edition, and sponsorship, then read minimal imports, composed imports, modular architecture, format coverage, and deployment guidance in place.',
     docsTitle: 'The docs site and product portal share one information architecture.',
     docsIntro:
-      'doc.file-viewer.app covers quick start, component packages, format support, themes, watermarking, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
+      'doc.file-viewer.app covers quick start, component packages, modular assembly, format support, themes, watermarking, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
     commercialTitle: 'Need higher fidelity and extreme performance? Choose the commercial native document engine.',
     commercialIntro:
       'The commercial edition is powered by the local office product line: a self-developed native document engine for serious enterprise Word, Excel, and PowerPoint rendering, Worker parsing, pagination, virtual scrolling, and stable large-file performance.',
@@ -369,13 +369,13 @@ const capabilities = computed<Capability[]>(() =>
         { title: '统一搜索与定位', detail: 'Ctrl/Command + F 调出浮层搜索，命中高亮、上一条/下一条和行级/页级定位可复用。', icon: SearchCheck },
         { title: '高保真打印导出', detail: 'PDF、Word、Markdown、图片等按渲染链路动态启用打印与 HTML 导出，避免只打印当前视口。', icon: Download },
         { title: '主题与水印', detail: 'light、dark、system 可控，文字/图片水印通过 options 统一注入。', icon: PanelTop },
-        { title: '分层按需装配', detail: 'preset-lite、preset-office、preset-engineering 和 preset-all 覆盖不同产品形态，极致裁剪时再安装单个 renderer。', icon: Boxes }
+        { title: '模块化按需装配', detail: 'core、renderer、preset 和生态组件职责分离；preset-lite、preset-office、preset-engineering 与 preset-all 覆盖不同产品形态。', icon: Boxes }
       ]
     : [
         { title: 'Unified search and anchors', detail: 'Ctrl/Command + F opens focused search with highlights, next/previous navigation, and reusable page/line anchors.', icon: SearchCheck },
         { title: 'High-fidelity print and export', detail: 'PDF, Word, Markdown, images, and other printable renderers expose print and HTML export only when the output is trustworthy.', icon: Download },
         { title: 'Theme and watermark options', detail: 'light, dark, and system themes are controlled by options; text and image watermarks use one contract.', icon: PanelTop },
-        { title: 'Tiered on-demand assembly', detail: 'preset-lite, preset-office, preset-engineering, and preset-all cover product-shaped bundles; install single renderers only for exact custom cuts.', icon: Boxes }
+        { title: 'Modular on-demand assembly', detail: 'Core, renderer packages, presets, and native component packages keep separate responsibilities while presets cover product-shaped bundles.', icon: Boxes }
       ]
 )
 
@@ -1138,18 +1138,18 @@ onBeforeUnmount(() => {
       <div class="demo-reveal-stage">
         <div class="demo-reveal-copy">
           <div>
-            <p class="section-kicker">Live workspace</p>
+            <p class="section-kicker">Documentation hub</p>
             <h2 id="demo-title">{{ currentCopy.demoTitle }}</h2>
             <p>{{ currentCopy.demoIntro }}</p>
           </div>
           <div class="inline-actions">
-            <a class="button primary" :href="demoUrl" target="_blank" rel="noreferrer">
-              <span>{{ currentCopy.nav.demo }}</span>
-              <MonitorPlay :size="18" />
-            </a>
-            <a class="button secondary" :href="docsUrl" target="_blank" rel="noreferrer">
+            <a class="button primary" :href="docsUrl" target="_blank" rel="noreferrer">
               <span>{{ currentCopy.nav.docs }}</span>
               <BookOpen :size="18" />
+            </a>
+            <a class="button secondary" :href="demoUrl" target="_blank" rel="noreferrer">
+              <span>{{ currentCopy.nav.demo }}</span>
+              <MonitorPlay :size="18" />
             </a>
           </div>
         </div>
@@ -1163,22 +1163,22 @@ onBeforeUnmount(() => {
               <span />
               <span />
               <span />
-              <strong>demo.file-viewer.app</strong>
+              <strong>doc.file-viewer.app</strong>
             </div>
             <iframe
               v-if="demoFrameLoaded"
-              :src="demoUrl"
-              title="Flyfish File Viewer live demo"
+              :src="docsUrl"
+              title="Flyfish File Viewer documentation"
               loading="lazy"
             ></iframe>
             <div v-else class="demo-frame-placeholder">
-              <MonitorPlay :size="28" />
-              <strong>{{ isZh ? '滚动到这里后加载完整 Demo' : 'Live demo loads when this section opens' }}</strong>
-              <span>{{ isZh ? '避免首屏被独立站点资源拖慢' : 'Keeping the first view fast and focused' }}</span>
+              <BookOpen :size="28" />
+              <strong>{{ isZh ? '滚动到这里后加载完整文档' : 'Documentation loads when this section opens' }}</strong>
+              <span>{{ isZh ? '避免首屏被文档站资源拖慢' : 'Keeping the first view fast and focused' }}</span>
             </div>
           </div>
           <div class="demo-seam demo-seam-bottom">
-            <span>{{ isZh ? '完整预览工作台' : 'complete preview workspace' }}</span>
+            <span>{{ isZh ? '完整文档工作台' : 'complete documentation workspace' }}</span>
           </div>
         </div>
       </div>

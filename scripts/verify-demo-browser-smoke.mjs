@@ -536,6 +536,16 @@ const verifyArchiveNestedPreviewInteraction = async (page, samplePath) => {
       undefined,
       { timeout: sampleTimeout }
     )
+    if (check.expectedText) {
+      await page.waitForFunction(
+        ({ selector, expectedText }) => {
+          const target = document.querySelector(selector)
+          return Boolean(target?.textContent?.includes(expectedText))
+        },
+        check,
+        { timeout: sampleTimeout }
+      )
+    }
 
     const result = await page.evaluate(({ selector, expectedText }) => {
       const nestedTarget = document.querySelector('.archive-nested-target')

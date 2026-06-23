@@ -187,6 +187,7 @@ export type FileViewerRenderedInstance =
 export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
   rendererWasmUrl?: string;
+  fontAssetsUrl?: string;
   renderTimeoutMs?: number;
 }
 

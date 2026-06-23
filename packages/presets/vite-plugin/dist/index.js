@@ -821,8 +821,12 @@ async function copyKnownRendererAssets(targetRoot, rendererIds) {
     const typstRendererRoot = resolvePackageRoot('@myriaddreamin/typst-ts-renderer', [
         '@file-viewer/renderer-typst'
     ]);
+    const typstRendererPackageRoot = resolvePackageRoot('@file-viewer/renderer-typst', [
+        '@file-viewer/renderer-typst'
+    ]);
     await push('typst', 'typst-compiler-wasm', join(targetRoot, 'wasm/typst/typst_ts_web_compiler_bg.wasm'), () => copyFileIfPresent(typstCompilerRoot ? join(typstCompilerRoot, 'pkg/typst_ts_web_compiler_bg.wasm') : null, join(targetRoot, 'wasm/typst/typst_ts_web_compiler_bg.wasm')));
     await push('typst', 'typst-renderer-wasm', join(targetRoot, 'wasm/typst/typst_ts_renderer_bg.wasm'), () => copyFileIfPresent(typstRendererRoot ? join(typstRendererRoot, 'pkg/typst_ts_renderer_bg.wasm') : null, join(targetRoot, 'wasm/typst/typst_ts_renderer_bg.wasm')));
+    await push('typst', 'typst-font-assets', join(targetRoot, 'wasm/typst/fonts'), () => copyDirectoryIfPresent(typstRendererPackageRoot ? join(typstRendererPackageRoot, 'assets/fonts') : null, join(targetRoot, 'wasm/typst/fonts')));
     const archiveRoot = resolvePackageRoot('libarchive.js', ['@file-viewer/renderer-archive']);
     await push('archive', 'libarchive-worker', join(targetRoot, 'vendor/libarchive/worker-bundle.js'), () => copyFileIfPresent(archiveRoot ? join(archiveRoot, 'dist/worker-bundle.js') : null, join(targetRoot, 'vendor/libarchive/worker-bundle.js')));
     await push('archive', 'libarchive-wasm', join(targetRoot, 'vendor/libarchive/libarchive.wasm'), () => copyFileIfPresent(archiveRoot ? join(archiveRoot, 'dist/libarchive.wasm') : null, join(targetRoot, 'vendor/libarchive/libarchive.wasm')));

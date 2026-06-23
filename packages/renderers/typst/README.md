@@ -31,7 +31,7 @@ const options = {
 - 支持 `.typ`、`.typst`。
 - 浏览器端真实编译 Typst 源文件并输出 SVG 页面。
 - 支持页面尺寸识别、缩放、打印和 HTML 导出。
-- 支持 `options.typst.renderTimeoutMs` 编译超时控制。
+- 支持 `options.typst.renderTimeoutMs` 加载 / 编译超时控制。
 - WASM 缺失、MIME 错误、网络错误或编译错误会给出明确诊断。
 
 ## 离线资产
@@ -40,8 +40,9 @@ const options = {
 
 - `wasm/typst/typst_ts_web_compiler_bg.wasm`
 - `wasm/typst/typst_ts_renderer_bg.wasm`
+- `wasm/typst/fonts/`
 
-私有化部署时可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 覆盖。预览运行时不会访问公共 CDN。
+私有化部署时可以通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 和 `options.typst.fontAssetsUrl` 覆盖。默认字体资产随本包发布并由 `file-viewer-copy-assets` / `@file-viewer/vite-plugin` 复制到本地静态目录，预览运行时不会访问公共 CDN。
 
 ## 迁移说明
 

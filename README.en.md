@@ -1,6 +1,34 @@
-# Flyfish Viewer
+<p align="center">
+  <a href="https://file-viewer.app">
+    <img src="docs/public/_media/logo.png" width="92" alt="Flyfish File Viewer logo" />
+  </a>
+</p>
 
-[Simplified Chinese](README.md) | [English](README.en.md)
+<h1 align="center">Flyfish Viewer</h1>
+
+<p align="center">
+  <strong>One component, one line of code, fast integration. A browser-native multi-format file preview system.</strong>
+</p>
+
+<p align="center">
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm core" src="https://img.shields.io/npm/v/@file-viewer/core?label=core&color=15966b" /></a>
+  <a href="https://www.npmjs.com/package/@file-viewer/vue3"><img alt="npm vue3" src="https://img.shields.io/npm/v/@file-viewer/vue3?label=vue3&color=1d6fd6" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?style=flat&logo=github&color=111827" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?label=release&color=7c3aed" /></a>
+  <a href="https://doc.file-viewer.app"><img alt="Documentation" src="https://img.shields.io/badge/docs-doc.file--viewer.app-1d6fd6" /></a>
+  <a href="https://demo.file-viewer.app"><img alt="Live demo" src="https://img.shields.io/badge/demo-demo.file--viewer.app-16a34a" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/flyfish-dev/file-viewer?color=0f766e" /></a>
+  <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker" src="https://img.shields.io/badge/docker-flyfishdev%2Ffile--viewer-2496ed?logo=docker" /></a>
+  <img alt="Supported formats" src="https://img.shields.io/badge/formats-206%2B-f59e0b" />
+  <img alt="Modular architecture" src="https://img.shields.io/badge/architecture-modular%20renderers-7c3aed" />
+  <img alt="Ecosystem packages" src="https://img.shields.io/badge/npm%20targets-42-0f766e" />
+</p>
+
+![Flyfish Viewer demo showing Word, PDF, PPTX, and document comparison](docs/public/_media/flyfish-viewer-demo.gif)
 
 Bring Word, Excel, PowerPoint, PDF, Typst, XMind mind maps, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
@@ -22,13 +50,10 @@ The integration promise is simple: **one component, one line of code, fast integ
 - Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - Sponsorship and priority support: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-## Demo
-
-![Flyfish Viewer demo showing Word, PDF, PPTX, and document comparison](docs/public/_media/flyfish-viewer-demo.gif)
-
 ## Why Use It
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
+- **Modular by design.** `@file-viewer/core` owns the format matrix, source loading, renderer protocol, lifecycle, and shared APIs. Heavy PDF, Word, PPTX, CAD, Typst, archive, EDA, and data-asset capabilities live in independent renderer packages; `preset-lite`, `preset-office`, `preset-engineering`, and `preset-all` compose product-shaped bundles; Vue, React, Svelte, jQuery, and Vanilla JavaScript packages stay focused on native ecosystem integration.
 - **Broad format coverage.** The current release maps 206 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, Mermaid, PlantUML, EPUB, UMD, Markdown, images, audio/video, source code, Git patch/bundle, fonts, PSD layer assets, and structured data.
 - **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
@@ -54,7 +79,7 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | PowerPoint                     | `pptx`, `pptm`, `potx`, `potm`, `ppsx`, `ppsm`, `odp`                                                                                                                                                                                                                                                                          | Native open-source `@file-viewer/pptx` engine with Worker based progressive slide output; ODP uses OpenDocument slide text extraction                                                                                                                         | Presentations, training decks, proposals                        |
 | PDF                            | `pdf`                                                                                                                                                                                                                                                                                                                          | `pdfjs-dist`, streaming same-origin loading, Range support, zoom, rotation, page thumbnails, outline tree, width fitting, print, HTML export                                                                                                                  | Contracts, invoices, official layout documents                  |
 | OFD                            | `ofd`                                                                                                                                                                                                                                                                                                                          | Browser-side OFD preview based on `DLTech21/ofd.js` source                                                                                                                                                                                                    | Chinese e-invoices, government documents, archives              |
-| Typst                          | `typ`, `typst`                                                                                                                                                                                                                                                                                                                 | Direct Typst source rendering with browser WASM compiler and SVG pages                                                                                                                                                                                        | Technical reports, papers, engineering documents                |
+| Typst                          | `typ`, `typst`                                                                                                                                                                                                                                                                                                                 | Direct Typst source rendering with browser WASM compiler, SVG renderer, and self-hosted font assets                                                                                                                                                            | Technical reports, papers, engineering documents                |
 | Archives                       | `zip`, `zipx`, `7z`, `rar`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`, `cab`, `iso`, `jar`, `apk`, `cbz`, `cbr`, and more                                                                                                                                                                                                         | `@file-viewer/renderer-archive` with a `libarchive.js` Worker, directory listing, lazy extraction, nested preview, IndexedDB cache, ZIP/TAR/GZIP fallback, and memory limits                                                                                  | Attachment packages and internal document bundles               |
 | Email                          | `eml`, `msg`, `mbox`                                                                                                                                                                                                                                                                                                           | Standalone `@file-viewer/renderer-email`; `postal-mime` for EML/MBOX, `@kenjiuno/msgreader` for MSG, headers, HTML/text body, attachment preview                                                                                                              | Email archives and support tickets                              |
 | EDA                            | `olb`, `dra`, `gds`, `oas`, `oasis`                                                                                                                                                                                                                                                                                            | Standalone `@file-viewer/renderer-eda`; CFB-based OrCAD / Allegro inspection; standard GDSII records are parsed into SVG for small layouts and WebGL canvas for larger element sets; readable OASIS text fixtures render as SVG, while real SEMI binary OASIS stays on safe structure indexing, readable strings, entity hints, and diagnostics | Component libraries, footprints, chip layout attachments        |
@@ -75,15 +100,85 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | Video                          | `mp4`, `webm`, `m3u8`                                                                                                                                                                                                                                                                                                          | `@file-viewer/renderer-media` uses native browser video playback with a lazy `hls.js` fallback for HLS streams                                                                                                                                                | Screen recordings, demo videos, HLS previews                    |
 | Fonts, design assets, and data | `ttf`, `otf`, `woff`, `woff2`, `psd`, `ai`, `eps`, `sqlite`, `wasm`, `parquet`, `avro`, `webarchive`                                                                                                                                                                                                                           | Standalone `@file-viewer/renderer-data` with FontFace previews, PSD layer selection/visibility/zoom via `ag-psd`, PDF-backed AI handoff, SQLite/Parquet/Avro/WASM structural summaries, and configurable SQLite WASM URL                                       | Asset review, local databases, binary package inspection        |
 
-## Screenshots
+## Visual Preview
 
-| Main demo / multi-format preview                                                                         | Document preview / Office and PDF reading surface                                         | Vanilla JavaScript / script tag integration                                                              |
-| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| <img src="docs/_images/demo-main.png" width="360" alt="Flyfish Viewer main demo multi-format preview" /> | <img src="docs/_images/demo-doc.png" width="360" alt="Flyfish Viewer document preview" /> | <img src="docs/_images/demo-iframe.png" width="360" alt="Flyfish Viewer Pure Web integration preview" /> |
+The motion preview above shows the main demo, Office/PDF reading surface, PPTX rendering, and side-by-side document comparison in a real browser. Open [demo.file-viewer.app](https://demo.file-viewer.app) for the full sample matrix; the documentation site also uses GIF previews for key flows instead of static-only screenshots.
+
+## Minimal And Composed Imports
+
+Starting from 2.1.0, treat the component package and the format capability as separate layers. Components provide the native framework experience; renderer packages and presets decide which file formats enter your install, bundle, Worker/WASM asset plan, and future extension path.
+
+### Path 1: Minimal Import
+
+Install only the renderer your product really needs. For example, PDF-only preview:
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      formats: ['pdf'],
+      copyAssets: true
+    })
+  ]
+}
+```
+
+```ts
+import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
+
+export const viewerOptions = {
+  builtinRenderers: 'none',
+  rendererMode: 'replace',
+  renderers: configuredFileViewerRenderers
+}
+```
+
+Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, but the `viewerOptions` semantics stay the same.
+
+### Path 2: Product-Shaped Composition
+
+Use `preset-office` for document platforms, `preset-engineering` for engineering attachments, `preset-lite` for common lightweight files, and `preset-all` for the full demo or internal all-format workbenches.
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+}
+```
+
+### Path 3: No Build Tool Or Script Tags
+
+For plain JavaScript pages, install `@file-viewer/web` and use the `<flyfish-file-viewer>` Custom Element or the imperative `mountViewer(...)` API. For intranet deployment, copy the bundled workers, WASM files, PDF assets, CAD assets, Typst assets, archive assets, and data assets into your own static directory.
+
+```bash
+npm i @file-viewer/web @file-viewer/core @file-viewer/preset-all
+npm exec file-viewer-copy-assets ./public/file-viewer
+```
+
+See the [official docs](https://doc.file-viewer.app/guide/ecosystem) for detailed Vanilla JavaScript, Vue, React, Svelte, jQuery, Core API, and offline asset steps.
 
 ## Current npm Ecosystem
 
-The current version follows the npm registry `latest` dist-tag. The ecosystem publishes 38 npm targets: 33 standard component / core / renderer / preset / tooling packages and 5 historical aliases. New integrations should prefer the `@file-viewer/*` standard package names; existing applications using `@flyfish-group/*` or `file-viewer3` continue to receive the same versioned capability set.
+The current version follows the npm registry `latest` dist-tag. The ecosystem publishes 42 npm targets: 37 standard component / core / renderer / preset / tooling packages and 5 historical aliases. New integrations should prefer the `@file-viewer/*` standard package names; existing applications using `@flyfish-group/*` or `file-viewer3` continue to receive the same versioned capability set.
 
 | Scenario                                   | Recommended package                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Historical alias                                                                                                                                         | Version policy | Notes                                                                                                                                                                                                                       |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -456,6 +551,7 @@ Historical package names remain compatible, but new projects should prefer the s
 | `pdf.workerUrl`                | Custom PDF.js Worker URL for private, offline, or strict-CSP deployments. Defaults to the self-hosted viewer asset path under the current deployment base.                                                                                                                |
 | `typst.compilerWasmUrl`        | Custom Typst compiler WASM URL.                                                                                                                                                                                                                                           |
 | `typst.rendererWasmUrl`        | Custom Typst SVG renderer WASM URL.                                                                                                                                                                                                                                       |
+| `typst.fontAssetsUrl`          | Custom Typst default-font asset directory. Defaults to `wasm/typst/fonts/` copied from `@file-viewer/renderer-typst`, avoiding public CDN font downloads.                                                                                                                 |
 | `hooks`                        | Lifecycle hooks for load and unload events.                                                                                                                                                                                                                               |
 | `beforeOperation`              | Guard before download, print, HTML export, or zoom actions. Return `false` to cancel.                                                                                                                                                                                     |
 

@@ -1,6 +1,34 @@
-# Flyfish Viewer
+<p align="center">
+  <a href="https://file-viewer.app">
+    <img src="docs/public/_media/logo.png" width="92" alt="Flyfish File Viewer logo" />
+  </a>
+</p>
 
-[简体中文](README.md) | [English](README.en.md)
+<h1 align="center">Flyfish Viewer</h1>
+
+<p align="center">
+  <strong>一个组件，一行代码，快速集成。浏览器原生多格式文件预览超级组件。</strong>
+</p>
+
+<p align="center">
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm core" src="https://img.shields.io/npm/v/@file-viewer/core?label=core&color=15966b" /></a>
+  <a href="https://www.npmjs.com/package/@file-viewer/vue3"><img alt="npm vue3" src="https://img.shields.io/npm/v/@file-viewer/vue3?label=vue3&color=1d6fd6" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?style=flat&logo=github&color=111827" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?label=release&color=7c3aed" /></a>
+  <a href="https://doc.file-viewer.app"><img alt="Documentation" src="https://img.shields.io/badge/docs-doc.file--viewer.app-1d6fd6" /></a>
+  <a href="https://demo.file-viewer.app"><img alt="Live demo" src="https://img.shields.io/badge/demo-demo.file--viewer.app-16a34a" /></a>
+  <a href="https://github.com/flyfish-dev/file-viewer/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/flyfish-dev/file-viewer?color=0f766e" /></a>
+  <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker" src="https://img.shields.io/badge/docker-flyfishdev%2Ffile--viewer-2496ed?logo=docker" /></a>
+  <img alt="Supported formats" src="https://img.shields.io/badge/formats-206%2B-f59e0b" />
+  <img alt="Modular architecture" src="https://img.shields.io/badge/architecture-modular%20renderers-7c3aed" />
+  <img alt="Ecosystem packages" src="https://img.shields.io/badge/npm%20targets-42-0f766e" />
+</p>
+
+![Flyfish Viewer 演示: Word、PDF、PPTX 与文档比对](docs/public/_media/flyfish-viewer-demo.gif)
 
 把 Word、Excel、PPT、PDF、Typst、XMind 脑图、压缩包、邮件、音视频、地理数据、工程图纸、字体、设计资产和结构化数据稳稳带进浏览器里。
 
@@ -23,13 +51,10 @@
 - 开源总仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - 打赏与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-## Demo
-
-![Flyfish Viewer 演示: Word、PDF、PPTX 与文档比对](docs/public/_media/flyfish-viewer-demo.gif)
-
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
+- **模块化架构清晰。** `@file-viewer/core` 只负责格式矩阵、资源加载、renderer 协议、生命周期和统一 API；PDF、Word、PPTX、CAD、Typst、压缩包、EDA、数据资产等重型能力下沉到独立 renderer；`preset-lite`、`preset-office`、`preset-engineering`、`preset-all` 按产品形态组合；Vue、React、Svelte、jQuery 和 Vanilla JS 组件只做各自生态的原生封装。
 - **格式覆盖完整。** 当前内置 206 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、Git patch/bundle、字体、PSD 图层资产和结构化数据，能覆盖绝大多数业务附件场景。
 - **按需异步加载。** PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关、水印 options、主题 options、搜索高亮、上一个 / 下一个命中、行级定位和 AI 友好文本切片；PDF 使用 PDF.js 原生搜索，Word / Markdown / 代码等文本类格式使用通用 DOM 搜索，避免污染 PDF 文本层、canvas 等特殊渲染结构；`theme` 支持 `light`、`dark`、`system`，默认跟随系统，浅色业务 UI 可显式锁定 `light`；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
@@ -56,7 +81,7 @@
 | PowerPoint     | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp`                                                                                                                                                                                                                                                                          | 基于独立开源 `@file-viewer/pptx` 原生引擎浏览幻灯片内容，Worker 渐进解析并按页输出；ODP 走 OpenDocument 幻灯片文本预览                                                                                              | 汇报材料、课件、方案、演示模板              |
 | PDF            | `pdf`                                                                                                                                                                                                                                                                                                                          | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML                                                  | 合同、票据、版式成品                        |
 | OFD            | `ofd`                                                                                                                                                                                                                                                                                                                          | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支                                                                                                                                   | 电子发票、公文、归档材料                    |
-| Typst          | `typ`、`typst`                                                                                                                                                                                                                                                                                                                 | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML                                                                                          | 技术报告、论文草稿、工程文档模板            |
+| Typst          | `typ`、`typst`                                                                                                                                                                                                                                                                                                                 | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器、SVG 渲染器和本地字体资产；支持完整预览、打印和导出 HTML                                                                                          | 技术报告、论文草稿、工程文档模板            |
 | 压缩包         | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr`                                                                                                           | `@file-viewer/renderer-archive` 基于 `libarchive.js` WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存、ZIP/TAR/GZIP fallback 和体积上限                                            | 归档附件、批量交付包、压缩包内文档快速查看  |
 | 邮件           | `eml`、`msg`、`mbox`                                                                                                                                                                                                                                                                                                           | `@file-viewer/renderer-email` 独立承接邮件链路；EML/MBOX 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览                                                          | 邮件归档、工单邮件、客户来信附件            |
 | EDA            | `olb`、`dra`、`gds`、`oas`、`oasis`                                                                                                                                                                                                                                                                                            | `@file-viewer/renderer-eda` 独立承接；使用 `cfb` 解析 OrCAD/Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference，小图输出 SVG，大元素集自动切到 WebGL canvas；OAS/OASIS 可读文本版图夹具会输出 SVG 预览，真实 SEMI 二进制 OASIS 先做安全结构索引、可读字符串、实体候选和诊断，不虚标专业电气/几何校核 | 元件库、封装图纸、芯片版图附件初筛          |
@@ -77,15 +102,85 @@
 | 视频           | `mp4`、`webm`、`m3u8`                                                                                                                                                                                                                                                                                                          | `@file-viewer/renderer-media` 使用浏览器原生视频播放；HLS 清单必要时按需加载 `hls.js`                                                                                                                               | 演示视频、录屏、HLS 流                      |
 | 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive`                                                                                                                                                                                                                           | `@file-viewer/renderer-data` 独立承接，基于 FontFace、`ag-psd`、`sql.js`、`hyparquet`、`avsc`、WebAssembly Module 和安全摘要；PSD 支持图层选择显隐、重绘和统一缩放；SQLite WASM 支持私有化配置                  | 字体、设计资产、数据库、列式数据和 Web 归档 |
 
-## 效果截图
+## 效果预览
 
-| 主 Demo / 多格式预览                                                                             | 文档预览 / Office 与 PDF 阅读面                                                       | Vanilla JS / script 标签接入                                                                    |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <img src="docs/_images/demo-main.png" width="360" alt="Flyfish Viewer 主 Demo 多格式预览效果" /> | <img src="docs/_images/demo-doc.png" width="360" alt="Flyfish Viewer 文档预览效果" /> | <img src="docs/_images/demo-iframe.png" width="360" alt="Flyfish Viewer 纯 Web 接入预览效果" /> |
+上方动图展示了主 Demo、Office/PDF 阅读面、PPTX 和文档比对的真实浏览器效果。更多样例可以直接打开 [demo.file-viewer.app](https://demo.file-viewer.app)，文档站也会以 GIF 展示关键链路，避免静态截图无法体现交互质量。
+
+## 最小化引入与组合引入
+
+2.1.0 之后推荐把“组件包”和“格式能力”分开理解：组件负责当前技术栈的原生体验，renderer / preset 负责具体文件格式能力。这个模块化边界让你既能一行接入，也能控制首屏体积、安装依赖、Worker/WASM 资产和后续扩展节奏。
+
+### 方案一：最小化引入
+
+只安装当前业务确实需要的 renderer。例如只预览 PDF：
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      formats: ['pdf'],
+      copyAssets: true
+    })
+  ]
+}
+```
+
+```ts
+import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
+
+export const viewerOptions = {
+  builtinRenderers: 'none',
+  rendererMode: 'replace',
+  renderers: configuredFileViewerRenderers
+}
+```
+
+Vue3 示例中的 `@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，`viewerOptions` 保持同一套语义。
+
+### 方案二：按产品组合引入
+
+如果你正在做办公附件中心，优先使用 `preset-office`；工程附件平台使用 `preset-engineering`；常见轻附件使用 `preset-lite`；完整 Demo 或后台全格式入口使用 `preset-all`。
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+}
+```
+
+### 方案三：无构建工具或 script 标签
+
+纯 JS 页面优先安装 `@file-viewer/web`，用 `<flyfish-file-viewer>` 原生组件或 `mountViewer(...)` 命令式挂载；需要内网部署时执行资源复制命令，把 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等静态资产放进自己的站点目录。
+
+```bash
+npm i @file-viewer/web @file-viewer/core @file-viewer/preset-all
+npm exec file-viewer-copy-assets ./public/file-viewer
+```
+
+更详细的 Vanilla JS、Vue、React、Svelte、jQuery、Core API 和离线资源步骤见 [官方文档](https://doc.file-viewer.app/guide/ecosystem)。
 
 ## 当前 npm 生态
 
-当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 38 个 npm 发布目标: 33 个标准组件/核心/renderer/preset/工程插件包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
+当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 42 个 npm 发布目标: 37 个标准组件/核心/renderer/preset/工程插件包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
 
 | 场景                                | 推荐 npm 包                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | 历史兼容包                                                                                                                                               | 版本策略 | 说明                                                                                                                                                                    |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -443,7 +538,7 @@ docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 - PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
-- OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
+- OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 和默认字体可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.typst.fontAssetsUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
 - 按需装配可通过 `options.builtinRenderers` 控制 core 内置集合: `lite` 只启用图片等低成本原生链路，`none` 适合完全由 `renderers` / preset 显式装配；轻量附件可用 `@file-viewer/preset-lite`，办公文档可用 `@file-viewer/preset-office`，工程附件可用 `@file-viewer/preset-engineering`，完整 Demo 能力使用 `@file-viewer/preset-all`；UMD / EPUB 电子书均由 `@file-viewer/renderer-epub` 按需提供
 - `options.archive` 一般只需要配置 `cache`、`workerTimeoutMs` 和体积上限；预览器会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`。手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时时，会继续降级到 ZIP/TAR/GZIP 兼容模式，避免压缩包一直停在 loading。只有静态目录、CDN 路径或 WASM 位置特殊时，才需要显式传 `archive.workerUrl` / `archive.wasmUrl`
 - 表格列宽拖拽通过 `options.spreadsheet.resizableColumns: true` 显式开启，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便查看被截断的长文本

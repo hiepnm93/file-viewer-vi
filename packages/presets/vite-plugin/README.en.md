@@ -1,6 +1,6 @@
 # @file-viewer/vite-plugin
 
-Vite plugin for Flyfish File Viewer on-demand renderer assembly. It generates `virtual:file-viewer-renderers` from the formats your application declares, imports only the matching renderer packages, and provides renderer-oriented chunk planning plus offline worker/WASM asset copying. The extension mapping is verified against the full `@file-viewer/core` format matrix in repository gates, so new formats cannot silently drift away from automatic assembly.
+Vite plugin for Flyfish File Viewer on-demand renderer assembly. It generates `virtual:file-viewer-renderers` from the formats your application declares, imports only the matching renderer packages, and provides renderer-oriented chunk planning plus offline worker/WASM/font asset copying. The extension mapping is verified against the full `@file-viewer/core` format matrix in repository gates, so new formats cannot silently drift away from automatic assembly.
 
 ## Install
 
@@ -76,7 +76,7 @@ const options = {
 
 ## Current Boundary
 
-The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw/Mermaid/PlantUML, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown/Patch/Git Bundle, image, media, XMind, and Geo. Declare them explicitly with `formats`, or let `scan: true` discover source hints automatically; core-supported extensions such as `.zipx`, `.cbz`, `.tiff`, `.mjs`, `.gv`, `.patch`, `.bundle`, `.mermaid`, `.puml`, and `.mpeg` also resolve to their renderer packages. `preset: 'lite' | 'office' | 'engineering' | 'all'` imports the matching `@file-viewer/preset-*` package; when `formats` are also present, the plugin adds extra renderers outside the preset.
+The plugin currently generates imports for extracted renderer packages: Word, Spreadsheet, PDF, OFD, Presentation, CAD, Draw.io/Excalidraw/Mermaid/PlantUML, 3D, Data, EDA, Typst, archives, email, EPUB, code/Markdown/Patch/Git Bundle, image, media, XMind, and Geo. Declare them explicitly with `formats`, or let `scan: true` discover source hints automatically; core-supported extensions such as `.zipx`, `.cbz`, `.tiff`, `.mjs`, `.gv`, `.patch`, `.bundle`, `.mermaid`, `.puml`, and `.mpeg` also resolve to their renderer packages. With `copyAssets:true`, the plugin also copies the Typst compiler / renderer WASM files and the `wasm/typst/fonts/` default-font directory. `preset: 'lite' | 'office' | 'engineering' | 'all'` imports the matching `@file-viewer/preset-*` package; when `formats` are also present, the plugin adds extra renderers outside the preset.
 
 ## Documentation
 

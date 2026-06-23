@@ -68,6 +68,70 @@
 
 因此“分包”不是让用户手动拼很多碎片，而是把默认能力变轻，把完整能力保留为 preset，把工程化项目交给插件自动装配。
 
+## 2.1.0 推荐接入步骤
+
+### 最小化引入：只要一个格式就只装一个 renderer
+
+以 PDF-only 场景为例：
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      formats: ['pdf'],
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+})
+```
+
+```ts
+import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
+
+const options = {
+  builtinRenderers: 'none',
+  rendererMode: 'replace',
+  renderers: configuredFileViewerRenderers
+}
+```
+
+把 `@file-viewer/vue3` 换成 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 后，仍然使用同一份 `options`。
+
+### 组合引入：按产品形态选 preset
+
+办公文档平台推荐：
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+})
+```
+
+常见轻附件使用 `preset-lite`，CAD / 3D / Typst / EDA / 数据资产等工程附件使用 `preset-engineering`，完整样例矩阵或全格式后台使用 `preset-all`。`copyAssets:true` 会把 Worker、WASM、PDF 字体、CAD、Typst WASM/字体、Archive、Data 等离线资源复制到部署目录，避免企业内网环境依赖公共 CDN。
+
 ## 用户接入方式
 
 ### 方式一：轻量默认
@@ -366,7 +430,7 @@ pnpm audit:renderer-deps -- --json
 | OLB/DRA | `@file-viewer/renderer-eda` 当前基于 CFB 和二进制线索做安全结构树、实体候选、属性、字符串和诊断展示。 | OrCAD/Allegro 属于专业私有工程格式，完整几何/电气语义会像 PPTX 一样拆独立引擎长期维护，必要时引入自研 WASM。 |
 | GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 文本夹具可输出 SVG，真实二进制 OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
-| Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译和 SVG 渲染。 | 保持离线 WASM 配置入口，后续评估更轻量只读渲染内核。 |
+| Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译、SVG 渲染和本地字体资产。 | 保持离线 WASM / 字体配置入口，后续评估更轻量只读渲染内核。 |
 | Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可接入自托管 SVG 服务。 | 保持 vendor 离线随包分发；PlantUML 需要完整图形渲染时推荐企业内网自托管服务端点，避免依赖公共公网服务。 |
 | OpenDocument | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析和 Office renderer 兼容链路。 | 复杂版式继续评估 WebODF / LibreOffice WASM，不进入 core 默认依赖。 |
 

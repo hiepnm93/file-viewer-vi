@@ -57,18 +57,10 @@ function runPublish(command, commandArgs, cwd = sourceRoot) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
   const result = spawnSync(command, commandArgs, {
     cwd,
-    encoding: 'utf8',
-    stdio: 'pipe'
+    stdio: 'inherit'
   })
-  const output = [result.stdout, result.stderr].filter(Boolean).join('\n').trim()
-  if (output) {
-    console.log(output)
-  }
   if (result.status === 0) {
     return 'published'
-  }
-  if (/previously published versions|cannot publish over/i.test(output)) {
-    return 'already-published'
   }
   throw new Error(`Command failed: ${command} ${commandArgs.join(' ')}`)
 }

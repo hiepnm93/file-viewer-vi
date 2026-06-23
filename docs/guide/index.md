@@ -33,6 +33,10 @@
     <p>内置 206 个扩展名映射和 24 条预览链路，覆盖 Office、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码/文本、Git patch/bundle、图片、音视频、字体、PSD 图层资产和结构化数据。</p>
   </div>
   <div class="doc-card">
+    <h3>模块化架构更专业</h3>
+    <p>core、renderer、preset 和生态组件分层清晰，既能最小化只装单个 renderer，也能用 preset 按产品形态组合完整能力。</p>
+  </div>
+  <div class="doc-card">
     <h3>按需加载更轻</h3>
     <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、PDF、Office、Markdown、HLS、HEIC、字体/数据资产和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
   </div>
@@ -56,6 +60,10 @@
   <div class="doc-card">
     <h3>选择接入方式</h3>
     <p>Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 都有独立标准包；各包只依赖 core 和自身生态依赖，适合私有化部署和多系统复用。</p>
+  </div>
+  <div class="doc-card">
+    <h3>选择模块化装配方式</h3>
+    <p>最小化接入只安装命中格式的 renderer；组合接入优先使用 preset-lite、preset-office、preset-engineering 或 preset-all。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
@@ -89,6 +97,7 @@
 | 想确认所有格式 | [支持格式](/guide/formats) |
 | 想确认复杂格式能否完整预览 | [格式完整度](/guide/format-fidelity) |
 | 想降低安装依赖和首屏体积 | [按需渲染架构](/guide/on-demand-renderers) |
+| 想了解最小化引入和组合引入 | [按需渲染架构: 2.1.0 推荐接入步骤](/guide/on-demand-renderers#_2-1-0-推荐接入步骤) |
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
 | 想并排比对两份文件 | [Demo 说明: 文档比对页](/guide/demo#文档比对页) |
 | 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |

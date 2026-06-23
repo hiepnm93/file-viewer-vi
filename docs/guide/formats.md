@@ -38,7 +38,7 @@
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/renderer-presentation` + `@file-viewer/pptx` / OpenDocument 兼容预览 | OOXML 演示文稿走独立 renderer 插件，内部复用 `@file-viewer/pptx` Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，vendor 随包离线分发，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
-| Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
+| Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler / renderer WASM 与默认字体仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `@file-viewer/renderer-archive` + `libarchive.js` WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存、体积上限和 ZIP/TAR/GZIP 兼容降级 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg`、`mbox` | `@file-viewer/renderer-email` + `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；MBOX 会解析首封邮件并标注识别数量；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
 | EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `@file-viewer/renderer-eda` + `cfb` 容器解析 + GDSII/OASIS 版图解析 + WebGL 批次 | 独立 EDA renderer 优先解析 OrCAD / Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference 并生成 SVG 版图预览，元素较多时自动切到 WebGL canvas；OAS/OASIS 可读文本版图夹具会生成 SVG 预览，真实 SEMI 二进制 OASIS 当前做安全结构索引、可读字符串、实体候选和诊断；完整 OLB/DRA/OASIS 可视化路线见 [格式完整度](/guide/format-fidelity) | 元件库、封装图纸、芯片版图文件初筛 |
@@ -73,8 +73,8 @@
 - 如果你的业务能控制导出格式，优先推荐 `docx`；如果你面对的是存量老文档，当前 `.doc` 已经可以作为正式能力对外说明。
 
 <div class="doc-shot">
-  <img src="/_images/demo-doc.png" alt="DOC 文档按 Word 风格展示" />
-  <p class="doc-caption">`.doc` 文件现在会显示在灰色工作台中的白色纸张上，页面居中，阅读路径更接近真实 Word 阅读体验。</p>
+  <img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer Word、PDF、PPTX 和文档比对动图" />
+  <p class="doc-caption">动图展示 Word、PDF、PPTX 和文档比对效果；Word 类文件会显示在灰色工作台中的白色纸张上，页面居中，阅读路径更接近真实文档软件。</p>
 </div>
 
 ### Office 模板格式
@@ -104,9 +104,9 @@
 - PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，也不会被导航窗格、预览容器或全局样式截断，适合正式归档和审批留痕。
 - `ofd` 走 `@file-viewer/renderer-ofd` 独立 renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
 - `typ` / `typst` 始终按源文件直接预览，不会自动探测或替换为同名 PDF。组件会在命中 Typst 时按需加载 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译与 SVG 渲染链路。
-- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址；运行时不会访问官方 npm CDN，也不会切换为源码预览。WASM 缺失或 `options.typst.renderTimeoutMs` 超时时会给出明确错误，避免误判为预览成功。
+- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，默认字体资产分发到 `wasm/typst/fonts/`，也可以通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl` 和 `options.typst.fontAssetsUrl` 指向私有化部署地址；运行时不会访问官方 npm CDN，也不会切换为源码预览。WASM、字体目录缺失或 `options.typst.renderTimeoutMs` 超时时会给出明确错误，避免误判为预览成功。
 - Typst 适合技术报告、论文草稿、工程文档模板和需要保留排版语言源文件的场景。如果文档引用本地图片或拆分文件，建议在业务侧先把资源打包进压缩包，保留完整项目结构。
-- 如果你更在意“上传 Typst 源文件后直接看到排版结果”，请确保随包发布 `wasm/typst/` 静态资源；如果文档依赖外部资源，建议用压缩包保留项目结构后再选择内部 `.typ` 文件。
+- 如果你更在意“上传 Typst 源文件后直接看到排版结果”，请确保随包发布 `wasm/typst/` 和 `wasm/typst/fonts/` 静态资源；如果文档依赖外部资源，建议用压缩包保留项目结构后再选择内部 `.typ` 文件。
 
 ### 压缩包、邮件与 EDA
 

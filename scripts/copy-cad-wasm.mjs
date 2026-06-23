@@ -64,6 +64,7 @@ const typstRendererWasm = join(
   'pkg',
   'typst_ts_renderer_bg.wasm'
 )
+const typstFontAssetsDir = join(resolvePackageRoot('@file-viewer/renderer-typst'), 'assets', 'fonts')
 const dataSqlWasm = join(resolvePackageRoot('sql.js'), 'dist', 'sql-wasm.wasm')
 const pdfjsRoot = resolvePackageRoot('pdfjs-dist')
 const pdfWorker = join(pdfjsRoot, 'legacy', 'build', 'pdf.worker.mjs')
@@ -139,6 +140,7 @@ for (const targetRoot of typstTargetRoots) {
   await mkdir(targetRoot, { recursive: true })
   await copyChecked(typstCompilerWasm, join(targetRoot, 'typst_ts_web_compiler_bg.wasm'))
   await copyChecked(typstRendererWasm, join(targetRoot, 'typst_ts_renderer_bg.wasm'))
+  await copyDirectoryChecked(typstFontAssetsDir, join(targetRoot, 'fonts'))
 }
 
 for (const targetRoot of dataTargetRoots) {

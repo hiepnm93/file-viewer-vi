@@ -24,8 +24,8 @@
 - 在修改渲染逻辑后做肉眼回归检查
 
 <div class="doc-shot">
-  <img src="/_images/demo-main.png" alt="主示例页截图" />
-  <p class="doc-caption">主示例页提供分组样例文件盒子、URL 预览和上传预览，是最直接的联调入口。</p>
+  <img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer 主示例页、文档预览和文档比对动图" />
+  <p class="doc-caption">动图展示主示例页、分组样例文件盒子、Office/PDF 阅读面、PPTX 与文档比对，是最直观的联调入口。</p>
 </div>
 
 ## 文档比对页
@@ -92,8 +92,8 @@ pnpm verify:demo-output
 Word 示例被单独拿出来说明，因为它已经不只是“能打开”，而是具备更明确的页面感。`.doc` 和 `.docx` 都会尽量保留灰色页面底、白色纸张、页面居中和宽度自适应的阅读体验。
 
 <div class="doc-shot">
-  <img src="/_images/demo-doc.png" alt="DOC 文件渲染截图" />
-  <p class="doc-caption">Word 文件会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近真实文档。</p>
+  <img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer Word、PDF、PPTX 与文档比对动图" />
+  <p class="doc-caption">动图中包含 Word / PDF 阅读面和文档比对效果；Word 文件会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近真实文档。</p>
 </div>
 
 ## Vanilla JS / React 组件 Demo
@@ -117,7 +117,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 仓库中当前提供的示例文件位于 `apps/viewer-demo/public/example/`:
 
-代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx` 使用 Basel Convention 公开中文正式文档，`ppt.pptx` 使用 R4Psy 公开中文课程课件，`markdown.md` 使用更丰富的长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，`report.typ` 使用项目内编写的多页 Typst 源文件报告，用于验证浏览器端直接编译、按页预览、打印和 HTML 导出链路。DWG 使用 Autodesk 官方 AutoCAD sample files，ODT/ODS/ODP 使用 The Document Foundation 公开 OpenDocument 文件；CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `apps/viewer-demo/public/example/SOURCES.md`。
+代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx` 使用 Basel Convention 公开中文正式文档，`ppt.pptx` 使用 R4Psy 公开中文课程课件，`markdown.md` 使用更丰富的长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，`report.typ` 使用项目内编写的多页 Typst 源文件报告，用于验证浏览器端直接编译、按页 SVG 预览、打印和 HTML 导出链路。DWG 使用 Autodesk 官方 AutoCAD sample files，ODT/ODS/ODP 使用 The Document Foundation 公开 OpenDocument 文件；CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `apps/viewer-demo/public/example/SOURCES.md`。
 
 | 文件 | 用途 | 对应能力 |
 | --- | --- | --- |

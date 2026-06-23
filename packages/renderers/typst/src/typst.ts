@@ -1,6 +1,8 @@
-import { $typst } from '@myriaddreamin/typst.ts';
+import { $typst, MemoryAccessModel } from '@myriaddreamin/typst.ts';
+import { TypstSnippet } from '@myriaddreamin/typst.ts/contrib/snippet';
 import {
   resolveFileViewerTypstCompilerWasmUrl,
+  resolveFileViewerTypstFontAssetsUrl,
   resolveFileViewerTypstRendererWasmUrl,
 } from '@file-viewer/core/assets';
 import {
@@ -19,6 +21,7 @@ import {
 declare global {
   interface Window {
     __FLYFISH_TYPST_COMPILER_WASM_URL__?: string;
+    __FLYFISH_TYPST_FONT_ASSETS_URL__?: string;
     __FLYFISH_TYPST_RENDERER_WASM_URL__?: string;
   }
 }
@@ -27,6 +30,7 @@ type TypstRenderState = 'loading' | 'ready' | 'error';
 
 interface TypstEngineAssetCandidate {
   compilerWasmUrl: string;
+  fontAssetsUrl: string;
   rendererWasmUrl: string;
   source: 'configured' | 'local';
   preflight: boolean;
@@ -67,11 +71,11 @@ const typstStyle = `
 `;
 
 let typstEngineConfigKey = '';
-const DEFAULT_TYPST_RENDER_TIMEOUT_MS = 60000;
+const DEFAULT_TYPST_RENDER_TIMEOUT_MS = 180000;
 
 class TypstRenderTimeoutError extends Error {
   constructor(timeoutMs: number) {
-    super(`Typst 编译超过 ${Math.round(timeoutMs / 1000)} 秒`);
+    super(`Typst WASM / 字体加载或编译超过 ${Math.round(timeoutMs / 1000)} 秒`);
     this.name = 'TypstRenderTimeoutError';
   }
 }
@@ -98,20 +102,42 @@ const createElement = <K extends keyof HTMLElementTagNameMap>(
   return element;
 };
 
-const getWindowOverride = (key: '__FLYFISH_TYPST_COMPILER_WASM_URL__' | '__FLYFISH_TYPST_RENDERER_WASM_URL__') => {
+const getWindowOverride = (
+  key:
+    | '__FLYFISH_TYPST_COMPILER_WASM_URL__'
+    | '__FLYFISH_TYPST_FONT_ASSETS_URL__'
+    | '__FLYFISH_TYPST_RENDERER_WASM_URL__'
+) => {
   if (typeof window === 'undefined') {
     return undefined;
   }
   return window[key];
 };
 
-const configureTypstEngine = (compilerWasmUrl: string, rendererWasmUrl: string) => {
-  const configKey = `${compilerWasmUrl}\n${rendererWasmUrl}`;
+const configureTypstEngine = (
+  compilerWasmUrl: string,
+  rendererWasmUrl: string,
+  fontAssetsUrl: string
+) => {
+  const normalizedFontAssetsUrl = fontAssetsUrl.endsWith('/') ? fontAssetsUrl : `${fontAssetsUrl}/`;
+  const configKey = `${compilerWasmUrl}\n${rendererWasmUrl}\n${normalizedFontAssetsUrl}`;
 
   if (typstEngineConfigKey === configKey) {
     return;
   }
 
+  // typst.ts otherwise installs public registry/font fetchers. File Viewer keeps
+  // Typst deterministic for enterprise/offline deployments by pinning both.
+  $typst.use(
+    TypstSnippet.withAccessModel(new MemoryAccessModel()),
+    TypstSnippet.preloadFontAssets({
+      assets: ['text'],
+      assetUrlPrefix: {
+        text: normalizedFontAssetsUrl,
+        _: normalizedFontAssetsUrl,
+      },
+    })
+  );
   $typst.setCompilerInitOptions({
     getModule: () => compilerWasmUrl,
   });
@@ -125,8 +151,11 @@ const pushUniqueTypstCandidate = (
   candidates: TypstEngineAssetCandidate[],
   candidate: TypstEngineAssetCandidate
 ) => {
-  if (candidates.some(item => item.compilerWasmUrl === candidate.compilerWasmUrl &&
-    item.rendererWasmUrl === candidate.rendererWasmUrl)) {
+  if (candidates.some(item =>
+    item.compilerWasmUrl === candidate.compilerWasmUrl &&
+    item.fontAssetsUrl === candidate.fontAssetsUrl &&
+    item.rendererWasmUrl === candidate.rendererWasmUrl
+  )) {
     return;
   }
   candidates.push(candidate);
@@ -138,23 +167,30 @@ const resolveTypstEngineCandidates = (
 ): TypstEngineAssetCandidate[] => {
   const typstOptions = context?.options?.typst;
   const compilerOverride = getWindowOverride('__FLYFISH_TYPST_COMPILER_WASM_URL__');
+  const fontAssetsOverride = getWindowOverride('__FLYFISH_TYPST_FONT_ASSETS_URL__');
   const rendererOverride = getWindowOverride('__FLYFISH_TYPST_RENDERER_WASM_URL__');
   const compilerWasmUrl = resolveFileViewerTypstCompilerWasmUrl(typstOptions, [
     compilerOverride,
+  ], documentBaseUrl);
+  const fontAssetsUrl = resolveFileViewerTypstFontAssetsUrl(typstOptions, [
+    fontAssetsOverride,
   ], documentBaseUrl);
   const rendererWasmUrl = resolveFileViewerTypstRendererWasmUrl(typstOptions, [
     rendererOverride,
   ], documentBaseUrl);
   const hasConfiguredAsset = Boolean(
     typstOptions?.compilerWasmUrl ||
+    typstOptions?.fontAssetsUrl ||
     typstOptions?.rendererWasmUrl ||
     compilerOverride ||
+    fontAssetsOverride ||
     rendererOverride
   );
   const candidates: TypstEngineAssetCandidate[] = [];
 
   pushUniqueTypstCandidate(candidates, {
     compilerWasmUrl,
+    fontAssetsUrl,
     rendererWasmUrl,
     source: hasConfiguredAsset ? 'configured' : 'local',
     preflight: !hasConfiguredAsset,
@@ -310,14 +346,14 @@ const formatTypstRuntimeError = (error: unknown) => {
   if (error instanceof TypstRenderTimeoutError) {
     return [
       message,
-      '请检查 Typst 源文件复杂度，或通过 options.typst.renderTimeoutMs 调大浏览器端编译超时。'
+      '请检查 Typst compiler WASM、renderer WASM、字体目录的下载速度和缓存策略；弱网或跨境部署可通过 options.typst.renderTimeoutMs 调大浏览器端加载/编译超时。'
     ].join('\n\n');
   }
 
   if (isTypstAssetLoadError(error)) {
     return [
       message,
-      'Typst 需要本地 compiler / renderer WASM。请运行 file-viewer-copy-assets，或配置 options.typst.compilerWasmUrl / options.typst.rendererWasmUrl，并确认服务器以 application/wasm 返回资源。'
+      'Typst 需要本地 compiler / renderer WASM 和字体目录。请运行 file-viewer-copy-assets，或配置 options.typst.compilerWasmUrl / options.typst.rendererWasmUrl / options.typst.fontAssetsUrl，并确认服务器以 application/wasm 返回 WASM。'
     ].join('\n\n');
   }
 
@@ -601,7 +637,7 @@ export default async function renderTypst(
       }
 
       try {
-        configureTypstEngine(candidate.compilerWasmUrl, candidate.rendererWasmUrl);
+        configureTypstEngine(candidate.compilerWasmUrl, candidate.rendererWasmUrl, candidate.fontAssetsUrl);
         return await withRenderTimeout($typst.svg({
           mainContent: source,
           data_selection: {

@@ -28,6 +28,7 @@ export const DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL =
   'wasm/typst/typst_ts_web_compiler_bg.wasm';
 export const DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL =
   'wasm/typst/typst_ts_renderer_bg.wasm';
+export const DEFAULT_FILE_VIEWER_TYPST_FONT_ASSETS_URL = 'wasm/typst/fonts/';
 // Compatibility aliases kept for older imports. They intentionally resolve to
 // local viewer assets; the preview runtime must not fall back to a public CDN.
 export const FALLBACK_FILE_VIEWER_TYPST_COMPILER_WASM_URL =
@@ -86,6 +87,7 @@ export type FileViewerRendererAssetOptionPath =
   | 'pdf.standardFontDataUrl'
   | 'spreadsheet.workerUrl'
   | 'typst.compilerWasmUrl'
+  | 'typst.fontAssetsUrl'
   | 'typst.rendererWasmUrl';
 
 export interface FileViewerRendererAssetDefinition {
@@ -311,6 +313,16 @@ export const DEFAULT_FILE_VIEWER_RENDERER_ASSET_MANIFESTS: readonly FileViewerRe
         optionPath: 'typst.rendererWasmUrl',
         description: 'Typst SVG renderer WebAssembly module copied to the public assets directory.',
       },
+      {
+        id: 'typst-font-assets',
+        rendererId: 'typst',
+        kind: 'directory',
+        target: 'public',
+        required: true,
+        defaultPath: DEFAULT_FILE_VIEWER_TYPST_FONT_ASSETS_URL,
+        optionPath: 'typst.fontAssetsUrl',
+        description: 'Self-hosted default Typst text fonts used by typst.ts without public CDN requests.',
+      },
     ],
   },
   {
@@ -472,6 +484,18 @@ export const resolveFileViewerTypstRendererWasmUrl = (
   );
 };
 
+export const resolveFileViewerTypstFontAssetsUrl = (
+  options?: Pick<FileViewerTypstOptions, 'fontAssetsUrl'> | null,
+  overrides: Array<string | undefined> = [],
+  documentBaseUrl?: string
+) => {
+  return resolveFileViewerAssetUrl(
+    options?.fontAssetsUrl || overrides.find(Boolean),
+    DEFAULT_FILE_VIEWER_TYPST_FONT_ASSETS_URL,
+    { documentBaseUrl, trimTrailingSlash: true }
+  );
+};
+
 export const resolveFileViewerDataSqlWasmUrl = (
   options?: Pick<FileViewerDataOptions, 'sqlWasmUrl'> | null,
   overrides: Array<string | undefined> = [],
@@ -527,6 +551,8 @@ const getRendererAssetOptionValue = (
       return options?.spreadsheet?.workerUrl;
     case 'typst.compilerWasmUrl':
       return options?.typst?.compilerWasmUrl;
+    case 'typst.fontAssetsUrl':
+      return options?.typst?.fontAssetsUrl;
     case 'typst.rendererWasmUrl':
       return options?.typst?.rendererWasmUrl;
     default:

@@ -103,7 +103,7 @@
 ## 后续验收 checklist
 
 - [x] XMind 使用 `@panzoom/panzoom` 支持 Pointer / 鼠标 / 触摸拖拽平移、从节点卡片起手拖拽、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、双击适配视图、容器 resize 自适应和用户交互后视角保留。
-- [x] 继续保持 Draw.io、Typst、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
+- [x] 继续保持 Draw.io、Typst WASM/字体、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
 - [x] 使用 `pnpm verify:format-support` 校验 206 个扩展名和 24 条 renderer pipeline 口径一致。
 - [x] 在 smoke matrix 中把 XMind `pan` 和真实鼠标拖拽列为显式断言，防止只校验打开成功而漏掉画布交互。
 - [ ] 为 XMind 增加真实复杂样本，覆盖多 sheet、标签、备注、图片、链接、折叠节点和大脑图拖拽回归。
@@ -112,7 +112,7 @@
 - [x] 拆出 `@file-viewer/eda-orcad`，专门维护 OLB / DRA / PSM / PAD 二进制检查、后续 C++ WASM/TS 移植和 OrCAD/Allegro 样本回归。
 - [x] 为 STEP / IGES / IFC / 3DM / BREP 建立独立 `@file-viewer/geometry-engine` 边界包，避免 OpenCascade / web-ifc / rhino3dm 进入默认 core install path；完整 WASM 渲染继续在该几何路线中分层演进。
 - [x] 在浏览器烟测里加入 XMind pan/zoom 的实际交互断言。
-- [x] 在浏览器烟测里继续补齐 Typst WASM、Draw.io offline viewer、CAD WASM / DWF native canvas、GDSII / OASIS fixture preview 的实际渲染或交互断言。
+- [x] 在浏览器烟测里继续补齐 Typst WASM/字体、Draw.io offline viewer、CAD WASM / DWF native canvas、GDSII / OASIS fixture preview 的实际渲染或交互断言。
 
 <div class="doc-note">
   复杂工程格式不要强行虚标“全量高保真”。能完整渲染的走成熟库和 WASM；目前只能安全解析的格式要明确边界，并把专业内核拆成可独立迭代的 renderer 包。

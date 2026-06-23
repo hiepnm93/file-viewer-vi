@@ -1054,6 +1054,9 @@ async function copyKnownRendererAssets(targetRoot: string, rendererIds: readonly
   const typstRendererRoot = resolvePackageRoot('@myriaddreamin/typst-ts-renderer', [
     '@file-viewer/renderer-typst'
   ])
+  const typstRendererPackageRoot = resolvePackageRoot('@file-viewer/renderer-typst', [
+    '@file-viewer/renderer-typst'
+  ])
   await push(
     'typst',
     'typst-compiler-wasm',
@@ -1072,6 +1075,16 @@ async function copyKnownRendererAssets(targetRoot: string, rendererIds: readonly
       copyFileIfPresent(
         typstRendererRoot ? join(typstRendererRoot, 'pkg/typst_ts_renderer_bg.wasm') : null,
         join(targetRoot, 'wasm/typst/typst_ts_renderer_bg.wasm')
+      )
+  )
+  await push(
+    'typst',
+    'typst-font-assets',
+    join(targetRoot, 'wasm/typst/fonts'),
+    () =>
+      copyDirectoryIfPresent(
+        typstRendererPackageRoot ? join(typstRendererPackageRoot, 'assets/fonts') : null,
+        join(targetRoot, 'wasm/typst/fonts')
       )
   )
 

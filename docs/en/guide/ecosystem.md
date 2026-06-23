@@ -76,6 +76,110 @@ export default defineConfig({
 
 With `scan: true`, the plugin inspects common source folders for hints such as `fileViewerFormats = ['pdf', 'docx']`, `data-file-viewer-formats="dwg,xmind"`, and upload `accept=".pdf,.xlsx"`. It then generates `virtual:file-viewer-renderers`, imports only the matching renderer packages, and keeps worker/WASM assets self-hostable.
 
+## 2.1.0 Modular Import Paths
+
+### Minimal import: install exactly the renderer you need
+
+For a PDF-only product:
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      formats: ['pdf'],
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+})
+```
+
+```ts
+import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
+
+const options = {
+  builtinRenderers: 'none',
+  rendererMode: 'replace',
+  renderers: configuredFileViewerRenderers
+}
+```
+
+Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The `options` contract remains the same.
+
+### Composed import: choose a product-shaped preset
+
+For an Office document platform:
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+})
+```
+
+Use `preset-lite` for lightweight attachments, `preset-engineering` for CAD / 3D / Typst / EDA / data assets, and `preset-all` for the full sample matrix or all-format admin workbenches. `copyAssets:true` copies Worker, WASM, PDF fonts, CAD, Typst WASM/fonts, Archive, and Data assets into your deployment directory so private intranet deployments do not depend on public CDNs.
+
+## jQuery
+
+Use `@file-viewer/jquery` when a traditional admin system or legacy page already standardizes on jQuery-style plugins:
+
+```bash
+npm install @file-viewer/jquery
+```
+
+The package exposes a native jQuery integration over the same core options, events, operation guards, search, zoom, print, export, and renderer presets. It does not embed Vue or React.
+
+## Svelte
+
+Use `@file-viewer/svelte` for Svelte applications:
+
+```bash
+npm install @file-viewer/svelte
+```
+
+The Svelte package keeps framework-native props and events while delegating renderer work to `@file-viewer/core` and the selected renderer packages.
+
+## Core API
+
+Use `@file-viewer/core` when building a custom host or a new ecosystem package:
+
+```bash
+npm install @file-viewer/core
+```
+
+Core is pure TypeScript and owns shared contracts, file source normalization, renderer registration, lifecycle events, operation availability, asset manifests, search/zoom/print/export protocols, and utility APIs. UI-specific behavior belongs in the component package for each framework.
+
+## PPTX Engine
+
+PowerPoint rendering is available through `@file-viewer/renderer-presentation`. The lower-level engine is published as `@file-viewer/pptx` for teams that want to build a custom presentation renderer:
+
+```bash
+npm install @file-viewer/pptx
+```
+
+Most application teams should use the presentation renderer or `preset-office` instead of calling the engine directly.
+
 ## Compatibility Names
 
 | Historical package | Prefer now |

@@ -33,8 +33,8 @@ titleTemplate: false
 <span>条预览链路</span>
 </div>
 <div>
-<strong>15</strong>
-<span>个 npm 发布入口</span>
+<strong>42</strong>
+<span>个 npm 发布目标</span>
 </div>
 <div>
 <strong>Native</strong>
@@ -54,8 +54,8 @@ titleTemplate: false
 
 <div class="doc-showcase">
 <figure>
-<img src="/_images/demo-main.png" alt="Flyfish Viewer 在线预览器主界面" />
-<figcaption>在线 Demo 和私有化 Demo 都包含示例文件选择器、上传入口和多格式预览区，可直接用于验收真实浏览体验。</figcaption>
+<img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer 在线预览器动图，展示 Word、PDF、PPTX 与文档比对" />
+<figcaption>动图展示了真实浏览器中的主 Demo、Office/PDF 阅读面、PPTX 和文档比对效果，比静态截图更适合快速判断交互质量。</figcaption>
 </figure>
 <div class="doc-showcase-list">
 <article>
@@ -65,16 +65,21 @@ titleTemplate: false
 </article>
 <article>
 <span>02</span>
+<h3>模块化边界清晰</h3>
+<p><code>@file-viewer/core</code> 只负责底层协议和统一 API；重型格式交给独立 renderer；preset 按产品形态组合；各框架组件只做原生体验封装，长期维护更稳。</p>
+</article>
+<article>
+<span>03</span>
 <h3>重型能力按需进入</h3>
 <p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HEIC、HLS、字体/数据资产和代码高亮都拆成异步块，命中格式时再加载。</p>
 </article>
 <article>
-<span>03</span>
+<span>04</span>
 <h3>示例覆盖完整验收路径</h3>
 <p>示例文件按文档、表格、图纸、脑图与绘图、地理数据、电子书、压缩包、邮件、EDA、代码、媒体和数据资产等类型分组，方便快速定位和回归。</p>
 </article>
 <article>
-<span>04</span>
+<span>05</span>
 <h3>独立比对不污染主入口</h3>
 <p><code>/compare.html</code> 提供左右并排预览、示例选择、URL、本地上传、交换、同步滚动、聚焦文档浮层搜索、行级定位和 PDF 工具栏隐藏，适合合同、报告、PPT 和导出物的视觉核对。</p>
 </article>
@@ -82,27 +87,28 @@ titleTemplate: false
 </div>
 </section>
 
-<section class="doc-section doc-demo-embed">
+<section class="doc-section doc-section-muted">
 <div class="doc-section-heading">
-<span>Live Workbench</span>
-<h2>无需离开文档，即可打开完整 Demo</h2>
+<span>Modular Integration</span>
+<h2>从最小化引入到组合引入，接入路径更清楚</h2>
 <p>
-下方嵌入的是 <code>demo.file-viewer.app</code> 的生产 Demo。它会在独立 iframe 中运行，保留完整示例矩阵、上传预览和文档比对入口；你也可以单独打开 Demo，用更大的视口做真实文件验收。
+2.1.0 的核心升级是模块化：组件包负责生态体验，renderer 负责单条格式链路，preset 负责产品形态组合，Vite 插件负责自动装配和离线资产复制。
 </p>
 </div>
-<div class="doc-demo-frame-shell">
-<div class="doc-demo-frame-bar">
-<span></span>
-<span></span>
-<span></span>
-<strong>demo.file-viewer.app</strong>
-<a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">单独打开</a>
-</div>
-<iframe
-  src="https://demo.file-viewer.app/?embed=docs-home"
-  title="Flyfish File Viewer 在线 Demo"
-  loading="lazy"
-></iframe>
+
+<div class="doc-value-grid">
+<article class="doc-card">
+<h3>最小化引入</h3>
+<p>只安装当前业务需要的 renderer，例如 PDF-only 只安装 <code>@file-viewer/renderer-pdf</code>，再通过 <code>formats:['pdf']</code> 生成精确导入。</p>
+</article>
+<article class="doc-card">
+<h3>组合引入</h3>
+<p>办公平台使用 <code>preset-office</code>，工程平台使用 <code>preset-engineering</code>，轻附件使用 <code>preset-lite</code>，完整工作台使用 <code>preset-all</code>。</p>
+</article>
+<article class="doc-card">
+<h3>离线资产可追踪</h3>
+<p><code>copyAssets:true</code> 会复制 PDF、CAD、Typst、Archive、Data 等 Worker/WASM/字体/vendor 资源，适合内网和私有化部署。</p>
+</article>
 </div>
 </section>
 
@@ -133,6 +139,10 @@ titleTemplate: false
 <article class="doc-card">
 <h3>开源总仓一站式入口</h3>
 <p>GitHub / Gitee 同步 core、标准组件包、Demo、文档源码、构建产物、样例文件和 release tarball。</p>
+</article>
+<article class="doc-card">
+<h3>模块化长期可维护</h3>
+<p>core、renderer、preset 和生态组件边界清楚，新增格式时优先落到独立 renderer，业务侧可以按体量和场景组合能力。</p>
 </article>
 <article class="doc-card">
 <h3>版本交付可追踪</h3>

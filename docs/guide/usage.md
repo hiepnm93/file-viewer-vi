@@ -230,14 +230,15 @@ const options = {
 
 图片水印可以传相对路径、业务内网 URL 或 data URL。开启图片水印时，文字水印不会重复绘制；纯离线部署建议使用随业务静态资源发布的图片或 data URL。
 
-Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，也不会用源码视图冒充预览成功。若本地 WASM 不可用或浏览器端编译超出预期时间，组件会显示明确的部署或超时错误，便于第一时间修正静态资源路径。
+Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器、SVG 渲染链路和默认字体资产；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，默认字体分发到 `wasm/typst/fonts/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，也不会用源码视图冒充预览成功。若本地 WASM 或字体目录不可用，或浏览器端编译超出预期时间，组件会显示明确的部署或超时错误，便于第一时间修正静态资源路径。
 
 ```ts
 const options = {
   typst: {
     compilerWasmUrl: '/file-viewer/wasm/typst/typst_ts_web_compiler_bg.wasm',
     rendererWasmUrl: '/file-viewer/wasm/typst/typst_ts_renderer_bg.wasm',
-    renderTimeoutMs: 60000
+    fontAssetsUrl: '/file-viewer/wasm/typst/fonts/',
+    renderTimeoutMs: 180000
   }
 }
 ```
@@ -441,7 +442,7 @@ async function useLocal(blob: Blob) {
 
 `.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。CAD 文件会使用 `@flyfish-dev/cad-viewer`：`dwg` 通过 Worker + LibreDWG WASM 解析，`dxf` 使用 JavaScript parser，`dwf` / `dwfx` / `xps` 通过 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形。私有化部署时请确认 viewer assets 目录下的 `wasm/cad/libredwg-web.js`、`wasm/cad/libredwg-web.wasm`、`wasm/cad/dwfv-render.wasm` 和 `wasm/cad/dwg-worker.js` 可访问；路径不同可通过 `options.cad.wasmPath` / `options.cad.workerUrl` / `options.cad.dwfWasmUrl` 覆盖。
 
-`.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
+`.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译、SVG 渲染和本地字体链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
 `.xmind` 会使用 `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` 解析 XMind 8 XML 和 XMind 2020+ JSON 文件包，并展示多 sheet、节点、标签、备注、链接、标记、目录侧栏。画布交互由轻量 `@panzoom/panzoom` 承接，支持拖拽平移、移动端双指缩放、适配画布、搜索和缩放。它是只读预览能力，不会修改脑图文件；需要编辑、协作批注或复杂布局重排时仍建议回到专业脑图软件。
 

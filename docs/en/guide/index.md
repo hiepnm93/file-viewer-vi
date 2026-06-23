@@ -13,6 +13,7 @@
 | --- | --- |
 | Run the viewer in a project | [Quickstart](/en/guide/quickstart) |
 | Pick the right npm package | [Ecosystem packages](/en/guide/ecosystem) |
+| Choose minimal imports or composed presets | [2.1.0 modular import paths](/en/guide/ecosystem#_2-1-0-modular-import-paths) |
 | Check format coverage | [Supported formats](/en/guide/formats) |
 | Understand npm, GitHub, releases, and self-hosted assets | [Distribution](/en/guide/distribution) |
 
@@ -29,3 +30,5 @@
 Flyfish Viewer is not trying to replace specialist editors. It gives business products a practical, embedded preview layer for common and uncommon attachments: documents, spreadsheets, slides, PDFs, archives, email, diagrams, CAD drawings, 3D assets, code, logs, media, and data files.
 
 The project keeps a pure TypeScript core under `@file-viewer/core`, split renderer packages for heavier formats, and native component packages for Web Components, Vue, React, jQuery, and Svelte.
+
+The 2.1.0 architecture is modular by default: use minimal renderer imports when you need one exact format, or choose `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` when your product needs a composed capability set.

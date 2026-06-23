@@ -31,7 +31,7 @@ const options = {
 - Supports `.typ` and `.typst`.
 - Compiles Typst source in the browser and renders SVG pages.
 - Preserves page size metadata for preview, zoom, print, and HTML export.
-- Supports `options.typst.renderTimeoutMs` for long-running documents.
+- Supports `options.typst.renderTimeoutMs` for slow asset loading and long-running documents.
 - Reports clear diagnostics for missing WASM assets, wrong MIME types, network failures, and Typst compile errors.
 
 ## Offline Assets
@@ -40,8 +40,9 @@ The default asset paths are:
 
 - `wasm/typst/typst_ts_web_compiler_bg.wasm`
 - `wasm/typst/typst_ts_renderer_bg.wasm`
+- `wasm/typst/fonts/`
 
-For private deployments, override them with `options.typst.compilerWasmUrl` and `options.typst.rendererWasmUrl`. The runtime does not depend on public CDNs.
+For private deployments, override them with `options.typst.compilerWasmUrl`, `options.typst.rendererWasmUrl`, and `options.typst.fontAssetsUrl`. The default text fonts ship with this package and are copied by `file-viewer-copy-assets` / `@file-viewer/vite-plugin`, so the runtime does not depend on public CDNs.
 
 ## Migration Note
 
