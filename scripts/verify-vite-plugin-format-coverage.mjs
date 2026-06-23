@@ -42,7 +42,7 @@ const expectedPackageByRendererId = new Map([
   ['geo', '@file-viewer/renderer-geo'],
   ['archive', '@file-viewer/renderer-archive'],
   ['email', '@file-viewer/renderer-email'],
-  ['epub', '@file-viewer/renderer-ebook'],
+  ['epub', '@file-viewer/renderer-epub'],
   ['code', '@file-viewer/renderer-text'],
   ['markdown', '@file-viewer/renderer-text'],
   ['image', '@file-viewer/renderer-image'],

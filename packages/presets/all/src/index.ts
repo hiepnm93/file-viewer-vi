@@ -10,7 +10,7 @@ import { archiveRenderer } from '@file-viewer/renderer-archive';
 import { cadRenderer } from '@file-viewer/renderer-cad';
 import { dataRenderer } from '@file-viewer/renderer-data';
 import { drawingRenderer } from '@file-viewer/renderer-drawing';
-import { ebookRenderer } from '@file-viewer/renderer-ebook';
+import { ebookRenderer } from '@file-viewer/renderer-epub';
 import { edaRenderer } from '@file-viewer/renderer-eda';
 import { emailRenderer } from '@file-viewer/renderer-email';
 import { geoRenderer } from '@file-viewer/renderer-geo';

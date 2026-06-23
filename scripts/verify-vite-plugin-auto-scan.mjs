@@ -77,7 +77,7 @@ try {
     '@file-viewer/renderer-typst',
     '@file-viewer/renderer-mindmap',
     '@file-viewer/renderer-email',
-    '@file-viewer/renderer-ebook',
+    '@file-viewer/renderer-epub',
     '@file-viewer/renderer-geo',
     '@file-viewer/renderer-eda',
     '@file-viewer/renderer-data'

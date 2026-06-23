@@ -229,7 +229,7 @@ fileViewerRenderers({
 | ------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Phase 1 | core 插件协议、wrapper 传参、preset-all 兼容层、资产 manifest v2、迁移校验脚本 | `@file-viewer/core`、所有组件包                                                                                                                                                                                                                                                     |
 | Phase 2 | PDF、Word/DOCX/DOC/ODT/RTF、Excel、PPT、OFD、Typst、CAD、Archive               | `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word`、`@file-viewer/renderer-spreadsheet`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-archive`                      |
-| Phase 3 | XMind、Geo、Draw.io/Excalidraw/Mermaid/PlantUML、3D、Email、EPUB、Code/Markdown/Patch/Git Bundle、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
+| Phase 3 | XMind、Geo、Draw.io/Excalidraw/Mermaid/PlantUML、3D、Email、EPUB、Code/Markdown/Patch/Git Bundle、Media、Image   | `@file-viewer/renderer-mindmap`、`@file-viewer/renderer-geo`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-email`、`@file-viewer/renderer-epub`、`@file-viewer/renderer-text`、`@file-viewer/renderer-media`、`@file-viewer/renderer-image` |
 | Phase 4 | EDA、GDSII/OASIS、OrCAD/Allegro、复杂数据资产                                  | `@file-viewer/renderer-eda`、`@file-viewer/eda-layout`、`@file-viewer/eda-orcad`、`@file-viewer/renderer-data`                                                                                                                                                                      |
 | Phase 5 | Vite 插件、自动 sample smoke matrix、安装体积预算、release pipeline 分发       | `@file-viewer/vite-plugin`、release scripts                                                                                                                                                                                                                                         |
 
@@ -278,10 +278,10 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 Typst 兼容入口和 `@myriaddreamin/*` 直接依赖，Typst 真实 WASM 预览统一通过 `@file-viewer/renderer-typst` 或 preset 装配；compiler / renderer WASM 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
-- [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB / UMD renderer。
-- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；UMD 已迁移到 `@file-viewer/renderer-ebook`，不再让 core 保留 `pako`。
+- [x] 建立 `@file-viewer/renderer-epub` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB / UMD renderer。
+- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；UMD 已迁移到 `@file-viewer/renderer-epub`，不再让 core 保留 `pako`。
 - [x] `@file-viewer/core` 已移除 email 兼容入口和 `postal-mime` / `@kenjiuno/msgreader` 直接依赖，邮件完整能力统一通过 `@file-viewer/renderer-email` 或 preset 装配。
-- [x] `@file-viewer/core` 已移除 EPUB / UMD 兼容入口和 `epubjs` / `pako` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
+- [x] `@file-viewer/core` 已移除 EPUB / UMD 兼容入口和 `epubjs` / `pako` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-epub` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
 - [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 与真实鼠标拖拽回归确认 Panzoom 画布可平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
@@ -362,7 +362,7 @@ pnpm audit:renderer-deps -- --json
 | XMind | `.xmind` 按 ZIP 容器读取，现代文件优先解析 `content.json`，经典文件解析 `content.xml`；Panzoom 交互由 `@file-viewer/renderer-mindmap` 维护。 | 继续补多结构布局、更多 marker 图标和复杂图片资源还原，交互回归覆盖 Pointer、真实鼠标、触摸和移动端双指缩放。 |
 | Archive | `@file-viewer/renderer-archive` 使用 `libarchive.js` Worker + WASM，Worker 不可用时降级 ZIP/TAR/GZIP。 | 保持 Worker 超时、IndexedDB 缓存和体积上限，不把压缩包依赖带回 core。 |
 | Email | `@file-viewer/renderer-email` 使用 `postal-mime` 和 `@kenjiuno/msgreader`，邮件附件复用统一嵌套预览。 | 增强 MSG 边界样例和附件安全策略。 |
-| EPUB/UMD | EPUB 使用 `@file-viewer/renderer-ebook` + `epubjs`；UMD 同样由 `@file-viewer/renderer-ebook` 维护结构解析和 `pako` 解压。 | 电子书能力统一在 ebook renderer 中维护，core 保持零运行时依赖。 |
+| EPUB/UMD | EPUB 使用 `@file-viewer/renderer-epub` + `epubjs`；UMD 同样由 `@file-viewer/renderer-epub` 维护结构解析和 `pako` 解压。 | 电子书能力统一在 ebook renderer 中维护，core 保持零运行时依赖。 |
 | OLB/DRA | `@file-viewer/renderer-eda` 当前基于 CFB 和二进制线索做安全结构树、实体候选、属性、字符串和诊断展示。 | OrCAD/Allegro 属于专业私有工程格式，完整几何/电气语义会像 PPTX 一样拆独立引擎长期维护，必要时引入自研 WASM。 |
 | GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 文本夹具可输出 SVG，真实二进制 OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |

@@ -132,7 +132,7 @@ export const rendererModularizationLines = [
   {
     id: 'ebook',
     group: 'archiveEmailEbook',
-    targetPackage: '@file-viewer/renderer-ebook',
+    targetPackage: '@file-viewer/renderer-epub',
     phase: 3,
     status: 'extracted',
     renderers: ['epub', 'umd'],

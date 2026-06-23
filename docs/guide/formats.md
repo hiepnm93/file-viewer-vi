@@ -50,8 +50,8 @@
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | Mermaid | `mermaid`、`mmd` | `@file-viewer/renderer-drawing` + 官方 `mermaid` | 命中 Mermaid 时才按需加载官方渲染器，输出主题适配 SVG，并使用 `@panzoom/panzoom` 支持拖动、Ctrl/Command 滚轮缩放、统一缩放工具栏和重置 | 架构图、流程图、状态图、序列图 |
 | PlantUML | `plantuml`、`puml` | `@file-viewer/renderer-drawing` + 离线 SVG 源码预览 + 可自托管 PlantUML SVG 服务 | 默认不访问外网并显示源码预览；需要完整图形时可通过 `options.drawing.plantumlServerUrl` 指向内网 PlantUML SVG 服务；预览层支持拖动、缩放和主题容器适配 | UML 时序图、组件图、部署图 |
-| 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
-| 电子书 | `umd` | `@file-viewer/renderer-ebook` + UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
+| 电子书 | `epub` | `@file-viewer/renderer-epub` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `umd` | `@file-viewer/renderer-epub` + UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | `@file-viewer/renderer-text` | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | `@file-viewer/renderer-image` | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转成浏览器可展示图片，支持 lightbox 和统一缩放 | 图片附件、设计稿、截图、Logo、移动端照片 |
 | 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff`、`patch`、`bundle`、`bdl` | `@file-viewer/renderer-text` + `highlight.js` / `diff2html` / Git bundle parser | 普通源码按需高亮；patch 使用左右比对视图；git bundle 解析 bundle header、refs、commit 历史、文件树、可读 blob 和常规 OFS_DELTA / REF_DELTA；超大包或依赖外部 prerequisite 的包会给出边界提示 | 配置文件、日志、代码片段、代码评审、Git 交付包 |
@@ -155,7 +155,7 @@
 
 ### 电子书
 
-- EPUB 链路已拆为 `@file-viewer/renderer-ebook` 独立包；内部使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
+- EPUB 链路已拆为 `@file-viewer/renderer-epub` 独立包；内部使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
 - EPUB 预览提供目录窗格、上一章/下一章式导航和阅读进度。正文区域使用滚动文档模式，避免部分浏览器在超宽分页布局下出现白板。为了安全，阅读器不会允许书内脚本执行。
 - `umd` 是早期移动阅读器常见的电子书封装。当前没有可靠维护的前端 UMD 阅读库，组件按公开文件结构解析文件头、元数据、章节偏移、章节标题和正文数据块，正文 zlib 解压交给 `pako`。
 - UMD 文本正文按 UTF-16LE 解码，保留章节目录和换行；图片/漫画类 UMD 会尽量按图像数据块展示，但复杂混排文件建议用真实样本补充回归。

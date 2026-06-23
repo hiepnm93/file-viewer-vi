@@ -322,7 +322,7 @@ export const renderFileViewerEpub = async (
   void buffer;
   void target;
   throw new Error(
-    'EPUB rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-ebook, or use @file-viewer/preset-all.'
+    'EPUB rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-epub, or use @file-viewer/preset-all.'
   );
 };
 export const renderFileViewerGeo = async (
@@ -440,7 +440,7 @@ export const renderFileViewerUmd = async (
   void buffer;
   void target;
   throw new Error(
-    'UMD ebook rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-ebook, or use @file-viewer/preset-all.'
+    'UMD ebook rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-epub, or use @file-viewer/preset-all.'
   );
 };
 export const renderFileViewerVideo = async (

@@ -39,7 +39,7 @@ Heavy renderers are split so applications can install only what they need:
 - `@file-viewer/renderer-typst`
 - `@file-viewer/renderer-archive`
 - `@file-viewer/renderer-email`
-- `@file-viewer/renderer-ebook`
+- `@file-viewer/renderer-epub`
 - `@file-viewer/renderer-text`
 - `@file-viewer/renderer-image`
 - `@file-viewer/renderer-media`

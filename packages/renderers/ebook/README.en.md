@@ -1,4 +1,4 @@
-# @file-viewer/renderer-ebook
+# @file-viewer/renderer-epub
 
 Standalone ebook renderer package for Flyfish File Viewer. It handles `.epub` parsing, table-of-contents navigation, scrolling reading, previous/next navigation, reading progress, and `.umd` mobile ebook metadata, TOC, and zlib text blocks.
 
@@ -6,7 +6,7 @@ Standalone ebook renderer package for Flyfish File Viewer. It handles `.epub` pa
 
 ```ts
 import FileViewer from '@file-viewer/vue3'
-import { ebookRenderer } from '@file-viewer/renderer-ebook'
+import { ebookRenderer } from '@file-viewer/renderer-epub'
 
 const options = {
   builtinRenderers: 'none',
@@ -17,7 +17,7 @@ const options = {
 You can also compose it with other renderers:
 
 ```ts
-import { ebookRenderer } from '@file-viewer/renderer-ebook'
+import { ebookRenderer } from '@file-viewer/renderer-epub'
 import { pdfRenderer } from '@file-viewer/renderer-pdf'
 import { archiveRenderer } from '@file-viewer/renderer-archive'
 

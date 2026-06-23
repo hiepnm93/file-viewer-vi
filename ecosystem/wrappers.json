@@ -149,12 +149,12 @@
     },
     {
       "id": "ebook",
-      "packageName": "@file-viewer/renderer-ebook",
-      "description": "Standalone EPUB ebook renderer plugin for File Viewer with epubjs parsing, table-of-contents navigation, scrolling reading mode, and offline preview support.",
+      "packageName": "@file-viewer/renderer-epub",
+      "description": "Standalone EPUB and UMD reader renderer plugin for File Viewer with epubjs parsing, table-of-contents navigation, scrolling reading mode, and offline preview support.",
       "packageDir": "packages/renderers/ebook",
-      "repository": "file-viewer-renderer-ebook",
-      "github": "https://github.com/flyfish-dev/file-viewer-renderer-ebook",
-      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-ebook",
+      "repository": "file-viewer-renderer-epub",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-epub",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-epub",
       "entryFormats": ["esm", "types"],
       "publicSource": true
     },

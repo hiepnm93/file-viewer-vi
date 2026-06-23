@@ -1,13 +1,12 @@
 {
-  "name": "@file-viewer/renderer-ebook",
+  "name": "@file-viewer/renderer-epub",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "Standalone EPUB and UMD ebook renderer plugin for Flyfish File Viewer powered by epubjs and pako.",
+  "description": "Standalone EPUB and UMD reader renderer plugin for Flyfish File Viewer powered by epubjs and pako.",
   "keywords": [
     "file-viewer",
     "renderer",
-    "ebook",
     "epub",
     "umd",
     "document-preview",
@@ -25,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-ebook.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-epub.git",
     "directory": "packages/renderers/ebook"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-ebook/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer-renderer-epub/issues"
   },
   "funding": {
     "type": "individual",

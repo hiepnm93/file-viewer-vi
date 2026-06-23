@@ -26,6 +26,7 @@ const mode = args.includes('--publish')
 const dryRun = args.includes('--dry-run')
 const preflight = args.includes('--preflight')
 const clean = args.includes('--clean')
+const skipExisting = !args.includes('--no-skip-existing')
 const npmRegistry = readArg(
   '--registry',
   process.env.FILE_VIEWER_NPM_REGISTRY ||
@@ -50,6 +51,26 @@ function run(command, commandArgs, cwd = sourceRoot) {
   if (result.status !== 0) {
     throw new Error(`Command failed: ${command} ${commandArgs.join(' ')}`)
   }
+}
+
+function runPublish(command, commandArgs, cwd = sourceRoot) {
+  console.log(`$ ${[command, ...commandArgs].join(' ')}`)
+  const result = spawnSync(command, commandArgs, {
+    cwd,
+    encoding: 'utf8',
+    stdio: 'pipe'
+  })
+  const output = [result.stdout, result.stderr].filter(Boolean).join('\n').trim()
+  if (output) {
+    console.log(output)
+  }
+  if (result.status === 0) {
+    return 'published'
+  }
+  if (/previously published versions|cannot publish over/i.test(output)) {
+    return 'already-published'
+  }
+  throw new Error(`Command failed: ${command} ${commandArgs.join(' ')}`)
 }
 
 function capture(command, commandArgs, cwd = sourceRoot) {
@@ -80,6 +101,14 @@ function verifyNpmAuthentication() {
     )
   }
   console.log(`npm authenticated as ${result.stdout} on ${npmRegistry}`)
+}
+
+function isPackageVersionPublished(entry) {
+  const result = capture(
+    'npm',
+    ['view', `${entry.packageName}@${entry.version}`, 'version', '--registry', npmRegistry]
+  )
+  return result.ok && result.stdout.trim() === entry.version
 }
 
 async function assertDirectory(path, label = path) {
@@ -193,7 +222,14 @@ if (mode === 'publish') {
     console.log(`Publish preflight passed for ${entries.length} ecosystem packages.`)
     process.exit(0)
   }
+  let publishedCount = 0
+  let skippedCount = 0
   for (const entry of entries) {
+    if (!dryRun && skipExisting && isPackageVersionPublished(entry)) {
+      console.log(`Skipping ${entry.packageName}@${entry.version}: already published on ${npmRegistry}`)
+      skippedCount += 1
+      continue
+    }
     const publishArgs = [
       '-C',
       entry.packageDir,
@@ -208,7 +244,17 @@ if (mode === 'publish') {
     if (dryRun) {
       publishArgs.push('--dry-run')
     }
-    run('pnpm', publishArgs)
+    const publishResult = runPublish('pnpm', publishArgs)
+    if (publishResult === 'already-published') {
+      console.log(`Skipping ${entry.packageName}@${entry.version}: registry reports the version is already published.`)
+      skippedCount += 1
+    } else {
+      publishedCount += 1
+    }
   }
-  console.log(`${dryRun ? 'Dry-run published' : 'Published'} ${entries.length} ecosystem packages.`)
+  console.log(
+    dryRun
+      ? `Dry-run published ${publishedCount} ecosystem packages.`
+      : `Published ${publishedCount} ecosystem packages; skipped ${skippedCount} already published packages.`
+  )
 }

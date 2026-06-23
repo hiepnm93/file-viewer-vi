@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-当前版本会优先聚合已经拆出的 `@file-viewer/renderer-word`、`@file-viewer/renderer-spreadsheet`、`@file-viewer/renderer-pdf`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media`、`@file-viewer/renderer-mindmap` 和 `@file-viewer/renderer-geo`。core 仅保留轻量原生链路和共享协议，本 preset 保持作为全量聚合层。
+当前版本会优先聚合已经拆出的 `@file-viewer/renderer-word`、`@file-viewer/renderer-spreadsheet`、`@file-viewer/renderer-pdf`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-epub`、`@file-viewer/renderer-text`、`@file-viewer/renderer-image`、`@file-viewer/renderer-media`、`@file-viewer/renderer-mindmap` 和 `@file-viewer/renderer-geo`。core 仅保留轻量原生链路和共享协议，本 preset 保持作为全量聚合层。
 
 轻量附件优先使用 `@file-viewer/preset-lite`，办公文档优先使用 `@file-viewer/preset-office`，CAD / 3D / EDA 等工程附件优先使用 `@file-viewer/preset-engineering`。`preset-all` 更适合官方 Demo、内部全格式附件中心或迁移期兼容层。
 

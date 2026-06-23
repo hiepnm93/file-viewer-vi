@@ -423,15 +423,15 @@ importers:
       '@file-viewer/renderer-drawing':
         specifier: workspace:^2.0.11
         version: link:../../renderers/drawing
-      '@file-viewer/renderer-ebook':
-        specifier: workspace:^2.0.11
-        version: link:../../renderers/ebook
       '@file-viewer/renderer-eda':
         specifier: workspace:^2.0.11
         version: link:../../renderers/eda
       '@file-viewer/renderer-email':
         specifier: workspace:^2.0.11
         version: link:../../renderers/email
+      '@file-viewer/renderer-epub':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/ebook
       '@file-viewer/renderer-geo':
         specifier: workspace:^2.0.11
         version: link:../../renderers/geo

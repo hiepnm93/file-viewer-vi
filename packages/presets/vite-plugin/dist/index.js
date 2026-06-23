@@ -160,7 +160,7 @@ const rendererModules = [
     },
     {
         id: 'ebook',
-        packageName: '@file-viewer/renderer-ebook',
+        packageName: '@file-viewer/renderer-epub',
         exportName: 'ebookRenderer',
         formats: ['ebook', 'epub', 'umd'],
         rendererIds: ['epub', 'umd'],
