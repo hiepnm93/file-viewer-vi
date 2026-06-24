@@ -1,7 +1,9 @@
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
   type FileViewerZoomState
 } from '@file-viewer/core'
@@ -145,9 +147,11 @@ const clampZoom = (value: number) => {
 
 export default async function renderPsdAsset(
   buffer: ArrayBuffer,
-  target: HTMLDivElement
+  target: HTMLDivElement,
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document
+  const t = createFileViewerTranslator(context?.options)
   const { readPsd } = await import('ag-psd')
   const psd = readPsd(buffer, { useImageData: true })
   const compositeCanvas = toCanvas(documentRef, (psd as any).canvas || (psd as any).imageData)
@@ -162,16 +166,16 @@ export default async function renderPsdAsset(
   const toolbar = createElement(documentRef, 'div', 'psd-toolbar')
   const title = createElement(documentRef, 'div', 'psd-title')
   title.append(
-    createElement(documentRef, 'strong', undefined, 'PSD 图层预览'),
+    createElement(documentRef, 'strong', undefined, t('psd.title')),
     createElement(documentRef, 'span', undefined, `${psd.width || 0} x ${psd.height || 0} · ${layers.length} layers · ag-psd`)
   )
   const actions = createElement(documentRef, 'div', 'psd-actions')
   const zoomOut = createElement(documentRef, 'button', undefined, '-') as HTMLButtonElement
   const zoomLabel = createElement(documentRef, 'span', undefined, '100%')
   const zoomIn = createElement(documentRef, 'button', undefined, '+') as HTMLButtonElement
-  const reset = createElement(documentRef, 'button', undefined, '适合') as HTMLButtonElement
-  const showAll = createElement(documentRef, 'button', undefined, '全显') as HTMLButtonElement
-  const hideAll = createElement(documentRef, 'button', undefined, '全隐') as HTMLButtonElement
+  const reset = createElement(documentRef, 'button', undefined, t('psd.action.fit')) as HTMLButtonElement
+  const showAll = createElement(documentRef, 'button', undefined, t('psd.action.showAll')) as HTMLButtonElement
+  const hideAll = createElement(documentRef, 'button', undefined, t('psd.action.hideAll')) as HTMLButtonElement
   ;[zoomOut, zoomIn, reset, showAll, hideAll].forEach(button => {
     button.type = 'button'
   })
@@ -182,8 +186,8 @@ export default async function renderPsdAsset(
   const sidebar = createElement(documentRef, 'aside', 'psd-sidebar')
   const sidebarHeader = createElement(documentRef, 'div', 'psd-sidebar-header')
   sidebarHeader.append(
-    createElement(documentRef, 'span', undefined, '图层'),
-    createElement(documentRef, 'span', undefined, `${drawableLayers.length} 可重绘`)
+    createElement(documentRef, 'span', undefined, t('psd.layers.title')),
+    createElement(documentRef, 'span', undefined, t('psd.layers.redrawable', { count: drawableLayers.length }))
   )
   const list = createElement(documentRef, 'ul', 'psd-layer-list')
   sidebar.append(sidebarHeader, list)
@@ -220,7 +224,7 @@ export default async function renderPsdAsset(
   }
 
   if (!layers.length) {
-    list.appendChild(createElement(documentRef, 'li', 'psd-empty', '未发现可展示图层，使用合成图预览。'))
+    list.appendChild(createElement(documentRef, 'li', 'psd-empty', t('psd.layers.empty')))
   }
 
   layers.forEach(layer => {
@@ -241,7 +245,7 @@ export default async function renderPsdAsset(
     const copy = createElement(documentRef, 'div')
     copy.append(
       createElement(documentRef, 'strong', undefined, layer.name),
-      createElement(documentRef, 'span', undefined, `${layer.left},${layer.top} · ${layer.width} x ${layer.height}${layer.hidden ? ' · hidden' : ''}`)
+      createElement(documentRef, 'span', undefined, `${layer.left},${layer.top} · ${layer.width} x ${layer.height}${layer.hidden ? ` · ${t('psd.layers.hidden')}` : ''}`)
     )
     item.append(checkbox, copy)
     list.appendChild(item)

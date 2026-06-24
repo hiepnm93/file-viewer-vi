@@ -51,6 +51,8 @@ fileViewerRenderers({
 
 `inject` defaults to true. Preset packages register themselves in core when imported, and `FileViewerOptions.autoRenderers` defaults to true in normal `extend` mode. Set `autoRenderers:false` only when a product needs full manual control.
 
+The default experience is intentionally zero-config: if the plugin receives no explicit `preset`, `formats`, or `renderers`, or only receives `copyAssets:true`, it auto-discovers installed `@file-viewer/preset-*` packages. `preset-all` takes precedence when present; otherwise installed `lite`, `office`, and `engineering` presets are composed.
+
 Install `@file-viewer/preset-all` when a heavy user wants the fastest full-capability setup:
 
 ```bash
@@ -68,6 +70,15 @@ fileViewerRenderers({
   chunkStrategy: 'renderer'
 })
 ```
+
+| Customization | Purpose |
+| --- | --- |
+| `copyAssets:true` | Copies matched Worker, WASM, font, PDF/CAD/Typst/Archive/Data, and vendor assets |
+| `preset:'auto'` / `autoPresets:true` | Keeps installed preset auto-discovery active together with `scan:true` |
+| `formats` / `renderers` | Adds a few formats outside a preset, or builds a strict single-renderer bundle |
+| `scan:true` | Collects format hints from `fileViewerFormats`, `data-file-viewer-formats`, `accept`, and similar source hints |
+| `inject:false` | Disables auto injection so application code imports `virtual:file-viewer-renderers` and passes `options.renderers` manually |
+| `chunkStrategy:'renderer'` | Uses renderer-level chunk names for caching and heavy-pipeline size debugging |
 
 ## Manual Control
 

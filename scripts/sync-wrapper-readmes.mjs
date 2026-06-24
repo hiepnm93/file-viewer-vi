@@ -285,15 +285,18 @@ function toolbarOptionRows(locale) {
   ]
 }
 
-function onDemandRendererSection(locale) {
+function onDemandRendererSection(locale, componentPackageName = '@file-viewer/vue3') {
+  const officeInstallCommand = `npm i ${componentPackageName} @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office`
+  const allInstallCommand = `npm i ${componentPackageName} @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all`
+
   if (locale === 'zh') {
     return [
       '## 工程级按需 renderer 装配',
       '',
-      '一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐优先按产品形态安装 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`，再让 `@file-viewer/vite-plugin` 自动发现并注入已安装 preset。常规业务无需手写 `renderers`，组件会通过默认开启的 `autoRenderers` 获得对应能力。',
+      '一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐先安装当前生态组件包，再按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`。`@file-viewer/vite-plugin` 会免配置自动发现当前项目已安装的 preset、注入 renderer virtual module，并让组件通过默认开启的 `autoRenderers` 获得对应能力，常规业务无需手写 `renderers`。',
       '',
       '```bash',
-      'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office',
+      officeInstallCommand,
       '```',
       '',
       '```ts',
@@ -319,7 +322,7 @@ function onDemandRendererSection(locale) {
       '重度用户需要一次拥有官方 Demo 的完整能力时，直接安装全量 preset，仍然使用同一个 Vite 配置：',
       '',
       '```bash',
-      'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all',
+      allInstallCommand,
       '```',
       '',
       '需要自定义装配时，再显式配置插件：',
@@ -367,10 +370,10 @@ function onDemandRendererSection(locale) {
   return [
     '## Engineering-Grade On-Demand Renderer Assembly',
     '',
-    'One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Prefer a product-shaped preset first: `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover and inject installed presets. Regular application code does not need to pass `renderers`; components receive capability through the default `autoRenderers` flow.',
+    'One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Install the component package for the current ecosystem, choose a product-shaped preset such as `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover installed presets and inject the renderer virtual module. Regular application code does not pass `renderers`; components receive capability through the default `autoRenderers` flow.',
     '',
     '```bash',
-    'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office',
+    officeInstallCommand,
     '```',
     '',
     '```ts',
@@ -396,7 +399,7 @@ function onDemandRendererSection(locale) {
     'Heavy users that want the complete official demo capability can install the full preset and keep the same Vite config:',
     '',
     '```bash',
-    'npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all',
+    allInstallCommand,
     '```',
     '',
     'Use explicit plugin options only when you need customization:',
@@ -553,8 +556,9 @@ const publicMarkers = {
   end: readmeTemplate.markers.publicGenerated.end
 }
 
-function generatedWrapperBlock(locale) {
+function generatedWrapperBlock(locale, wrapper) {
   const template = readmeTemplate.locales[locale]
+  const componentPackageName = wrapper?.packageName || '@file-viewer/vue3'
 
   if (locale === 'zh') {
     return [
@@ -577,7 +581,7 @@ function generatedWrapperBlock(locale) {
         rendererRows('zh')
       ),
       '',
-      onDemandRendererSection('zh'),
+      onDemandRendererSection('zh', componentPackageName),
       '## 统一参数与事件',
       '',
       '所有生态组件都围绕同一套 `ViewerMountOptions` 与 `FileViewerOptions` 工作，只是映射到各自框架的 props、事件、ref、action 或插件 API。',
@@ -645,7 +649,7 @@ function generatedWrapperBlock(locale) {
       rendererRows('en')
     ),
     '',
-    onDemandRendererSection('en'),
+    onDemandRendererSection('en', componentPackageName),
     '## Shared Options And Events',
     '',
     'Every ecosystem package uses the same `ViewerMountOptions` and `FileViewerOptions` semantics, mapped to framework-native props, events, refs, actions, or plugin APIs.',
@@ -774,7 +778,7 @@ for (const wrapper of wrapperManifest.wrappers) {
   for (const [filename, locale] of [['README.md', 'zh'], ['README.en.md', 'en']]) {
     const readmePath = resolve(sourceRoot, wrapper.packageDir, filename)
     const current = await readFile(readmePath, 'utf8')
-    const next = syncBlock(current, generatedWrapperBlock(locale))
+    const next = syncBlock(current, generatedWrapperBlock(locale, wrapper))
     await writeFile(readmePath, next, 'utf8')
     console.log(`Updated ${wrapper.packageDir}/${filename}`)
   }

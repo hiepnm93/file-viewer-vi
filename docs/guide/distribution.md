@@ -55,15 +55,31 @@
 常用安装命令:
 
 ```bash
-pnpm add @file-viewer/web
-pnpm add @file-viewer/vue3
-pnpm add @file-viewer/vue2.7
-pnpm add @file-viewer/react
-pnpm add @file-viewer/jquery
-pnpm add @file-viewer/svelte
-pnpm add @file-viewer/renderer-word
-pnpm add @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+# 重度用户 / 全格式附件中心:
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+# 非 Vite 或特定生态也可把 @file-viewer/vue3 替换为 @file-viewer/web / react / vue2.7 / vue2.6 / jquery / svelte。
 ```
+
+Vite 项目推荐使用免配置自动装配：
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+插件会自动发现已安装的 `@file-viewer/preset-*` 并注入能力；需要极致裁剪时再用单 renderer + `formats`。
+
+常用定制边界：
+
+| 配置 | 说明 |
+| --- | --- |
+| `copyAssets:true` | 复制命中的 Worker、WASM、字体、PDF/CAD/Typst/Archive/Data 等静态资源，推荐生产和内网部署开启 |
+| `formats` / `renderers` | 不使用 preset、或在 preset 外补充少数格式时，生成精确 renderer import |
+| `scan:true` | 扫描源码中的 `fileViewerFormats`、`data-file-viewer-formats`、上传 `accept` 等格式 hint |
+| `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时继续保留已安装 preset 的自动激活 |
+| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传入 `options.renderers` |
 
 Vanilla JS / Pure Web:
 

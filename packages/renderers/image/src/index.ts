@@ -19,8 +19,9 @@ export const imageRendererDefinition = imageDefinition;
 export const renderFileViewerImage: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
   target,
-  type
-) => import('./image.js').then(({ default: renderImage }) => renderImage(buffer, target, type));
+  type,
+  context
+) => import('./image.js').then(({ default: renderImage }) => renderImage(buffer, target, type, context));
 
 export const imageRenderer: FileViewerRendererPlugin<FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>> = {
   id: 'file-viewer-renderer-image',

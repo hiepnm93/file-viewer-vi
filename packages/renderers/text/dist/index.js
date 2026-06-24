@@ -5,7 +5,7 @@ if (textDefinitions.length !== textRendererIds.length) {
     throw new Error('@file-viewer/renderer-text could not locate the shared code/markdown format definitions.');
 }
 export const textRendererDefinitions = textDefinitions;
-export const renderFileViewerCode = (buffer, target, type) => import('./code.js').then(({ default: renderCode }) => renderCode(buffer, target, type));
+export const renderFileViewerCode = (buffer, target, type, context) => import('./code.js').then(({ default: renderCode }) => renderCode(buffer, target, type, context));
 export const renderFileViewerMarkdown = (buffer, target) => import('./markdown.js').then(({ default: renderMarkdown }) => renderMarkdown(buffer, target));
 export const textRenderer = {
     id: 'file-viewer-renderer-text',

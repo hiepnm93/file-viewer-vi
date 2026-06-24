@@ -1,4 +1,4 @@
-import { disposeFileViewerRendered } from '@file-viewer/core';
+import { createFileViewerTranslator, disposeFileViewerRendered, } from '@file-viewer/core';
 const emailStyle = `
 .email-viewer{position:relative;height:100%;min-height:0;display:flex;flex-direction:column;background:#f3f6f8;color:#172033;box-sizing:border-box}
 .email-viewer *{box-sizing:border-box}
@@ -141,7 +141,7 @@ const parseEml = async (buffer, filename, objectUrls, cidUrls) => {
         attachments,
     };
 };
-const parseMbox = async (buffer, filename, objectUrls, cidUrls) => {
+const parseMbox = async (buffer, filename, objectUrls, cidUrls, t) => {
     var _a, _b, _c, _d;
     const source = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
     const starts = [...source.matchAll(/^From .*$\n/gm)].map(match => match.index || 0);
@@ -158,12 +158,12 @@ const parseMbox = async (buffer, filename, objectUrls, cidUrls) => {
     const attachments = await createPostalAttachments(email, objectUrls, cidUrls);
     return {
         kind: 'mbox',
-        subject: email.subject || `${filename} · 第 1 封`,
+        subject: email.subject || t('email.mbox.subject', { filename }),
         from: normalizeAddress(email.from),
         to: normalizeAddress(email.to),
         cc: normalizeAddress(email.cc),
         date: email.date,
-        text: `MBOX 共识别 ${Math.max(1, starts.length)} 封邮件，当前展示第 1 封。\n\n${email.text || ''}`,
+        text: `${t('email.mbox.summary', { count: Math.max(1, starts.length) })}\n\n${email.text || ''}`,
         html: email.html,
         headers: ((_c = email.headerLines) === null || _c === void 0 ? void 0 : _c.map((item) => item.line).join('\n'))
             || ((_d = email.headers) === null || _d === void 0 ? void 0 : _d.map((item) => `${item.originalKey}: ${item.value}`).join('\n')),
@@ -203,12 +203,12 @@ const parseMsg = async (buffer, filename) => {
         attachments,
     };
 };
-const parseEmail = (buffer, type, filename, objectUrls, cidUrls) => {
+const parseEmail = (buffer, type, filename, objectUrls, cidUrls, t) => {
     if (type === 'msg') {
         return parseMsg(buffer, filename);
     }
     if (type === 'mbox') {
-        return parseMbox(buffer, filename, objectUrls, cidUrls);
+        return parseMbox(buffer, filename, objectUrls, cidUrls, t);
     }
     return parseEml(buffer, filename, objectUrls, cidUrls);
 };
@@ -251,6 +251,7 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
     const filename = (context === null || context === void 0 ? void 0 : context.filename) || `message.${normalizedType}`;
     const objectUrls = [];
     const cidUrls = new Map();
+    const t = createFileViewerTranslator(context === null || context === void 0 ? void 0 : context.options);
     const cleanups = [];
     let nestedRendered;
     let overlay = null;
@@ -281,7 +282,7 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
     const showError = (message) => {
         errorElement === null || errorElement === void 0 ? void 0 : errorElement.remove();
         errorElement = createElement('div', 'email-error');
-        errorElement.append(createElement('strong', undefined, '邮件预览提示'));
+        errorElement.append(createElement('strong', undefined, t('email.error.title')));
         errorElement.append(createElement('p', undefined, message));
         root.append(errorElement);
     };
@@ -310,12 +311,12 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
         header.append(createElement('span', undefined, parsed.kind.toUpperCase()));
         header.append(createElement('h2', undefined, parsed.subject || filename));
         const meta = createElement('div', 'email-meta');
-        appendMeta(meta, '发件人', addressText(parsed.from));
-        appendMeta(meta, '收件人', addressText(parsed.to));
+        appendMeta(meta, t('email.meta.from'), addressText(parsed.from));
+        appendMeta(meta, t('email.meta.to'), addressText(parsed.to));
         if (parsed.cc.length) {
-            appendMeta(meta, '抄送', addressText(parsed.cc));
+            appendMeta(meta, t('email.meta.cc'), addressText(parsed.cc));
         }
-        appendMeta(meta, '时间', parsed.date || '-');
+        appendMeta(meta, t('email.meta.date'), parsed.date || '-');
         header.append(meta);
         const body = createElement('div', 'email-body');
         const sidebar = createElement('aside', 'email-sidebar');
@@ -326,7 +327,7 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
         attachmentPreview.hidden = true;
         const attachmentPreviewHead = createElement('div', 'attachment-preview-head');
         const attachmentPreviewTitle = createElement('strong');
-        const attachmentDownload = createElement('button', undefined, '下载附件');
+        const attachmentDownload = createElement('button', undefined, t('email.attachments.download'));
         attachmentDownload.type = 'button';
         const attachmentTarget = createElement('div', 'attachment-target');
         attachmentPreviewHead.append(attachmentPreviewTitle, attachmentDownload);
@@ -351,8 +352,8 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
         };
         const bodyModes = [
             { key: 'html', label: 'HTML', disabled: !parsed.html },
-            { key: 'text', label: '正文', disabled: !parsed.text },
-            { key: 'headers', label: '头信息', disabled: !parsed.headers },
+            { key: 'text', label: t('email.tabs.text'), disabled: !parsed.text },
+            { key: 'headers', label: t('email.tabs.headers'), disabled: !parsed.headers },
         ];
         bodyModes.forEach(mode => {
             const button = createElement('button', undefined, mode.label);
@@ -372,10 +373,10 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
         syncTabState();
         const attachmentPanel = createElement('section', 'attachment-panel');
         const attachmentTitle = createElement('div', 'attachment-title');
-        attachmentTitle.append(createElement('strong', undefined, '附件'), createElement('span', undefined, String(parsed.attachments.length)));
+        attachmentTitle.append(createElement('strong', undefined, t('email.attachments.title')), createElement('span', undefined, String(parsed.attachments.length)));
         attachmentPanel.append(attachmentTitle);
         if (!parsed.attachments.length) {
-            attachmentPanel.append(createElement('p', 'attachment-empty', '暂无附件'));
+            attachmentPanel.append(createElement('p', 'attachment-empty', t('email.attachments.empty')));
         }
         const syncAttachmentState = () => {
             attachmentButtons.forEach(({ id, button }) => {
@@ -387,7 +388,7 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
             syncAttachmentState();
             attachmentPreview.hidden = false;
             attachmentPreviewTitle.textContent = attachment.name;
-            showLoading(`正在打开附件 ${attachment.name}...`);
+            showLoading(t('email.attachments.opening', { name: attachment.name }));
             try {
                 await clearAttachmentPreview();
                 attachmentTarget.replaceChildren();
@@ -403,7 +404,7 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
                     });
                 }
                 else {
-                    child.append(createElement('div', undefined, `当前运行环境未提供附件嵌套预览入口，请下载 ${attachment.name} 后查看。`));
+                    child.append(createElement('div', undefined, t('email.attachments.nestedUnavailable', { name: attachment.name })));
                 }
             }
             catch (nextError) {
@@ -438,9 +439,9 @@ export default async function renderEmail(buffer, target, type = 'eml', context)
         body.append(sidebar, messagePanel);
         root.append(header, body);
     };
-    showLoading('正在解析邮件...');
+    showLoading(t('email.loading.parsing'));
     try {
-        const parsed = await parseEmail(buffer, normalizedType, filename, objectUrls, cidUrls);
+        const parsed = await parseEmail(buffer, normalizedType, filename, objectUrls, cidUrls, t);
         renderParsedEmail(parsed);
     }
     catch (nextError) {

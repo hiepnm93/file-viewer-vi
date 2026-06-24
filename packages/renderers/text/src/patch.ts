@@ -3,6 +3,7 @@ import {
   readFileViewerText as readText,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
   type FileViewerZoomState
 } from '@file-viewer/core'
@@ -85,7 +86,8 @@ const escapeHtml = (value: string) => {
 export default async function renderPatch(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type = 'patch'
+  type = 'patch',
+  _context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document
   const text = await readText(buffer)

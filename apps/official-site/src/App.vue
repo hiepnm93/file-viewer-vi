@@ -148,7 +148,7 @@ const copy = {
       '从 OA 审批到工程图纸，从客服工单到 AI 文档工作台，File Viewer 更关注真实文件、复杂网络、私有化部署和用户每天都会遇到的细节。',
     ecosystemTitle: '原生组件接入，统一参数与事件。',
     ecosystemIntro:
-      '一个组件，一行代码，快速集成。Vanilla JS、Vue、React、Svelte、jQuery 与 Vue2 均提供独立接入示例；按需选择 lite、office、engineering、all preset 或单 renderer 精确装配。',
+      '一个组件，一行代码，快速集成。Vanilla JS、Vue、React、Svelte、jQuery 与 Vue2 均提供独立接入示例；Vite 插件会自动发现已安装 preset 并激活能力，也保留单 renderer 精确裁剪。',
     demoTitle: '在线 Demo，直接验证真实预览体验。',
     demoIntro:
       '打开完整样例矩阵，验证 Word、PDF、PPTX、CAD、Typst、压缩包、图形、代码、媒体、上传预览与文档比对等核心场景。',
@@ -196,7 +196,7 @@ const copy = {
       'From approvals to engineering drawings, support tickets, and AI document workflows, File Viewer focuses on real files, private networks, self-hosted delivery, and the details users meet every day.',
     ecosystemTitle: 'Native integrations with one options and event model.',
     ecosystemIntro:
-      'One component, one line of code, fast integration. Vanilla JS, Vue, React, Svelte, jQuery, and Vue 2 each get a dedicated entry path; compose lite, office, engineering, all presets, or exact renderers by product scope.',
+      'One component, one line of code, fast integration. Vanilla JS, Vue, React, Svelte, jQuery, and Vue 2 each get a dedicated entry path; the Vite plugin auto-discovers installed presets while exact renderer cuts remain available.',
     demoTitle: 'Live demo for real preview validation.',
     demoIntro:
       'Open the complete sample matrix to validate Word, PDF, PPTX, CAD, Typst, archives, diagrams, code, media, upload preview, and document comparison flows.',
@@ -370,13 +370,13 @@ const capabilities = computed<Capability[]>(() =>
         { title: '统一搜索与定位', detail: 'Ctrl/Command + F 调出浮层搜索，命中高亮、上一条/下一条和行级/页级定位可复用。', icon: SearchCheck },
         { title: '高保真打印导出', detail: 'PDF、Word、Markdown、图片等按渲染链路动态启用打印与 HTML 导出，避免只打印当前视口。', icon: Download },
         { title: '主题与水印', detail: 'light、dark、system 可控，文字/图片水印通过 options 统一注入。', icon: PanelTop },
-        { title: '模块化按需装配', detail: 'core、renderer、preset 和生态组件职责分离；preset-lite、preset-office、preset-engineering 与 preset-all 覆盖不同产品形态。', icon: Boxes }
+        { title: '模块化按需装配', detail: 'core、renderer、preset 和生态组件职责分离；Vite 插件自动发现已安装 preset，重度用户可用 preset-all 一键获得完整能力。', icon: Boxes }
       ]
     : [
         { title: 'Unified search and anchors', detail: 'Ctrl/Command + F opens focused search with highlights, next/previous navigation, and reusable page/line anchors.', icon: SearchCheck },
         { title: 'High-fidelity print and export', detail: 'PDF, Word, Markdown, images, and other printable renderers expose print and HTML export only when the output is trustworthy.', icon: Download },
         { title: 'Theme and watermark options', detail: 'light, dark, and system themes are controlled by options; text and image watermarks use one contract.', icon: PanelTop },
-        { title: 'Modular on-demand assembly', detail: 'Core, renderer packages, presets, and native component packages keep separate responsibilities while presets cover product-shaped bundles.', icon: Boxes }
+        { title: 'Modular on-demand assembly', detail: 'Core, renderer packages, presets, and native component packages keep separate responsibilities; the Vite plugin auto-discovers installed presets, and preset-all gives heavy users the full one-step capability set.', icon: Boxes }
       ]
 )
 
@@ -598,12 +598,14 @@ viewer.setSrc('/files/contract.pdf')`
   },
   {
     label: isZh.value ? '按需装配' : 'On-demand',
-    packageName: '@file-viewer/preset-office',
-    install: isZh.value ? '按格式选择 renderer 或 preset' : 'Select renderers or presets by real formats',
-    title: isZh.value ? '按产品体量选择 lite / office / engineering' : 'Choose lite, office, or engineering by product scope',
+    packageName: '@file-viewer/vite-plugin',
+    install: isZh.value
+      ? 'npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office'
+      : 'npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office',
+    title: isZh.value ? '按产品体量选择 lite / office / engineering / all' : 'Choose lite, office, engineering, or all by product scope',
     summary: isZh.value
-      ? '业务只接 PDF 就只装 PDF renderer；办公平台选 office；工程附件平台选 engineering；完整样例矩阵才用 all。'
-      : 'A PDF-only app installs the PDF renderer; office workspaces use office; engineering portals use engineering; only full demos need all.',
+      ? '装了哪个 preset，Vite 插件就免配置激活哪个能力；重度用户把 preset-office 换成 preset-all，即可最快拥有完整格式矩阵。'
+      : 'The Vite plugin auto-activates whichever preset is installed; heavy users can swap preset-office for preset-all to get the full matrix immediately.',
     language: 'Vite',
     href: `${docsUrl}guide/on-demand-renderers`,
     tone: 'blue',
@@ -614,14 +616,14 @@ ${snippetImport("{ fileViewerRenderers } from '@file-viewer/vite-plugin'")}
 export default defineConfig({
   plugins: [
     fileViewerRenderers({
-      preset: 'office',
-      copyAssets: true,
-      chunkStrategy: 'renderer'
+      copyAssets: true
     })
   ]
 })
 
-// PDF-only projects can replace preset with formats: ['pdf'].`
+// Installed @file-viewer/preset-office auto-activates with no preset option.
+// Heavy users can install @file-viewer/preset-all and keep this config.
+// Custom cuts can add formats, scan, chunkStrategy, or inject:false.`
   },
   {
     label: isZh.value ? '离线部署' : 'Offline',

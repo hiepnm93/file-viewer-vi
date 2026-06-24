@@ -67,7 +67,18 @@ export default {
 pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
-需要自定义时再显式配置：`preset:'auto'` 用于在开启 `scan:true` 时继续自动发现已安装 preset；`formats` 用于额外补充精确 renderer；`inject:false` 用于完全手动传入 `virtual:file-viewer-renderers`。
+需要自定义时再显式配置：
+
+| 选项 | 适合场景 |
+| --- | --- |
+| `copyAssets:true` | 自动复制 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等离线资源，推荐生产和内网部署开启 |
+| `formats` / `renderers` | 不使用 preset、或在 preset 外补充少数格式时，生成精确 renderer import |
+| `scan:true` | 让插件扫描 `fileViewerFormats`、`data-file-viewer-formats`、上传 `accept` 等源码 hint |
+| `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时仍保持“根据已安装 preset 自动激活能力” |
+| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传给 `options.renderers` |
+| `chunkStrategy:'renderer'` | 按 renderer 拆分 chunk，方便缓存、排查和分析重型格式体积 |
+
+默认推荐路径是 `fileViewerRenderers({ copyAssets:true })`。只有需要极致裁剪、源码扫描或严格 registry 管理时，才需要显式配置上面的选项。
 
 ## 运行环境
 
@@ -75,15 +86,44 @@ pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-view
 - 纯 JS、React、Vue2 / Vue3 项目都可以使用 npm、pnpm、yarn 或业务项目已有包管理器
 - 浏览器需要支持现代前端能力，建议优先在最新版 Chrome 或 Edge 中联调
 
+## 语言与文案
+
+组件默认 `locale: 'auto'`，会根据浏览器语言在中文和英文之间自动选择。需要固定语言或覆盖文案时，直接通过同一套 `options` 传入:
+
+```ts
+const options = {
+  locale: 'en-US',
+  messages: {
+    'toolbar.download': 'Save file'
+  }
+}
+```
+
+也可以使用分组写法:
+
+```ts
+const options = {
+  i18n: {
+    locale: 'zh-CN',
+    messages(key, params, locale) {
+      return key === 'state.empty.title' ? '请选择文件' : undefined
+    }
+  }
+}
+```
+
+`locale`、`messages` 和 `i18n` 在 Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包中保持一致。
+
 ## 纯 JS 最短路径
 
 ```bash
-npm install @file-viewer/web
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```html
 <flyfish-file-viewer
   src="/files/demo.pdf"
+  locale="zh-CN"
   theme="light"
   toolbar-position="bottom-right"
   style="display:block;height:100vh"
@@ -146,7 +186,7 @@ const options = {
 Vue2.7 项目优先使用 `@file-viewer/vue2.7`，能力与 Vue3 包保持一致，入口会自动带上样式:
 
 ```bash
-pnpm add @file-viewer/vue2.7
+pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
@@ -166,7 +206,7 @@ Vue2.6 老项目使用 `@file-viewer/vue2.6`。完整步骤见 [Vue2 集成](/gu
 ## React 最短路径
 
 ```bash
-npm install @file-viewer/react
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```tsx

@@ -61,10 +61,12 @@
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
 - **模块化架构清晰。** `@file-viewer/core` 只负责格式矩阵、资源加载、renderer 协议、生命周期和统一 API；PDF、Word、PPTX、CAD、Typst、压缩包、EDA、数据资产等重型能力下沉到独立 renderer；`preset-lite`、`preset-office`、`preset-engineering`、`preset-all` 按产品形态组合；Vue、React、Svelte、jQuery 和 Vanilla JS 组件只做各自生态的原生封装。
+- **Vite 免配置装配。** `@file-viewer/vite-plugin` 会根据当前项目已安装的 `@file-viewer/preset-*` 自动激活预览能力；业务通常只需要 `fileViewerRenderers({ copyAssets:true })`，重度用户把 preset 换成 `@file-viewer/preset-all` 即可最快获得官方 Demo 的完整格式矩阵。
 - **格式覆盖完整。** 当前内置 206 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、Git patch/bundle、字体、PSD 图层资产和结构化数据，能覆盖绝大多数业务附件场景。
 - **按需异步加载。** PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关、水印 options、主题 options、搜索高亮、上一个 / 下一个命中、行级定位和 AI 友好文本切片；PDF 使用 PDF.js 原生搜索，Word / Markdown / 代码等文本类格式使用通用 DOM 搜索，避免污染 PDF 文本层、canvas 等特殊渲染结构；`theme` 支持 `light`、`dark`、`system`，默认跟随系统，浅色业务 UI 可显式锁定 `light`；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
 - **集成控制更完整。** 提供加载/卸载生命周期钩子、原生事件回调和按钮前置校验机制，下载、打印、导出前可以接入权限验证、审计确认或业务二次弹窗。
+- **国际化可控。** `locale` 支持 `auto`、`zh-CN`、`en-US`，也可通过 `messages` / `i18n.messages` 覆盖任意内置文案；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包共享同一套参数，Demo 会按浏览器语言自动选择中文或英文样例体系。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色阅读面、居中阅读和自适应缩放；DOCX 由 `@file-viewer/renderer-word` 按需加载自研 `@file-viewer/docx`，默认走 Worker 解析、连续流式阅读和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；PDF 兼容旋转页和页面 / 目录导航，Excel 会尽量还原图片、自动文本色和可滚动的多 sheet 标签，避免“内容能打开但不好读”的落差。
 - **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、脑图与绘图、邮件与 EDA、代码、图片和数据资产等类型分组展示，点击样例即可打开并自动收起选择器。
@@ -116,46 +118,16 @@
 
 2.1.0 之后推荐把“组件包”和“格式能力”分开理解：组件负责当前技术栈的原生体验，renderer / preset 负责具体文件格式能力。这个模块化边界让你既能一行接入，也能控制首屏体积、安装依赖、Worker/WASM 资产和后续扩展节奏。
 
-### 方案一：最小化引入
+### 最快路径：组件 + preset + Vite 插件免配置装配
 
-只安装当前业务确实需要的 renderer。例如只预览 PDF：插件会按 `formats` 生成精确 import，并默认注入到页面，组件无需手动接收 `renderers`。
-
-```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
-```
-
-```ts
-// vite.config.ts
-import { fileViewerRenderers } from '@file-viewer/vite-plugin'
-
-export default {
-  plugins: [
-    fileViewerRenderers({
-      formats: ['pdf'],
-      copyAssets: true
-    })
-  ]
-}
-```
-
-```ts
-export const viewerOptions = {
-  // 默认 true；仅在你要完全手动传 renderers 时设为 false。
-  autoRenderers: true
-}
-```
-
-Vue3 示例中的 `@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，`viewerOptions` 保持同一套语义。
-
-### 方案二：按产品组合引入
-
-如果你正在做办公附件中心，优先使用 `preset-office`；工程附件平台使用 `preset-engineering`；常见轻附件使用 `preset-lite`；完整 Demo 或后台全格式入口使用 `preset-all`。
+`@file-viewer/vite-plugin` 已经支持根据当前项目安装的 `@file-viewer/preset-*` 自动激活能力。常规 Vite 项目只需要安装一个标准组件包、插件和一个 preset；`fileViewerRenderers({ copyAssets:true })` 会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。组件默认 `autoRenderers:true`，无需业务代码手动传 `renderers`。
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
+// vite.config.ts
 import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 
 export default {
@@ -168,23 +140,71 @@ export default {
 }
 ```
 
-重度用户、内部附件中心或演示平台需要一次拥有完整能力时，直接换成全量 preset，Vite 配置保持不变：
+```ts
+export const viewerOptions = {
+  // 默认 true；会读取 Vite 插件自动注册的 renderer / preset。
+  autoRenderers: true
+}
+```
+
+`@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，preset 和 `viewerOptions` 保持同一套语义。
+
+### 国际化
+
+预览器默认 `locale:'auto'`，会根据浏览器语言选择中文或英文。业务系统可以固定语言，也可以覆盖内置文案:
+
+```ts
+const viewerOptions = {
+  locale: 'en-US',
+  messages: {
+    'toolbar.download': 'Save file'
+  }
+}
+```
+
+Custom Element 同样支持属性写法:
+
+```html
+<flyfish-file-viewer src="/files/report.pdf" locale="zh-CN"></flyfish-file-viewer>
+```
+
+### preset 选择
+
+| 需求 | 推荐安装 | 说明 |
+| --- | --- | --- |
+| 轻附件 | `@file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 |
+| 办公文档 | `@file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument |
+| 工程资料 | `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
+| 全量能力 | `@file-viewer/preset-all` | 官方 Demo 完整格式矩阵，适合重度用户、内部全格式附件中心和验收环境 |
+
+重度用户需要最快拥有全部能力时，直接使用全量一键安装，Vite 配置保持上面的免配置形式即可：
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
-如果希望在自动发现已安装 preset 的同时扫描源码 hint，使用 `preset:'auto'` 或 `autoPresets:true`：
+### 精确裁剪和进阶自定义
+
+如果业务只需要一个或少数格式，可以跳过 preset，安装单 renderer 并用 `formats` 生成精确 import：
 
 ```ts
 fileViewerRenderers({
-  preset: 'auto',
-  scan: true,
   formats: ['pdf'],
   copyAssets: true,
   chunkStrategy: 'renderer'
 })
 ```
+
+常用定制项：
+
+| 选项 | 用途 |
+| --- | --- |
+| `copyAssets:true` | 自动复制已命中 renderer 的 Worker、WASM、字体和 vendor 资源，适合内网/离线部署 |
+| `scan:true` | 扫描源码中的 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 等 hint，自动补全格式 |
+| `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时仍保持已安装 preset 自动发现 |
+| `formats` / `renderers` | 额外指定精确格式或 renderer id |
+| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传给 `options.renderers` |
+| `chunkStrategy:'renderer'` | 按 renderer 拆分 chunk，便于缓存和排查大型格式链路 |
 
 ### 方案三：无构建工具或 script 标签
 
@@ -215,7 +235,7 @@ npm exec file-viewer-copy-assets ./public/file-viewer
 | Office renderer preset              | [`@file-viewer/preset-office`](https://www.npmjs.com/package/@file-viewer/preset-office)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 无                                                                                                                                                       | `latest` | 一次装配 PDF、Word、Excel、PowerPoint、OFD、RTF 和 OpenDocument 文档链路                                                                                             |
 | 工程 renderer preset                | [`@file-viewer/preset-engineering`](https://www.npmjs.com/package/@file-viewer/preset-engineering)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 无                                                                                                                                                       | `latest` | 一次装配 CAD、3D、绘图、XMind、Geo、Typst、Archive、Data 和 EDA 工程附件链路                                                                                          |
 | 全量 renderer preset                | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 无                                                                                                                                                       | `latest` | 一次装配 Word、PDF、OFD、PPTX、CAD、Draw.io/Excalidraw/Mermaid/PlantUML、Typst、XMind、压缩包、邮件、电子书、代码/Markdown/Patch/Git Bundle、图片、音视频和 core 其余完整格式能力 |
-| Vite 按需装配插件                   | [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 无                                                                                                                                                       | `latest` | 按 `formats` 或源码 hint 自动生成 `virtual:file-viewer-renderers`，只 import 命中的 renderer 包；扩展映射对照 core 完整格式矩阵验证，并提供 renderer chunk 分组和 PDF/OFD/CAD/Drawing/Typst/Archive/Data 离线资产路线 |
+| Vite 按需装配插件                   | [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 无                                                                                                                                                       | `latest` | 免配置自动发现已安装 `@file-viewer/preset-*` 并激活对应能力；也可按 `formats`、`renderers` 或源码 hint 生成 `virtual:file-viewer-renderers`，只 import 命中的 renderer 包，并提供 renderer chunk 分组和 PDF/OFD/CAD/Drawing/Typst/Archive/Data 离线资产路线 |
 | 独立 renderer 包                    | [`@file-viewer/renderer-word`](https://www.npmjs.com/package/@file-viewer/renderer-word)、[`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf)、[`@file-viewer/renderer-ofd`](https://www.npmjs.com/package/@file-viewer/renderer-ofd)、[`@file-viewer/renderer-presentation`](https://www.npmjs.com/package/@file-viewer/renderer-presentation)、[`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad)、[`@file-viewer/renderer-drawing`](https://www.npmjs.com/package/@file-viewer/renderer-drawing)、[`@file-viewer/renderer-3d`](https://www.npmjs.com/package/@file-viewer/renderer-3d)、[`@file-viewer/renderer-data`](https://www.npmjs.com/package/@file-viewer/renderer-data)、[`@file-viewer/renderer-eda`](https://www.npmjs.com/package/@file-viewer/renderer-eda)、[`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst)、[`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive)、[`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email)、[`@file-viewer/renderer-epub`](https://www.npmjs.com/package/@file-viewer/renderer-epub)、[`@file-viewer/renderer-text`](https://www.npmjs.com/package/@file-viewer/renderer-text)、[`@file-viewer/renderer-image`](https://www.npmjs.com/package/@file-viewer/renderer-image)、[`@file-viewer/renderer-media`](https://www.npmjs.com/package/@file-viewer/renderer-media)、[`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap)、[`@file-viewer/renderer-geo`](https://www.npmjs.com/package/@file-viewer/renderer-geo) | 无                                                                                                                                                       | `latest` | 用于按需安装 Word、重型版式、文本阅读、图片、媒体、3D、数据资产、EDA 和地理数据链路，避免业务只看轻量格式时安装 DOCX/DOC/PDF/OFD/PPTX/CAD/Draw.io/Excalidraw/Mermaid/PlantUML/Typst/压缩包/邮件/EPUB/XMind/OLB/DRA/GDS/OASIS/GeoJSON/KML/GPX/SHP/PSD/SQLite/Patch/Git Bundle/代码高亮/HEIC/HLS/MIDI 依赖 |
 | Vanilla JS / Pure Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)                                                         | `latest` | `mountViewer(container, options)`、Custom Element、IIFE、资源复制 CLI、Worker/WASM 自托管工具                                                                           |
 | Vue3                                | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型                                                                                                         |
@@ -306,7 +326,7 @@ GitHub Release 会同步提供完整下载项:
 
 ## 工程级按需 renderer 装配
 
-一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐优先按产品形态安装 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`，再让 `@file-viewer/vite-plugin` 自动发现并注入已安装 preset。常规业务无需手写 `renderers`，组件会通过默认开启的 `autoRenderers` 获得对应能力。
+一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐先安装当前生态组件包，再按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`。`@file-viewer/vite-plugin` 会免配置自动发现当前项目已安装的 preset、注入 renderer virtual module，并让组件通过默认开启的 `autoRenderers` 获得对应能力，常规业务无需手写 `renderers`。
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office

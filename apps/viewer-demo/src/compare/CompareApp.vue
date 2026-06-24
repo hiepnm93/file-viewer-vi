@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { FileViewer } from '@file-viewer/vue3'
@@ -15,6 +15,7 @@ import brandLogo from '@/assets/logo.png'
 import { useSynchronizedScroll } from './useSynchronizedScroll'
 
 type CompareSide = 'left' | 'right'
+type DemoLocale = 'zh-CN' | 'en-US'
 
 interface CompareSample {
   label: string;
@@ -34,15 +35,133 @@ interface ComparePanelState {
 type FileViewerPublicApi = ComponentPublicInstance & FileViewerExpose
 
 const params = new URLSearchParams(window.location.search)
+const DEMO_LOCALE_STORAGE_KEY = 'file-viewer-demo-locale'
 
-const samples: CompareSample[] = [
-  { label: 'DOC 旧版合同', description: 'Word 97-2003 示例', url: '/example/test.doc' },
-  { label: 'DOCX 中文长文档', description: '表格图示与正式页', url: '/example/word.docx' },
-  { label: 'PDF 技术说明', description: '真实 PDF 页面', url: '/example/pdf.pdf' },
-  { label: 'PPTX 中文课件', description: '55 页富样式课件', url: '/example/ppt.pptx' },
-  { label: 'Typst 源文件', description: 'Typst 直读渲染', url: '/example/report.typ' },
-  { label: 'Markdown 文档', description: '轻量文本排版', url: '/example/markdown.md' }
-]
+const normalizeDemoLocale = (value?: string | null): DemoLocale => {
+  return String(value || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US'
+}
+
+const resolveInitialDemoLocale = (): DemoLocale => {
+  const explicitLocale = params.get('locale') || params.get('lang')
+  if (explicitLocale) {
+    return normalizeDemoLocale(explicitLocale)
+  }
+  const storedLocale = window.localStorage.getItem(DEMO_LOCALE_STORAGE_KEY)
+  if (storedLocale) {
+    return normalizeDemoLocale(storedLocale)
+  }
+  return normalizeDemoLocale(navigator.languages?.[0] || navigator.language)
+}
+
+const compareLocale = ref<DemoLocale>(resolveInitialDemoLocale())
+const isChineseLocale = computed(() => compareLocale.value === 'zh-CN')
+const nextLocaleLabel = computed(() => isChineseLocale.value ? 'EN' : '中文')
+
+const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
+  'zh-CN': {
+    backHome: '返回 Flyfish Viewer 主预览',
+    pageTitle: 'Flyfish Viewer 文档比对',
+    pageDescription: 'Flyfish Viewer 独立文档比对入口，支持左右并排预览、上传、URL 加载、同步滚动、搜索和行级定位。',
+    title: '文档比对',
+    subtitle: '左右并排预览，支持示例、URL、本地上传、同步滚动、聚焦搜索和行级定位。',
+    leftPanel: '左侧文档',
+    rightPanel: '右侧文档',
+    lineLocator: '行级定位',
+    linePlaceholder: '行号',
+    locate: '定位',
+    syncScroll: '同步滚动',
+    hidePdfToolbar: '隐藏 PDF 工具栏',
+    swap: '交换',
+    reset: '重置',
+    compareSearch: '文档比对搜索',
+    searchCurrent: '搜索当前文档',
+    previousSearchResult: '上一个搜索结果',
+    nextSearchResult: '下一个搜索结果',
+    closeSearch: '关闭搜索',
+    boardLabel: '文档左右比对',
+    sample: '示例',
+    uploadFile: '上传文件',
+    localFile: '本地文件',
+    localUpload: '本地上传',
+    urlFile: 'URL 文件',
+    unselected: '未选择',
+    statusReady: '准备就绪',
+    statusWaiting: '等待加载',
+    statusNoFile: '未选择文件',
+    statusLoading: '加载中',
+    statusComplete: '已完成',
+    statusUnloaded: '已卸载',
+    aiChunks: '{count} 个切片',
+    language: '语言'
+  },
+  'en-US': {
+    backHome: 'Back to Flyfish Viewer demo',
+    pageTitle: 'Flyfish Viewer Document Compare',
+    pageDescription: 'Standalone Flyfish Viewer comparison demo with side-by-side preview, upload, URL loading, synchronized scrolling, search, and line navigation.',
+    title: 'Document Compare',
+    subtitle: 'Side-by-side preview with samples, URL input, local upload, synchronized scrolling, focused search, and line-level navigation.',
+    leftPanel: 'Left document',
+    rightPanel: 'Right document',
+    lineLocator: 'Line locator',
+    linePlaceholder: 'Line',
+    locate: 'Go',
+    syncScroll: 'Sync scroll',
+    hidePdfToolbar: 'Hide PDF toolbar',
+    swap: 'Swap',
+    reset: 'Reset',
+    compareSearch: 'Document compare search',
+    searchCurrent: 'Search current document',
+    previousSearchResult: 'Previous search result',
+    nextSearchResult: 'Next search result',
+    closeSearch: 'Close search',
+    boardLabel: 'Side-by-side document comparison',
+    sample: 'Sample',
+    uploadFile: 'Upload file',
+    localFile: 'Local file',
+    localUpload: 'Local upload',
+    urlFile: 'URL file',
+    unselected: 'Not selected',
+    statusReady: 'Ready',
+    statusWaiting: 'Waiting',
+    statusNoFile: 'No file selected',
+    statusLoading: 'Loading',
+    statusComplete: 'Completed',
+    statusUnloaded: 'Unloaded',
+    aiChunks: '{count} chunks',
+    language: 'Language'
+  }
+}
+
+const compareCopy = computed(() => compareCopyMap[compareLocale.value])
+
+const formatCompareCopy = (key: string, params: Record<string, string | number> = {}) => {
+  return Object.entries(params).reduce(
+    (message, [name, value]) => message.replaceAll(`{${name}}`, String(value)),
+    compareCopy.value[key] || key
+  )
+}
+
+const samplesByLocale: Record<DemoLocale, CompareSample[]> = {
+  'zh-CN': [
+    { label: 'DOC 旧版合同', description: 'Word 97-2003 示例', url: '/example/test.doc' },
+    { label: 'DOCX 中文长文档', description: '表格图示与正式页', url: '/example/word.docx' },
+    { label: 'PDF 技术说明', description: '真实 PDF 页面', url: '/example/pdf.pdf' },
+    { label: 'PPTX 中文课件', description: '55 页富样式课件', url: '/example/ppt.pptx' },
+    { label: 'Typst 源文件', description: 'Typst 直读渲染', url: '/example/report.typ' },
+    { label: 'Markdown 文档', description: '轻量文本排版', url: '/example/markdown.md' }
+  ],
+  'en-US': [
+    { label: 'DOCX rich document', description: 'Open English DOCX sample', url: '/example/en/calibre-demo.docx' },
+    { label: 'PDF publication', description: 'Real PDF pages with artwork', url: '/example/en/prince-sample.pdf' },
+    { label: 'Excel workbook', description: 'Microsoft financial workbook', url: '/example/en/financial-sample.xlsx' },
+    { label: 'PPTX presentation', description: 'Open presentation fixture', url: '/example/en/sample-presentation.pptx' },
+    { label: 'Typst source', description: 'Local Typst rendering sample', url: '/example/report.typ' },
+    { label: 'Markdown document', description: 'Lightweight rich text layout', url: '/example/en/markdown.md' }
+  ]
+}
+
+const samples = computed(() => samplesByLocale[compareLocale.value])
+const initialSamples = samplesByLocale[compareLocale.value]
 
 const createPanel = (side: CompareSide, title: string, fallbackUrl: string): ComparePanelState => ({
   side,
@@ -50,11 +169,11 @@ const createPanel = (side: CompareSide, title: string, fallbackUrl: string): Com
   url: params.get(side) || fallbackUrl,
   file: undefined,
   filename: '',
-  status: '准备就绪'
+  status: compareCopy.value.statusReady
 })
 
-const leftPanel = reactive(createPanel('left', '左侧文档', samples[0].url))
-const rightPanel = reactive(createPanel('right', '右侧文档', samples[1].url))
+const leftPanel = reactive(createPanel('left', compareCopy.value.leftPanel, initialSamples[0].url))
+const rightPanel = reactive(createPanel('right', compareCopy.value.rightPanel, initialSamples[1].url))
 const syncScrollEnabled = ref(true)
 const comparePdfToolbarHidden = ref(true)
 const compareSearchOpen = ref(false)
@@ -76,7 +195,11 @@ const createEmptySearchState = (): FileViewerSearchState => ({
 const leftSearchState = ref<FileViewerSearchState>(createEmptySearchState())
 const rightSearchState = ref<FileViewerSearchState>(createEmptySearchState())
 
-const activeSideLabel = computed(() => activeCompareSide.value === 'left' ? '左侧文档' : '右侧文档')
+const getPanelTitle = (side: CompareSide) => {
+  return side === 'left' ? compareCopy.value.leftPanel : compareCopy.value.rightPanel
+}
+
+const activeSideLabel = computed(() => getPanelTitle(activeCompareSide.value))
 
 const activeSearchState = computed(() => {
   return activeCompareSide.value === 'left' ? leftSearchState.value : rightSearchState.value
@@ -88,6 +211,7 @@ const viewerOptions = computed<FileViewerOptions>(() => ({
   archive: {
     cache: true
   },
+  locale: compareLocale.value,
   pdf: {
     toolbar: !comparePdfToolbarHidden.value,
     defaultNavigationVisible: false
@@ -106,34 +230,34 @@ const uploadAccept = [
 ].join(',')
 
 const sampleByUrl = computed(() => {
-  return new Map(samples.map(sample => [sample.url, sample]))
+  return new Map(samples.value.map(sample => [sample.url, sample]))
 })
 
 const getPanelSourceLabel = (panel: ComparePanelState) => {
   if (panel.file) {
-    return panel.filename || '本地文件'
+    return panel.filename || compareCopy.value.localFile
   }
-  return sampleByUrl.value.get(panel.url)?.label || panel.url || '未选择'
+  return sampleByUrl.value.get(panel.url)?.label || panel.url || compareCopy.value.unselected
 }
 
 const getPanelDescription = (panel: ComparePanelState) => {
   if (panel.file) {
-    return '本地上传'
+    return compareCopy.value.localUpload
   }
-  return sampleByUrl.value.get(panel.url)?.description || 'URL 文件'
+  return sampleByUrl.value.get(panel.url)?.description || compareCopy.value.urlFile
 }
 
 const selectSample = (panel: ComparePanelState, url: string) => {
   panel.url = url
   panel.file = undefined
   panel.filename = ''
-  panel.status = '等待加载'
+  panel.status = compareCopy.value.statusWaiting
 }
 
 const handleUrlInput = (panel: ComparePanelState) => {
   panel.file = undefined
   panel.filename = ''
-  panel.status = panel.url ? '等待加载' : '未选择文件'
+  panel.status = panel.url ? compareCopy.value.statusWaiting : compareCopy.value.statusNoFile
 }
 
 const getEventValue = (event: Event) => {
@@ -149,7 +273,7 @@ const handleUpload = (panel: ComparePanelState, event: Event) => {
   panel.file = file
   panel.filename = file.name
   panel.url = ''
-  panel.status = '等待加载'
+  panel.status = compareCopy.value.statusWaiting
   input.value = ''
 }
 
@@ -171,8 +295,8 @@ const swapPanels = () => {
 }
 
 const resetSamples = () => {
-  selectSample(leftPanel, samples[0].url)
-  selectSample(rightPanel, samples[1].url)
+  selectSample(leftPanel, samples.value[0].url)
+  selectSample(rightPanel, samples.value[1].url)
 }
 
 const setViewerRef = (side: CompareSide, element: Element | ComponentPublicInstance | null) => {
@@ -291,13 +415,13 @@ const getAiChunkCount = (side: CompareSide) => {
 }
 
 const handleLoadStart = (panel: ComparePanelState) => {
-  panel.status = '加载中'
+  panel.status = compareCopy.value.statusLoading
 }
 
 const handleLoadComplete = (panel: ComparePanelState, context: FileViewerLifecycleContext) => {
   const chunkCount = getAiChunkCount(panel.side)
-  const aiSuffix = chunkCount ? ` · ${chunkCount} 个切片` : ''
-  panel.status = `${context.duration ? `已完成 ${context.duration}ms` : '已完成'}${aiSuffix}`
+  const aiSuffix = chunkCount ? ` · ${formatCompareCopy('aiChunks', { count: chunkCount })}` : ''
+  panel.status = `${context.duration ? `${compareCopy.value.statusComplete} ${context.duration}ms` : compareCopy.value.statusComplete}${aiSuffix}`
   void bindScrollSync()
   if (compareSearchQuery.value.trim()) {
     void runCompareSearch()
@@ -305,7 +429,23 @@ const handleLoadComplete = (panel: ComparePanelState, context: FileViewerLifecyc
 }
 
 const handleUnload = (panel: ComparePanelState) => {
-  panel.status = '已卸载'
+  panel.status = compareCopy.value.statusUnloaded
+}
+
+const setCompareLocale = (nextLocale: DemoLocale) => {
+  compareLocale.value = nextLocale
+  window.localStorage.setItem(DEMO_LOCALE_STORAGE_KEY, nextLocale)
+}
+
+const toggleCompareLocale = () => {
+  setCompareLocale(isChineseLocale.value ? 'en-US' : 'zh-CN')
+}
+
+const syncDocumentLocaleMeta = () => {
+  document.documentElement.lang = compareLocale.value
+  document.title = compareCopy.value.pageTitle
+  const description = document.querySelector('meta[name="description"]')
+  description?.setAttribute('content', compareCopy.value.pageDescription)
 }
 
 const handleDocumentKeydown = (event: KeyboardEvent) => {
@@ -327,6 +467,7 @@ const handleDocumentKeydown = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
+  syncDocumentLocaleMeta()
   document.addEventListener('keydown', handleDocumentKeydown)
 })
 
@@ -334,12 +475,29 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleDocumentKeydown)
 })
 
+watch(compareLocale, (nextLocale, previousLocale) => {
+  syncDocumentLocaleMeta()
+  leftPanel.title = compareCopy.value.leftPanel
+  rightPanel.title = compareCopy.value.rightPanel
+
+  const previousSamples = samplesByLocale[previousLocale] || []
+  const nextSamples = samplesByLocale[nextLocale]
+  const previousLeftDefault = previousSamples[0]?.url
+  const previousRightDefault = previousSamples[1]?.url
+  if (!leftPanel.file && (!leftPanel.url || leftPanel.url === previousLeftDefault)) {
+    selectSample(leftPanel, nextSamples[0].url)
+  }
+  if (!rightPanel.file && (!rightPanel.url || rightPanel.url === previousRightDefault)) {
+    selectSample(rightPanel, nextSamples[1].url)
+  }
+})
+
 </script>
 
 <template>
   <main class="compare-page">
     <header class="compare-header">
-      <a class="brand" href="/" aria-label="返回 Flyfish Viewer 主预览">
+      <a class="brand" href="/" :aria-label="compareCopy.backHome">
         <img :src="brandLogo" alt="">
         <span>
           <strong>Flyfish Viewer</strong>
@@ -347,34 +505,42 @@ onBeforeUnmount(() => {
         </span>
       </a>
       <div class="compare-title">
-        <h1>文档比对</h1>
-        <p>左右并排预览，支持示例、URL、本地上传、同步滚动、聚焦搜索和行级定位。</p>
+        <h1>{{ compareCopy.title }}</h1>
+        <p>{{ compareCopy.subtitle }}</p>
       </div>
       <div class="header-actions">
-        <div class="line-locator" aria-label="行级定位">
+        <button
+          class="locale-toggle"
+          type="button"
+          :aria-label="compareCopy.language"
+          @click="toggleCompareLocale"
+        >
+          {{ nextLocaleLabel }}
+        </button>
+        <div class="line-locator" :aria-label="compareCopy.lineLocator">
           <input
             v-model.trim="compareLineTarget"
             type="number"
             min="1"
-            placeholder="行号"
+            :placeholder="compareCopy.linePlaceholder"
             @keyup.enter="goToCompareLine"
           >
-          <button type="button" @click="goToCompareLine">定位</button>
+          <button type="button" @click="goToCompareLine">{{ compareCopy.locate }}</button>
         </div>
         <label class="sync-toggle">
           <input v-model="syncScrollEnabled" type="checkbox">
-          <span>同步滚动</span>
+          <span>{{ compareCopy.syncScroll }}</span>
         </label>
         <label class="sync-toggle">
           <input v-model="comparePdfToolbarHidden" type="checkbox">
-          <span>隐藏 PDF 工具栏</span>
+          <span>{{ compareCopy.hidePdfToolbar }}</span>
         </label>
-        <button type="button" @click="swapPanels">交换</button>
-        <button type="button" @click="resetSamples">重置</button>
+        <button type="button" @click="swapPanels">{{ compareCopy.swap }}</button>
+        <button type="button" @click="resetSamples">{{ compareCopy.reset }}</button>
       </div>
     </header>
 
-    <div v-if="compareSearchOpen" class="compare-search-popover" role="search" aria-label="文档比对搜索">
+    <div v-if="compareSearchOpen" class="compare-search-popover" role="search" :aria-label="compareCopy.compareSearch">
       <span class="compare-search-side">{{ activeSideLabel }}</span>
       <label class="compare-search-field">
         <Search class="compare-search-field-icon" aria-hidden="true" />
@@ -382,23 +548,38 @@ onBeforeUnmount(() => {
           ref="compareSearchInputRef"
           v-model.trim="compareSearchQuery"
           type="search"
-          placeholder="搜索当前文档"
+          :placeholder="compareCopy.searchCurrent"
           @keyup.enter="runCompareSearch"
         >
       </label>
       <span class="compare-search-summary">{{ compareSearchSummary }}</span>
-      <button type="button" title="上一个搜索结果" aria-label="上一个搜索结果" @click="previousCompareSearch">
+      <button
+        type="button"
+        :title="compareCopy.previousSearchResult"
+        :aria-label="compareCopy.previousSearchResult"
+        @click="previousCompareSearch"
+      >
         <ChevronUp class="compare-search-icon" aria-hidden="true" />
       </button>
-      <button type="button" title="下一个搜索结果" aria-label="下一个搜索结果" @click="nextCompareSearch">
+      <button
+        type="button"
+        :title="compareCopy.nextSearchResult"
+        :aria-label="compareCopy.nextSearchResult"
+        @click="nextCompareSearch"
+      >
         <ChevronDown class="compare-search-icon" aria-hidden="true" />
       </button>
-      <button type="button" title="关闭搜索" aria-label="关闭搜索" @click="closeCompareSearch">
+      <button
+        type="button"
+        :title="compareCopy.closeSearch"
+        :aria-label="compareCopy.closeSearch"
+        @click="closeCompareSearch"
+      >
         <X class="compare-search-icon" aria-hidden="true" />
       </button>
     </div>
 
-    <section class="compare-board" aria-label="文档左右比对">
+    <section class="compare-board" :aria-label="compareCopy.boardLabel">
       <article
         v-for="panel in [leftPanel, rightPanel]"
         :key="panel.side"
@@ -412,14 +593,14 @@ onBeforeUnmount(() => {
           <div class="panel-heading">
             <span class="status-dot" />
             <div>
-              <h2>{{ panel.title }}</h2>
+              <h2>{{ getPanelTitle(panel.side) }}</h2>
               <p>{{ panel.status }}</p>
             </div>
           </div>
 
           <div class="tool-grid">
             <label>
-              <span>示例</span>
+              <span>{{ compareCopy.sample }}</span>
               <select
                 :value="panel.url"
                 @change="selectSample(panel, getEventValue($event))"
@@ -450,7 +631,7 @@ onBeforeUnmount(() => {
                 :accept="uploadAccept"
                 @change="handleUpload(panel, $event)"
               >
-              <span>上传文件</span>
+              <span>{{ compareCopy.uploadFile }}</span>
             </label>
           </div>
         </div>

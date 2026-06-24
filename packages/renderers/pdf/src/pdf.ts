@@ -17,9 +17,11 @@ import {
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
   createFileViewerZoomChangeEmitter,
+  createFileViewerTranslator,
   buildPrintPageStyle,
   formatCssPixels,
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
+  resolveFileViewerLocale,
   type FileRenderContext,
   type FileRenderExportOptions,
   type FileViewerPdfOptions,
@@ -175,15 +177,16 @@ const resolvePdfWorkerUrl = (
 
 const buildOutlineItems = (
   items: Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>,
-  prefix = 'outline'
+  prefix = 'outline',
+  getFallbackTitle: (index: number) => string = index => `Outline ${index + 1}`
 ) => items.map((item, index): PdfOutlineItemView => {
   const id = `${prefix}-${index}`;
   const children = Array.isArray(item.items)
-    ? buildOutlineItems(item.items as Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>, id)
+    ? buildOutlineItems(item.items as Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>, id, getFallbackTitle)
     : [];
   return {
     id,
-    title: item.title || `目录 ${index + 1}`,
+    title: item.title || getFallbackTitle(index),
     dest: item.dest || null,
     items: children,
     expanded: index < 4,
@@ -197,8 +200,10 @@ export default async function renderPdf(
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document;
   const targetWindow = documentRef.defaultView || (typeof window !== 'undefined' ? window : null);
+  const t = createFileViewerTranslator(context?.options);
+  const resolvedLocale = resolveFileViewerLocale(context?.options);
   if (!targetWindow) {
-    throw new Error('PDF preview requires a browser window');
+    throw new Error(t('pdf.error.browserWindow'));
   }
   const options = context?.options?.pdf;
   const navigationEnabled = options?.navigation !== false;
@@ -255,31 +260,32 @@ export default async function renderPdf(
   root.dataset.viewerZoomProvider = 'pdf';
 
   const toolbar = createElement(documentRef, 'div', 'pdf-toolbar');
-  const navToggleButton = createButton(documentRef, 'pdf-icon-button', '切换导航窗格');
+  const navToggleButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.toggleNavigation'));
   navToggleButton.setAttribute('aria-pressed', String(navVisible));
   navToggleButton.append(createElement(documentRef, 'span', 'pdf-panel-icon'));
 
   const pageGroup = createElement(documentRef, 'div', 'pdf-toolbar-group');
-  const previousPageButton = createButton(documentRef, 'pdf-icon-button', '上一页', '‹');
+  const previousPageButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.previousPage'), '‹');
   const pageMeter = createElement(documentRef, 'span', 'pdf-page-meter');
   const pageMeterCurrent = createElement(documentRef, 'strong', undefined, '1');
   const pageMeterTotal = createElement(documentRef, 'span', undefined, '/ -');
   pageMeter.append(pageMeterCurrent, pageMeterTotal);
-  const nextPageButton = createButton(documentRef, 'pdf-icon-button', '下一页', '›');
+  const nextPageButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.nextPage'), '›');
   pageGroup.append(previousPageButton, pageMeter, nextPageButton);
 
   const zoomGroup = createElement(documentRef, 'div', 'pdf-toolbar-group pdf-toolbar-group--zoom');
-  const zoomOutButton = createButton(documentRef, 'pdf-icon-button', '缩小', '−');
+  const zoomOutButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.zoomOut'), '−');
   const scaleButton = createElement(documentRef, 'button', 'pdf-scale-button', '100%') as HTMLButtonElement;
   scaleButton.type = 'button';
-  scaleButton.title = '适合宽度';
-  const zoomInButton = createButton(documentRef, 'pdf-icon-button', '放大', '+');
+  scaleButton.title = t('pdf.toolbar.fitWidth');
+  scaleButton.setAttribute('aria-label', t('pdf.toolbar.fitWidth'));
+  const zoomInButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.zoomIn'), '+');
   zoomGroup.append(zoomOutButton, scaleButton, zoomInButton);
 
   const rotateGroup = createElement(documentRef, 'div', 'pdf-toolbar-group pdf-toolbar-group--rotate');
-  const rotateLeftButton = createButton(documentRef, 'pdf-icon-button', '向左旋转', '↺');
+  const rotateLeftButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.rotateLeft'), '↺');
   const rotationMeter = createElement(documentRef, 'span', 'pdf-rotation-meter', `${currentRotation}°`);
-  const rotateRightButton = createButton(documentRef, 'pdf-icon-button', '向右旋转', '↻');
+  const rotateRightButton = createButton(documentRef, 'pdf-icon-button', t('pdf.toolbar.rotateRight'), '↻');
   rotateGroup.append(rotateLeftButton, rotationMeter, rotateRightButton);
 
   if (navigationEnabled) {
@@ -290,17 +296,17 @@ export default async function renderPdf(
   const content = createElement(documentRef, 'div', 'pdf-content');
   const navPane = createElement(documentRef, 'aside', 'pdf-nav-pane');
   const navHead = createElement(documentRef, 'div', 'pdf-nav-head');
-  const navTitle = createElement(documentRef, 'span', undefined, '页面导航');
-  const navCount = createElement(documentRef, 'strong', undefined, '0 页');
+  const navTitle = createElement(documentRef, 'span', undefined, t('pdf.nav.pagesTitle'));
+  const navCount = createElement(documentRef, 'strong', undefined, t('pdf.nav.pageCount', { count: 0 }));
   navHead.append(navTitle, navCount);
 
   const navTabs = createElement(documentRef, 'div', 'pdf-nav-tabs');
   navTabs.setAttribute('role', 'tablist');
-  navTabs.setAttribute('aria-label', 'PDF 导航类型');
-  const pagesTab = createButton(documentRef, '', '页面') as HTMLButtonElement;
-  const outlineTab = createButton(documentRef, '', '目录') as HTMLButtonElement;
-  pagesTab.textContent = '页面';
-  outlineTab.textContent = '目录';
+  navTabs.setAttribute('aria-label', t('pdf.nav.typeLabel'));
+  const pagesTab = createButton(documentRef, '', t('pdf.nav.pagesTab')) as HTMLButtonElement;
+  const outlineTab = createButton(documentRef, '', t('pdf.nav.outlineTab')) as HTMLButtonElement;
+  pagesTab.textContent = t('pdf.nav.pagesTab');
+  outlineTab.textContent = t('pdf.nav.outlineTab');
   pagesTab.setAttribute('role', 'tab');
   outlineTab.setAttribute('role', 'tab');
   navTabs.append(pagesTab, outlineTab);
@@ -312,7 +318,7 @@ export default async function renderPdf(
   const container = createElement(documentRef, 'div', 'pdf-wrapper');
   container.dataset.viewerScrollContainer = 'true';
   const pdfViewerRoot = createElement(documentRef, 'div', 'pdfViewer');
-  const stateNode = createElement(documentRef, 'div', 'pdf-state', '正在加载 PDF...');
+  const stateNode = createElement(documentRef, 'div', 'pdf-state', t('pdf.state.loading'));
   container.append(pdfViewerRoot, stateNode);
   viewport.append(container);
   content.append(navPane, viewport);
@@ -368,7 +374,7 @@ export default async function renderPdf(
         }
         button.append(
           thumb,
-          createElement(documentRef, 'span', 'pdf-page-label', `第 ${page} 页`)
+          createElement(documentRef, 'span', 'pdf-page-label', t('pdf.nav.pageLabel', { page }))
         );
         button.addEventListener('click', () => goToPage(page));
         navList.append(button);
@@ -395,7 +401,7 @@ export default async function renderPdf(
     });
 
     if (!entries.length) {
-      navList.append(createElement(documentRef, 'div', 'pdf-outline-empty', '当前 PDF 没有可用目录'));
+      navList.append(createElement(documentRef, 'div', 'pdf-outline-empty', t('pdf.nav.outlineEmpty')));
     }
   };
 
@@ -409,7 +415,7 @@ export default async function renderPdf(
 
     const image = documentRef.createElement('img');
     image.src = imageUrl;
-    image.alt = `第 ${pageNumber} 页缩略图`;
+    image.alt = t('pdf.thumbnail.alt', { page: pageNumber });
     image.loading = 'lazy';
     thumb.replaceChildren(image);
     return true;
@@ -513,8 +519,10 @@ export default async function renderPdf(
     outlineTab.classList.toggle('active', navMode === 'outline');
     pagesTab.setAttribute('aria-selected', navMode === 'pages' ? 'true' : 'false');
     outlineTab.setAttribute('aria-selected', navMode === 'outline' ? 'true' : 'false');
-    navTitle.textContent = navMode === 'pages' ? '页面导航' : '目录导航';
-    navCount.textContent = navMode === 'pages' ? `${pageCount} 页` : `${outlineCount()} 项`;
+    navTitle.textContent = navMode === 'pages' ? t('pdf.nav.pagesTitle') : t('pdf.nav.outlineTitle');
+    navCount.textContent = navMode === 'pages'
+      ? t('pdf.nav.pageCount', { count: pageCount })
+      : t('pdf.nav.itemCount', { count: outlineCount() });
     pageMeterCurrent.textContent = String(currentPage);
     pageMeterTotal.textContent = `/ ${pageCount || '-'}`;
     scaleButton.textContent = scaleText();
@@ -525,7 +533,7 @@ export default async function renderPdf(
     zoomInButton.disabled = !canZoomIn();
     stateNode.hidden = loadStatus === 'ready';
     stateNode.classList.toggle('pdf-state--error', loadStatus === 'error');
-    stateNode.textContent = loadStatus === 'error' ? errorMessage : '正在加载 PDF...';
+    stateNode.textContent = loadStatus === 'error' ? errorMessage : t('pdf.state.loading');
     renderNavList();
   };
 
@@ -899,7 +907,11 @@ export default async function renderPdf(
         return;
       }
       outlineItems = Array.isArray(outline)
-        ? buildOutlineItems(outline as Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>)
+        ? buildOutlineItems(
+            outline as Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>,
+            'outline',
+            index => t('pdf.nav.outlineFallbackTitle', { index: index + 1 })
+          )
         : [];
       syncUi();
     } catch (error) {
@@ -918,7 +930,7 @@ export default async function renderPdf(
   const getPdfPrintPageSize = async (pageNumber = 1) => {
     const pdfDocument = pdfContext.document;
     if (!pdfDocument) {
-      throw new Error('PDF 尚未加载完成，请稍后再试');
+      throw new Error(t('pdf.error.notLoaded'));
     }
     const page = await pdfDocument.getPage(Math.min(Math.max(pageNumber, 1), pdfDocument.numPages));
     const viewport = page.getViewport({
@@ -944,13 +956,13 @@ export default async function renderPdf(
   const renderPdfPagesForExport = async (exportOptions: FileRenderExportOptions) => {
     const pdfDocument = pdfContext.document;
     if (!pdfDocument) {
-      throw new Error('PDF 尚未加载完成，请稍后再试');
+      throw new Error(t('pdf.error.notLoaded'));
     }
 
     const pagesHtml: string[] = [];
     for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
       if (destroyed) {
-        throw new Error('PDF 已卸载，无法继续打印');
+        throw new Error(t('pdf.error.unloaded'));
       }
 
       const page = await pdfDocument.getPage(pageNumber);
@@ -968,14 +980,14 @@ export default async function renderPdf(
       const canvas = documentRef.createElement('canvas');
       const canvasContext = canvas.getContext('2d');
       if (!canvasContext) {
-        throw new Error('当前浏览器无法创建 PDF 打印画布');
+        throw new Error(t('pdf.error.canvasUnavailable'));
       }
 
       canvas.width = Math.ceil(renderViewport.width);
       canvas.height = Math.ceil(renderViewport.height);
       await page.render({ canvas, canvasContext, viewport: renderViewport }).promise;
 
-      const pageTitle = `${exportOptions.title} - 第 ${pageNumber} 页`;
+      const pageTitle = t('pdf.export.pageTitle', { title: exportOptions.title, page: pageNumber });
       const pageStyle = [
         `--viewer-print-page-width:${formatCssPixels(pageWidth)}`,
         `--viewer-print-page-height:${formatCssPixels(pageHeight)}`,
@@ -1023,7 +1035,7 @@ export default async function renderPdf(
         eventBus,
         linkService: pdfLinkService,
         findController: pdfFindController,
-        l10n: new GenericL10n('zh-CN'),
+        l10n: new GenericL10n(resolvedLocale),
         enableAutoLinking: false,
       });
       pdfContext.viewer = pdfViewer;
@@ -1058,7 +1070,7 @@ export default async function renderPdf(
       eventBus.on('pagerendered', scheduleLegacyPageDimensionPatch);
 
       if (!context?.streamUrl && !buffer.byteLength) {
-        throw new Error('PDF 缺少可读取的数据源');
+        throw new Error(t('pdf.error.missingSource'));
       }
 
       const worker = createPdfWorker();
@@ -1118,7 +1130,7 @@ export default async function renderPdf(
         return;
       }
       loadStatus = 'error';
-      errorMessage = error instanceof Error ? error.message : 'PDF 加载失败';
+      errorMessage = error instanceof Error ? error.message : t('pdf.error.loadFailed');
       syncUi();
     }
   };

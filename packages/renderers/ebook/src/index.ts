@@ -1,5 +1,6 @@
 import {
   DEFAULT_RENDERER_DEFINITIONS,
+  type FileRenderContext,
   type FileRenderHandler,
   type FileViewerRenderedInstance,
   type FileViewerRendererPlugin,
@@ -22,13 +23,17 @@ export const umdRendererDefinition = umdDefinition;
 
 export const renderFileViewerEpub: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
-  target
-) => import('./epub.js').then(({ default: renderEpub }) => renderEpub(buffer, target));
+  target,
+  _type,
+  context?: FileRenderContext
+) => import('./epub.js').then(({ default: renderEpub }) => renderEpub(buffer, target, context));
 
 export const renderFileViewerUmd: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
-  target
-) => import('./umd.js').then(({ default: renderUmd }) => renderUmd(buffer, target));
+  target,
+  _type,
+  context?: FileRenderContext
+) => import('./umd.js').then(({ default: renderUmd }) => renderUmd(buffer, target, context));
 
 export const ebookRenderer: FileViewerRendererPlugin<FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>> = {
   id: 'file-viewer-renderer-epub',

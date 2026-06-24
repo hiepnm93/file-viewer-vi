@@ -1,4 +1,4 @@
-import { createFileViewerZoomChangeEmitter as createZoomChangeEmitter, registerFileViewerZoomProvider, unregisterFileViewerZoomProvider, } from '@file-viewer/core';
+import { createFileViewerTranslator, createFileViewerZoomChangeEmitter as createZoomChangeEmitter, registerFileViewerZoomProvider, unregisterFileViewerZoomProvider, } from '@file-viewer/core';
 const imageMimeMap = {
     avif: 'image/avif',
     bmp: 'image/bmp',
@@ -78,18 +78,18 @@ const applyImageZoom = (image, viewportHeight, zoom) => {
     }
     image.style.height = `${zoom * 100}%`;
 };
-const createLightbox = (src) => {
+const createLightbox = (src, t) => {
     const lightbox = document.createElement('div');
     lightbox.className = 'image-lightbox';
     lightbox.hidden = true;
     lightbox.setAttribute('role', 'dialog');
     lightbox.setAttribute('aria-modal', 'true');
     const image = document.createElement('img');
-    image.alt = 'Preview image';
+    image.alt = t('image.lightbox.alt');
     image.src = src;
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.setAttribute('aria-label', 'Close image preview');
+    closeButton.setAttribute('aria-label', t('image.lightbox.close'));
     closeButton.textContent = 'x';
     const close = () => {
         lightbox.hidden = true;
@@ -114,7 +114,8 @@ const createLightbox = (src) => {
         },
     };
 };
-export default async function renderImage(buffer, target, type) {
+export default async function renderImage(buffer, target, type, context) {
+    const t = createFileViewerTranslator(context === null || context === void 0 ? void 0 : context.options);
     const src = await resolveImageUrl(buffer, type);
     let zoom = 1;
     let viewportHeight = 0;
@@ -125,11 +126,11 @@ export default async function renderImage(buffer, target, type) {
     const stage = document.createElement('div');
     stage.className = 'image-stage';
     const image = document.createElement('img');
-    image.alt = '图片';
+    image.alt = t('image.alt');
     image.src = src;
     stage.append(image);
     root.append(stage);
-    const lightbox = createLightbox(src);
+    const lightbox = createLightbox(src, t);
     const openLightbox = () => lightbox.open();
     image.addEventListener('click', openLightbox);
     document.body.append(lightbox.element);

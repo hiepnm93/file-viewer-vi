@@ -19,8 +19,9 @@ export const geoRendererDefinition = geoDefinition;
 export const renderFileViewerGeo: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
   target,
-  type
-) => import('./geo.js').then(({ default: renderGeo }) => renderGeo(buffer, target, type));
+  type,
+  context
+) => import('./geo.js').then(({ default: renderGeo }) => renderGeo(buffer, target, type, context));
 
 export const geoRenderer: FileViewerRendererPlugin<FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>> = {
   id: 'file-viewer-renderer-geo',

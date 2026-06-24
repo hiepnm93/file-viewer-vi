@@ -61,9 +61,11 @@ The integration promise is simple: **one component, one line of code, fast integ
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
 - **Modular by design.** `@file-viewer/core` owns the format matrix, source loading, renderer protocol, lifecycle, and shared APIs. Heavy PDF, Word, PPTX, CAD, Typst, archive, EDA, and data-asset capabilities live in independent renderer packages; `preset-lite`, `preset-office`, `preset-engineering`, and `preset-all` compose product-shaped bundles; Vue, React, Svelte, jQuery, and Vanilla JavaScript packages stay focused on native ecosystem integration.
+- **Zero-config Vite assembly.** `@file-viewer/vite-plugin` auto-activates capabilities from installed `@file-viewer/preset-*` packages. Most apps only need `fileViewerRenderers({ copyAssets:true })`; heavy users can switch to `@file-viewer/preset-all` for the complete official demo matrix.
 - **Broad format coverage.** The current release maps 206 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, Mermaid, PlantUML, EPUB, UMD, Markdown, images, audio/video, source code, Git patch/bundle, fonts, PSD layer assets, and structured data.
 - **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
+- **Real internationalization.** `locale` supports `auto`, `zh-CN`, and `en-US`, and every built-in label can be overridden with `messages` / `i18n.messages`. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte packages share the same options, while the demo automatically selects the Chinese or English sample system from the browser language.
 - **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
 - **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
 - **Controlled theming.** `options.theme` supports `light`, `dark`, and `system`. Light business UIs can lock the viewer to `light` even when the operating system is in dark mode.
@@ -115,12 +117,12 @@ The motion preview above shows the main demo, Office/PDF reading surface, PPTX r
 
 Starting from 2.1.0, treat the component package and the format capability as separate layers. Components provide the native framework experience; renderer packages and presets decide which file formats enter your install, bundle, Worker/WASM asset plan, and future extension path.
 
-### Path 1: Minimal Import
+### Fastest Path: Component + Preset + Zero-config Vite Assembly
 
-Install only the renderer your product really needs. For example, PDF-only preview: the plugin generates the exact import from `formats`, injects it into the page by default, and framework components do not need a manual `renderers` prop.
+`@file-viewer/vite-plugin` can auto-activate capabilities from the `@file-viewer/preset-*` packages installed in the current project. In a normal Vite app, install one standard component package, the plugin, and one preset. `fileViewerRenderers({ copyAssets:true })` discovers the installed preset, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets. Components keep `autoRenderers:true` by default, so application code does not pass a manual `renderers` prop.
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
@@ -130,8 +132,8 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default {
   plugins: [
     fileViewerRenderers({
-      formats: ['pdf'],
       copyAssets: true
+      // No preset:'office' needed: installed @file-viewer/preset-office is discovered.
     })
   ]
 }
@@ -139,51 +141,69 @@ export default {
 
 ```ts
 export const viewerOptions = {
-  // Defaults to true; set false only when you pass renderers manually.
+  // Defaults to true; consumes renderers / presets auto-registered by the Vite plugin.
   autoRenderers: true
 }
 ```
 
-Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, but the `viewerOptions` semantics stay the same.
+Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, while preset assembly and `viewerOptions` semantics stay the same.
 
-### Path 2: Product-Shaped Composition
+### Internationalization
 
-Use `preset-office` for document platforms, `preset-engineering` for engineering attachments, `preset-lite` for common lightweight files, and `preset-all` for the full demo or internal all-format workbenches.
-
-```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
-```
+The viewer defaults to `locale:'auto'` and follows the browser language. Applications can lock the language or override built-in copy:
 
 ```ts
-import { fileViewerRenderers } from '@file-viewer/vite-plugin'
-
-export default {
-  plugins: [
-    fileViewerRenderers({
-      copyAssets: true
-      // No preset:'office' needed: the plugin discovers installed @file-viewer/preset-office.
-    })
-  ]
+const viewerOptions = {
+  locale: 'en-US',
+  messages: {
+    'toolbar.download': 'Save file'
+  }
 }
 ```
 
-Heavy users, internal attachment centers, or demo platforms can switch to the full preset while keeping the same Vite config:
+Custom Element users can also set the attribute directly:
+
+```html
+<flyfish-file-viewer src="/files/report.pdf" locale="en-US"></flyfish-file-viewer>
+```
+
+### Preset Selection
+
+| Need | Recommended package | Coverage |
+| --- | --- | --- |
+| Lightweight attachments | `@file-viewer/preset-lite` | Text, Markdown, code, image, audio, video |
+| Office documents | `@file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument |
+| Engineering files | `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA |
+| Full capability | `@file-viewer/preset-all` | The complete official demo matrix for heavy users, internal all-format workbenches, and validation environments |
+
+Heavy users that need every capability immediately can use the full one-shot install and keep the zero-config Vite setup above:
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
-When you want installed preset auto-discovery and source-hint scanning at the same time, use `preset:'auto'` or `autoPresets:true`:
+### Exact Cuts And Advanced Control
+
+When a product only needs one or a few formats, skip presets, install individual renderers, and let `formats` generate exact imports:
 
 ```ts
 fileViewerRenderers({
-  preset: 'auto',
-  scan: true,
   formats: ['pdf'],
   copyAssets: true,
   chunkStrategy: 'renderer'
 })
 ```
+
+Common customization options:
+
+| Option | Purpose |
+| --- | --- |
+| `copyAssets:true` | Copies matched renderer Worker, WASM, font, and vendor assets for intranet / offline deployment |
+| `scan:true` | Reads source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
+| `preset:'auto'` / `autoPresets:true` | Keeps installed preset discovery active while `scan:true` is enabled |
+| `formats` / `renderers` | Adds exact extensions or renderer ids |
+| `inject:false` | Disables auto injection so you can import `virtual:file-viewer-renderers` and pass `options.renderers` manually |
+| `chunkStrategy:'renderer'` | Splits chunks by renderer for better caching and debugging of heavy pipelines |
 
 ### Path 3: No Build Tool Or Script Tags
 
@@ -214,7 +234,7 @@ The current version follows the npm registry `latest` dist-tag. The ecosystem pu
 | Office renderer preset                     | [`@file-viewer/preset-office`](https://www.npmjs.com/package/@file-viewer/preset-office)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | none                                                                                                                                                     | `latest`       | One-shot composition for PDF, Word, Excel, PowerPoint, OFD, RTF, and OpenDocument preview lines                                                                                                                               |
 | Engineering renderer preset                | [`@file-viewer/preset-engineering`](https://www.npmjs.com/package/@file-viewer/preset-engineering)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | none                                                                                                                                                     | `latest`       | One-shot composition for CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, and EDA engineering attachment lines                                                                                                             |
 | Full renderer preset                       | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | none                                                                                                                                                     | `latest`       | One-shot composition for Word, PDF, OFD, PPTX, CAD, Draw.io/Excalidraw/Mermaid/PlantUML, Typst, XMind, archives, email, ebooks, code/Markdown/Patch/Git Bundle, images, audio/video, and the remaining complete core format matrix |
-| Vite on-demand assembly plugin             | [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | none                                                                                                                                                     | `latest`       | Generates `virtual:file-viewer-renderers` from `formats` or source hints, imports only matched renderer packages, verifies extension mappings against the full core format matrix, plans renderer chunks, and handles the PDF/OFD/CAD/Drawing/Typst/Archive/Data offline asset route           |
+| Vite on-demand assembly plugin             | [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | none                                                                                                                                                     | `latest`       | Auto-discovers installed `@file-viewer/preset-*` packages and activates matching capabilities with no preset config; can also generate `virtual:file-viewer-renderers` from `formats`, `renderers`, or source hints, import only matched renderer packages, plan renderer chunks, and handle offline assets |
 | Standalone renderer packages               | [`@file-viewer/renderer-word`](https://www.npmjs.com/package/@file-viewer/renderer-word), [`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf), [`@file-viewer/renderer-ofd`](https://www.npmjs.com/package/@file-viewer/renderer-ofd), [`@file-viewer/renderer-presentation`](https://www.npmjs.com/package/@file-viewer/renderer-presentation), [`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad), [`@file-viewer/renderer-drawing`](https://www.npmjs.com/package/@file-viewer/renderer-drawing), [`@file-viewer/renderer-3d`](https://www.npmjs.com/package/@file-viewer/renderer-3d), [`@file-viewer/renderer-data`](https://www.npmjs.com/package/@file-viewer/renderer-data), [`@file-viewer/renderer-eda`](https://www.npmjs.com/package/@file-viewer/renderer-eda), [`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst), [`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive), [`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email), [`@file-viewer/renderer-epub`](https://www.npmjs.com/package/@file-viewer/renderer-epub), [`@file-viewer/renderer-text`](https://www.npmjs.com/package/@file-viewer/renderer-text), [`@file-viewer/renderer-image`](https://www.npmjs.com/package/@file-viewer/renderer-image), [`@file-viewer/renderer-media`](https://www.npmjs.com/package/@file-viewer/renderer-media), [`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap), [`@file-viewer/renderer-geo`](https://www.npmjs.com/package/@file-viewer/renderer-geo) | none                                                                                                                                                     | `latest`       | Install Word, heavy layout, text-reading, image, media, 3D, data asset, EDA, and geospatial renderers only when the application needs DOCX/DOC, PDF, OFD, PPTX, CAD, Draw.io/Excalidraw/Mermaid/PlantUML, Typst, archive, email, EPUB, code/Markdown/Patch/Git Bundle, images/HEIC, HLS/MIDI, XMind, OLB/DRA/GDS/OASIS, PSD/SQLite, or GeoJSON/KML/GPX/SHP capabilities |
 | Vanilla JavaScript / Pure Web / script tag | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)                                                         | `latest`       | `mountViewer(container, options)`, Custom Element, IIFE, asset copy CLI, and Worker/WASM self-hosting tools                                                                                                                 |
 | Vue 3                                      | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3), [`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest`       | Native Vue 3 component, plugin installation, props, events, refs/controllers, and complete types                                                                                                                            |
@@ -317,7 +337,7 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 
 ## Engineering-Grade On-Demand Renderer Assembly
 
-One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Prefer a product-shaped preset first: `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover and inject installed presets. Regular application code does not need to pass `renderers`; components receive capability through the default `autoRenderers` flow.
+One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Install the component package for the current ecosystem, choose a product-shaped preset such as `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover installed presets and inject the renderer virtual module. Regular application code does not pass `renderers`; components receive capability through the default `autoRenderers` flow.
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office

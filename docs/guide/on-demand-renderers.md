@@ -1,4 +1,4 @@
-# 按需渲染架构计划
+# 按需渲染架构
 
 <div class="doc-kicker">On-demand Renderer Architecture</div>
 
@@ -67,6 +67,34 @@
 | 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 自动发现已安装 preset，必要时配置 `formats` / `scan` | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
 
 因此“分包”不是让用户手动拼很多碎片，而是把默认能力变轻，把完整能力保留为 preset，把工程化项目交给插件自动装配。
+
+## Vite 插件免配置自动装配
+
+`@file-viewer/vite-plugin` 的默认体验是“装了哪个 preset，就自动激活哪个 preset”。当配置为空或只配置 `copyAssets:true`，插件会扫描当前项目依赖中的 `@file-viewer/preset-*`，优先使用 `preset-all`，否则按已安装的 `lite`、`office`、`engineering` 组合注入能力。
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+框架组件默认 `autoRenderers:true`，因此 Vue、React、Svelte、jQuery、Vanilla JS / Pure Web 都会自动读取插件注入的 renderer registry。业务侧只有在严格裁剪、源码扫描、或需要完全手动管理 registry 时，才需要额外配置。
+
+| 定制项 | 作用 |
+| --- | --- |
+| `copyAssets:true` | 复制命中的 Worker、WASM、字体、PDF/CAD/Typst/Archive/Data 等离线资源 |
+| `preset:'auto'` / `autoPresets:true` | 与 `scan:true` 同时使用时，继续保留“按已安装 preset 自动激活能力” |
+| `formats` / `renderers` | 在 preset 外补充少数格式，或完全使用单 renderer 精确裁剪 |
+| `scan:true` | 从源码中的 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 等 hint 收集格式 |
+| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传给 `options.renderers` |
+| `chunkStrategy:'renderer'` | 使用 renderer 级 chunk 命名，便于缓存和定位体积问题 |
 
 ## 2.1.0 推荐接入步骤
 

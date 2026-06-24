@@ -29,6 +29,16 @@
 
 Flyfish Viewer is not trying to replace specialist editors. It gives business products a practical, embedded preview layer for common and uncommon attachments: documents, spreadsheets, slides, PDFs, archives, email, diagrams, CAD drawings, 3D assets, code, logs, media, and data files.
 
-The project keeps a pure TypeScript core under `@file-viewer/core`, split renderer packages for heavier formats, and native component packages for Web Components, Vue, React, jQuery, and Svelte.
+The project keeps a pure TypeScript core under `@file-viewer/core`, split renderer packages for heavier formats, native component packages for Web Components, Vue, React, jQuery, and Svelte, and product-shaped presets for common capability sets.
 
-The 2.1.0 architecture is modular by default: use minimal renderer imports when you need one exact format, or choose `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` when your product needs a composed capability set.
+The 2.1.0 architecture is modular by default: use minimal renderer imports when you need one exact format, or choose `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` when your product needs a composed capability set. In Vite projects, `@file-viewer/vite-plugin` auto-discovers installed presets and injects the capability layer, so most teams do not hand-write renderer imports.
+
+For heavy users that need everything immediately:
+
+```bash
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+```ts
+fileViewerRenderers({ copyAssets: true })
+```

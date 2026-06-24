@@ -2,18 +2,33 @@
 
 Flyfish File Viewer 的 Vite 按需 renderer 自动装配插件。它可以自动发现已安装的 `@file-viewer/preset-*` 包并注入到页面，让 Vue、React、Svelte、jQuery 和 Vanilla JS 组件无需手动传 `renderers` 就获得对应预览能力；也可以根据业务声明的文件格式生成 `virtual:file-viewer-renderers`，只 import 命中的 renderer 包，并提供 chunk 分组和离线 worker/WASM/字体资源复制能力。
 
-## 安装
+## 最快开始
+
+最快接入路径是“标准组件包 + Vite 插件 + 一个 preset”。插件会自动发现当前项目已安装的 `@file-viewer/preset-*`，无需手写 renderer import，也无需给插件显式写 `preset:'office'`：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/renderer-pdf
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
-需要更多格式时安装对应 renderer 包，例如 `@file-viewer/renderer-word`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-text`。
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 
-如果你希望用一个包完成常见场景装配，可以安装 preset：
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+组件默认 `autoRenderers:true`，会读取 Vite 插件注入的 preset / renderer registry。常规业务代码只要使用 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 即可获得对应能力。
+
+重度用户需要最快拥有全部预览能力时，直接安装全量 preset，Vite 配置保持不变：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
 可选 preset：
@@ -23,13 +38,19 @@ pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/preset-office
 - `@file-viewer/preset-engineering`: CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA。
 - `@file-viewer/preset-all`: 官方 demo 完整格式矩阵。
 
-重度用户需要最快拥有全部预览能力时，直接安装全量 preset：
-
-```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
-```
+如果只需要极少数格式，也可以安装对应 renderer 包，例如 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word`、`@file-viewer/renderer-ofd`、`@file-viewer/renderer-presentation`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-drawing`、`@file-viewer/renderer-3d`、`@file-viewer/renderer-data`、`@file-viewer/renderer-eda`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-text`，再通过 `formats` 做精确裁剪。
 
 ## vite.config.ts
+
+推荐默认使用 preset 自动装配。无参或只传 `copyAssets:true` 时，插件会自动发现已安装的 `@file-viewer/preset-*`，无需写 `preset:'office'`：
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+只有在需要源码扫描、单格式裁剪、或手动 registry 管理时，再使用自定义能力：
 
 ```ts
 import { defineConfig } from 'vite'
@@ -47,14 +68,6 @@ export default defineConfig({
 })
 ```
 
-或者使用 preset 一包装配。无参或只传 `copyAssets:true` 时，插件会自动发现已安装的 `@file-viewer/preset-*`，无需写 `preset:'office'`：
-
-```ts
-fileViewerRenderers({
-  copyAssets: true
-})
-```
-
 `inject` 默认开启，插件会把 `virtual:file-viewer-renderers` 注入 Vite HTML 入口，preset 导入后会自动注册到 core。常规业务只需要安装组件包和对应 preset，组件会通过 `autoRenderers` 默认读取这些能力。
 
 ```ts
@@ -63,6 +76,20 @@ const options = {
   autoRenderers: true
 }
 ```
+
+### 可定制能力
+
+| 选项 | 说明 |
+| --- | --- |
+| `copyAssets` | `true` 或 `{ publicDir, outDir, mode }`，复制匹配 renderer 的 Worker、WASM、字体和 vendor 资源 |
+| `preset` | `'auto' | 'lite' | 'office' | 'engineering' | 'all'`；默认无显式格式时自动发现已安装 preset |
+| `autoPresets` | `true` 或 preset 列表；常用于 `scan:true` 时继续自动激活已安装 preset |
+| `formats` | 文件扩展名或格式 token，例如 `['pdf', 'docx', 'dwg']` |
+| `renderers` | renderer id，例如 `['pdf', 'word', 'cad']` |
+| `scan` | `true` 或 `{ roots, extensions, maxFileSize }`，扫描源码 hint 并合并格式 |
+| `inject` | 默认 `true`；设为 `false` 后手动导入 `virtual:file-viewer-renderers` |
+| `chunkStrategy` | `'renderer' | 'none'`，控制是否注入 renderer 级 chunk 分组 |
+| `missingRenderer` | `'error' | 'warn' | 'ignore'`，控制尚未提取的 renderer 映射提示方式 |
 
 如果你需要严格控制 registry，可以关闭注入并手动传入：
 

@@ -1,4 +1,5 @@
 import { resolveFileViewerDataSqlWasmUrl } from '@file-viewer/core/assets';
+import { createFileViewerTranslator } from '@file-viewer/core';
 import type {
   FileRenderContext,
   FileViewerRenderedInstance,
@@ -46,7 +47,7 @@ const fontMimeMap: Record<string, string> = {
   woff2: 'font/woff2',
 };
 
-const sampleText = 'Flyfish Viewer 轻量预览 AaBbCc 1234567890';
+type DataTranslator = ReturnType<typeof createFileViewerTranslator>;
 
 const createStyle = (documentRef: Document) => {
   const style = documentRef.createElement('style');
@@ -121,25 +122,26 @@ const getWindowSqlWasmOverride = (documentRef: Document) => {
 const renderFont = async (
   documentRef: Document,
   buffer: ArrayBuffer,
-  type: string
+  type: string,
+  t: DataTranslator
 ): Promise<DataPreview> => {
   const family = `FlyfishPreviewFont-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const ownerWindow = documentRef.defaultView || (typeof window !== 'undefined' ? window : undefined);
   const FontFaceConstructor = ownerWindow?.FontFace || (typeof FontFace !== 'undefined' ? FontFace : undefined);
   if (!FontFaceConstructor) {
-    throw new Error('当前浏览器不支持 FontFace API');
+    throw new Error(t('data.error.fontFaceUnsupported'));
   }
 
   const face = new FontFaceConstructor(family, buffer);
   await face.load();
   documentRef.fonts?.add(face);
   return {
-    title: '字体文件预览',
+    title: t('data.title.font'),
     fontFamily: family,
     summary: [
-      { label: '格式', value: type.toUpperCase() },
-      { label: '大小', value: formatBytes(buffer.byteLength) },
-      { label: '渲染方式', value: 'Browser FontFace API' },
+      { label: t('data.label.format'), value: type.toUpperCase() },
+      { label: t('data.label.size'), value: formatBytes(buffer.byteLength) },
+      { label: t('data.label.rendering'), value: 'Browser FontFace API' },
     ],
   };
 };
@@ -147,7 +149,8 @@ const renderFont = async (
 const renderSqlite = async (
   documentRef: Document,
   buffer: ArrayBuffer,
-  context?: FileRenderContext
+  context: FileRenderContext | undefined,
+  t: DataTranslator
 ): Promise<DataPreview> => {
   const { default: initSqlJs } = await import('sql.js');
   const sqlWasmUrl = resolveFileViewerDataSqlWasmUrl(context?.options?.data, [
@@ -163,11 +166,11 @@ const renderSqlite = async (
       ? db.exec(`select * from "${firstTable.replace(/"/g, '""')}" limit 30`)[0]
       : null;
     return {
-      title: 'SQLite 数据库预览',
+      title: t('data.title.sqlite'),
       summary: [
-        { label: '对象数', value: String(tables.length) },
-        { label: '示例表', value: firstTable || '-' },
-        { label: '渲染方式', value: 'sql.js WASM' },
+        { label: t('data.label.objects'), value: String(tables.length) },
+        { label: t('data.label.sampleTable'), value: firstTable || '-' },
+        { label: t('data.label.rendering'), value: 'sql.js WASM' },
       ],
       rows: rows
         ? makeRows((rows.values as unknown[][]).map((values: unknown[]) => Object.fromEntries(
@@ -180,7 +183,7 @@ const renderSqlite = async (
   }
 };
 
-const renderParquet = async (buffer: ArrayBuffer): Promise<DataPreview> => {
+const renderParquet = async (buffer: ArrayBuffer, t: DataTranslator): Promise<DataPreview> => {
   const { parquetMetadataAsync, parquetReadObjects } = await import('hyparquet');
   const file = {
     byteLength: buffer.byteLength,
@@ -189,17 +192,17 @@ const renderParquet = async (buffer: ArrayBuffer): Promise<DataPreview> => {
   const metadata = await parquetMetadataAsync(file);
   const rows = await parquetReadObjects({ file, rowFormat: 'object', rowEnd: 30 });
   return {
-    title: 'Parquet 列式数据预览',
+    title: t('data.title.parquet'),
     summary: [
-      { label: '行数', value: metadata.num_rows?.toString?.() || '-' },
-      { label: '列数', value: String(metadata.schema?.filter(item => item.name).length || 0) },
-      { label: '渲染方式', value: 'hyparquet' },
+      { label: t('data.label.rows'), value: metadata.num_rows?.toString?.() || '-' },
+      { label: t('data.label.columns'), value: String(metadata.schema?.filter(item => item.name).length || 0) },
+      { label: t('data.label.rendering'), value: 'hyparquet' },
     ],
     rows: makeRows(rows),
   };
 };
 
-const renderAvro = async (buffer: ArrayBuffer): Promise<DataPreview> => {
+const renderAvro = async (buffer: ArrayBuffer, t: DataTranslator): Promise<DataPreview> => {
   const avro = await import('avsc/etc/browser/avsc.js');
   const decoder = (avro as any).createBlobDecoder(new Blob([buffer]));
   const rows: Array<Record<string, unknown>> = [];
@@ -217,27 +220,27 @@ const renderAvro = async (buffer: ArrayBuffer): Promise<DataPreview> => {
     decoder.on('error', reject);
   });
   return {
-    title: 'Avro 对象容器预览',
+    title: t('data.title.avro'),
     summary: [
-      { label: '示例行', value: String(rows.length) },
-      { label: 'Schema', value: schema ? '已读取' : '未读取' },
-      { label: '渲染方式', value: 'avsc' },
+      { label: t('data.label.sampleRows'), value: String(rows.length) },
+      { label: 'Schema', value: schema ? t('data.value.schemaRead') : t('data.value.schemaUnread') },
+      { label: t('data.label.rendering'), value: 'avsc' },
     ],
     rows: makeRows(rows),
     text: schema.slice(0, 6000),
   };
 };
 
-const renderWasm = async (buffer: ArrayBuffer): Promise<DataPreview> => {
+const renderWasm = async (buffer: ArrayBuffer, t: DataTranslator): Promise<DataPreview> => {
   const module = await WebAssembly.compile(buffer.slice(0));
   const imports = WebAssembly.Module.imports(module);
   const exports = WebAssembly.Module.exports(module);
   return {
-    title: 'WebAssembly 模块预览',
+    title: t('data.title.wasm'),
     summary: [
-      { label: '导入', value: String(imports.length) },
-      { label: '导出', value: String(exports.length) },
-      { label: '渲染方式', value: 'WebAssembly.Module' },
+      { label: t('data.label.imports'), value: String(imports.length) },
+      { label: t('data.label.exports'), value: String(exports.length) },
+      { label: t('data.label.rendering'), value: 'WebAssembly.Module' },
     ],
     rows: makeRows([
       ...imports.map(item => ({ kind: 'import', module: item.module, name: item.name, type: item.kind })),
@@ -246,22 +249,22 @@ const renderWasm = async (buffer: ArrayBuffer): Promise<DataPreview> => {
   };
 };
 
-const renderPostScriptLike = async (buffer: ArrayBuffer, type: string): Promise<DataPreview> => ({
-  title: type === 'eps' ? 'EPS 矢量文件摘要' : 'Illustrator 文件摘要',
+const renderPostScriptLike = async (buffer: ArrayBuffer, type: string, t: DataTranslator): Promise<DataPreview> => ({
+  title: type === 'eps' ? t('data.title.eps') : t('data.title.ai'),
   summary: [
-    { label: 'Magic', value: readMagic(buffer).replace(/\s/g, ' ') },
-    { label: '大小', value: formatBytes(buffer.byteLength) },
-    { label: '说明', value: type === 'ai' ? '非 PDF-compatible AI 按摘要展示' : 'PostScript 摘要展示' },
+    { label: t('data.label.magic'), value: readMagic(buffer).replace(/\s/g, ' ') },
+    { label: t('data.label.size'), value: formatBytes(buffer.byteLength) },
+    { label: t('data.label.note'), value: type === 'ai' ? t('data.note.aiSummary') : t('data.note.postscriptSummary') },
   ],
   text: extractReadableText(buffer),
 });
 
-const renderWebArchive = async (buffer: ArrayBuffer): Promise<DataPreview> => ({
-  title: 'WebArchive 摘要预览',
+const renderWebArchive = async (buffer: ArrayBuffer, t: DataTranslator): Promise<DataPreview> => ({
+  title: t('data.title.webarchive'),
   summary: [
-    { label: '容器', value: readMagic(buffer).startsWith('bplist') ? 'Binary plist' : 'WebArchive' },
-    { label: '大小', value: formatBytes(buffer.byteLength) },
-    { label: '说明', value: '安全提取可读片段，不执行网页脚本' },
+    { label: t('data.label.container'), value: readMagic(buffer).startsWith('bplist') ? 'Binary plist' : 'WebArchive' },
+    { label: t('data.label.size'), value: formatBytes(buffer.byteLength) },
+    { label: t('data.label.note'), value: t('data.note.webarchive') },
   ],
   text: extractReadableText(buffer),
 });
@@ -270,34 +273,35 @@ const buildPreview = async (
   documentRef: Document,
   buffer: ArrayBuffer,
   type: string,
-  context?: FileRenderContext
+  context: FileRenderContext | undefined,
+  t: DataTranslator
 ): Promise<DataPreview> => {
   if (type in fontMimeMap) {
-    return renderFont(documentRef, buffer, type);
+    return renderFont(documentRef, buffer, type, t);
   }
   if (type === 'sqlite') {
-    return renderSqlite(documentRef, buffer, context);
+    return renderSqlite(documentRef, buffer, context, t);
   }
   if (type === 'parquet') {
-    return renderParquet(buffer);
+    return renderParquet(buffer, t);
   }
   if (type === 'avro') {
-    return renderAvro(buffer);
+    return renderAvro(buffer, t);
   }
   if (type === 'wasm') {
-    return renderWasm(buffer);
+    return renderWasm(buffer, t);
   }
   if (type === 'ai' || type === 'eps') {
-    return renderPostScriptLike(buffer, type);
+    return renderPostScriptLike(buffer, type, t);
   }
   if (type === 'webarchive') {
-    return renderWebArchive(buffer);
+    return renderWebArchive(buffer, t);
   }
   return {
-    title: '数据资产摘要',
+    title: t('data.title.summary'),
     summary: [
-      { label: '格式', value: type.toUpperCase() },
-      { label: '大小', value: formatBytes(buffer.byteLength) },
+      { label: t('data.label.format'), value: type.toUpperCase() },
+      { label: t('data.label.size'), value: formatBytes(buffer.byteLength) },
     ],
     text: extractReadableText(buffer),
   };
@@ -355,7 +359,8 @@ const appendRows = (
 const renderPreviewDom = (
   documentRef: Document,
   preview: DataPreview,
-  type: string
+  type: string,
+  t: DataTranslator
 ) => {
   const root = createElement(documentRef, 'div', 'data-viewer');
   const card = createElement(documentRef, 'section', 'data-card');
@@ -368,7 +373,7 @@ const renderPreviewDom = (
   appendSummary(documentRef, card, preview.summary);
 
   if (preview.fontFamily) {
-    const fontPreview = createElement(documentRef, 'div', 'font-preview', sampleText);
+    const fontPreview = createElement(documentRef, 'div', 'font-preview', t('data.font.sample'));
     fontPreview.style.fontFamily = preview.fontFamily;
     card.appendChild(fontPreview);
   }
@@ -377,7 +382,7 @@ const renderPreviewDom = (
     const imageWrap = createElement(documentRef, 'div', 'asset-image');
     const image = createElement(documentRef, 'img') as HTMLImageElement;
     image.src = preview.image;
-    image.alt = '资产预览';
+    image.alt = t('data.image.alt');
     imageWrap.appendChild(image);
     card.appendChild(imageWrap);
   }
@@ -399,6 +404,7 @@ export default async function renderDataAsset(
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document;
   const normalizedType = type.toLowerCase();
+  const t = createFileViewerTranslator(context?.options);
 
   if (normalizedType === 'ai' && readMagic(buffer, 5) === '%PDF-' && context?.renderNestedBuffer) {
     const rendered = await context.renderNestedBuffer(buffer, 'pdf', target, context);
@@ -409,11 +415,11 @@ export default async function renderDataAsset(
 
   if (normalizedType === 'psd') {
     const { default: renderPsdAsset } = await import('./psd.js');
-    return renderPsdAsset(buffer, target);
+    return renderPsdAsset(buffer, target, context);
   }
 
-  const preview = await buildPreview(documentRef, buffer, normalizedType, context);
-  const root = renderPreviewDom(documentRef, preview, normalizedType);
+  const preview = await buildPreview(documentRef, buffer, normalizedType, context, t);
+  const root = renderPreviewDom(documentRef, preview, normalizedType, t);
   target.replaceChildren(createStyle(documentRef), root);
 
   return {

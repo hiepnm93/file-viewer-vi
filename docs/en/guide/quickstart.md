@@ -51,9 +51,52 @@ Heavy users that want the fastest full-capability setup can install the complete
 pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
-Use explicit options only when you need customization: `preset:'auto'` keeps installed preset auto-discovery while `scan:true` is enabled; `formats` adds exact renderers; `inject:false` lets you pass `virtual:file-viewer-renderers` manually.
+Use explicit options only when you need customization:
+
+| Option | Best fit |
+| --- | --- |
+| `copyAssets:true` | Copies Worker, WASM, PDF font, CAD, Typst, Archive, Data, and other offline assets; recommended for production and intranet deployments |
+| `formats` / `renderers` | Generates exact renderer imports when you do not use a preset, or when a preset needs a few extra formats |
+| `scan:true` | Scans source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
+| `preset:'auto'` / `autoPresets:true` | Keeps installed preset auto-discovery active while `scan:true` is enabled |
+| `inject:false` | Disables auto injection so you can import `virtual:file-viewer-renderers` and pass `options.renderers` manually |
+| `chunkStrategy:'renderer'` | Splits chunks by renderer for caching, debugging, and heavy-pipeline size analysis |
+
+The recommended default is `fileViewerRenderers({ copyAssets:true })`. Configure the advanced options only for strict bundle cuts, source-hint scanning, or complete registry control.
 
 ## Vanilla JavaScript / Web Component
+
+```bash
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+## Locale And Copy
+
+The viewer defaults to `locale: 'auto'`, which follows the browser language and resolves to Chinese or English. Use the same `options` object across Vanilla JS / Pure Web, Vue, React, jQuery, and Svelte when you need a fixed locale or custom copy:
+
+```ts
+const options = {
+  locale: 'en-US',
+  messages: {
+    'toolbar.download': 'Save file'
+  }
+}
+```
+
+You can also group locale and copy under `i18n`:
+
+```ts
+const options = {
+  i18n: {
+    locale: 'zh-CN',
+    messages(key, params, locale) {
+      return key === 'state.empty.title' ? '请选择文件' : undefined
+    }
+  }
+}
+```
+
+Web Component users can set `locale="en-US"` directly on `<flyfish-file-viewer>`.
 
 ```bash
 npm install @file-viewer/web
@@ -64,6 +107,7 @@ npm install @file-viewer/web
   id="viewer"
   src="/files/demo.pdf"
   filename="demo.pdf"
+  locale="en-US"
   theme="light"
   toolbar-position="bottom-right"
   style="display:block;height:720px"
@@ -114,7 +158,7 @@ createApp(App).use(FileViewer).mount('#app')
 ## React
 
 ```bash
-npm install @file-viewer/react
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```tsx

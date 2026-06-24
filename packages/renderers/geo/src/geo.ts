@@ -1,5 +1,7 @@
 import {
+  createFileViewerTranslator,
   readFileViewerText,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
 } from '@file-viewer/core';
 
@@ -63,7 +65,9 @@ const createSvgElement = <K extends keyof SVGElementTagNameMap>(tag: K) => {
   return document.createElementNS(SVG_NS, tag);
 };
 
-const normalizeGeoJson = (value: unknown): FeatureCollection => {
+type FileViewerTranslator = ReturnType<typeof createFileViewerTranslator>;
+
+const normalizeGeoJson = (value: unknown, t: FileViewerTranslator): FeatureCollection => {
   const candidate = value as {
     type?: string;
     coordinates?: unknown;
@@ -82,14 +86,14 @@ const normalizeGeoJson = (value: unknown): FeatureCollection => {
       features: [{ type: 'Feature', geometry: candidate as Geometry, properties: {} }],
     };
   }
-  throw new Error('无法识别的 GeoJSON 数据');
+  throw new Error(t('geo.error.unrecognized'));
 };
 
-const parseXml = (text: string) => {
+const parseXml = (text: string, t: FileViewerTranslator) => {
   const doc = new DOMParser().parseFromString(text, 'application/xml');
   const error = doc.querySelector('parsererror');
   if (error) {
-    throw new Error(error.textContent || 'XML 解析失败');
+    throw new Error(error.textContent || t('geo.error.xmlParseFailed'));
   }
   return doc;
 };
@@ -105,20 +109,24 @@ const normalizeGeoType = (type?: string) => {
   return normalized;
 };
 
-const parseGeo = async (buffer: ArrayBuffer, type: string): Promise<FeatureCollection> => {
+const parseGeo = async (
+  buffer: ArrayBuffer,
+  type: string,
+  t: FileViewerTranslator
+): Promise<FeatureCollection> => {
   if (type === 'geojson') {
-    return normalizeGeoJson(JSON.parse(await readFileViewerText(buffer)));
+    return normalizeGeoJson(JSON.parse(await readFileViewerText(buffer)), t);
   }
   if (type === 'kml' || type === 'gpx') {
     const toGeoJSON = await import('@tmcw/togeojson');
-    const doc = parseXml(await readFileViewerText(buffer));
-    return normalizeGeoJson(type === 'kml' ? toGeoJSON.kml(doc) : toGeoJSON.gpx(doc));
+    const doc = parseXml(await readFileViewerText(buffer), t);
+    return normalizeGeoJson(type === 'kml' ? toGeoJSON.kml(doc) : toGeoJSON.gpx(doc), t);
   }
   if (type === 'shp') {
     const { default: shp } = await import('shpjs');
-    return normalizeGeoJson(await shp(buffer));
+    return normalizeGeoJson(await shp(buffer), t);
   }
-  throw new Error(`不支持 .${type} 地理格式`);
+  throw new Error(t('geo.error.unsupported', { type }));
 };
 
 const walkPositions = (geometry: Geometry | null, visit: (position: Position) => void) => {
@@ -271,7 +279,11 @@ const appendDescriptionItem = (list: HTMLDListElement, label: string, value: str
   list.appendChild(row);
 };
 
-const renderCollection = (collection: FeatureCollection, type: string) => {
+const renderCollection = (
+  collection: FeatureCollection,
+  type: string,
+  t: FileViewerTranslator
+) => {
   const root = document.createElement('div');
   root.className = 'geo-viewer';
   const features = collection.features || [];
@@ -282,14 +294,14 @@ const renderCollection = (collection: FeatureCollection, type: string) => {
   const badge = document.createElement('span');
   badge.textContent = type.toUpperCase();
   const heading = document.createElement('h2');
-  heading.textContent = '地理数据预览';
+  heading.textContent = t('geo.title');
   const description = document.createElement('dl');
-  appendDescriptionItem(description, '要素数', features.length);
-  appendDescriptionItem(description, '范围', formatBounds(bounds));
+  appendDescriptionItem(description, t('geo.featureCount'), features.length);
+  appendDescriptionItem(description, t('geo.bounds'), formatBounds(bounds));
   const counts = document.createElement('div');
   counts.className = 'geo-counts';
   const countsHeading = document.createElement('strong');
-  countsHeading.textContent = '几何类型';
+  countsHeading.textContent = t('geo.geometryTypes');
   counts.appendChild(countsHeading);
   buildGeometryCounts(features).forEach(([name, count]) => {
     const row = document.createElement('p');
@@ -303,7 +315,7 @@ const renderCollection = (collection: FeatureCollection, type: string) => {
   const svg = createSvgElement('svg');
   svg.setAttribute('viewBox', `0 0 ${GEO_WIDTH} ${GEO_HEIGHT}`);
   svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', '地理数据 SVG 预览');
+  svg.setAttribute('aria-label', t('geo.aria'));
   const rect = createSvgElement('rect');
   rect.setAttribute('width', String(GEO_WIDTH));
   rect.setAttribute('height', String(GEO_HEIGHT));
@@ -320,18 +332,20 @@ const renderCollection = (collection: FeatureCollection, type: string) => {
 export default async function renderGeo(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type?: string
+  type?: string,
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const normalizedType = normalizeGeoType(type);
+  const t = createFileViewerTranslator(context?.options);
   const style = createStyle();
   const state = document.createElement('div');
   state.className = 'geo-state';
-  state.textContent = '正在解析地理数据...';
+  state.textContent = t('geo.loading');
   target.replaceChildren(style, state);
 
   try {
-    const collection = await parseGeo(buffer, normalizedType);
-    target.replaceChildren(style, renderCollection(collection, normalizedType));
+    const collection = await parseGeo(buffer, normalizedType, t);
+    target.replaceChildren(style, renderCollection(collection, normalizedType, t));
   } catch (error) {
     console.error(error);
     state.classList.add('error');

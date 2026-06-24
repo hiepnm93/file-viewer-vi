@@ -10,6 +10,28 @@ The full renderer preset for Flyfish File Viewer. It packages the current comple
 
 ## Usage
 
+In Vite projects, the recommended path is to let `@file-viewer/vite-plugin` discover this preset automatically:
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+```ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+}
+```
+
+Components keep `autoRenderers:true` by default, so application code does not pass `allRenderers` manually.
+
+Pass it directly only when you need full manual registry control:
+
 ```ts
 import FileViewer from '@file-viewer/vue3'
 import { allRenderers } from '@file-viewer/preset-all'

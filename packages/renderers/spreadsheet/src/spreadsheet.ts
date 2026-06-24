@@ -1,5 +1,6 @@
 import {
   createFileViewerWorkerController,
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   registerFileViewerZoomProvider,
   resolveFileViewerSpreadsheetWorkerUrl,
@@ -300,6 +301,7 @@ const renderFileViewerSpreadsheet = async (
 ): Promise<AppWrapper> => {
   const documentRef = target.ownerDocument;
   const EVirtTable = await loadEVirtTable();
+  const t = createFileViewerTranslator(context?.options);
   const zoomEmitter = createZoomChangeEmitter();
 
   const root = documentRef.createElement('div');
@@ -308,17 +310,26 @@ const renderFileViewerSpreadsheet = async (
 
   const loading = documentRef.createElement('div');
   loading.className = 'loading';
-  loading.innerHTML = `
-    <div class="loading-card">
-      <div class="loading-brand">XLSX</div>
-      <div class="loading-copy">
-        <span class="loading-kicker">Excel 表格</span>
-        <strong data-loading-title>正在解析 Excel 工作簿</strong>
-        <p>正在准备工作表、样式和大数据视口，请稍候。</p>
-      </div>
-      <span class="loading-spinner"></span>
-    </div>
-  `;
+  const loadingCard = documentRef.createElement('div');
+  loadingCard.className = 'loading-card';
+  const loadingBrand = documentRef.createElement('div');
+  loadingBrand.className = 'loading-brand';
+  loadingBrand.textContent = 'XLSX';
+  const loadingCopy = documentRef.createElement('div');
+  loadingCopy.className = 'loading-copy';
+  const loadingKicker = documentRef.createElement('span');
+  loadingKicker.className = 'loading-kicker';
+  loadingKicker.textContent = t('spreadsheet.loading.kicker');
+  const loadingTitle = documentRef.createElement('strong');
+  loadingTitle.dataset.loadingTitle = 'true';
+  loadingTitle.textContent = t('spreadsheet.loading.title');
+  const loadingHint = documentRef.createElement('p');
+  loadingHint.textContent = t('spreadsheet.loading.hint');
+  loadingCopy.append(loadingKicker, loadingTitle, loadingHint);
+  const loadingSpinner = documentRef.createElement('span');
+  loadingSpinner.className = 'loading-spinner';
+  loadingCard.append(loadingBrand, loadingCopy, loadingSpinner);
+  loading.appendChild(loadingCard);
 
   const error = documentRef.createElement('div');
   error.className = 'error hidden';
@@ -328,11 +339,13 @@ const renderFileViewerSpreadsheet = async (
 
   const sheetLoading = documentRef.createElement('div');
   sheetLoading.className = 'sheet-loading hidden';
-  sheetLoading.innerHTML = `
-    <span class="sheet-loading-dot"></span>
-    <span>正在平滑补充可视区数据</span>
-    <span class="sheet-loading-summary"></span>
-  `;
+  const sheetLoadingDot = documentRef.createElement('span');
+  sheetLoadingDot.className = 'sheet-loading-dot';
+  const sheetLoadingText = documentRef.createElement('span');
+  sheetLoadingText.textContent = t('spreadsheet.loading.streaming');
+  const sheetLoadingSummary = documentRef.createElement('span');
+  sheetLoadingSummary.className = 'sheet-loading-summary';
+  sheetLoading.append(sheetLoadingDot, sheetLoadingText, sheetLoadingSummary);
 
   const tableHostShell = documentRef.createElement('div');
   tableHostShell.className = 'table-host';
@@ -350,7 +363,7 @@ const renderFileViewerSpreadsheet = async (
   toolbar.className = 'toolbar';
   const sheetTabsBar = documentRef.createElement('div');
   sheetTabsBar.className = 'btn-group';
-  sheetTabsBar.setAttribute('aria-label', '工作表列表');
+  sheetTabsBar.setAttribute('aria-label', t('spreadsheet.tabs.ariaLabel'));
   const summary = documentRef.createElement('div');
   summary.className = 'summary';
   toolbar.append(sheetTabsBar, summary);
@@ -414,10 +427,12 @@ const renderFileViewerSpreadsheet = async (
 
   const getSheetLoadingText = () => {
     if (!sheets.length) {
-      return '正在解析 Excel 工作簿，请耐心等待...';
+      return t('spreadsheet.state.parsingWorkbook');
     }
     const activeName = getActiveSheet()?.name;
-    return activeName ? `正在准备「${activeName}」...` : '正在准备工作表内容...';
+    return activeName
+      ? t('spreadsheet.state.preparingSheetNamed', { name: activeName })
+      : t('spreadsheet.state.preparingSheet');
   };
 
   const getCachedSummary = () => {
@@ -425,7 +440,10 @@ const renderFileViewerSpreadsheet = async (
       return '';
     }
     const cachedRows = Math.min(loadedWindowCount * WINDOW_SIZE, totalRows);
-    return `已缓存 ${cachedRows.toLocaleString()} / ${totalRows.toLocaleString()} 行`;
+    return t('spreadsheet.state.cachedRows', {
+      cached: cachedRows.toLocaleString(),
+      total: totalRows.toLocaleString(),
+    });
   };
 
   const getStatusSummary = () => {
@@ -435,9 +453,12 @@ const renderFileViewerSpreadsheet = async (
       return '';
     }
     if (!cols) {
-      return `共 ${rows} 行，按视口预取平滑加载`;
+      return t('spreadsheet.state.rows', { rows: rows.toLocaleString() });
     }
-    return `共 ${rows} 行，${cols} 列，按视口预取平滑加载`;
+    return t('spreadsheet.state.rowsAndColumns', {
+      rows: rows.toLocaleString(),
+      cols: cols.toLocaleString(),
+    });
   };
 
   const getZoomState = (): FileViewerZoomState => ({
@@ -1134,14 +1155,14 @@ const renderFileViewerSpreadsheet = async (
       virtualState.loadingWindows.clear();
       syncWindowStats();
     }
-    errorMessage = message || 'Excel 解析失败';
+    errorMessage = message || t('spreadsheet.error.parseFailed');
     renderChrome();
   });
 
   controller.onWorkerError((event) => {
     sheetInitializing = false;
     loadingState = false;
-    errorMessage = event.message || 'Excel Worker 运行失败';
+    errorMessage = event.message || t('spreadsheet.error.workerFailed');
     renderChrome();
   });
 

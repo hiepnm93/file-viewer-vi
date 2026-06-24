@@ -6,6 +6,7 @@ import {
   resolveFileViewerTypstRendererWasmUrl,
 } from '@file-viewer/core/assets';
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter,
   formatCssPixels,
   registerFileViewerZoomProvider,
@@ -74,8 +75,8 @@ let typstEngineConfigKey = '';
 const DEFAULT_TYPST_RENDER_TIMEOUT_MS = 180000;
 
 class TypstRenderTimeoutError extends Error {
-  constructor(timeoutMs: number) {
-    super(`Typst WASM / 字体加载或编译超过 ${Math.round(timeoutMs / 1000)} 秒`);
+  constructor(timeoutMs: number, message?: string) {
+    super(message || `Typst WASM / font loading or compilation exceeded ${Math.round(timeoutMs / 1000)} seconds`);
     this.name = 'TypstRenderTimeoutError';
   }
 }
@@ -270,12 +271,12 @@ const serializeNode = (node: Node) => {
   return new XMLSerializer().serializeToString(node);
 };
 
-const parseTypstSvgPages = (svgText: string): TypstRenderedPage[] => {
+const parseTypstSvgPages = (svgText: string, svgParseFailedMessage: string): TypstRenderedPage[] => {
   const parser = new DOMParser();
   const documentSvg = parser.parseFromString(svgText, 'image/svg+xml');
   const parseError = documentSvg.querySelector('parsererror');
   if (parseError) {
-    throw new Error(parseError.textContent || 'Typst SVG 解析失败');
+    throw new Error(parseError.textContent || svgParseFailedMessage);
   }
 
   removeUnsafeSvgContent(documentSvg);
@@ -340,20 +341,23 @@ const formatTypstError = (error: unknown) => {
   return String(error);
 };
 
-const formatTypstRuntimeError = (error: unknown) => {
+const formatTypstRuntimeError = (
+  error: unknown,
+  t: ReturnType<typeof createFileViewerTranslator>
+) => {
   const message = formatTypstError(error);
 
   if (error instanceof TypstRenderTimeoutError) {
     return [
       message,
-      '请检查 Typst compiler WASM、renderer WASM、字体目录的下载速度和缓存策略；弱网或跨境部署可通过 options.typst.renderTimeoutMs 调大浏览器端加载/编译超时。'
+      t('typst.error.timeoutHint')
     ].join('\n\n');
   }
 
   if (isTypstAssetLoadError(error)) {
     return [
       message,
-      'Typst 需要本地 compiler / renderer WASM 和字体目录。请运行 file-viewer-copy-assets，或配置 options.typst.compilerWasmUrl / options.typst.rendererWasmUrl / options.typst.fontAssetsUrl，并确认服务器以 application/wasm 返回 WASM。'
+      t('typst.error.assetHint')
     ].join('\n\n');
   }
 
@@ -371,14 +375,14 @@ const normalizeRenderTimeoutMs = (timeoutMs?: number) => {
   return Math.max(0, timeoutMs);
 };
 
-const withRenderTimeout = async <T>(promise: Promise<T>, timeoutMs: number) => {
+const withRenderTimeout = async <T>(promise: Promise<T>, timeoutMs: number, timeoutMessage?: string) => {
   if (timeoutMs <= 0) {
     return promise;
   }
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new TypstRenderTimeoutError(timeoutMs)), timeoutMs);
+    timeoutId = setTimeout(() => reject(new TypstRenderTimeoutError(timeoutMs, timeoutMessage)), timeoutMs);
   });
 
   try {
@@ -483,12 +487,19 @@ const buildExportAdapter = (
   };
 };
 
-const getPageSummary = (pages: TypstRenderedPage[]) => {
+const getPageSummary = (
+  pages: TypstRenderedPage[],
+  t: ReturnType<typeof createFileViewerTranslator>
+) => {
   if (!pages.length) {
-    return '0 pages';
+    return t('typst.pageSummary.empty');
   }
   const firstPage = pages[0];
-  return `${pages.length} pages / ${Math.round(firstPage.width)} x ${Math.round(firstPage.height)} pt`;
+  return t('typst.pageSummary.ready', {
+    count: pages.length,
+    width: Math.round(firstPage.width),
+    height: Math.round(firstPage.height),
+  });
 };
 
 export default async function renderTypst(
@@ -497,6 +508,7 @@ export default async function renderTypst(
   _type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
+  const t = createFileViewerTranslator(context?.options);
   const source = await readFileViewerText(buffer);
   const documentRef = target.ownerDocument || document;
   const zoomEmitter = createFileViewerZoomChangeEmitter();
@@ -513,8 +525,8 @@ export default async function renderTypst(
   const toolbar = createElement(documentRef, 'header', 'typst-toolbar');
   const titleGroup = createElement(documentRef, 'div');
   const title = createElement(documentRef, 'strong', undefined, context?.filename || 'Typst document');
-  const summary = createElement(documentRef, 'span', undefined, 'Typst WASM renderer');
-  const status = createElement(documentRef, 'em', undefined, '正在编译');
+  const summary = createElement(documentRef, 'span', undefined, t('typst.summaryRenderer'));
+  const status = createElement(documentRef, 'em', undefined, t('typst.status.compiling'));
   const body = createElement(documentRef, 'div');
 
   titleGroup.append(title, summary);
@@ -569,8 +581,8 @@ export default async function renderTypst(
     loading.setAttribute('role', 'status');
     loading.append(
       createElement(documentRef, 'span'),
-      createElement(documentRef, 'strong', undefined, '正在解析 Typst'),
-      createElement(documentRef, 'p', undefined, '加载编译器并生成页面预览...')
+      createElement(documentRef, 'strong', undefined, t('typst.loading.title')),
+      createElement(documentRef, 'p', undefined, t('typst.loading.hint'))
     );
     body.replaceChildren(loading);
   };
@@ -578,7 +590,7 @@ export default async function renderTypst(
   const renderError = () => {
     const error = createElement(documentRef, 'div', 'typst-error');
     error.append(
-      createElement(documentRef, 'strong', undefined, 'Typst 渲染失败'),
+      createElement(documentRef, 'strong', undefined, t('typst.error.title')),
       createElement(documentRef, 'pre', undefined, errorMessage)
     );
     body.replaceChildren(error);
@@ -605,13 +617,13 @@ export default async function renderTypst(
 
   const syncUi = () => {
     summary.textContent = state === 'ready'
-      ? getPageSummary(pages)
-      : 'Typst WASM renderer';
+      ? getPageSummary(pages, t)
+      : t('typst.summaryRenderer');
     status.textContent = state === 'loading'
-      ? '正在编译'
+      ? t('typst.status.compiling')
       : state === 'error'
-        ? '编译失败'
-        : '已渲染';
+        ? t('typst.status.failed')
+        : t('typst.status.rendered');
 
     if (state === 'loading') {
       renderLoading();
@@ -646,7 +658,7 @@ export default async function renderTypst(
             css: true,
             js: false,
           },
-        }), timeoutMs);
+        }), timeoutMs, t('typst.error.timeout', { seconds: Math.round(timeoutMs / 1000) }));
       } catch (error) {
         lastError = error;
         if (error instanceof TypstRenderTimeoutError || !isTypstAssetLoadError(error)) {
@@ -655,7 +667,7 @@ export default async function renderTypst(
       }
     }
 
-    throw lastError instanceof Error ? lastError : new Error('Typst WASM 加载失败');
+    throw lastError instanceof Error ? lastError : new Error(t('typst.error.wasmLoadFailed'));
   };
 
   const render = async () => {
@@ -673,7 +685,7 @@ export default async function renderTypst(
         return;
       }
 
-      pages = parseTypstSvgPages(svg);
+      pages = parseTypstSvgPages(svg, t('typst.error.svgParseFailed'));
       state = 'ready';
       syncUi();
       registerExportAdapter();
@@ -682,7 +694,7 @@ export default async function renderTypst(
       if (disposed || token !== renderToken) {
         return;
       }
-      errorMessage = formatTypstRuntimeError(error);
+      errorMessage = formatTypstRuntimeError(error, t);
       state = 'error';
       syncUi();
     }

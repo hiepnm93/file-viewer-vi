@@ -1,6 +1,8 @@
 import type {
+  FileRenderContext,
   FileViewerRenderedInstance,
 } from '@file-viewer/core';
+import { createFileViewerTranslator } from '@file-viewer/core';
 import {
   parseUmdBook,
   type UmdBook,
@@ -71,15 +73,47 @@ const createButton = (label: string, className: string) => {
   return button;
 };
 
-const buildMetaLine = (book: UmdBook | null, chapter?: UmdChapter) => {
+const buildMetaLine = (book: UmdBook | null, readingText: string, chapter?: UmdChapter) => {
   if (!book) {
-    return chapter?.title || '阅读中';
+    return chapter?.title || readingText;
   }
   return [
     book.author,
     book.category,
     book.publishedAt,
-  ].filter(Boolean).join(' / ') || chapter?.title || '阅读中';
+  ].filter(Boolean).join(' / ') || chapter?.title || readingText;
+};
+
+const createUmdTextLocalizer = (t: ReturnType<typeof createFileViewerTranslator>) => {
+  const localize = (value: string) => {
+    if (value === 'UMD 电子书') {
+      return t('umd.title');
+    }
+    const chapterMatch = /^章节\s+(\d+)$/.exec(value);
+    if (chapterMatch) {
+      return t('umd.chapterFallback', { index: chapterMatch[1] });
+    }
+    const galleryMatch = /^图集\s+(\d+)$/.exec(value);
+    if (galleryMatch) {
+      return t('umd.galleryFallback', { index: galleryMatch[1] });
+    }
+    if (value === 'UMD 正文长度小于声明长度，文件可能不完整') {
+      return t('umd.warningBodyTooShort');
+    }
+    if (value === 'UMD 文件结构不完整，读取时遇到意外结尾') {
+      return t('umd.error.unexpectedEnd');
+    }
+    if (value === '不是有效的 UMD 电子书文件') {
+      return t('umd.error.invalidFile');
+    }
+    return value;
+  };
+  return {
+    localize,
+    localizeJoinedWarnings(warnings: string[]) {
+      return warnings.filter(Boolean).map(localize).join('；');
+    },
+  };
 };
 
 const copyImageBytes = (image: UmdImage) => {
@@ -90,8 +124,11 @@ const copyImageBytes = (image: UmdImage) => {
 
 export default async function renderUmd(
   buffer: ArrayBuffer,
-  target: HTMLDivElement
+  target: HTMLDivElement,
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
+  const t = createFileViewerTranslator(context?.options);
+  const { localize, localizeJoinedWarnings } = createUmdTextLocalizer(t);
   const objectUrls = new Map<string, string>();
   let book: UmdBook | null = null;
   let activeIndex = 0;
@@ -108,21 +145,21 @@ export default async function renderUmd(
   const tocButton = document.createElement('button');
   tocButton.type = 'button';
   tocButton.className = 'umd-icon-button active';
-  tocButton.title = '目录';
+  tocButton.title = t('ebook.toc');
   tocButton.appendChild(document.createElement('span'));
 
   const title = document.createElement('div');
   title.className = 'umd-title';
-  const titleText = appendText(title, 'strong', 'UMD 电子书');
-  const metaText = appendText(title, 'span', '阅读中');
+  const titleText = appendText(title, 'strong', t('umd.title'));
+  const metaText = appendText(title, 'span', t('ebook.reading'));
 
   const actions = document.createElement('div');
   actions.className = 'umd-actions';
-  const prevButton = createButton('上一章', 'umd-button');
+  const prevButton = createButton(t('umd.previousChapter'), 'umd-button');
   const progress = document.createElement('span');
   progress.className = 'umd-progress';
   progress.textContent = '0/0';
-  const nextButton = createButton('下一章', 'umd-button');
+  const nextButton = createButton(t('umd.nextChapter'), 'umd-button');
   actions.append(prevButton, progress, nextButton);
   toolbar.append(tocButton, title, actions);
 
@@ -132,8 +169,8 @@ export default async function renderUmd(
   toc.className = 'umd-toc';
   const tocHead = document.createElement('div');
   tocHead.className = 'umd-toc-head';
-  appendText(tocHead, 'strong', '目录');
-  const tocCount = appendText(tocHead, 'span', '0 项');
+  appendText(tocHead, 'strong', t('ebook.toc'));
+  const tocCount = appendText(tocHead, 'span', t('ebook.itemCount', { count: 0 }));
   const tocList = document.createElement('div');
   tocList.className = 'umd-toc-list';
   toc.append(tocHead, tocList);
@@ -144,7 +181,7 @@ export default async function renderUmd(
   stage.className = 'umd-stage';
   const state = document.createElement('div');
   state.className = 'umd-state';
-  state.textContent = '正在解析 UMD...';
+  state.textContent = t('umd.loading');
   stageWrap.append(stage, state);
   body.append(toc, stageWrap);
   root.append(toolbar, body);
@@ -173,14 +210,14 @@ export default async function renderUmd(
   const updateChrome = () => {
     const chapter = getCurrentChapter();
     const total = book?.chapters.length || 0;
-    titleText.textContent = book?.title || 'UMD 电子书';
-    metaText.textContent = buildMetaLine(book, chapter);
+    titleText.textContent = book?.title ? localize(book.title) : t('umd.title');
+    metaText.textContent = localize(buildMetaLine(book, t('ebook.reading'), chapter));
     progress.textContent = total ? `${activeIndex + 1}/${total}` : '0/0';
     prevButton.disabled = !book || activeIndex <= 0;
     nextButton.disabled = !book || !total || activeIndex >= total - 1;
     tocButton.classList.toggle('active', tocOpen);
     root.classList.toggle('umd-viewer--toc-hidden', !tocOpen);
-    tocCount.textContent = `${total} 项`;
+    tocCount.textContent = t('ebook.itemCount', { count: total });
   };
 
   const scrollToTop = () => {
@@ -190,7 +227,7 @@ export default async function renderUmd(
   const renderToc = () => {
     tocList.replaceChildren();
     book?.chapters.forEach((chapter, index) => {
-      const item = createButton(chapter.title, 'umd-toc-item');
+      const item = createButton(localize(chapter.title), 'umd-toc-item');
       item.classList.toggle('active', index === activeIndex);
       item.addEventListener('click', () => {
         activeIndex = index;
@@ -207,7 +244,7 @@ export default async function renderUmd(
       return;
     }
     const coverUrl = getImageUrl(book.cover);
-    const metaLine = buildMetaLine(book);
+    const metaLine = buildMetaLine(book, t('ebook.reading'));
     if (!coverUrl && !metaLine) {
       return;
     }
@@ -216,11 +253,11 @@ export default async function renderUmd(
     if (coverUrl) {
       const image = document.createElement('img');
       image.src = coverUrl;
-      image.alt = book.title;
+    image.alt = localize(book.title);
       head.appendChild(image);
     }
     const info = document.createElement('div');
-    appendText(info, 'h1', book.title);
+    appendText(info, 'h1', localize(book.title));
     if (metaLine) {
       appendText(info, 'p', metaLine);
     }
@@ -236,7 +273,7 @@ export default async function renderUmd(
     const section = document.createElement('section');
     section.className = 'umd-chapter';
     section.dataset.viewerAnchorId = chapter.id;
-    appendText(section, 'h2', chapter.title);
+    appendText(section, 'h2', localize(chapter.title));
 
     if (chapter.images.length) {
       const images = document.createElement('div');
@@ -245,7 +282,7 @@ export default async function renderUmd(
         const figure = document.createElement('figure');
         const img = document.createElement('img');
         img.src = getImageUrl(image);
-        img.alt = chapter.title;
+        img.alt = localize(chapter.title);
         figure.appendChild(img);
         images.appendChild(figure);
       });
@@ -255,7 +292,7 @@ export default async function renderUmd(
     if (chapter.content) {
       appendText(section, 'div', chapter.content, 'umd-text');
     } else if (!chapter.images.length) {
-      appendText(section, 'div', '未解析到正文内容', 'umd-empty');
+      appendText(section, 'div', t('umd.emptyContent'), 'umd-empty');
     }
 
     return section;
@@ -273,7 +310,7 @@ export default async function renderUmd(
       stage.appendChild(renderChapter(chapter));
     }
 
-    const warningText = book?.warnings.filter(Boolean).join('；') || '';
+    const warningText = book ? localizeJoinedWarnings(book.warnings) : '';
     if (warningText) {
       appendText(stage, 'div', warningText, 'umd-warning');
     }
@@ -321,7 +358,7 @@ export default async function renderUmd(
   } catch (error) {
     if (!disposed) {
       console.error(error);
-      renderError(error instanceof Error ? error.message : String(error));
+      renderError(error instanceof Error ? localize(error.message) : String(error));
     }
   }
 

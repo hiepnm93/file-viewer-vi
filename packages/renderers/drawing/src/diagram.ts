@@ -1,4 +1,9 @@
-import type { FileViewerDrawingOptions, FileViewerThemeMode } from '@file-viewer/core'
+import {
+  createFileViewerTranslator,
+  type FileViewerDrawingOptions,
+  type FileViewerOptions,
+  type FileViewerThemeMode
+} from '@file-viewer/core'
 import Panzoom, { type PanzoomObject } from '@panzoom/panzoom'
 
 export type DiagramKind = 'mermaid' | 'plantuml'
@@ -17,7 +22,10 @@ interface RenderDiagramParams {
   kind: DiagramKind
   options?: FileViewerDrawingOptions
   theme?: FileViewerThemeMode
+  viewerOptions?: FileViewerOptions
 }
+
+type DiagramTranslator = ReturnType<typeof createFileViewerTranslator>
 
 const getOwnerWindow = (documentRef: Document) => {
   return documentRef.defaultView || (typeof window !== 'undefined' ? window : undefined)
@@ -55,11 +63,11 @@ const normalizePlantumlServer = (documentRef: Document, value: string) => {
   }
 }
 
-const sanitizeSvg = (documentRef: Document, svg: string) => {
+const sanitizeSvg = (documentRef: Document, svg: string, t: DiagramTranslator) => {
   const parsed = new DOMParser().parseFromString(svg, 'image/svg+xml')
   const parseError = parsed.querySelector('parsererror')
   if (parseError) {
-    throw new Error(parseError.textContent || 'SVG 解析失败')
+    throw new Error(parseError.textContent || t('drawing.error.svgParseFailed'))
   }
   parsed.querySelectorAll('script,iframe,object,embed').forEach(node => node.remove())
   parsed.querySelectorAll('*').forEach(node => {
@@ -76,7 +84,8 @@ const sanitizeSvg = (documentRef: Document, svg: string) => {
 const renderMermaidSvg = async (
   documentRef: Document,
   text: string,
-  theme?: FileViewerThemeMode
+  theme: FileViewerThemeMode | undefined,
+  t: DiagramTranslator
 ) => {
   const mermaidModule = await import('mermaid')
   const mermaid = mermaidModule.default
@@ -87,7 +96,7 @@ const renderMermaidSvg = async (
     theme: isDarkTheme(documentRef, theme) ? 'dark' : 'default'
   })
   const rendered = await mermaid.render(id, text)
-  return sanitizeSvg(documentRef, rendered.svg)
+  return sanitizeSvg(documentRef, rendered.svg, t)
 }
 
 const appendSvgText = (
@@ -184,7 +193,8 @@ const renderPlantumlFallbackSvg = (
 const renderPlantumlSvg = async (
   documentRef: Document,
   text: string,
-  options?: FileViewerDrawingOptions
+  options: FileViewerDrawingOptions | undefined,
+  t: DiagramTranslator
 ) => {
   if (!options?.plantumlServerUrl) {
     return renderPlantumlFallbackSvg(
@@ -206,9 +216,9 @@ const renderPlantumlSvg = async (
       signal: controller.signal
     })
     if (!response.ok) {
-      throw new Error(`PlantUML SVG 渲染失败：${response.status}`)
+      throw new Error(t('drawing.error.plantumlRenderFailed', { status: response.status }))
     }
-    return sanitizeSvg(documentRef, await response.text())
+    return sanitizeSvg(documentRef, await response.text(), t)
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error
@@ -239,16 +249,18 @@ export const renderDiagram = async ({
   target,
   kind,
   options,
-  theme
+  theme,
+  viewerOptions
 }: RenderDiagramParams): Promise<DiagramController> => {
+  const t = createFileViewerTranslator(viewerOptions)
   const shell = createElement(documentRef, 'div', 'drawing-diagram-shell')
   const panTarget = createElement(documentRef, 'div', 'drawing-diagram-pan')
   shell.appendChild(panTarget)
   target.replaceChildren(shell)
 
   const svg = kind === 'mermaid'
-    ? await renderMermaidSvg(documentRef, text, theme)
-    : await renderPlantumlSvg(documentRef, text, options)
+    ? await renderMermaidSvg(documentRef, text, theme, t)
+    : await renderPlantumlSvg(documentRef, text, options, t)
   applySvgDefaults(svg, kind)
   panTarget.replaceChildren(svg)
 

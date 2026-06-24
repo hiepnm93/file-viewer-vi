@@ -28,6 +28,8 @@ Core stays pure TypeScript and framework-neutral. Component packages depend on c
 
 Most products do not need every heavy engine on first load. Install a minimal renderer set for a focused product, or use a preset when you need broader coverage. Worker, WASM, font, and vendor assets remain self-hostable for intranet and strict-CSP deployments.
 
+In Vite projects, `@file-viewer/vite-plugin` is the recommended assembly layer. It auto-discovers installed `@file-viewer/preset-*` packages and injects the matching capability registry, so the default setup is still `fileViewerRenderers({ copyAssets:true })`. Use `@file-viewer/preset-all` for the fastest full-capability start, or explicit `formats`, `renderers`, `scan:true`, and `inject:false` only when a product needs strict bundle control.
+
 ## Main Entry Points
 
 - Official site: [file-viewer.app](https://file-viewer.app)
@@ -35,4 +37,3 @@ Most products do not need every heavy engine on first load. Install a minimal re
 - Live demo: [demo.file-viewer.app](https://demo.file-viewer.app)
 - Comparison demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - GitHub: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
-

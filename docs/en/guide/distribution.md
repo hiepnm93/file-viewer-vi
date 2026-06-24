@@ -11,19 +11,31 @@
 Common installs:
 
 ```bash
-npm install @file-viewer/web
-npm install @file-viewer/vue3
-npm install @file-viewer/react
-npm install @file-viewer/core
-npm install @file-viewer/renderer-word
-npm install @file-viewer/renderer-presentation
-npm install @file-viewer/preset-lite
-npm install @file-viewer/preset-office
-npm install @file-viewer/preset-engineering
-npm install @file-viewer/preset-all
-# Optional engine-only package when you build a custom presentation renderer.
-npm install @file-viewer/pptx
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+# Heavy users / all-format attachment centers:
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+# Replace @file-viewer/vue3 with @file-viewer/web / react / vue2.7 / vue2.6 / jquery / svelte for other stacks.
 ```
+
+Recommended Vite setup:
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+The plugin auto-discovers installed `@file-viewer/preset-*` packages and injects the capability layer. Use single renderer packages plus `formats` only for strict custom cuts.
+
+Common customization boundaries:
+
+| Option | Purpose |
+| --- | --- |
+| `copyAssets:true` | Copies matched Worker, WASM, font, PDF/CAD/Typst/Archive/Data, and other static assets; recommended for production and intranet deployments |
+| `formats` / `renderers` | Generates exact renderer imports when you do not use a preset, or when a preset needs a few extra formats |
+| `scan:true` | Reads source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
+| `preset:'auto'` / `autoPresets:true` | Keeps installed preset auto-activation enabled while `scan:true` is active |
+| `inject:false` | Disables auto injection so application code can import `virtual:file-viewer-renderers` and pass `options.renderers` manually |
 
 Registry links:
 

@@ -1,4 +1,8 @@
-import type { FileViewerRenderedInstance } from '@file-viewer/core'
+import {
+  createFileViewerTranslator,
+  type FileRenderContext,
+  type FileViewerRenderedInstance
+} from '@file-viewer/core'
 
 const AUDIO_MIME_MAP: Record<string, string> = {
   aac: 'audio/aac',
@@ -101,8 +105,10 @@ const createRenderedInstance = (
 const renderAudioElement = (
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type: string
+  type: string,
+  context?: FileRenderContext
 ): FileViewerRenderedInstance => {
+  const t = createFileViewerTranslator(context?.options)
   const normalizedType = type.trim().toLowerCase() || 'mp3'
   const mimeType = AUDIO_MIME_MAP[normalizedType] || 'audio/*'
   const sourceUrl = URL.createObjectURL(new Blob([buffer], { type: mimeType }))
@@ -115,8 +121,8 @@ const renderAudioElement = (
   const copy = createElement('div', 'fv-audio-copy')
   copy.append(
     createElement('span', 'fv-audio-kicker', normalizedType.toUpperCase() || 'AUDIO'),
-    createElement('strong', '', '音频预览'),
-    createElement('p', '', '使用浏览器原生播放器打开，兼容性取决于当前浏览器支持的音频编码。')
+    createElement('strong', '', t('media.audio.title')),
+    createElement('p', '', t('media.audio.description'))
   )
 
   const currentTimeText = createElement('span', '', '00:00')
@@ -133,7 +139,7 @@ const renderAudioElement = (
   audio.src = sourceUrl
   audio.controls = true
   audio.preload = 'metadata'
-  audio.textContent = '当前浏览器不支持音频播放。'
+  audio.textContent = t('media.audio.unsupported')
 
   const handleLoadedMetadata = () => {
     durationText.textContent = Number.isFinite(audio.duration) && audio.duration > 0
@@ -165,15 +171,17 @@ const renderAudioElement = (
 
 const renderMidiElement = (
   buffer: ArrayBuffer,
-  target: HTMLDivElement
+  target: HTMLDivElement,
+  context?: FileRenderContext
 ): FileViewerRenderedInstance => {
+  const t = createFileViewerTranslator(context?.options)
   let disposed = false
   const root = createElement('div', 'fv-midi-viewer')
   const card = createElement('section', 'fv-midi-card')
   const header = document.createElement('header')
-  const title = createElement('strong', '', 'MIDI 文件')
+  const title = createElement('strong', '', t('media.midi.title'))
   header.append(createElement('span', '', 'MIDI'), title)
-  const body = createElement('div', 'fv-midi-state', '正在解析 MIDI 轨道...')
+  const body = createElement('div', 'fv-midi-state', t('media.midi.loading'))
   card.append(header, body)
   root.append(card)
   target.replaceChildren(createStyle(), root)
@@ -188,7 +196,13 @@ const renderMidiElement = (
     const table = createElement('table', 'fv-midi-table')
     const thead = document.createElement('thead')
     const headerRow = document.createElement('tr')
-    for (const label of ['轨道', '乐器', '通道', '音符数', '时长']) {
+    for (const label of [
+      t('media.midi.trackHeader'),
+      t('media.midi.instrumentHeader'),
+      t('media.midi.channelHeader'),
+      t('media.midi.noteCountHeader'),
+      t('media.midi.durationHeader')
+    ]) {
       headerRow.append(createElement('th', '', label))
     }
     thead.append(headerRow)
@@ -219,10 +233,10 @@ const renderMidiElement = (
     const totalNotes = input.tracks.reduce((sum, track) => sum + track.notes, 0)
     const stats = createElement('div', 'fv-midi-stats')
     for (const [label, value] of [
-      ['时长', formatDuration(input.duration)],
+      [t('media.midi.durationStat'), formatDuration(input.duration)],
       ['PPQ', String(input.ppq)],
-      ['轨道', String(input.tracks.length)],
-      ['音符', String(totalNotes)]
+      [t('media.midi.trackStat'), String(input.tracks.length)],
+      [t('media.midi.noteStat'), String(totalNotes)]
     ]) {
       const stat = document.createElement('div')
       stat.append(createElement('span', '', label), createElement('strong', '', value))
@@ -239,7 +253,7 @@ const renderMidiElement = (
         return
       }
       renderSummary({
-        name: midi.name || 'MIDI 文件',
+        name: midi.name || t('media.midi.title'),
         duration: midi.duration,
         ppq: midi.header.ppq,
         tracks: midi.tracks.map((track, index) => ({
@@ -252,7 +266,7 @@ const renderMidiElement = (
       })
     } catch (error) {
       if (!disposed) {
-        renderError(error instanceof Error ? error.message : 'MIDI 解析失败')
+        renderError(error instanceof Error ? error.message : t('media.midi.parseFailed'))
       }
     }
   })()
@@ -271,11 +285,12 @@ const renderMidiElement = (
 export default async function renderAudio(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type?: string
+  type?: string,
+  context?: FileRenderContext
 ) {
   const normalizedType = (type || 'mp3').toLowerCase()
   if (normalizedType === 'midi' || normalizedType === 'mid') {
-    return renderMidiElement(buffer, target)
+    return renderMidiElement(buffer, target, context)
   }
-  return renderAudioElement(buffer, target, normalizedType)
+  return renderAudioElement(buffer, target, normalizedType, context)
 }

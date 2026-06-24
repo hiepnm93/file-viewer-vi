@@ -1,4 +1,4 @@
-import { createFileViewerZoomChangeEmitter as createZoomChangeEmitter, readFileViewerText as readText, registerFileViewerZoomProvider, unregisterFileViewerZoomProvider } from '@file-viewer/core';
+import { createFileViewerTranslator, createFileViewerZoomChangeEmitter as createZoomChangeEmitter, readFileViewerText as readText, registerFileViewerZoomProvider, unregisterFileViewerZoomProvider } from '@file-viewer/core';
 const languageMap = {
     bash: 'bash',
     c: 'cpp',
@@ -159,16 +159,17 @@ const lineCountOf = (value) => {
  * @param target 目标
  * @param type 文件扩展名，用于选择 highlight.js 语言
  */
-export default async function renderText(buffer, target, type) {
+export default async function renderText(buffer, target, type, context) {
+    const t = createFileViewerTranslator(context === null || context === void 0 ? void 0 : context.options);
     const extension = type || 'txt';
     const normalizedExtension = extension.trim().toLowerCase();
     if (normalizedExtension === 'patch') {
         const { default: renderPatch } = await import('./patch.js');
-        return renderPatch(buffer, target, extension);
+        return renderPatch(buffer, target, extension, context);
     }
     if (normalizedExtension === 'bundle' || normalizedExtension === 'bdl') {
         const { default: renderGitBundle } = await import('./gitBundle.js');
-        return renderGitBundle(buffer, target, extension);
+        return renderGitBundle(buffer, target, extension, context);
     }
     const text = await readText(buffer);
     const language = resolveLanguage(extension);
@@ -183,7 +184,7 @@ export default async function renderText(buffer, target, type) {
     const code = createElement('code', `hljs language-${language}`);
     code.innerHTML = language === 'plaintext'
         ? escapeHtml(text)
-        : '正在加载高亮...';
+        : t('text.code.loadingHighlight');
     pre.append(code);
     root.append(toolbar, pre);
     root.style.setProperty('--code-font-size', `${13 * zoom}px`);

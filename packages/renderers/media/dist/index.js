@@ -5,7 +5,7 @@ if (mediaDefinitions.length !== mediaRendererIds.length) {
     throw new Error('@file-viewer/renderer-media could not locate the shared audio/video format definitions.');
 }
 export const mediaRendererDefinitions = mediaDefinitions;
-export const renderFileViewerAudio = (buffer, target, type) => import('./audio.js').then(({ default: renderAudio }) => renderAudio(buffer, target, type));
+export const renderFileViewerAudio = (buffer, target, type, context) => import('./audio.js').then(({ default: renderAudio }) => renderAudio(buffer, target, type, context));
 export const renderFileViewerVideo = (buffer, target, type, context) => import('./video.js').then(({ default: renderVideo }) => renderVideo(buffer, target, type, context));
 export const mediaRenderer = {
     id: 'file-viewer-renderer-media',

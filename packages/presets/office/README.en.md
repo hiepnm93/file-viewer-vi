@@ -10,6 +10,16 @@ The Office and document renderer preset for Flyfish File Viewer. It groups PDF, 
 
 ## Usage
 
+The recommended path is to use it with `@file-viewer/vite-plugin`. Once this preset is installed, the plugin discovers and activates the Office document capability automatically:
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+Components keep `autoRenderers:true` by default, so application code does not pass `renderers` manually. Pass the preset directly only when you need full manual registry control:
+
 ```ts
 import FileViewer from '@file-viewer/vue3'
 import { officeRenderers } from '@file-viewer/preset-office'
@@ -19,15 +29,6 @@ const options = {
   rendererMode: 'replace',
   renderers: officeRenderers,
 }
-```
-
-It also works with `@file-viewer/vite-plugin`:
-
-```ts
-fileViewerRenderers({
-  preset: 'office',
-  copyAssets: true,
-})
 ```
 
 ## Included Renderers

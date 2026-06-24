@@ -34,7 +34,7 @@
   </div>
   <div class="doc-card">
     <h3>模块化架构更专业</h3>
-    <p>core、renderer、preset 和生态组件分层清晰，既能最小化只装单个 renderer，也能用 preset 按产品形态组合完整能力。</p>
+    <p>core、renderer、preset 和生态组件分层清晰，既能最小化只装单个 renderer，也能用 preset 按产品形态组合完整能力；Vite 插件会自动发现已安装 preset 并注入能力。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
@@ -63,7 +63,7 @@
   </div>
   <div class="doc-card">
     <h3>选择模块化装配方式</h3>
-    <p>最小化接入只安装命中格式的 renderer；组合接入优先使用 preset-lite、preset-office、preset-engineering 或 preset-all。</p>
+    <p>最小化接入只安装命中格式的 renderer；组合接入优先使用 preset-lite、preset-office、preset-engineering 或 preset-all，并通过 @file-viewer/vite-plugin 免配置自动装配。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>

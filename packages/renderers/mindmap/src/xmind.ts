@@ -5,6 +5,7 @@ import {
   parseXmind2020Json,
 } from '@ljheee/xmind-parser';
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
@@ -278,7 +279,7 @@ const createSheetView = (document: KmDocument, index: number): SheetView => {
   };
 };
 
-const loadXMindSheets = async (buffer: ArrayBuffer): Promise<KmDocument[]> => {
+const loadXMindSheets = async (buffer: ArrayBuffer, unrecognizedMessage: string): Promise<KmDocument[]> => {
   const zip = await JSZip.loadAsync(buffer);
   const resources: Record<string, Uint8Array> = {};
   const resourceTasks: Array<Promise<void>> = [];
@@ -310,28 +311,31 @@ const loadXMindSheets = async (buffer: ArrayBuffer): Promise<KmDocument[]> => {
     }) as KmDocument[];
   }
 
-  throw new Error('无法识别 XMind 文件: ZIP 中未找到 content.json 或 content.xml');
+  throw new Error(unrecognizedMessage);
 };
 
-const badgeTexts = (node: MindNodeView) => {
+const badgeTexts = (
+  node: MindNodeView,
+  t: ReturnType<typeof createFileViewerTranslator>
+) => {
   const badges: string[] = [];
   if (node.priority) {
     badges.push(`P${node.priority}`);
   }
   if (node.progress) {
-    badges.push(node.progress === 10 ? '暂停' : `${Math.min(100, Math.round((node.progress / 9) * 100))}%`);
+    badges.push(node.progress === 10 ? t('xmind.badge.paused') : `${Math.min(100, Math.round((node.progress / 9) * 100))}%`);
   }
   if (node.collapsed) {
-    badges.push('折叠');
+    badges.push(t('xmind.badge.collapsed'));
   }
   if (node.detached) {
-    badges.push('浮动');
+    badges.push(t('xmind.badge.floating'));
   }
   if (node.summary) {
-    badges.push('概要');
+    badges.push(t('xmind.badge.summary'));
   }
   if (node.callout) {
-    badges.push('标注');
+    badges.push(t('xmind.badge.callout'));
   }
   node.markers.slice(0, 4).forEach(marker => badges.push(marker));
   return badges;
@@ -358,7 +362,8 @@ const renderEdges = (svg: SVGSVGElement, node: MindNodeView) => {
 const createNodeElement = (
   node: MindNodeView,
   scrollToNode: (node: MindNodeView) => void,
-  shouldSuppressClick: () => boolean
+  shouldSuppressClick: () => boolean,
+  t: ReturnType<typeof createFileViewerTranslator>
 ) => {
   const card = createElement('article', [
     'xmind-node',
@@ -375,7 +380,7 @@ const createNodeElement = (
 
   card.append(createElement('h3', undefined, node.title));
 
-  const badges = badgeTexts(node);
+  const badges = badgeTexts(node, t);
   if (badges.length) {
     const badgeList = createElement('div', 'xmind-badges');
     badges.forEach(item => badgeList.append(createElement('span', undefined, item)));
@@ -398,7 +403,7 @@ const createNodeElement = (
       image.draggable = false;
       card.append(image);
     } else {
-      card.append(createElement('p', 'xmind-note', `图片资源: ${node.image}`));
+      card.append(createElement('p', 'xmind-note', t('xmind.imageResource', { name: node.image })));
     }
   }
   if (node.hyperlink) {
@@ -429,6 +434,7 @@ export default async function renderXMind(
   _type = 'xmind',
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
+  const t = createFileViewerTranslator(context?.options);
   const zoomEmitter = createFileViewerZoomChangeEmitter();
   let status: XMindStatus = 'loading';
   let errorMessage = '';
@@ -455,13 +461,13 @@ export default async function renderXMind(
   const zoomOutButton = createElement('button', undefined, '-') as HTMLButtonElement;
   const zoomLabel = createElement('span', undefined, '100%');
   const zoomInButton = createElement('button', undefined, '+') as HTMLButtonElement;
-  const resetButton = createElement('button', undefined, '适合') as HTMLButtonElement;
+  const resetButton = createElement('button', undefined, t('xmind.toolbar.fit')) as HTMLButtonElement;
   [zoomOutButton, zoomInButton, resetButton].forEach(button => {
     button.type = 'button';
   });
-  zoomOutButton.title = '缩小';
-  zoomInButton.title = '放大';
-  resetButton.title = '适配画布';
+  zoomOutButton.title = t('xmind.toolbar.zoomOut');
+  zoomInButton.title = t('xmind.toolbar.zoomIn');
+  resetButton.title = t('xmind.toolbar.fitTitle');
   actions.append(zoomOutButton, zoomLabel, zoomInButton, resetButton);
   toolbar.append(title, actions);
 
@@ -477,7 +483,7 @@ export default async function renderXMind(
   stage.setAttribute('aria-keyshortcuts', 'Space ArrowLeft ArrowRight ArrowUp ArrowDown Control+0 Meta+0');
   const zoomBox = createElement('div', 'xmind-zoom-box');
   const surface = createElement('div', 'xmind-surface');
-  const state = createElement('div', 'xmind-state', '正在解析 XMind 脑图...');
+  const state = createElement('div', 'xmind-state', t('xmind.state.loading'));
   zoomBox.append(surface);
   stage.append(zoomBox, state);
   body.append(sidebar, stage);
@@ -645,10 +651,10 @@ export default async function renderXMind(
     sidebar.replaceChildren();
     const stats = createElement('div', 'xmind-stats');
     [
-      ['节点', sheet.nodeCount],
-      ['层级', sheet.maxDepth + 1],
-      ['主题', sheet.theme],
-      ['模板', sheet.template],
+      [t('xmind.stats.nodes'), sheet.nodeCount],
+      [t('xmind.stats.depth'), sheet.maxDepth + 1],
+      [t('xmind.stats.theme'), sheet.theme],
+      [t('xmind.stats.template'), sheet.template],
     ].forEach(([label, value]) => {
       const cell = document.createElement('div');
       cell.append(createElement('span', undefined, String(label)), createElement('strong', undefined, String(value)));
@@ -686,7 +692,7 @@ export default async function renderXMind(
     surface.append(svg);
 
     walkMindNodes(sheet.root, node => {
-      surface.append(createNodeElement(node, scrollToNode, () => suppressNodeClick));
+      surface.append(createNodeElement(node, scrollToNode, () => suppressNodeClick, t));
     });
 
     renderSidebar(sheet);
@@ -714,7 +720,7 @@ export default async function renderXMind(
     state.classList.toggle('error', status === 'error');
     state.textContent = status === 'error'
       ? errorMessage
-      : '正在解析 XMind 脑图...';
+      : t('xmind.state.loading');
   };
 
   const load = async () => {
@@ -722,12 +728,12 @@ export default async function renderXMind(
     errorMessage = '';
     syncState();
     try {
-      const parsed = await loadXMindSheets(buffer);
+      const parsed = await loadXMindSheets(buffer, t('xmind.error.unrecognized'));
       if (disposed) {
         return;
       }
       if (!Array.isArray(parsed) || !parsed.length) {
-        throw new Error('XMind 文件中没有可预览的画布');
+        throw new Error(t('xmind.error.noCanvas'));
       }
       sheets = parsed.map(createSheetView);
       activeSheetIndex = 0;

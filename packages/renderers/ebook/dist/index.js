@@ -6,8 +6,8 @@ if (!epubDefinition || !umdDefinition) {
 }
 export const ebookRendererDefinition = epubDefinition;
 export const umdRendererDefinition = umdDefinition;
-export const renderFileViewerEpub = (buffer, target) => import('./epub.js').then(({ default: renderEpub }) => renderEpub(buffer, target));
-export const renderFileViewerUmd = (buffer, target) => import('./umd.js').then(({ default: renderUmd }) => renderUmd(buffer, target));
+export const renderFileViewerEpub = (buffer, target, _type, context) => import('./epub.js').then(({ default: renderEpub }) => renderEpub(buffer, target, context));
+export const renderFileViewerUmd = (buffer, target, _type, context) => import('./umd.js').then(({ default: renderUmd }) => renderUmd(buffer, target, context));
 export const ebookRenderer = {
     id: 'file-viewer-renderer-epub',
     label: 'Flyfish File Viewer ebook renderer',

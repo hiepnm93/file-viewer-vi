@@ -9,8 +9,31 @@
 ## Install
 
 ```bash
-npm install @file-viewer/react
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
+
+Installing only `@file-viewer/react` gives you the lightest React component and core foundation. PDF, Office, CAD, Typst, archive, and other heavy format capabilities come from presets or renderer packages. In Vite projects, add the plugin once; it auto-discovers installed `@file-viewer/preset-*` packages:
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when heavy users need the complete capability set immediately. The Vite config stays the same:
+
+```bash
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only when the product needs explicit control. The recommended default remains `fileViewerRenderers({ copyAssets:true })`, with installed presets auto-activated by the plugin.
 
 ## Component Usage
 
@@ -52,4 +75,3 @@ The event and options model stays aligned with `@file-viewer/react`.
 ## Vite And Assets
 
 For production bundles, use `@file-viewer/vite-plugin` or run `npx file-viewer-copy-assets ./public/file-viewer` so worker/WASM assets stay self-hosted.
-

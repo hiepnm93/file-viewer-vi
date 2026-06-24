@@ -9,7 +9,7 @@
 ## Install
 
 ```bash
-npm install @file-viewer/web
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 The historical package name remains synchronized for compatibility:
@@ -25,6 +25,7 @@ npm install @flyfish-group/file-viewer-web
   id="viewer"
   src="/files/report.pdf"
   filename="report.pdf"
+  locale="en-US"
   theme="light"
   toolbar-position="bottom-right"
   style="display:block;height:720px"
@@ -38,6 +39,29 @@ defineFileViewerElement()
 ```
 
 Keep the host element or parent container at a stable height. The viewer fills that surface.
+
+For Vite projects, add `@file-viewer/vite-plugin`. It auto-discovers installed `@file-viewer/preset-*` packages and injects renderers, so both the Custom Element and `mountViewer` receive the matching format capabilities:
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+Installing only `@file-viewer/web` gives you the lightest native web component. Add a preset or renderer package for PDF, Office, CAD, Typst, archives, and other concrete formats. Heavy users can replace `@file-viewer/preset-office` with `@file-viewer/preset-all` for the complete capability set; the Vite config does not change:
+
+```bash
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only when the product needs exact registry control. The default path stays `fileViewerRenderers({ copyAssets:true })`, with installed presets auto-activated by the plugin.
 
 ## Imperative Mount
 
@@ -97,6 +121,27 @@ The IIFE registers the default custom element and exposes `window.FlyfishFileVie
 
 ## Offline Assets
 
+## Internationalization
+
+The Web Component accepts `locale` as an HTML attribute or JS property. Use `options.messages` / `options.i18n` for custom copy:
+
+```html
+<flyfish-file-viewer src="/files/report.pdf" locale="en-US"></flyfish-file-viewer>
+```
+
+```ts
+const viewer = document.querySelector('flyfish-file-viewer')!
+viewer.locale = 'zh-CN'
+viewer.options = {
+  i18n: {
+    locale: 'zh-CN',
+    messages: {
+      'toolbar.print': 'Print document'
+    }
+  }
+}
+```
+
 For intranet or strict-CSP deployments, copy runtime assets into your own public directory:
 
 ```bash
@@ -104,4 +149,3 @@ npx file-viewer-copy-assets ./public/file-viewer
 ```
 
 The command verifies worker, WASM, PDF, CAD, Typst, Archive, Data, DOCX, Spreadsheet, and Draw.io assets. Runtime options such as `options.pdf.workerUrl`, `options.archive.wasmUrl`, `options.docx.workerUrl`, `options.typst.compilerWasmUrl`, and `options.drawing.viewerScriptUrl` can point to self-hosted URLs.
-

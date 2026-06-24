@@ -1,4 +1,4 @@
-import { type FileViewerRenderedInstance } from '@file-viewer/core';
+import { type FileRenderContext, type FileViewerRenderedInstance } from '@file-viewer/core';
 /**
  * Framework-neutral text/code renderer.
  *
@@ -8,4 +8,4 @@ import { type FileViewerRenderedInstance } from '@file-viewer/core';
  * @param target 目标
  * @param type 文件扩展名，用于选择 highlight.js 语言
  */
-export default function renderText(buffer: ArrayBuffer, target: HTMLDivElement, type?: string): Promise<FileViewerRenderedInstance>;
+export default function renderText(buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext): Promise<FileViewerRenderedInstance>;

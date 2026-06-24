@@ -30,7 +30,33 @@ const hidden = ref(false)
 const input = ref(true)
 const filename = ref('')
 const file = ref<FileRef | undefined>()
-const url = ref('/example/word.docx')
+type DemoLocale = 'zh-CN' | 'en-US'
+
+const DEMO_LOCALE_STORAGE_KEY = 'file-viewer-demo-locale'
+const DEFAULT_DEMO_URL_BY_LOCALE: Record<DemoLocale, string> = {
+  'zh-CN': '/example/word.docx',
+  'en-US': '/example/en/calibre-demo.docx'
+}
+
+const normalizeDemoLocale = (value?: string | null): DemoLocale => {
+  return String(value || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US'
+}
+
+const resolveInitialDemoLocale = (): DemoLocale => {
+  const query = new URLSearchParams(window.location.search)
+  const explicitLocale = query.get('locale') || query.get('lang')
+  if (explicitLocale) {
+    return normalizeDemoLocale(explicitLocale)
+  }
+  const storedLocale = window.localStorage.getItem(DEMO_LOCALE_STORAGE_KEY)
+  if (storedLocale) {
+    return normalizeDemoLocale(storedLocale)
+  }
+  return normalizeDemoLocale(navigator.languages?.[0] || navigator.language)
+}
+
+const demoLocale = ref<DemoLocale>(resolveInitialDemoLocale())
+const url = ref(DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value])
 const preview = ref('')
 const samplePickerOpen = ref(false)
 const expandedSampleGroupIndex = ref<number | null>(0)
@@ -85,7 +111,104 @@ type SampleGroup = {
   items: PresetFile[]
 }
 
-const sampleGroups: SampleGroup[] = [
+const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
+  'zh-CN': {
+    pageTitle: 'Flyfish File Viewer 在线预览器 Vue3',
+    pureWeb: 'Pure Web',
+    local: '本地',
+    link: '链接',
+    upload: '上传',
+    samples: '样例',
+    search: '搜索',
+    more: '更多',
+    sampleFile: '示例文件',
+    collapse: '收起',
+    open: '打开',
+    address: '地址',
+    addressPlaceholder: '输入文件地址',
+    preview: '预览',
+    closePanel: '关闭操作面板',
+    chooseFile: '点击选择文件',
+    openLocal: '从本机打开',
+    unselected: '未选择文件',
+    previewActions: '预览操作',
+    zoomOut: '缩小预览',
+    zoomIn: '放大预览',
+    resetZoom: '还原比例',
+    download: '下载',
+    downloadTitle: '下载原始文件',
+    print: '打印',
+    printTitle: '打印完整渲染内容',
+    exportHtml: 'HTML',
+    exportHtmlTitle: '导出当前渲染后的 HTML',
+    watermark: '水印',
+    watermarkTitle: '切换水印',
+    searchDocument: '文档搜索',
+    searchPlaceholder: '搜索当前文档',
+    previousResult: '上一个搜索结果',
+    nextResult: '下一个搜索结果',
+    closeSearch: '关闭搜索',
+    closeMobileControls: '关闭移动端操作面板',
+    openLinkSettings: '打开链接设置',
+    openSamples: '打开示例文件',
+    uploadLocalFile: '上传本地文件',
+    searchCurrentDocument: '搜索当前文档',
+    openMoreActions: '打开更多操作',
+    reset: '还原',
+    auto: 'AUTO',
+    language: '语言'
+  },
+  'en-US': {
+    pageTitle: 'Flyfish File Viewer Demo for Vue 3',
+    pureWeb: 'Pure Web',
+    local: 'Local',
+    link: 'URL',
+    upload: 'Upload',
+    samples: 'Samples',
+    search: 'Search',
+    more: 'More',
+    sampleFile: 'Sample file',
+    collapse: 'Collapse',
+    open: 'Open',
+    address: 'URL',
+    addressPlaceholder: 'Paste a file URL',
+    preview: 'Preview',
+    closePanel: 'Close control panel',
+    chooseFile: 'Choose a file',
+    openLocal: 'Open from this device',
+    unselected: 'No file selected',
+    previewActions: 'Preview actions',
+    zoomOut: 'Zoom out',
+    zoomIn: 'Zoom in',
+    resetZoom: 'Reset zoom',
+    download: 'Download',
+    downloadTitle: 'Download original file',
+    print: 'Print',
+    printTitle: 'Print complete rendered content',
+    exportHtml: 'HTML',
+    exportHtmlTitle: 'Export rendered HTML',
+    watermark: 'Watermark',
+    watermarkTitle: 'Toggle watermark',
+    searchDocument: 'Document search',
+    searchPlaceholder: 'Search this document',
+    previousResult: 'Previous search result',
+    nextResult: 'Next search result',
+    closeSearch: 'Close search',
+    closeMobileControls: 'Close mobile controls',
+    openLinkSettings: 'Open URL settings',
+    openSamples: 'Open sample files',
+    uploadLocalFile: 'Upload a local file',
+    searchCurrentDocument: 'Search this document',
+    openMoreActions: 'Open more actions',
+    reset: 'Reset',
+    auto: 'AUTO',
+    language: 'Language'
+  }
+}
+
+const demoCopy = computed(() => demoCopyMap[demoLocale.value])
+
+const sampleGroupsZh: SampleGroup[] = [
   {
     title: '文档',
     description: 'Word / PDF / OFD / Typst',
@@ -293,7 +416,123 @@ const sampleGroups: SampleGroup[] = [
   }
 ]
 
-const presetFiles = sampleGroups.flatMap(group => group.items)
+const englishGroupCopy: Array<Pick<SampleGroup, 'title' | 'description'>> = [
+  { title: 'Documents', description: 'Word / PDF / OFD / Typst' },
+  { title: 'Spreadsheets', description: 'Excel / CSV / ODS' },
+  { title: 'Slides & CAD', description: 'PPTX / CAD' },
+  { title: 'Mindmaps & Diagrams', description: 'XMind / Mermaid / PlantUML / draw.io' },
+  { title: '3D & Geo Models', description: 'GLTF / OBJ / STL / PLY / Geo' },
+  { title: 'Ebooks', description: 'EPUB / UMD' },
+  { title: 'Archives', description: 'ZIP / TAR.GZ' },
+  { title: 'Email & EDA', description: 'EML / MSG / OLB / DRA / GDS / OASIS' },
+  { title: 'Text', description: 'Markdown / TXT / Log' },
+  { title: 'Frontend & Data', description: 'JS / TS / Vue / Data' },
+  { title: 'Backend & System', description: 'Shell / SQL / C / Go' },
+  { title: 'Assets & Data', description: 'SQLite / WASM / PSD / ICO' },
+  { title: 'Media', description: 'Image / Audio / Video' }
+]
+
+const englishSampleUrlMap: Record<string, string> = {
+  '/example/word.docx': '/example/en/calibre-demo.docx',
+  '/example/excel.xlsx': '/example/en/financial-sample.xlsx',
+  '/example/pdf.pdf': '/example/en/prince-sample.pdf',
+  '/example/ppt.pptx': '/example/en/sample-presentation.pptx',
+  '/example/archive.zip': '/example/en/archive.zip',
+  '/example/archive.tar.gz': '/example/en/archive.tar.gz',
+  '/example/model.gltf': '/example/en/model.gltf',
+  '/example/map.geojson': '/example/en/map.geojson',
+  '/example/markdown.md': '/example/en/markdown.md',
+  '/example/notes.markdown': '/example/en/notes.markdown',
+  '/example/text.txt': '/example/en/text.txt',
+  '/example/app.log': '/example/en/app.log',
+  '/example/table.csv': '/example/en/table.csv',
+  '/example/data.json': '/example/en/data.json',
+  '/example/data.jsonc': '/example/en/data.jsonc',
+  '/example/data.json5': '/example/en/data.json5',
+  '/example/code.ts': '/example/en/code.ts',
+  '/example/code.js': '/example/en/code.js'
+}
+
+const englishSampleNameMap: Record<string, string> = {
+  '/example/test.doc': 'DOC legacy document',
+  '/example/en/calibre-demo.docx': 'DOCX rich English document',
+  '/example/template.dot': 'DOT template',
+  '/example/sample.rtf': 'RTF document',
+  '/example/document.odt': 'ODT document',
+  '/example/en/prince-sample.pdf': 'PDF technical sample',
+  '/example/ofd.ofd': 'OFD layout document',
+  '/example/report.typ': 'Typst report',
+  '/example/en/financial-sample.xlsx': 'XLSX financial workbook',
+  '/example/excel.xlsm': 'XLSM macro workbook',
+  '/example/excel.xlsb': 'XLSB binary workbook',
+  '/example/excel.xls': 'XLS legacy workbook',
+  '/example/table.csv': 'CSV table',
+  '/example/excel.ods': 'ODS spreadsheet',
+  '/example/excel.fods': 'Flat ODS spreadsheet',
+  '/example/excel.numbers': 'Numbers workbook',
+  '/example/en/sample-presentation.pptx': 'PPTX presentation',
+  '/example/slides.odp': 'ODP presentation',
+  '/example/drawing.dxf': 'DXF drawing',
+  '/example/sample.dwg': 'DWG Autodesk sample',
+  '/example/samples/apache/blocks_and_tables.dwf': 'DWF blocks and tables',
+  '/example/samples/autodesk/house.dwfx': 'DWFx house drawing',
+  '/example/samples/autodesk/robot-arm.dwfx': 'DWFx robot arm',
+  '/example/mindmap.xmind': 'XMind mind map',
+  '/example/architecture.mermaid': 'Mermaid architecture',
+  '/example/sequence.plantuml': 'PlantUML sequence',
+  '/example/flow.excalidraw': 'Excalidraw scene',
+  '/example/process.drawio': 'draw.io process',
+  '/example/book.epub': 'EPUB ebook',
+  '/example/book.umd': 'UMD ebook',
+  '/example/en/archive.zip': 'ZIP archive with English samples',
+  '/example/en/archive.tar.gz': 'TAR.GZ archive with English samples',
+  '/example/sample.eml': 'EML message',
+  '/example/sample.msg': 'MSG Outlook message',
+  '/example/sample.mbox': 'MBOX mailbox',
+  '/example/sample.olb': 'OLB library',
+  '/example/sample.dra': 'DRA design archive',
+  '/example/layout.gds': 'GDSII layout',
+  '/example/layout.oas': 'OAS layout',
+  '/example/layout.oasis': 'OASIS layout',
+  '/example/markdown.md': 'Markdown document',
+  '/example/notes.markdown': 'Markdown notes',
+  '/example/text.txt': 'Plain text',
+  '/example/app.log': 'Application log',
+  '/example/en/markdown.md': 'Markdown product guide',
+  '/example/en/notes.markdown': 'Markdown support notes',
+  '/example/en/text.txt': 'Plain text overview',
+  '/example/en/app.log': 'Application log stream',
+  '/example/en/table.csv': 'CSV revenue table',
+  '/example/en/data.json': 'JSON capability data',
+  '/example/en/data.jsonc': 'JSONC config sample',
+  '/example/en/data.json5': 'JSON5 config sample',
+  '/example/en/code.ts': 'TypeScript integration sample',
+  '/example/en/code.js': 'JavaScript integration sample',
+  '/example/en/model.gltf': 'glTF embedded model',
+  '/example/en/map.geojson': 'GeoJSON Bay route',
+  '/example/change.patch': 'Patch side-by-side diff',
+  '/example/repository.bundle': 'Git bundle history',
+  '/example/sample.sqlite': 'SQLite database',
+  '/example/module.wasm': 'WASM module',
+  '/example/design.psd': 'PSD layers',
+  '/example/icon.ico': 'ICO image'
+}
+
+const sampleGroupsEn: SampleGroup[] = sampleGroupsZh.map((group, index) => ({
+  ...group,
+  ...(englishGroupCopy[index] || {}),
+  items: group.items.map(item => {
+    const nextUrl = englishSampleUrlMap[item.url] || item.url
+    return {
+      url: nextUrl,
+      name: englishSampleNameMap[nextUrl] || englishSampleNameMap[item.url] || item.name
+    }
+  })
+}))
+
+const sampleGroups = computed(() => demoLocale.value === 'zh-CN' ? sampleGroupsZh : sampleGroupsEn)
+const presetFiles = computed(() => sampleGroups.value.flatMap(group => group.items))
+const allPresetFiles = [...sampleGroupsZh, ...sampleGroupsEn].flatMap(group => group.items)
 const extraUploadExtensions = [
   'docm', 'dot', 'dotx', 'dotm', 'rtf', 'odt',
   'xlt', 'xltx', 'xltm',
@@ -309,7 +548,7 @@ const extraUploadExtensions = [
 ]
 
 const uploadAccept = Array.from(new Set([
-  ...presetFiles.map(item => {
+  ...allPresetFiles.map(item => {
     const ext = item.url.split('.').pop()
     return ext ? `.${ext}` : ''
   }),
@@ -556,12 +795,12 @@ const getFileIconMeta = (target: string) => {
 }
 
 const activePreset = computed(() => {
-  return presetFiles.find(item => isSameSampleUrl(item.url, url.value))
+  return presetFiles.value.find(item => isSameSampleUrl(item.url, url.value))
 })
 
 const activeSampleGroupIndex = computed(() => {
   const target = activePreset.value?.url || url.value || preview.value
-  return sampleGroups.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, target)))
+  return sampleGroups.value.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, target)))
 })
 
 const activeIconMeta = computed(() => {
@@ -569,7 +808,7 @@ const activeIconMeta = computed(() => {
 })
 
 const displayMode = computed(() => {
-  return file.value ? '本地' : '链接'
+  return file.value ? demoCopy.value.local : demoCopy.value.link
 })
 
 const displayName = computed(() => {
@@ -580,7 +819,7 @@ const displayName = computed(() => {
     const name = preview.value.split('/').pop() || preview.value
     return decodeURIComponent(name)
   }
-  return activePreset.value?.name || '未选择文件'
+  return activePreset.value?.name || demoCopy.value.unselected
 })
 
 const displayPath = computed(() => {
@@ -594,7 +833,7 @@ const previewType = computed(() => {
   const name = displayName.value
   const ext = extensionOf(name)
   if (!ext) {
-    return 'AUTO'
+    return demoCopy.value.auto
   }
   return ext.toUpperCase()
 })
@@ -655,6 +894,9 @@ const viewerOptions = computed((): FileViewerOptions => {
   const runtime = runtimeOptions.value
   const options = { ...(runtime as Record<string, unknown>) } as FileViewerOptions
   options.renderers = runtime.renderers ?? allRenderers
+  if (!options.locale && !options.i18n?.locale) {
+    options.locale = demoLocale.value
+  }
 
   options.archive = {
     workerUrl: `/${DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH}`,
@@ -815,7 +1057,13 @@ listenForFile((body, target, options) => {
   }
 })
 
+function syncDemoDocumentChrome(nextLocale = demoLocale.value) {
+  document.documentElement.lang = nextLocale
+  document.title = demoCopyMap[nextLocale].pageTitle
+}
+
 onMounted(() => {
+  syncDemoDocumentChrome()
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   document.addEventListener('keydown', handleDocumentKeydown)
   window.addEventListener('resize', handleWindowResize)
@@ -836,6 +1084,21 @@ function openUrlPreview(nextUrl = url.value) {
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
   mobileActionsOpen.value = false
+}
+
+function setDemoLocale(nextLocale: DemoLocale) {
+  if (demoLocale.value === nextLocale) {
+    return
+  }
+  const previousDefaultUrl = DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value]
+  demoLocale.value = nextLocale
+  window.localStorage.setItem(DEMO_LOCALE_STORAGE_KEY, nextLocale)
+  syncDemoDocumentChrome(nextLocale)
+  if (!file.value && isSameSampleUrl(url.value || preview.value, previousDefaultUrl)) {
+    const nextDefaultUrl = DEFAULT_DEMO_URL_BY_LOCALE[nextLocale]
+    url.value = nextDefaultUrl
+    openUrlPreview(nextDefaultUrl)
+  }
 }
 
 function setInputMode(nextMode: boolean) {
@@ -874,7 +1137,7 @@ async function toggleSampleGroup(index: number) {
 }
 
 function selectPreset(nextUrl: string) {
-  const nextGroupIndex = sampleGroups.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, nextUrl)))
+  const nextGroupIndex = sampleGroups.value.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, nextUrl)))
   url.value = nextUrl
   expandedSampleGroupIndex.value = nextGroupIndex >= 0 ? nextGroupIndex : expandedSampleGroupIndex.value
   samplePickerOpen.value = false
@@ -969,7 +1232,25 @@ function updateSampleMenuGeometry() {
                 <h1>File Viewer</h1>
               </div>
             </div>
-            <span class='brand-pill'>Pure Web</span>
+            <div class='brand-meta-row'>
+              <span class='brand-pill'>{{ demoCopy.pureWeb }}</span>
+              <div class='locale-switch' :aria-label='demoCopy.language'>
+                <button
+                  type='button'
+                  :class='{ active: demoLocale === "zh-CN" }'
+                  @click='setDemoLocale("zh-CN")'
+                >
+                  中
+                </button>
+                <button
+                  type='button'
+                  :class='{ active: demoLocale === "en-US" }'
+                  @click='setDemoLocale("en-US")'
+                >
+                  EN
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class='current-card'>
@@ -980,7 +1261,7 @@ function updateSampleMenuGeometry() {
             </div>
           </div>
 
-          <button type='button' class='mobile-sheet-close' aria-label='关闭操作面板' @click='closeMobileControls'>
+          <button type='button' class='mobile-sheet-close' :aria-label='demoCopy.closePanel' @click='closeMobileControls'>
             <X :size='18' :stroke-width='2.5' />
           </button>
 
@@ -992,7 +1273,7 @@ function updateSampleMenuGeometry() {
                 :class='{ active: input }'
                 @click='setInputMode(true)'
               >
-                链接
+                {{ demoCopy.link }}
               </button>
               <button
                 type='button'
@@ -1000,7 +1281,7 @@ function updateSampleMenuGeometry() {
                 :class='{ active: !input }'
                 @click='setInputMode(false)'
               >
-                上传
+                {{ demoCopy.upload }}
               </button>
             </div>
 
@@ -1017,11 +1298,11 @@ function updateSampleMenuGeometry() {
                     <span>{{ activeIconMeta.icon }}</span>
                   </span>
                   <span class='sample-trigger-copy'>
-                    <span>示例文件</span>
+                    <span>{{ demoCopy.sampleFile }}</span>
                     <strong>{{ activePreset?.name || fileNameOf(url) }}</strong>
                     <em>{{ activePreset ? fileNameOf(activePreset.url) : url }}</em>
                   </span>
-                  <span class='sample-trigger-action'>{{ samplePickerOpen ? '收起' : '打开' }}</span>
+                  <span class='sample-trigger-action'>{{ samplePickerOpen ? demoCopy.collapse : demoCopy.open }}</span>
                 </button>
 
                 <div
@@ -1077,18 +1358,18 @@ function updateSampleMenuGeometry() {
               </div>
 
               <div class='field-group'>
-                <label class='field-label'>地址</label>
+                <label class='field-label'>{{ demoCopy.address }}</label>
                 <input
                   v-model='url'
                   class='compact-field'
                   type='text'
-                  placeholder='输入文件地址'
+                  :placeholder='demoCopy.addressPlaceholder'
                   @keyup.enter='openUrlPreview()'
                 />
               </div>
 
               <button type='button' class='primary-button' @click='openUrlPreview()'>
-                预览
+                {{ demoCopy.preview }}
               </button>
             </template>
 
@@ -1096,8 +1377,8 @@ function updateSampleMenuGeometry() {
               <label class='upload-card'>
                 <input type='file' :accept='uploadAccept' @change='handleChange' />
                 <span class='upload-icon'>+</span>
-                <span class='upload-title'>点击选择文件</span>
-                <strong>{{ filename || '从本机打开' }}</strong>
+                <span class='upload-title'>{{ demoCopy.chooseFile }}</span>
+                <strong>{{ filename || demoCopy.openLocal }}</strong>
               </label>
             </template>
           </div>
@@ -1112,14 +1393,14 @@ function updateSampleMenuGeometry() {
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
             <div class='viewer-tools'>
-              <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
+              <div v-if='showExternalToolbar' class='viewer-action-group' :aria-label='demoCopy.previewActions'>
                 <template v-if='visibleExternalToolbar.zoom'>
                   <button
                     type='button'
                     class='viewer-tool-button viewer-tool-button--icon'
                     :disabled='viewerActionDisabled || !viewerAvailability.zoomOut'
-                    title='缩小预览'
-                    aria-label='缩小预览'
+                    :title='demoCopy.zoomOut'
+                    :aria-label='demoCopy.zoomOut'
                     @click='triggerViewerAction("zoomOut")'
                   >
                     <ZoomOut :size='15' :stroke-width='2.4' />
@@ -1128,7 +1409,7 @@ function updateSampleMenuGeometry() {
                     type='button'
                     class='viewer-tool-button viewer-tool-button--meter'
                     :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
-                    title='还原比例'
+                    :title='demoCopy.resetZoom'
                     @click='triggerViewerAction("resetZoom")'
                   >
                     {{ viewerZoomState.label }}
@@ -1137,8 +1418,8 @@ function updateSampleMenuGeometry() {
                     type='button'
                     class='viewer-tool-button viewer-tool-button--icon'
                     :disabled='viewerActionDisabled || !viewerAvailability.zoomIn'
-                    title='放大预览'
-                    aria-label='放大预览'
+                    :title='demoCopy.zoomIn'
+                    :aria-label='demoCopy.zoomIn'
                     @click='triggerViewerAction("zoomIn")'
                   >
                     <ZoomIn :size='15' :stroke-width='2.4' />
@@ -1147,8 +1428,8 @@ function updateSampleMenuGeometry() {
                     type='button'
                     class='viewer-tool-button viewer-tool-button--icon'
                     :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
-                    title='还原比例'
-                    aria-label='还原比例'
+                    :title='demoCopy.resetZoom'
+                    :aria-label='demoCopy.resetZoom'
                     @click='triggerViewerAction("resetZoom")'
                   >
                     <RotateCcw :size='14' :stroke-width='2.4' />
@@ -1159,27 +1440,27 @@ function updateSampleMenuGeometry() {
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
-                  title='下载原始文件'
+                  :title='demoCopy.downloadTitle'
                   @click='triggerViewerAction("download")'
                 >
-                  下载
+                  {{ demoCopy.download }}
                 </button>
                 <button
                   v-if='visibleExternalToolbar.print'
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
-                  title='打印完整渲染内容'
+                  :title='demoCopy.printTitle'
                   @click='triggerViewerAction("print")'
                 >
-                  打印
+                  {{ demoCopy.print }}
                 </button>
                 <button
                   v-if='visibleExternalToolbar.exportHtml'
                   type='button'
                   class='viewer-tool-button'
                   :disabled='viewerActionDisabled'
-                  title='导出当前渲染后的 HTML'
+                  :title='demoCopy.exportHtmlTitle'
                   @click='triggerViewerAction("exportHtml")'
                 >
                   HTML
@@ -1189,30 +1470,30 @@ function updateSampleMenuGeometry() {
                 type='button'
                 class='viewer-tool-button'
                 :class='{ active: watermarkEnabled }'
-                title='切换水印'
+                :title='demoCopy.watermarkTitle'
                 @click='toggleWatermark'
               >
-                水印
+                {{ demoCopy.watermark }}
               </button>
             </div>
           </div>
 
-          <div v-if='viewerSearchOpen' class='viewer-search-popover' role='search' aria-label='文档搜索'>
+          <div v-if='viewerSearchOpen' class='viewer-search-popover' role='search' :aria-label='demoCopy.searchDocument'>
             <input
               ref='viewerSearchInputRef'
               v-model.trim='viewerSearchQuery'
               type='search'
-              placeholder='搜索当前文档'
+              :placeholder='demoCopy.searchPlaceholder'
               @keyup.enter='runViewerSearch'
             />
             <span class='viewer-search-summary'>{{ viewerSearchSummary }}</span>
-            <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
+            <button type='button' :title='demoCopy.previousResult' :aria-label='demoCopy.previousResult' @click='previousViewerSearch'>
               <ChevronUp class='viewer-search-icon' aria-hidden='true' />
             </button>
-            <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
+            <button type='button' :title='demoCopy.nextResult' :aria-label='demoCopy.nextResult' @click='nextViewerSearch'>
               <ChevronDown class='viewer-search-icon' aria-hidden='true' />
             </button>
-            <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
+            <button type='button' class='viewer-search-close' :title='demoCopy.closeSearch' @click='closeViewerSearch'>
               <X class='viewer-search-icon' aria-hidden='true' />
             </button>
           </div>
@@ -1234,17 +1515,17 @@ function updateSampleMenuGeometry() {
           v-if='mobileControlsOpen'
           type='button'
           class='mobile-control-backdrop'
-          aria-label='关闭移动端操作面板'
+          :aria-label='demoCopy.closeMobileControls'
           @click='closeMobileControls'
         />
 
-        <nav class='mobile-action-dock' aria-label='移动端预览操作'>
+        <nav class='mobile-action-dock' :aria-label='demoCopy.previewActions'>
           <div v-if='visibleExternalToolbar.zoom' class='mobile-zoom-strip'>
             <button
               type='button'
               :disabled='viewerActionDisabled || !viewerAvailability.zoomOut'
-              title='缩小预览'
-              aria-label='缩小预览'
+              :title='demoCopy.zoomOut'
+              :aria-label='demoCopy.zoomOut'
               @click='triggerViewerAction("zoomOut")'
             >
               <ZoomOut :size='18' :stroke-width='2.4' />
@@ -1253,7 +1534,7 @@ function updateSampleMenuGeometry() {
               type='button'
               class='mobile-zoom-meter'
               :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
-              title='还原比例'
+              :title='demoCopy.resetZoom'
               @click='triggerViewerAction("resetZoom")'
             >
               {{ viewerZoomState.label }}
@@ -1261,8 +1542,8 @@ function updateSampleMenuGeometry() {
             <button
               type='button'
               :disabled='viewerActionDisabled || !viewerAvailability.zoomIn'
-              title='放大预览'
-              aria-label='放大预览'
+              :title='demoCopy.zoomIn'
+              :aria-label='demoCopy.zoomIn'
               @click='triggerViewerAction("zoomIn")'
             >
               <ZoomIn :size='18' :stroke-width='2.4' />
@@ -1276,7 +1557,7 @@ function updateSampleMenuGeometry() {
               :disabled='viewerActionDisabled'
               @click='triggerViewerAction("download")'
             >
-              下载
+              {{ demoCopy.download }}
             </button>
             <button
               v-if='visibleExternalToolbar.print'
@@ -1284,7 +1565,7 @@ function updateSampleMenuGeometry() {
               :disabled='viewerActionDisabled'
               @click='triggerViewerAction("print")'
             >
-              打印
+              {{ demoCopy.print }}
             </button>
             <button
               v-if='visibleExternalToolbar.exportHtml'
@@ -1295,7 +1576,7 @@ function updateSampleMenuGeometry() {
               HTML
             </button>
             <button type='button' :class='{ active: watermarkEnabled }' @click='toggleWatermark'>
-              水印
+              {{ demoCopy.watermark }}
             </button>
             <button
               v-if='visibleExternalToolbar.zoom'
@@ -1303,59 +1584,59 @@ function updateSampleMenuGeometry() {
               :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
               @click='triggerViewerAction("resetZoom")'
             >
-              还原
+              {{ demoCopy.reset }}
             </button>
           </div>
 
           <div class='mobile-quick-row'>
-            <button type='button' class='mobile-fab' aria-label='打开链接设置' @click='openMobileControls("link")'>
+            <button type='button' class='mobile-fab' :aria-label='demoCopy.openLinkSettings' @click='openMobileControls("link")'>
               <Link2 :size='18' :stroke-width='2.4' />
-              <span>链接</span>
+              <span>{{ demoCopy.link }}</span>
             </button>
-            <button type='button' class='mobile-fab' aria-label='打开示例文件' @click='openMobileControls("samples")'>
+            <button type='button' class='mobile-fab' :aria-label='demoCopy.openSamples' @click='openMobileControls("samples")'>
               <FileSearch :size='18' :stroke-width='2.4' />
-              <span>样例</span>
+              <span>{{ demoCopy.samples }}</span>
             </button>
-            <button type='button' class='mobile-fab' aria-label='上传本地文件' @click='openMobileControls("upload")'>
+            <button type='button' class='mobile-fab' :aria-label='demoCopy.uploadLocalFile' @click='openMobileControls("upload")'>
               <Upload :size='18' :stroke-width='2.4' />
-              <span>上传</span>
+              <span>{{ demoCopy.upload }}</span>
             </button>
-            <button type='button' class='mobile-fab' aria-label='搜索当前文档' @click='openViewerSearch'>
+            <button type='button' class='mobile-fab' :aria-label='demoCopy.searchCurrentDocument' @click='openViewerSearch'>
               <Search :size='18' :stroke-width='2.4' />
-              <span>搜索</span>
+              <span>{{ demoCopy.search }}</span>
             </button>
             <button
               type='button'
               class='mobile-fab mobile-fab--primary'
               :class='{ active: mobileActionsOpen }'
-              aria-label='打开更多操作'
+              :aria-label='demoCopy.openMoreActions'
               :aria-expanded="mobileActionsOpen ? 'true' : 'false'"
               @click='toggleMobileActions'
             >
               <MoreHorizontal :size='20' :stroke-width='2.6' />
-              <span>更多</span>
+              <span>{{ demoCopy.more }}</span>
             </button>
           </div>
         </nav>
       </div>
 
       <section v-else class='viewer-panel standalone'>
-        <div v-if='viewerSearchOpen' class='viewer-search-popover viewer-search-popover--standalone' role='search' aria-label='文档搜索'>
+        <div v-if='viewerSearchOpen' class='viewer-search-popover viewer-search-popover--standalone' role='search' :aria-label='demoCopy.searchDocument'>
           <input
             ref='viewerSearchInputRef'
             v-model.trim='viewerSearchQuery'
             type='search'
-            placeholder='搜索当前文档'
+            :placeholder='demoCopy.searchPlaceholder'
             @keyup.enter='runViewerSearch'
           />
           <span class='viewer-search-summary'>{{ viewerSearchSummary }}</span>
-          <button type='button' title='上一个搜索结果' aria-label='上一个搜索结果' @click='previousViewerSearch'>
+          <button type='button' :title='demoCopy.previousResult' :aria-label='demoCopy.previousResult' @click='previousViewerSearch'>
             <ChevronUp class='viewer-search-icon' aria-hidden='true' />
           </button>
-          <button type='button' title='下一个搜索结果' aria-label='下一个搜索结果' @click='nextViewerSearch'>
+          <button type='button' :title='demoCopy.nextResult' :aria-label='demoCopy.nextResult' @click='nextViewerSearch'>
             <ChevronDown class='viewer-search-icon' aria-hidden='true' />
           </button>
-          <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
+          <button type='button' class='viewer-search-close' :title='demoCopy.closeSearch' @click='closeViewerSearch'>
             <X class='viewer-search-icon' aria-hidden='true' />
           </button>
         </div>
@@ -1512,6 +1793,43 @@ function updateSampleMenuGeometry() {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
+}
+
+.brand-meta-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.locale-switch button {
+  min-width: 34px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.locale-switch button.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f4f3e;
+  box-shadow: 0 8px 20px rgba(7, 28, 23, 0.18);
 }
 
 .current-card {

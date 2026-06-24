@@ -1,7 +1,9 @@
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
   type FileViewerZoomState
 } from '@file-viewer/core'
@@ -135,7 +137,9 @@ const concatBytes = (items: Uint8Array[]) => {
   return merged
 }
 
-const parseHeader = (bytes: Uint8Array): BundleHeader => {
+type FileViewerTranslator = ReturnType<typeof createFileViewerTranslator>
+
+const parseHeader = (bytes: Uint8Array, t: FileViewerTranslator): BundleHeader => {
   const lines: string[] = []
   let offset = 0
   while (offset < bytes.length) {
@@ -154,7 +158,7 @@ const parseHeader = (bytes: Uint8Array): BundleHeader => {
 
   const signature = lines.shift() || ''
   if (!signature.startsWith('# v') || !signature.includes('git bundle')) {
-    throw new Error('当前文件不是标准 Git bundle。')
+    throw new Error(t('gitBundle.error.invalid'))
   }
 
   const capabilities: string[] = []
@@ -351,10 +355,14 @@ const resolvePackDeltas = async (
   }
 }
 
-const parsePack = async (bytes: Uint8Array, header: BundleHeader) => {
+const parsePack = async (
+  bytes: Uint8Array,
+  header: BundleHeader,
+  t: FileViewerTranslator
+) => {
   const offset = header.packOffset
   if (asciiDecoder.decode(bytes.subarray(offset, offset + 4)) !== 'PACK') {
-    throw new Error('Git bundle header 后未找到 PACK 数据。')
+    throw new Error(t('gitBundle.error.missingPack'))
   }
   const version = readUInt32(bytes, offset + 4)
   const count = readUInt32(bytes, offset + 8)
@@ -517,10 +525,13 @@ const collectTree = (
   return { treeEntries, files }
 }
 
-const parseBundleModel = async (buffer: ArrayBuffer): Promise<BundleModel> => {
+const parseBundleModel = async (
+  buffer: ArrayBuffer,
+  t: FileViewerTranslator
+): Promise<BundleModel> => {
   const bytes = new Uint8Array(buffer)
-  const header = parseHeader(bytes)
-  const pack = await parsePack(bytes, header)
+  const header = parseHeader(bytes, t)
+  const pack = await parsePack(bytes, header, t)
   const objectMap = new Map(pack.objects.flatMap(object => object.oid ? [[object.oid, object] as const] : []))
   const refsByOid = new Map<string, string[]>()
   header.refs.forEach(ref => {
@@ -551,20 +562,25 @@ const clampZoom = (value: number) => {
   return Math.min(2.2, Math.max(0.65, Number(value.toFixed(2))))
 }
 
-const renderMeta = (documentRef: Document, panel: HTMLElement, model: BundleModel) => {
+const renderMeta = (
+  documentRef: Document,
+  panel: HTMLElement,
+  model: BundleModel,
+  t: FileViewerTranslator
+) => {
   const meta = createElement(documentRef, 'div', 'git-bundle-meta')
   const counts = new Map<PackObjectKind, number>()
   model.objects.forEach(object => {
     counts.set(object.kind, (counts.get(object.kind) || 0) + 1)
   })
   const items = [
-    ['Bundle', model.header.signature],
-    ['Refs', String(model.header.refs.length)],
-    ['Commits', String(model.commits.length)],
-    ['Objects', String(model.objects.length)],
-    ['Deltas', String(model.deltaCount)],
-    ['Object format', model.header.objectFormat],
-    ['Object types', Array.from(counts).map(([kind, count]) => `${kind}:${count}`).join(' · ') || '-']
+    [t('gitBundle.meta.bundle'), model.header.signature],
+    [t('gitBundle.meta.refs'), String(model.header.refs.length)],
+    [t('gitBundle.meta.commits'), String(model.commits.length)],
+    [t('gitBundle.meta.objects'), String(model.objects.length)],
+    [t('gitBundle.meta.deltas'), String(model.deltaCount)],
+    [t('gitBundle.meta.objectFormat'), model.header.objectFormat],
+    [t('gitBundle.meta.objectTypes'), Array.from(counts).map(([kind, count]) => `${kind}:${count}`).join(' · ') || '-']
   ]
   items.forEach(([label, value]) => {
     const row = createElement(documentRef, 'div')
@@ -577,7 +593,7 @@ const renderMeta = (documentRef: Document, panel: HTMLElement, model: BundleMode
       documentRef,
       'div',
       'git-bundle-notice',
-      '当前 bundle 包含 delta 压缩对象。预览器已在浏览器端解析常规 OFS_DELTA / REF_DELTA；若仍有缺失文件，通常是包体过大、对象过多或依赖外部 prerequisite。'
+      t('gitBundle.notice.delta')
     ))
   }
 }
@@ -585,10 +601,12 @@ const renderMeta = (documentRef: Document, panel: HTMLElement, model: BundleMode
 export default async function renderGitBundle(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type = 'bundle'
+  type = 'bundle',
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document
-  const model = await parseBundleModel(buffer)
+  const t = createFileViewerTranslator(context?.options)
+  const model = await parseBundleModel(buffer, t)
   let zoom = 1
   const zoomEmitter = createZoomChangeEmitter()
 
@@ -597,23 +615,26 @@ export default async function renderGitBundle(
   const toolbar = createElement(documentRef, 'div', 'git-bundle-toolbar')
   toolbar.append(
     createElement(documentRef, 'span', undefined, type.toUpperCase()),
-    createElement(documentRef, 'strong', undefined, `${model.commits.length} commits · ${model.files.length} files`)
+    createElement(documentRef, 'strong', undefined, t('gitBundle.toolbar.summary', {
+      commits: model.commits.length,
+      files: model.files.length
+    }))
   )
 
   const layout = createElement(documentRef, 'div', 'git-bundle-layout')
   const historyPanel = createElement(documentRef, 'section', 'git-bundle-panel')
-  historyPanel.appendChild(createElement(documentRef, 'h3', undefined, '历史记录'))
-  renderMeta(documentRef, historyPanel, model)
+  historyPanel.appendChild(createElement(documentRef, 'h3', undefined, t('gitBundle.title.history')))
+  renderMeta(documentRef, historyPanel, model, t)
   const historyList = createElement(documentRef, 'ul', 'git-bundle-list')
   historyPanel.appendChild(historyList)
 
   const treePanel = createElement(documentRef, 'section', 'git-bundle-panel')
-  treePanel.appendChild(createElement(documentRef, 'h3', undefined, '文件树'))
+  treePanel.appendChild(createElement(documentRef, 'h3', undefined, t('gitBundle.title.fileTree')))
   const tree = createElement(documentRef, 'div', 'git-bundle-tree')
   treePanel.appendChild(tree)
 
   const filePanel = createElement(documentRef, 'section', 'git-bundle-panel git-bundle-file')
-  const fileHeader = createElement(documentRef, 'div', 'git-bundle-file-header', '选择文件查看内容')
+  const fileHeader = createElement(documentRef, 'div', 'git-bundle-file-header', t('gitBundle.file.choose'))
   const fileCode = createElement(documentRef, 'pre', 'git-bundle-code', '')
   filePanel.append(fileHeader, fileCode)
   layout.append(historyPanel, treePanel, filePanel)
@@ -623,8 +644,8 @@ export default async function renderGitBundle(
   const renderFiles = (files: FileEntry[]) => {
     tree.replaceChildren()
     if (!files.length) {
-      tree.appendChild(createElement(documentRef, 'div', 'git-bundle-notice', '当前 bundle 的 tree/blob 可能被 delta 压缩，暂未解析到可展开文件。'))
-      fileHeader.textContent = '未解析到文件'
+      tree.appendChild(createElement(documentRef, 'div', 'git-bundle-notice', t('gitBundle.file.noTree')))
+      fileHeader.textContent = t('gitBundle.file.none')
       fileCode.textContent = ''
       return
     }
@@ -667,7 +688,7 @@ export default async function renderGitBundle(
   })
 
   if (!model.commits.length) {
-    historyList.appendChild(createElement(documentRef, 'li', 'git-bundle-notice', '当前 bundle 未解析到 commit 对象，仅展示 refs 和 pack 摘要。'))
+    historyList.appendChild(createElement(documentRef, 'li', 'git-bundle-notice', t('gitBundle.history.empty')))
     renderFiles(model.files)
   }
 

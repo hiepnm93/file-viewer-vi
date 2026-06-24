@@ -1,3 +1,4 @@
+import { createFileViewerTranslator } from '@file-viewer/core';
 const videoStyle = `
 .fv-video-viewer{width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px;background:#eef1f4;box-sizing:border-box}
 .fv-video-shell{width:min(100%,960px);border-radius:8px;border:1px solid rgba(15,23,42,.1);background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.14);overflow:hidden}
@@ -47,6 +48,7 @@ const createLocalUrl = (buffer, type) => {
  * first and imports `hls.js` only when the current browser needs it.
  */
 export default async function renderVideo(buffer, target, type, context) {
+    const t = createFileViewerTranslator(context === null || context === void 0 ? void 0 : context.options);
     const normalizedType = (type || 'mp4').toLowerCase();
     let disposed = false;
     let objectUrl = '';
@@ -54,14 +56,14 @@ export default async function renderVideo(buffer, target, type, context) {
     const root = createElement('div', 'fv-video-viewer');
     const shell = createElement('section', 'fv-video-shell');
     const heading = createElement('div', 'fv-video-heading');
-    heading.append(createElement('span', '', normalizedType.toUpperCase() || 'VIDEO'), createElement('strong', '', '视频预览'));
+    heading.append(createElement('span', '', normalizedType.toUpperCase() || 'VIDEO'), createElement('strong', '', t('media.video.title')));
     const video = createElement('video', 'fv-video-player');
     video.controls = true;
     video.preload = 'metadata';
-    video.textContent = '当前浏览器不支持该视频格式。';
+    video.textContent = t('media.video.unsupported');
     shell.append(heading, video);
     if (normalizedType === 'm3u8') {
-        shell.append(createElement('p', 'fv-video-hint', 'HLS 会优先使用原始 URL 加载分片；如果传入的是本地单文件清单，请确保分片地址可被浏览器访问。'));
+        shell.append(createElement('p', 'fv-video-hint', t('media.video.hlsHint')));
     }
     root.append(shell);
     target.replaceChildren(createStyle(), root);

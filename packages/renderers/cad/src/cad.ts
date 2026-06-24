@@ -10,6 +10,8 @@ import {
 } from '@flyfish-dev/cad-viewer';
 import { resolveFileViewerCadAssetUrls } from '@file-viewer/core/assets';
 import {
+  createFileViewerTranslator,
+  resolveFileViewerLocale,
   createFileViewerZoomChangeEmitter,
   registerFileViewerZoomProvider,
   type FileRenderContext,
@@ -142,11 +144,11 @@ const collectLayers = (result: CadViewerLoadResult | null): CadLayerItem[] => {
     .sort((left, right) => left.name.localeCompare(right.name));
 };
 
-const formatNumber = (value: number | undefined) => {
+const formatNumber = (value: number | undefined, locale = 'zh-CN') => {
   if (!Number.isFinite(value)) {
     return '0';
   }
-  return new Intl.NumberFormat('zh-CN').format(Math.round(value || 0));
+  return new Intl.NumberFormat(locale).format(Math.round(value || 0));
 };
 
 const getCadDocumentBaseUrl = (target: HTMLElement) => {
@@ -161,8 +163,10 @@ export default async function renderCad(
 ): Promise<FileViewerRenderedInstance> {
   const normalizedType = normalizeType(type);
   const options: FileViewerCadOptions = context?.options?.cad || {};
+  const t = createFileViewerTranslator(context?.options);
+  const locale = resolveFileViewerLocale(context?.options);
   let status: CadStatus = 'loading';
-  let progressMessage = '正在加载 CAD 预览器...';
+  let progressMessage = t('cad.state.loadingViewer');
   let errorMessage = '';
   let loadResult: CadViewerLoadResult | null = null;
   let renderStats: RenderStats | null = null;
@@ -179,7 +183,7 @@ export default async function renderCad(
 
   const toolbar = createElement('div', 'cad-toolbar');
   const tools = createElement('div', 'cad-tools');
-  const fitButton = createElement('button', undefined, '适配') as HTMLButtonElement;
+  const fitButton = createElement('button', undefined, t('cad.toolbar.fit')) as HTMLButtonElement;
   const zoomOutButton = createElement('button', undefined, '-') as HTMLButtonElement;
   const zoomText = createElement('span', 'cad-zoom', '100%');
   const zoomInButton = createElement('button', undefined, '+') as HTMLButtonElement;
@@ -189,8 +193,9 @@ export default async function renderCad(
   [fitButton, zoomOutButton, zoomInButton].forEach(button => {
     button.type = 'button';
   });
-  zoomOutButton.title = '缩小';
-  zoomInButton.title = '放大';
+  fitButton.title = t('cad.toolbar.fit');
+  zoomOutButton.title = t('cad.toolbar.zoomOut');
+  zoomInButton.title = t('cad.toolbar.zoomIn');
   tools.append(fitButton, zoomOutButton, zoomText, zoomInButton);
   meta.append(typeMeta, backendMeta);
   toolbar.append(tools, meta);
@@ -199,8 +204,8 @@ export default async function renderCad(
   const layersPanel = createElement('aside', 'cad-layers');
   layersPanel.hidden = true;
   const layersHead = createElement('div', 'cad-layers-head');
-  const layersCount = createElement('span', undefined, '0 项');
-  layersHead.append(createElement('strong', undefined, '图层'), layersCount);
+  const layersCount = createElement('span', undefined, t('cad.layers.count', { count: 0 }));
+  layersHead.append(createElement('strong', undefined, t('cad.layers.title')), layersCount);
   const layersList = createElement('div', 'cad-layers-list');
   layersPanel.append(layersHead, layersList);
 
@@ -212,7 +217,7 @@ export default async function renderCad(
   canvasWrap.append(stage, state);
 
   const inspector = createElement('aside', 'cad-inspector');
-  const inspectorTitle = createElement('strong', undefined, '结构');
+  const inspectorTitle = createElement('strong', undefined, t('cad.inspector.title'));
   const inspectorList = createElement('dl');
   const warningText = createElement('p', 'cad-warning');
   warningText.hidden = true;
@@ -252,10 +257,10 @@ export default async function renderCad(
   const syncInspector = () => {
     const summary = loadResult?.summary;
     const rows: Array<[string, string]> = [
-      ['实体', formatNumber(summary?.entityCount)],
-      ['块', formatNumber(summary?.blockCount)],
-      ['页面', formatNumber(summary?.pageCount)],
-      ['绘制', formatNumber(renderStats?.drawn)],
+      [t('cad.inspector.entities'), formatNumber(summary?.entityCount, locale)],
+      [t('cad.inspector.blocks'), formatNumber(summary?.blockCount, locale)],
+      [t('cad.inspector.pages'), formatNumber(summary?.pageCount, locale)],
+      [t('cad.inspector.drawn'), formatNumber(renderStats?.drawn, locale)],
     ];
     inspectorList.replaceChildren(...rows.map(([label, value]) => {
       const row = createElement('div');
@@ -269,7 +274,7 @@ export default async function renderCad(
   };
 
   const syncLayers = () => {
-    layersCount.textContent = `${layers.length} 项`;
+    layersCount.textContent = t('cad.layers.count', { count: layers.length });
     layersPanel.hidden = layers.length === 0;
     body.classList.toggle('without-layers', layers.length === 0);
     layersList.replaceChildren(...layers.map(layer => {
@@ -427,7 +432,7 @@ export default async function renderCad(
         syncUi();
       },
       onError: error => {
-        errorMessage = error.message || 'CAD 文件解析失败';
+        errorMessage = error.message || t('cad.error.parseFailed');
         syncState();
       },
     });
@@ -443,7 +448,7 @@ export default async function renderCad(
 
   const loadCad = async () => {
     status = 'loading';
-    progressMessage = '正在解析 CAD...';
+    progressMessage = t('cad.state.parsing');
     errorMessage = '';
     loadResult = null;
     renderStats = null;
@@ -485,7 +490,7 @@ export default async function renderCad(
       }
       console.error(reason);
       status = 'error';
-      errorMessage = reason instanceof Error ? reason.message : 'CAD 文件解析失败';
+      errorMessage = reason instanceof Error ? reason.message : t('cad.error.parseFailed');
       syncUi();
     }
   };

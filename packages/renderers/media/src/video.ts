@@ -1,4 +1,8 @@
-import type { FileRenderContext, FileViewerRenderedInstance } from '@file-viewer/core'
+import {
+  createFileViewerTranslator,
+  type FileRenderContext,
+  type FileViewerRenderedInstance
+} from '@file-viewer/core'
 import type Hls from 'hls.js'
 
 const videoStyle = `
@@ -69,6 +73,7 @@ export default async function renderVideo(
   type?: string,
   context?: FileRenderContext
 ) {
+  const t = createFileViewerTranslator(context?.options)
   const normalizedType = (type || 'mp4').toLowerCase()
   let disposed = false
   let objectUrl = ''
@@ -79,20 +84,20 @@ export default async function renderVideo(
   const heading = createElement('div', 'fv-video-heading')
   heading.append(
     createElement('span', '', normalizedType.toUpperCase() || 'VIDEO'),
-    createElement('strong', '', '视频预览')
+    createElement('strong', '', t('media.video.title'))
   )
 
   const video = createElement('video', 'fv-video-player')
   video.controls = true
   video.preload = 'metadata'
-  video.textContent = '当前浏览器不支持该视频格式。'
+  video.textContent = t('media.video.unsupported')
   shell.append(heading, video)
 
   if (normalizedType === 'm3u8') {
     shell.append(createElement(
       'p',
       'fv-video-hint',
-      'HLS 会优先使用原始 URL 加载分片；如果传入的是本地单文件清单，请确保分片地址可被浏览器访问。'
+      t('media.video.hlsHint')
     ))
   }
 

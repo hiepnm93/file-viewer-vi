@@ -10,14 +10,37 @@
 ## 安装
 
 ```bash
-pnpm add @file-viewer/vue2.7
+pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 Vue2.6 项目请安装:
 
 ```bash
-pnpm add @file-viewer/vue2.6
+pnpm add @file-viewer/vue2.6 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
+
+只安装 `@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 是最轻组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力由 preset 或 renderer 提供。Vite 项目推荐加入插件，它会自动发现已安装的 `@file-viewer/preset-*` 并注入能力：
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+需要完整格式矩阵时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，Vite 配置保持一致：
+
+```bash
+pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+如果是 Vue 2.6 项目，把组件包替换为 `@file-viewer/vue2.6` 即可。需要更强自定义时，再配置 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；常规项目保持 `fileViewerRenderers({ copyAssets:true })` 即可。
 
 ## 注册插件
 

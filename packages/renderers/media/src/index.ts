@@ -22,8 +22,9 @@ export const mediaRendererDefinitions = mediaDefinitions;
 export const renderFileViewerAudio: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
   target,
-  type
-) => import('./audio.js').then(({ default: renderAudio }) => renderAudio(buffer, target, type));
+  type,
+  context?: FileRenderContext
+) => import('./audio.js').then(({ default: renderAudio }) => renderAudio(buffer, target, type, context));
 
 export const renderFileViewerVideo: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,

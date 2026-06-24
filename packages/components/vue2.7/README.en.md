@@ -108,10 +108,10 @@ The shared format matrix currently covers 24 preview pipelines and 206 file exte
 
 ## Engineering-Grade On-Demand Renderer Assembly
 
-One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Prefer a product-shaped preset first: `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover and inject installed presets. Regular application code does not need to pass `renderers`; components receive capability through the default `autoRenderers` flow.
+One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Install the component package for the current ecosystem, choose a product-shaped preset such as `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover installed presets and inject the renderer virtual module. Regular application code does not pass `renderers`; components receive capability through the default `autoRenderers` flow.
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
@@ -137,7 +137,7 @@ const options = {
 Heavy users that want the complete official demo capability can install the full preset and keep the same Vite config:
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
 Use explicit plugin options only when you need customization:

@@ -3,6 +3,7 @@ import {
   resolveFileViewerArchiveWorkerUrl,
 } from '@file-viewer/core/assets';
 import {
+  createFileViewerTranslator,
   disposeFileViewerRendered,
   type FileRenderContext,
   type FileViewerArchiveOptions,
@@ -138,7 +139,7 @@ const getWorkerConstructor = (documentRef: Document): WorkerConstructor => {
   const WorkerCtor = documentRef.defaultView?.Worker ||
     (typeof Worker !== 'undefined' ? Worker : undefined);
   if (!WorkerCtor) {
-    throw new Error('当前浏览器不支持 Web Worker');
+    throw new Error('Web Worker is not supported by this browser.');
   }
   return WorkerCtor as WorkerConstructor;
 };
@@ -207,7 +208,7 @@ const prepareWorkerUrl = async (
 
   const response = await fetch(candidate.workerUrl, { cache: 'no-cache' });
   if (!response.ok) {
-    throw new Error(`无法读取 libarchive Worker: ${response.status}`);
+    throw new Error(`Unable to read libarchive Worker: ${response.status}`);
   }
   const source = await response.text();
   const workerUrl = URL.createObjectURL(new Blob([
@@ -229,7 +230,7 @@ const resolveWorkerCandidates = async (
 
   if (options?.workerUrl) {
     candidates.push({
-      label: '自定义 libarchive Worker',
+      label: 'custom libarchive Worker',
       workerUrl: resolveFileViewerArchiveWorkerUrl(options, baseUrl),
       wasmUrl,
     });
@@ -239,7 +240,7 @@ const resolveWorkerCandidates = async (
   const publicWorkerUrl = resolveFileViewerArchiveWorkerUrl(undefined, baseUrl);
   if (await probeWorkerUrl(publicWorkerUrl)) {
     candidates.push({
-      label: '静态 libarchive Worker',
+      label: 'static libarchive Worker',
       workerUrl: publicWorkerUrl,
       wasmUrl,
     });
@@ -254,10 +255,11 @@ const renderNestedWithCoreFallback = async (
   target: HTMLDivElement,
   context?: FileRenderContext
 ) => {
+  const t = createFileViewerTranslator(context?.options);
   const { fileViewerCoreRendererDispatcher } = await import('@file-viewer/core');
   const handler = fileViewerCoreRendererDispatcher.resolve(type);
   if (!handler) {
-    target.textContent = `不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式`;
+    target.textContent = t('archive.error.nestedUnsupported', { type });
     return undefined;
   }
   return handler(buffer, target, type, {
@@ -287,8 +289,9 @@ export default async function renderArchive(
   let selectedEntry: ArchiveEntryView | null = null;
   let nestedRendered: FileViewerRenderedInstance | undefined;
   let loading = false;
-  let loadingText = '正在读取压缩包目录...';
-  let loadingHint = '大文件会在 Worker 中解析，避免阻塞主线程。';
+  const t = createFileViewerTranslator(context?.options);
+  let loadingText = t('archive.loading.readingDirectory');
+  let loadingHint = t('archive.loading.readingDirectoryHint');
   let errorText = '';
   let archiveNotice = '';
   let encrypted: boolean | null = null;
@@ -307,7 +310,7 @@ export default async function renderArchive(
   const info = createElement(documentRef, 'div', 'archive-info');
   const search = createElement(documentRef, 'input', 'archive-search') as HTMLInputElement;
   search.type = 'search';
-  search.placeholder = '筛选压缩包内文件';
+  search.placeholder = t('archive.search.placeholder');
   const list = createElement(documentRef, 'div', 'archive-list');
   list.setAttribute('role', 'list');
   sidebar.append(head, warning, info, search, list);
@@ -316,10 +319,10 @@ export default async function renderArchive(
   const toolbar = createElement(documentRef, 'div', 'archive-preview-toolbar');
   const toolbarTitle = createElement(documentRef, 'div');
   toolbarTitle.append(
-    createElement(documentRef, 'span', undefined, '压缩包内预览'),
-    createElement(documentRef, 'strong', undefined, '请选择一个文件')
+    createElement(documentRef, 'span', undefined, t('archive.preview.title')),
+    createElement(documentRef, 'strong', undefined, t('archive.preview.chooseFile'))
   );
-  const downloadButton = createElement(documentRef, 'button', undefined, '下载文件') as HTMLButtonElement;
+  const downloadButton = createElement(documentRef, 'button', undefined, t('archive.preview.downloadFile')) as HTMLButtonElement;
   downloadButton.type = 'button';
   toolbar.append(toolbarTitle, downloadButton);
   const nestedTarget = createElement(documentRef, 'div', 'archive-nested-target') as HTMLDivElement;
@@ -338,7 +341,7 @@ export default async function renderArchive(
   root.append(state);
 
   const error = createElement(documentRef, 'div', 'archive-error');
-  const errorTitle = createElement(documentRef, 'strong', undefined, '压缩包预览提示');
+  const errorTitle = createElement(documentRef, 'strong', undefined, t('archive.error.title'));
   const errorMessage = createElement(documentRef, 'p');
   error.append(errorTitle, errorMessage);
   root.append(error);
@@ -384,8 +387,12 @@ export default async function renderArchive(
 
   const syncState = () => {
     const archiveStats = getArchiveStats();
-    stats.textContent = `${archiveStats.count} 个文件 · ${formatArchiveBytes(archiveStats.totalSize)} · ${archiveStats.previewableCount} 个可直接预览`;
-    warning.textContent = '检测到加密内容，当前在线预览不接收密码，建议下载后本地解压。';
+    stats.textContent = t('archive.stats.summary', {
+      count: archiveStats.count,
+      size: formatArchiveBytes(archiveStats.totalSize),
+      previewable: archiveStats.previewableCount,
+    });
+    warning.textContent = t('archive.warning.encrypted');
     warning.classList.toggle('archive-hidden', !encrypted);
     info.textContent = archiveNotice;
     info.classList.toggle('archive-hidden', !archiveNotice);
@@ -397,7 +404,7 @@ export default async function renderArchive(
     downloadButton.hidden = !selectedEntry;
     const activeTitle = toolbarTitle.querySelector('strong');
     if (activeTitle) {
-      activeTitle.textContent = selectedEntry?.name || '请选择一个文件';
+      activeTitle.textContent = selectedEntry?.name || t('archive.preview.chooseFile');
     }
   };
 
@@ -407,8 +414,8 @@ export default async function renderArchive(
     }
     const empty = createElement(documentRef, 'div', 'archive-empty');
     empty.append(
-      createElement(documentRef, 'strong', undefined, '选择左侧文件即可预览'),
-      createElement(documentRef, 'p', undefined, '压缩包只读取目录；文件内容会在点击后按需解压，并在体积允许时缓存到 IndexedDB。')
+      createElement(documentRef, 'strong', undefined, t('archive.empty.title')),
+      createElement(documentRef, 'p', undefined, t('archive.empty.message'))
     );
     nestedTarget.replaceChildren(empty);
   };
@@ -470,27 +477,27 @@ export default async function renderArchive(
         },
       });
 
-      setLoading(true, `正在初始化${candidate.label}...`, '如果当前服务器没有正确发布 Worker/WASM，会自动切换兼容模式。');
+      setLoading(true, t('archive.loading.initializingCandidate', { label: candidate.label }), t('archive.loading.initializingCandidateHint'));
       const archiveFile = createArchiveFile(documentRef, buffer, filename);
       const archive = await withTimeout<any>(
         Archive.open(archiveFile),
         workerTimeoutMs,
-        `${candidate.label} 初始化超时`,
+        t('archive.error.candidateInitTimeout', { label: candidate.label }),
         targetWindow
       );
       archiveReader = archive;
       encrypted = await withTimeout<boolean | null>(
         archive.hasEncryptedData(),
         workerTimeoutMs,
-        `${candidate.label} 加密检测超时`,
+        t('archive.error.encryptedCheckTimeout', { label: candidate.label }),
         targetWindow
       ).catch(() => null);
 
-      setLoading(true, '正在读取压缩包目录...', '目录读取完成后，点击内部文件才会按需解压。');
+      setLoading(true, t('archive.loading.readingDirectory'), t('archive.loading.directoryReadyHint'));
       const fileTree = await withTimeout<Record<string, unknown>>(
         archive.getFilesObject(),
         workerTimeoutMs,
-        `${candidate.label} 读取目录超时`,
+        t('archive.error.candidateReadTimeout', { label: candidate.label }),
         targetWindow
       );
 
@@ -509,7 +516,7 @@ export default async function renderArchive(
   };
 
   const tryOpenArchiveWithFallback = async () => {
-    setLoading(true, 'Worker 不可用，正在切换 ZIP/TAR 兼容模式...', '兼容模式无需额外静态 Worker，适合手机 WebView 或本地临时服务器。');
+    setLoading(true, t('archive.loading.workerFallback'), t('archive.loading.workerFallbackHint'));
     const fallbackEntries = await loadArchiveEntriesWithoutWorker(buffer, filename);
 
     if (!fallbackEntries) {
@@ -518,7 +525,7 @@ export default async function renderArchive(
 
     entries = fallbackEntries.sort((left, right) => left.path.localeCompare(right.path));
     encrypted = null;
-    archiveNotice = '当前环境的 libarchive Worker 未能启动，已自动切换到 ZIP/TAR/GZIP 兼容模式。RAR、7z 等格式仍建议发布 vendor/libarchive/worker-bundle.js 与 libarchive.wasm。';
+    archiveNotice = t('archive.notice.workerFallback');
     syncState();
     renderEntryList();
     renderEmptyState();
@@ -527,11 +534,14 @@ export default async function renderArchive(
 
   const openArchive = async () => {
     if (buffer.byteLength > maxArchiveSize) {
-      setError(`压缩包体积 ${formatArchiveBytes(buffer.byteLength)} 超过安全上限 ${formatArchiveBytes(maxArchiveSize)}，请下载后在本地解压。`);
+      setError(t('archive.error.tooLarge', {
+        size: formatArchiveBytes(buffer.byteLength),
+        limit: formatArchiveBytes(maxArchiveSize),
+      }));
       return;
     }
 
-    setLoading(true, '正在初始化压缩包解析 Worker...', '大文件会在 Worker 中解析，避免阻塞主线程。');
+    setLoading(true, t('archive.loading.initializingWorker'), t('archive.loading.initializingWorkerHint'));
     setError('');
     archiveNotice = '';
 
@@ -557,7 +567,7 @@ export default async function renderArchive(
         return;
       }
 
-      throw new Error(errors.join('；') || '压缩包 Worker 初始化失败');
+      throw new Error(errors.join('; ') || t('archive.error.workerInitFailed'));
     } catch (nextError) {
       console.error(nextError);
       setError(nextError instanceof Error ? nextError.message : String(nextError));
@@ -606,16 +616,20 @@ export default async function renderArchive(
     renderEntryList();
     syncState();
     if (entry.size > maxEntryPreviewSize) {
-      setError(`压缩包内文件 ${entry.name} 体积 ${formatArchiveBytes(entry.size)} 超过预览上限 ${formatArchiveBytes(maxEntryPreviewSize)}。`);
+      setError(t('archive.error.entryTooLarge', {
+        name: entry.name,
+        size: formatArchiveBytes(entry.size),
+        limit: formatArchiveBytes(maxEntryPreviewSize),
+      }));
       return;
     }
 
-    setLoading(true, `正在按需解压 ${entry.name}...`);
+    setLoading(true, t('archive.loading.extracting', { name: entry.name }));
     setError('');
 
     try {
       const entryBuffer = await extractEntryBuffer(entry);
-      setLoading(true, `正在渲染 ${entry.name}...`);
+      setLoading(true, t('archive.loading.rendering', { name: entry.name }));
       await renderEntryBuffer(entry, entryBuffer);
     } catch (nextError) {
       console.error(nextError);
@@ -626,7 +640,7 @@ export default async function renderArchive(
   }
 
   const downloadEntry = async (entry: ArchiveEntryView) => {
-    setLoading(true, `正在导出 ${entry.name}...`);
+    setLoading(true, t('archive.loading.exporting', { name: entry.name }));
     try {
       const entryBuffer = await extractEntryBuffer(entry);
       const url = URL.createObjectURL(new Blob([entryBuffer]));

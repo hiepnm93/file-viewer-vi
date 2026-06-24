@@ -1,4 +1,5 @@
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter,
   registerFileViewerZoomProvider,
   readFileViewerText,
@@ -27,6 +28,7 @@ type DrawingStatus = 'loading' | 'ready' | 'error';
 type DrawingKind = 'excalidraw' | 'drawio' | 'mermaid' | 'plantuml';
 type ExcalidrawElement = Record<string, any>;
 type ExcalidrawPoint = [number, number];
+type DrawingTranslator = ReturnType<typeof createFileViewerTranslator>;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const EXCALIDRAW_OFFICIAL_TIMEOUT = 6000;
@@ -190,7 +192,7 @@ const deleteDiagramsViewerPromise = (documentRef: Document, scriptUrl: string) =
   }
 };
 
-const loadDiagramsViewer = (documentRef: Document, scriptUrl: string) => {
+const loadDiagramsViewer = (documentRef: Document, scriptUrl: string, t: DrawingTranslator) => {
   const ownerWindow = documentRef.defaultView || (typeof window !== 'undefined' ? window : undefined);
   if (ownerWindow?.GraphViewer) {
     return Promise.resolve();
@@ -209,7 +211,7 @@ const loadDiagramsViewer = (documentRef: Document, scriptUrl: string) => {
       .find(script => script.src === scriptUrl);
     if (existed) {
       existed.addEventListener('load', () => resolve(), { once: true });
-      existed.addEventListener('error', () => reject(new Error('diagrams.net viewer 加载失败')), { once: true });
+      existed.addEventListener('error', () => reject(new Error(t('drawing.error.viewerLoadFailed'))), { once: true });
       return;
     }
 
@@ -217,7 +219,7 @@ const loadDiagramsViewer = (documentRef: Document, scriptUrl: string) => {
     script.src = scriptUrl;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('diagrams.net viewer 加载失败'));
+    script.onerror = () => reject(new Error(t('drawing.error.viewerLoadFailed')));
     documentRef.head.appendChild(script);
   });
 
@@ -547,20 +549,25 @@ const renderOfficialExcalidraw = async (
   }
 };
 
-const renderExcalidraw = async (documentRef: Document, text: string, target: HTMLElement) => {
+const renderExcalidraw = async (
+  documentRef: Document,
+  text: string,
+  target: HTMLElement,
+  t: DrawingTranslator
+) => {
   const payload = JSON.parse(text);
   const elements = Array.isArray(payload.elements)
     ? payload.elements.filter((element: any) => !element.isDeleted)
     : [];
   if (!elements.length) {
-    throw new Error('Excalidraw 文件中没有可预览图元');
+    throw new Error(t('drawing.error.excalidrawEmpty'));
   }
 
   try {
     await runWithTimeout(
       renderOfficialExcalidraw(payload, elements, target),
       EXCALIDRAW_OFFICIAL_TIMEOUT,
-      'Excalidraw 官方导出超时，自动切换 rough.js 兼容渲染'
+      t('drawing.error.excalidrawTimeout')
     );
   } catch (error) {
     console.warn(error);
@@ -674,18 +681,23 @@ const appendDrawioWrappedText = (
   svg.appendChild(textNode);
 };
 
-const renderDrawioFallback = (documentRef: Document, text: string, target: HTMLElement) => {
+const renderDrawioFallback = (
+  documentRef: Document,
+  text: string,
+  target: HTMLElement,
+  t: DrawingTranslator
+) => {
   const parser = new DOMParser();
   const parsed = parser.parseFromString(text, 'text/xml');
   const parseError = parsed.querySelector('parsererror');
   if (parseError) {
-    throw new Error(`Draw.io XML 解析失败：${parseError.textContent || 'invalid xml'}`);
+    throw new Error(t('drawing.error.drawioParseFailed', { message: parseError.textContent || 'invalid xml' }));
   }
 
   const firstDiagram = parsed.querySelector('diagram');
   const graphModel = firstDiagram?.querySelector('mxGraphModel') || parsed.querySelector('mxGraphModel');
   if (!graphModel) {
-    throw new Error('当前 Draw.io 文件没有可直接渲染的 mxGraphModel。');
+    throw new Error(t('drawing.error.drawioNoModel'));
   }
 
   const cells = Array.from(graphModel.querySelectorAll('mxCell'));
@@ -700,7 +712,7 @@ const renderDrawioFallback = (documentRef: Document, text: string, target: HTMLE
     }))
     .filter(item => item.id && item.geometry);
   if (!vertices.length) {
-    throw new Error('当前 Draw.io 文件没有可预览图元。');
+    throw new Error(t('drawing.error.drawioNoElements'));
   }
 
   const vertexById = new Map(vertices.map(vertex => [vertex.id, vertex]));
@@ -864,10 +876,11 @@ const renderOfficialDrawio = async (
   documentRef: Document,
   text: string,
   target: HTMLElement,
-  scriptUrl: string
+  scriptUrl: string,
+  t: DrawingTranslator
 ) => {
   const ownerWindow = documentRef.defaultView || (typeof window !== 'undefined' ? window : undefined);
-  await loadDiagramsViewer(documentRef, scriptUrl);
+  await loadDiagramsViewer(documentRef, scriptUrl, t);
   await waitForFileViewerNextPaint(ownerWindow);
 
   const host = createElement(documentRef, 'div', 'mxgraph drawing-mxgraph');
@@ -887,7 +900,7 @@ const renderOfficialDrawio = async (
   target.appendChild(host);
 
   if (!ownerWindow?.GraphViewer) {
-    throw new Error('diagrams.net viewer 未正确初始化');
+    throw new Error(t('drawing.error.viewerInitFailed'));
   }
 
   ownerWindow.GraphViewer.createViewerForElement(host);
@@ -898,26 +911,27 @@ const renderDrawio = async (
   documentRef: Document,
   text: string,
   target: HTMLElement,
-  options?: FileViewerDrawingOptions
+  options: FileViewerDrawingOptions | undefined,
+  t: DrawingTranslator
 ) => {
   if (options?.preferOfficial === false) {
-    renderDrawioFallback(documentRef, text, target);
+    renderDrawioFallback(documentRef, text, target, t);
     return;
   }
   const scriptUrl = resolveDrawingViewerScriptUrl(options, documentRef);
 
   try {
     await runWithTimeout(
-      renderOfficialDrawio(documentRef, text, target, scriptUrl),
+      renderOfficialDrawio(documentRef, text, target, scriptUrl, t),
       DRAWIO_OFFICIAL_TIMEOUT,
-      'diagrams.net 官方 Viewer 加载超时，自动切换本地 SVG 预览'
+      t('drawing.error.drawioTimeout')
     );
   } catch (error) {
     console.warn(error);
     deleteDiagramsViewerPromise(documentRef, scriptUrl);
     delete target.dataset.drawingRendered;
     target.replaceChildren();
-    renderDrawioFallback(documentRef, text, target);
+    renderDrawioFallback(documentRef, text, target, t);
   }
 };
 
@@ -929,6 +943,7 @@ export default async function renderDrawing(
 ): Promise<FileViewerRenderedInstance> {
   const documentRef = target.ownerDocument || document;
   const kind = normalizeDrawingType(type);
+  const t = createFileViewerTranslator(context?.options);
   const zoomEmitter = createFileViewerZoomChangeEmitter();
   let status: DrawingStatus = 'loading';
   let errorMessage = '';
@@ -944,24 +959,24 @@ export default async function renderDrawing(
   title.append(
     createElement(documentRef, 'span', undefined, formatDrawingLabel(type)),
     createElement(documentRef, 'strong', undefined, kind === 'excalidraw'
-      ? 'Excalidraw 官方 SVG 预览'
+      ? t('drawing.title.excalidraw')
       : kind === 'mermaid'
-        ? 'Mermaid SVG 预览'
+        ? t('drawing.title.mermaid')
         : kind === 'plantuml'
-          ? 'PlantUML SVG 预览'
-          : 'Draw.io 离线 SVG 预览')
+          ? t('drawing.title.plantuml')
+          : t('drawing.title.drawio'))
   );
   const actions = createElement(documentRef, 'div', 'drawing-actions');
   const zoomOutButton = createElement(documentRef, 'button', undefined, '-') as HTMLButtonElement;
   const zoomLabel = createElement(documentRef, 'span');
   const zoomInButton = createElement(documentRef, 'button', undefined, '+') as HTMLButtonElement;
-  const resetButton = createElement(documentRef, 'button', undefined, '适合') as HTMLButtonElement;
+  const resetButton = createElement(documentRef, 'button', undefined, t('drawing.toolbar.fit')) as HTMLButtonElement;
   [zoomOutButton, zoomInButton, resetButton].forEach(button => {
     button.type = 'button';
   });
-  zoomOutButton.title = '缩小';
-  zoomInButton.title = '放大';
-  resetButton.title = '适合宽度';
+  zoomOutButton.title = t('drawing.toolbar.zoomOut');
+  zoomInButton.title = t('drawing.toolbar.zoomIn');
+  resetButton.title = t('drawing.toolbar.fitWidth');
   actions.append(zoomOutButton, zoomLabel, zoomInButton, resetButton);
   toolbar.append(title, actions);
 
@@ -1021,7 +1036,7 @@ export default async function renderDrawing(
     state.classList.toggle('error', status === 'error');
     state.textContent = status === 'error'
       ? errorMessage
-      : '正在加载绘图预览...';
+      : t('drawing.state.loading');
     applyZoom();
   };
 
@@ -1038,7 +1053,7 @@ export default async function renderDrawing(
         return;
       }
       if (kind === 'excalidraw') {
-        await renderExcalidraw(documentRef, text, canvas);
+        await renderExcalidraw(documentRef, text, canvas, t);
       } else if (kind === 'mermaid' || kind === 'plantuml') {
         const { renderDiagram } = await import('./diagram.js');
         diagramController = await renderDiagram({
@@ -1048,9 +1063,10 @@ export default async function renderDrawing(
           kind,
           options: context?.options?.drawing,
           theme: context?.options?.theme,
+          viewerOptions: context?.options,
         });
       } else {
-        await renderDrawio(documentRef, text, canvas, context?.options?.drawing);
+        await renderDrawio(documentRef, text, canvas, context?.options?.drawing, t);
       }
       if (disposed) {
         return;

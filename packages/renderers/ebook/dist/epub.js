@@ -1,3 +1,4 @@
+import { createFileViewerTranslator, } from '@file-viewer/core';
 const epubStyle = `
 .epub-viewer{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4;color:#172033;box-sizing:border-box}
 .epub-viewer *{box-sizing:border-box}
@@ -60,15 +61,15 @@ const normalizeLabel = (value, fallback) => {
     }
     return fallback;
 };
-const flattenToc = (items, depth = 0) => {
+const flattenToc = (items, fallbackLabel, depth = 0) => {
     if (!Array.isArray(items)) {
         return [];
     }
     return items.flatMap((item, index) => {
         const node = item;
         const href = typeof node.href === 'string' ? node.href : '';
-        const label = normalizeLabel(node.label || node.title, `章节 ${index + 1}`);
-        const subitems = flattenToc(node.subitems || node.children, depth + 1);
+        const label = normalizeLabel(node.label || node.title, fallbackLabel(index + 1));
+        const subitems = flattenToc(node.subitems || node.children, fallbackLabel, depth + 1);
         if (!href) {
             return subitems;
         }
@@ -96,13 +97,14 @@ const pickInitialHref = (items) => {
     });
     return (readable === null || readable === void 0 ? void 0 : readable.href) || ((_a = items[0]) === null || _a === void 0 ? void 0 : _a.href);
 };
-export default async function renderEpub(buffer, target) {
+export default async function renderEpub(buffer, target, context) {
+    const t = createFileViewerTranslator(context === null || context === void 0 ? void 0 : context.options);
     let book;
     let rendition;
     let disposed = false;
     let tocOpen = true;
     let status = 'loading';
-    let title = 'EPUB 电子书';
+    let title = t('epub.title');
     let author = '';
     let tocItems = [];
     let currentHref = '';
@@ -115,16 +117,16 @@ export default async function renderEpub(buffer, target) {
     const toolbar = createElement('div', 'epub-toolbar');
     const tocButton = createElement('button', 'epub-icon-button');
     tocButton.type = 'button';
-    tocButton.title = '目录';
+    tocButton.title = t('ebook.toc');
     tocButton.append(createElement('span'));
     const titleRoot = createElement('div', 'epub-title');
     const titleText = createElement('strong', undefined, title);
-    const subtitleText = createElement('span', undefined, '阅读中');
+    const subtitleText = createElement('span', undefined, t('ebook.reading'));
     titleRoot.append(titleText, subtitleText);
     const actions = createElement('div', 'epub-actions');
-    const prevButton = createElement('button', 'epub-button', '上一页');
-    const progressText = createElement('span', 'epub-progress', '阅读中');
-    const nextButton = createElement('button', 'epub-button', '下一页');
+    const prevButton = createElement('button', 'epub-button', t('epub.previousPage'));
+    const progressText = createElement('span', 'epub-progress', t('ebook.reading'));
+    const nextButton = createElement('button', 'epub-button', t('epub.nextPage'));
     prevButton.type = 'button';
     nextButton.type = 'button';
     actions.append(prevButton, progressText, nextButton);
@@ -132,13 +134,13 @@ export default async function renderEpub(buffer, target) {
     const body = createElement('div', 'epub-body');
     const toc = createElement('aside', 'epub-toc');
     const tocHead = createElement('div', 'epub-toc-head');
-    const tocCount = createElement('span', undefined, '0 项');
-    tocHead.append(createElement('strong', undefined, '目录'), tocCount);
+    const tocCount = createElement('span', undefined, t('ebook.itemCount', { count: 0 }));
+    tocHead.append(createElement('strong', undefined, t('ebook.toc')), tocCount);
     const tocList = createElement('div', 'epub-toc-list');
     toc.append(tocHead, tocList);
     const stageWrap = createElement('main', 'epub-stage-wrap');
     const stage = createElement('div', 'epub-stage');
-    const state = createElement('div', 'epub-state', '正在解析 EPUB...');
+    const state = createElement('div', 'epub-state', t('epub.loading'));
     stageWrap.append(stage, state);
     body.append(toc, stageWrap);
     root.append(toolbar, body);
@@ -162,7 +164,7 @@ export default async function renderEpub(buffer, target) {
         if (typeof progress === 'number') {
             return `${progress}%`;
         }
-        return currentChapter() || '阅读中';
+        return currentChapter() || t('ebook.reading');
     };
     const syncUi = () => {
         root.classList.toggle('epub-viewer--toc-hidden', !tocOpen);
@@ -175,7 +177,7 @@ export default async function renderEpub(buffer, target) {
         nextButton.disabled = status !== 'ready' || atEnd;
         state.hidden = status === 'ready';
         state.classList.toggle('error', status === 'error');
-        tocCount.textContent = `${tocItems.length} 项`;
+        tocCount.textContent = t('ebook.itemCount', { count: tocItems.length });
         Array.from(tocList.querySelectorAll('.epub-toc-item')).forEach(button => {
             button.classList.toggle('active', button.dataset.href === currentHref);
         });
@@ -238,7 +240,7 @@ export default async function renderEpub(buffer, target) {
     };
     const openBook = async () => {
         status = 'loading';
-        state.textContent = '正在解析 EPUB...';
+        state.textContent = t('epub.loading');
         syncUi();
         try {
             const { default: ePub } = await import('epubjs');
@@ -279,11 +281,11 @@ export default async function renderEpub(buffer, target) {
             title = normalizeLabel(metadata === null || metadata === void 0 ? void 0 : metadata.title, title);
             author = normalizeLabel(metadata === null || metadata === void 0 ? void 0 : metadata.creator, '');
             const navigation = await book.loaded.navigation.catch(() => undefined);
-            tocItems = flattenToc(navigation === null || navigation === void 0 ? void 0 : navigation.toc);
+            tocItems = flattenToc(navigation === null || navigation === void 0 ? void 0 : navigation.toc, index => t('epub.chapterFallback', { index }));
             renderToc();
             await rendition.display(pickInitialHref(tocItems));
             if (!await waitForReadableFrame()) {
-                throw new Error('EPUB 正文渲染未完成，请刷新后重试');
+                throw new Error(t('epub.renderIncomplete'));
             }
             if (disposed) {
                 return;

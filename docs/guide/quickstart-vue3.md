@@ -38,7 +38,13 @@ export default defineConfig({
 })
 ```
 
-需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可；需要同时扫描源码 hint 时使用 `preset:'auto'` 或 `autoPresets:true`。
+需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可，Vite 配置保持 `fileViewerRenderers({ copyAssets:true })` 不变：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+需要同时扫描源码 hint 时使用 `preset:'auto'` 或 `autoPresets:true`，这样插件会继续保留“根据已安装 preset 自动激活能力”，再额外合并源码中声明的格式。
 
 ## 全局注册
 

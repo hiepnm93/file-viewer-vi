@@ -4,7 +4,7 @@ if (!imageDefinition) {
     throw new Error('@file-viewer/renderer-image could not locate the core image renderer definition.');
 }
 export const imageRendererDefinition = imageDefinition;
-export const renderFileViewerImage = (buffer, target, type) => import('./image.js').then(({ default: renderImage }) => renderImage(buffer, target, type));
+export const renderFileViewerImage = (buffer, target, type, context) => import('./image.js').then(({ default: renderImage }) => renderImage(buffer, target, type, context));
 export const imageRenderer = {
     id: 'file-viewer-renderer-image',
     label: 'Flyfish File Viewer image renderer',

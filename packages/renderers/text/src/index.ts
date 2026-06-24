@@ -1,5 +1,6 @@
 import {
   DEFAULT_RENDERER_DEFINITIONS,
+  type FileRenderContext,
   type FileRenderHandler,
   type FileViewerRenderedInstance,
   type FileViewerRendererPlugin,
@@ -21,8 +22,9 @@ export const textRendererDefinitions = textDefinitions;
 export const renderFileViewerCode: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
   target,
-  type
-) => import('./code.js').then(({ default: renderCode }) => renderCode(buffer, target, type));
+  type,
+  context?: FileRenderContext
+) => import('./code.js').then(({ default: renderCode }) => renderCode(buffer, target, type, context));
 
 export const renderFileViewerMarkdown: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,

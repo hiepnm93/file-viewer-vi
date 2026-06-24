@@ -19,6 +19,51 @@ const MAX_STREAMS = 200
 const MAX_STREAM_STRINGS = 24
 const MAX_PROPERTIES = 420
 
+export type EdaParserLocale = 'zh-CN' | 'en-US'
+
+const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
+  'zh-CN': {
+    oasisFixture: '已识别为 OASIS 文本结构夹具，并在浏览器端解析几何预览和结构索引；真实 SEMI 二进制 OASIS 仍走安全索引与后续独立内核路线。',
+    gdsLayout: '已识别为标准 GDSII 二进制版图记录，并在浏览器端解析几何预览和结构索引。',
+    cfbContainer: '已识别为 Microsoft Compound File / OLE2 复合文档容器，并在浏览器端解析目录与流。',
+    binaryIndex: '未识别为 CFB 容器，已使用二进制字符串索引模式展示可读信息。',
+    coverage: '已索引 {streams} 个条目、{strings} 个可读字符串、{entities} 个 EDA 结构候选。',
+    layout: '已解析 {layout}: {structures} 个 structure、{elements} 个几何/引用/文本元素，可在版图预览面板中拖动查看。',
+    noSymbol: '未发现明确的元件符号候选，文件可能使用了私有二进制编码或需要专业工具导出 ASCII/XML 后再检查。',
+    noFootprint: '未发现明确的封装、图形或 padstack 候选，文件可能使用了私有二进制数据库编码。',
+    noGds: '未发现明确的 GDSII 版图结构候选。文件可能不是标准 GDSII 二进制或使用了专有封装。',
+    noOasis: '未发现明确的 OASIS 版图结构候选。OASIS 完整几何浏览通常需要专业版图库或独立 WASM/TS 内核，当前前端包会安全展示头部、字符串、属性和二进制结构线索。',
+    maxStreams: '仅展示前 {count} 个 CFB 项，完整文件仍可下载后在专业 EDA 工具中打开。',
+    binaryFallback: '该文件不是标准 CFB 容器，已退化为安全的二进制字符串索引预览。',
+  },
+  'en-US': {
+    oasisFixture: 'Detected an OASIS text fixture and parsed geometry preview plus structure indexes in the browser. Full SEMI binary OASIS still follows the safe index and dedicated-kernel path.',
+    gdsLayout: 'Detected standard GDSII binary layout records and parsed geometry preview plus structure indexes in the browser.',
+    cfbContainer: 'Detected a Microsoft Compound File / OLE2 container and parsed its directory and streams in the browser.',
+    binaryIndex: 'This file is not recognized as a CFB container, so readable information is shown through a safe binary string index.',
+    coverage: 'Indexed {streams} entries, {strings} readable strings, and {entities} EDA structure candidates.',
+    layout: 'Parsed {layout}: {structures} structures and {elements} geometry/reference/text elements. Drag the layout preview panel to inspect it.',
+    noSymbol: 'No clear component-symbol candidates were found. The file may use private binary encoding or need ASCII/XML export from a professional tool.',
+    noFootprint: 'No clear footprint, drawing, or padstack candidates were found. The file may use private binary database encoding.',
+    noGds: 'No clear GDSII layout structure candidates were found. The file may not be standard GDSII binary or may use a proprietary wrapper.',
+    noOasis: 'No clear OASIS layout structure candidates were found. Full OASIS geometry browsing usually needs a professional layout library or dedicated WASM/TS kernel; this frontend package safely exposes headers, strings, properties, and binary clues.',
+    maxStreams: 'Only the first {count} CFB entries are shown. Download the full file and open it in a professional EDA tool for complete inspection.',
+    binaryFallback: 'This file is not a standard CFB container, so it falls back to a safe binary string index preview.',
+  },
+}
+
+const getEdaParserText = (
+  locale: EdaParserLocale,
+  key: keyof typeof EDA_PARSER_TEXT['zh-CN'],
+  params: Record<string, string | number> = {}
+) => {
+  const template = EDA_PARSER_TEXT[locale]?.[key] || EDA_PARSER_TEXT['zh-CN'][key] || key
+  return Object.entries(params).reduce(
+    (message, [name, value]) => message.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value)),
+    template
+  )
+}
+
 export type {
   EdaLayoutElement,
   EdaLayoutPreview,
@@ -525,7 +570,8 @@ const buildDiagnostics = (
   entities: EdaEntity[],
   strings: string[],
   warnings: string[],
-  layout?: EdaLayoutPreview
+  layout: EdaLayoutPreview | undefined,
+  locale: EdaParserLocale
 ): EdaDiagnostic[] => {
   const diagnostics: EdaDiagnostic[] = warnings.map((message, index) => ({
     level: 'warning',
@@ -538,22 +584,30 @@ const buildDiagnostics = (
     code: 'parser',
     message: layout
       ? layout.format === 'oasis'
-        ? '已识别为 OASIS 文本结构夹具，并在浏览器端解析几何预览和结构索引；真实 SEMI 二进制 OASIS 仍走安全索引与后续独立内核路线。'
-        : '已识别为标准 GDSII 二进制版图记录，并在浏览器端解析几何预览和结构索引。'
+        ? getEdaParserText(locale, 'oasisFixture')
+        : getEdaParserText(locale, 'gdsLayout')
       : parser === 'cfb'
-      ? '已识别为 Microsoft Compound File / OLE2 复合文档容器，并在浏览器端解析目录与流。'
-      : '未识别为 CFB 容器，已使用二进制字符串索引模式展示可读信息。'
+      ? getEdaParserText(locale, 'cfbContainer')
+      : getEdaParserText(locale, 'binaryIndex')
   })
   diagnostics.push({
     level: 'info',
     code: 'coverage',
-    message: `已索引 ${streams.length} 个条目、${strings.length} 个可读字符串、${entities.length} 个 EDA 结构候选。`
+    message: getEdaParserText(locale, 'coverage', {
+      streams: streams.length,
+      strings: strings.length,
+      entities: entities.length,
+    })
   })
   if (layout) {
     diagnostics.push({
       level: 'info',
       code: `${layout.format}-layout`,
-      message: `已解析 ${layout.format === 'oasis' ? 'OASIS 结构夹具' : 'GDSII 版图'}: ${layout.structureCount} 个 structure、${layout.elements.length} 个几何/引用/文本元素，可在版图预览面板中拖动查看。`
+      message: getEdaParserText(locale, 'layout', {
+        layout: layout.format === 'oasis' ? 'OASIS fixture' : 'GDSII layout',
+        structures: layout.structureCount,
+        elements: layout.elements.length,
+      })
     })
   }
 
@@ -565,12 +619,12 @@ const buildDiagnostics = (
       level: 'warning',
       code: 'domain-candidates',
       message: type === 'olb'
-        ? '未发现明确的元件符号候选，文件可能使用了私有二进制编码或需要专业工具导出 ASCII/XML 后再检查。'
+        ? getEdaParserText(locale, 'noSymbol')
         : type === 'dra'
-          ? '未发现明确的封装、图形或 padstack 候选，文件可能使用了私有二进制数据库编码。'
+          ? getEdaParserText(locale, 'noFootprint')
           : type === 'gds'
-            ? '未发现明确的 GDSII 版图结构候选。文件可能不是标准 GDSII 二进制或使用了专有封装。'
-            : '未发现明确的 OASIS 版图结构候选。OASIS 完整几何浏览通常需要专业版图库或独立 WASM/TS 内核，当前前端包会安全展示头部、字符串、属性和二进制结构线索。'
+            ? getEdaParserText(locale, 'noGds')
+            : getEdaParserText(locale, 'noOasis')
     })
   }
 
@@ -585,12 +639,13 @@ const assembleResult = (
   streams: EdaStreamView[],
   strings: string[],
   warnings: string[],
-  layout?: EdaLayoutPreview
+  layout: EdaLayoutPreview | undefined,
+  locale: EdaParserLocale
 ): EdaParseResult => {
   const totalStreamBytes = streams.reduce((sum, stream) => sum + stream.size, 0)
   const entities = collectEntities(streams, type)
   const metadata = collectMetadata(streams)
-  const diagnostics = buildDiagnostics(type, parser, streams, entities, strings, warnings, layout)
+  const diagnostics = buildDiagnostics(type, parser, streams, entities, strings, warnings, layout, locale)
   return {
     type,
     parser,
@@ -614,7 +669,11 @@ const assembleResult = (
   }
 }
 
-const parseCfbContainer = async (buffer: ArrayBuffer, type: EdaFileType): Promise<EdaParseResult> => {
+const parseCfbContainer = async (
+  buffer: ArrayBuffer,
+  type: EdaFileType,
+  locale: EdaParserLocale
+): Promise<EdaParseResult> => {
   const CFB = await import('cfb')
   const container = CFB.parse(toBytes(buffer), { type: 'array' })
   const streamEntries = container.FileIndex
@@ -633,13 +692,17 @@ const parseCfbContainer = async (buffer: ArrayBuffer, type: EdaFileType): Promis
   })
 
   const warnings = streamEntries.length >= MAX_STREAMS
-    ? [`仅展示前 ${MAX_STREAMS} 个 CFB 项，完整文件仍可下载后在专业 EDA 工具中打开。`]
+    ? [getEdaParserText(locale, 'maxStreams', { count: MAX_STREAMS })]
     : []
 
-  return assembleResult(buffer, type, 'cfb', container.FileIndex.length, streams, collectStrings(byteChunks), warnings)
+  return assembleResult(buffer, type, 'cfb', container.FileIndex.length, streams, collectStrings(byteChunks), warnings, undefined, locale)
 }
 
-const parseBinaryFallback = (buffer: ArrayBuffer, type: EdaFileType): EdaParseResult => {
+const parseBinaryFallback = (
+  buffer: ArrayBuffer,
+  type: EdaFileType,
+  locale: EdaParserLocale
+): EdaParseResult => {
   const bytes = toBytes(buffer)
   const stream = buildStreamView(type, `${type}.${type}`, `${type}.${type}`, buffer.byteLength, 'binary', bytes)
   const layout = type === 'gds'
@@ -652,11 +715,16 @@ const parseBinaryFallback = (buffer: ArrayBuffer, type: EdaFileType): EdaParseRe
     ? layout.warnings
     : oasis
       ? oasis.warnings
-      : ['该文件不是标准 CFB 容器，已退化为安全的二进制字符串索引预览。']
-  return assembleResult(buffer, type, 'binary', 1, [stream], collectStrings([bytes]), warnings, layout)
+      : [getEdaParserText(locale, 'binaryFallback')]
+  return assembleResult(buffer, type, 'binary', 1, [stream], collectStrings([bytes]), warnings, layout, locale)
 }
 
-export const parseEdaFile = async (buffer: ArrayBuffer, type = 'olb') => {
+export const parseEdaFile = async (
+  buffer: ArrayBuffer,
+  type = 'olb',
+  options: { locale?: EdaParserLocale } = {}
+) => {
+  const locale = options.locale || 'zh-CN'
   const normalizedType: EdaFileType = type === 'dra'
     ? 'dra'
     : type === 'gds' || type === 'oas' || type === 'oasis'
@@ -664,12 +732,12 @@ export const parseEdaFile = async (buffer: ArrayBuffer, type = 'olb') => {
       : 'olb'
   const bytes = toBytes(buffer)
   if (!isOrcadCompoundFile(bytes)) {
-    return parseBinaryFallback(buffer, normalizedType)
+    return parseBinaryFallback(buffer, normalizedType, locale)
   }
   try {
-    return await parseCfbContainer(buffer, normalizedType)
+    return await parseCfbContainer(buffer, normalizedType, locale)
   } catch (error) {
-    const fallback = parseBinaryFallback(buffer, normalizedType)
+    const fallback = parseBinaryFallback(buffer, normalizedType, locale)
     fallback.warnings.unshift(error instanceof Error ? error.message : String(error))
     fallback.diagnostics.unshift({
       level: 'warning',

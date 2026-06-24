@@ -12,7 +12,11 @@
 npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
-Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when you want the complete official demo capability in one install.
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when you want the complete official demo capability in one install. Keep the same `fileViewerRenderers({ copyAssets:true })` config:
+
+```bash
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
 
 ## Register Globally
 
@@ -81,7 +85,7 @@ export default defineConfig({
 })
 ```
 
-Use `preset:'auto'` or `autoPresets:true` when `scan:true` is also enabled, so installed presets and source hints work together.
+Use `preset:'auto'` or `autoPresets:true` when `scan:true` is also enabled, so installed presets stay auto-activated while source hints add extra formats.
 
 ## Compatibility Names
 

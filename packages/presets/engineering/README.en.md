@@ -10,6 +10,16 @@ The engineering renderer preset for Flyfish File Viewer. It targets professional
 
 ## Usage
 
+The recommended path is to use it with `@file-viewer/vite-plugin`. Once this preset is installed, the plugin discovers and activates engineering-file capability automatically:
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+Components keep `autoRenderers:true` by default, so application code does not pass `renderers` manually. Pass the preset directly only when you need full manual registry control:
+
 ```ts
 import FileViewer from '@file-viewer/vue3'
 import { engineeringRenderers } from '@file-viewer/preset-engineering'
@@ -19,15 +29,6 @@ const options = {
   rendererMode: 'replace',
   renderers: engineeringRenderers,
 }
-```
-
-It also works with `@file-viewer/vite-plugin`:
-
-```ts
-fileViewerRenderers({
-  preset: 'engineering',
-  copyAssets: true,
-})
 ```
 
 ## Included Renderers

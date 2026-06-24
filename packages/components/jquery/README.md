@@ -106,10 +106,10 @@ English README: [README.en.md](./README.en.md)。
 
 ## 工程级按需 renderer 装配
 
-一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐优先按产品形态安装 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`，再让 `@file-viewer/vite-plugin` 自动发现并注入已安装 preset。常规业务无需手写 `renderers`，组件会通过默认开启的 `autoRenderers` 获得对应能力。
+一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐先安装当前生态组件包，再按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`。`@file-viewer/vite-plugin` 会免配置自动发现当前项目已安装的 preset、注入 renderer virtual module，并让组件通过默认开启的 `autoRenderers` 获得对应能力，常规业务无需手写 `renderers`。
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/jquery @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 ```ts
@@ -135,7 +135,7 @@ const options = {
 重度用户需要一次拥有官方 Demo 的完整能力时，直接安装全量 preset，仍然使用同一个 Vite 配置：
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/jquery @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
 ```
 
 需要自定义装配时，再显式配置插件：

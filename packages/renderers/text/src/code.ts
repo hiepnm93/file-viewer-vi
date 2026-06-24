@@ -1,8 +1,10 @@
 import {
+  createFileViewerTranslator,
   createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   readFileViewerText as readText,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
   type FileViewerZoomState
 } from '@file-viewer/core'
@@ -187,17 +189,19 @@ const lineCountOf = (value: string) => {
 export default async function renderText(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
-  type?: string
+  type?: string,
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
+  const t = createFileViewerTranslator(context?.options)
   const extension = type || 'txt'
   const normalizedExtension = extension.trim().toLowerCase()
   if (normalizedExtension === 'patch') {
     const { default: renderPatch } = await import('./patch.js')
-    return renderPatch(buffer, target, extension)
+    return renderPatch(buffer, target, extension, context)
   }
   if (normalizedExtension === 'bundle' || normalizedExtension === 'bdl') {
     const { default: renderGitBundle } = await import('./gitBundle.js')
-    return renderGitBundle(buffer, target, extension)
+    return renderGitBundle(buffer, target, extension, context)
   }
 
   const text = await readText(buffer)
@@ -217,7 +221,7 @@ export default async function renderText(
   const code = createElement('code', `hljs language-${language}`)
   code.innerHTML = language === 'plaintext'
     ? escapeHtml(text)
-    : '正在加载高亮...'
+    : t('text.code.loadingHighlight')
   pre.append(code)
   root.append(toolbar, pre)
   root.style.setProperty('--code-font-size', `${13 * zoom}px`)

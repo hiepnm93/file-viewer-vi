@@ -24,6 +24,12 @@
 | Archive | Nested entries preview through the same renderer registry, with safe metadata filtering and cache support |
 | Mobile | Content stays central, controls move to compact floating actions, and heavy renderers remain lazy |
 
+## Language-Aware Samples
+
+The demo follows the browser language by default. Chinese browsers open the Chinese sample system; other languages open the English sample system. You can also force the language with `?lang=zh-CN` or `?lang=en-US`.
+
+The English demo uses public real-world samples for DOCX, PDF, PPTX, and XLSX, plus local lightweight fixtures for Markdown, text, logs, CSV, JSON, TypeScript, JavaScript, GeoJSON, glTF, and archive nesting. All files are served from the demo origin so enterprise intranet deployments do not depend on public CDNs at runtime.
+
 ## Local Demo
 
 ```bash
@@ -44,4 +50,3 @@ pnpm verify:browser-smoke
 ```
 
 Use these checks before publishing a release that touches renderers, assets, toolbar behavior, search, print, or sample files.
-

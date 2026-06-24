@@ -10,6 +10,16 @@ Flyfish File Viewer 的 Office / 文档 renderer preset。它把 PDF、Word、Ex
 
 ## 用法
 
+推荐和 `@file-viewer/vite-plugin` 一起使用。安装本 preset 后，插件会自动发现并激活 Office 文档能力：
+
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
+```
+
+组件默认 `autoRenderers:true`，业务代码无需手动传 `renderers`。需要完全手动控制 registry 时再直接传入：
+
 ```ts
 import FileViewer from '@file-viewer/vue3'
 import { officeRenderers } from '@file-viewer/preset-office'
@@ -19,15 +29,6 @@ const options = {
   rendererMode: 'replace',
   renderers: officeRenderers,
 }
-```
-
-也可以配合 `@file-viewer/vite-plugin` 使用：
-
-```ts
-fileViewerRenderers({
-  preset: 'office',
-  copyAssets: true,
-})
 ```
 
 ## 包含的 renderer

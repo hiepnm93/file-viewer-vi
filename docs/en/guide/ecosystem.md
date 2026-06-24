@@ -22,6 +22,20 @@ Standard component packages are intentionally light. Installing `@file-viewer/vu
 
 `fileViewerRenderers()` or `fileViewerRenderers({ copyAssets:true })` auto-discovers installed `@file-viewer/preset-*` packages and injects the generated virtual module into Vite HTML entrypoints. Components keep `autoRenderers:true` by default, so Vue, React, Svelte, jQuery, and Vanilla JavaScript / Pure Web receive the matching preview capability automatically. `preset-all` is intentionally complete and therefore heavier; production apps should normally prefer `preset-lite`, `preset-office`, `preset-engineering`, or individual renderers.
 
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+      // Installed presets are activated automatically; no hand-written renderers prop.
+    })
+  ]
+}
+```
+
 | Stack | Standard package | Notes |
 | --- | --- | --- |
 | Core foundation | `@file-viewer/core` | Framework-neutral contracts, browser engine, renderer registry, events, search, zoom, print, export, and asset manifests |
@@ -69,7 +83,7 @@ For example, PowerPoint preview is provided by `@file-viewer/renderer-presentati
 
 ## Vite Auto Assembly
 
-Use the Vite plugin when your app wants a complete developer experience without hand-writing every renderer import:
+Use the Vite plugin when your app wants a complete developer experience without hand-writing every renderer import. The default setup auto-discovers installed presets; explicit `formats` and `scan:true` are only needed for strict custom cuts or source-hint driven assembly:
 
 ```ts
 import { defineConfig } from 'vite'
@@ -78,8 +92,6 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default defineConfig({
   plugins: [
     fileViewerRenderers({
-      formats: ['pdf', 'docx'],
-      scan: true,
       copyAssets: true,
       chunkStrategy: 'renderer'
     })
@@ -87,7 +99,7 @@ export default defineConfig({
 })
 ```
 
-With `scan: true`, the plugin inspects common source folders for hints such as `fileViewerFormats = ['pdf', 'docx']`, `data-file-viewer-formats="dwg,xmind"`, and upload `accept=".pdf,.xlsx"`. It then generates `virtual:file-viewer-renderers`, imports only the matching renderer packages, and keeps worker/WASM assets self-hostable.
+With `scan: true`, use `preset:'auto'` or `autoPresets:true` when installed presets should remain active while source hints add extra renderers. The scan reads hints such as `fileViewerFormats = ['pdf', 'docx']`, `data-file-viewer-formats="dwg,xmind"`, and upload `accept=".pdf,.xlsx"`.
 
 ## 2.1.0 Modular Import Paths
 

@@ -4,7 +4,7 @@ if (!geoDefinition) {
     throw new Error('@file-viewer/renderer-geo could not locate the core geospatial renderer definition.');
 }
 export const geoRendererDefinition = geoDefinition;
-export const renderFileViewerGeo = (buffer, target, type) => import('./geo.js').then(({ default: renderGeo }) => renderGeo(buffer, target, type));
+export const renderFileViewerGeo = (buffer, target, type, context) => import('./geo.js').then(({ default: renderGeo }) => renderGeo(buffer, target, type, context));
 export const geoRenderer = {
     id: 'file-viewer-renderer-geo',
     label: 'Flyfish File Viewer geospatial renderer',

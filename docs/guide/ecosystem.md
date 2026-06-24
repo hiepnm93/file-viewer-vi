@@ -37,6 +37,20 @@
 
 `fileViewerRenderers()` 或 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装的 `@file-viewer/preset-*`，并把生成的 virtual module 注入 Vite HTML 入口。组件默认 `autoRenderers:true`，所以 Vue、React、Svelte、jQuery 和 Vanilla JS / Pure Web 都能直接获得对应预览能力。`preset-all` 能力最完整，但安装依赖也最多；生产业务建议优先选择 `preset-lite`、`preset-office`、`preset-engineering` 或单个 renderer。
 
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+      // 已安装的 preset 会自动激活，不需要手写 renderers。
+    })
+  ]
+}
+```
+
 ## 选型一览
 
 | 场景 | 推荐包 | 适合项目 | 入口能力 |

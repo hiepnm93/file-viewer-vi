@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type {
-  FileRenderContext,
-  FileViewerRenderedInstance,
+import {
+  createFileViewerTranslator,
+  type FileRenderContext,
+  type FileViewerRenderedInstance,
 } from '@file-viewer/core';
 import {
   formatGeometryKernelNotice,
@@ -111,9 +112,10 @@ export default async function renderModel(
 ): Promise<FileViewerRenderedInstance> {
   const normalizedType = type.toLowerCase();
   const sourceUrl = context?.url;
+  const t = createFileViewerTranslator(context?.options);
   let status: ModelStatus = 'loading';
   let errorMessage = '';
-  let objectSummary = '正在加载模型';
+  let objectSummary = t('model.state.loadingSummary');
   let autoRotate = false;
   let wireframe = false;
   let showGrid = true;
@@ -134,17 +136,17 @@ export default async function renderModel(
   const root = createElement('div', 'model-viewer');
   const toolbar = createElement('div', 'model-toolbar');
   const actions = createElement('div', 'model-actions');
-  const fitButton = createElement('button', undefined, '适配') as HTMLButtonElement;
-  const rotateButton = createElement('button', undefined, '旋转') as HTMLButtonElement;
-  const wireframeButton = createElement('button', undefined, '线框') as HTMLButtonElement;
-  const gridButton = createElement('button', undefined, '网格') as HTMLButtonElement;
-  const axesButton = createElement('button', undefined, '坐标') as HTMLButtonElement;
+  const fitButton = createElement('button', undefined, t('model.toolbar.fit')) as HTMLButtonElement;
+  const rotateButton = createElement('button', undefined, t('model.toolbar.rotate')) as HTMLButtonElement;
+  const wireframeButton = createElement('button', undefined, t('model.toolbar.wireframe')) as HTMLButtonElement;
+  const gridButton = createElement('button', undefined, t('model.toolbar.grid')) as HTMLButtonElement;
+  const axesButton = createElement('button', undefined, t('model.toolbar.axes')) as HTMLButtonElement;
   const meta = createElement('div', 'model-meta');
   const typeText = createElement('strong', undefined, normalizedType.toUpperCase());
   const summaryText = createElement('span', undefined, objectSummary);
   const stage = createElement('div', 'model-stage');
   const canvas = document.createElement('canvas');
-  const state = createElement('div', 'model-state', '正在解析 3D 模型...');
+  const state = createElement('div', 'model-state', t('model.state.loading'));
   const buttons = [fitButton, rotateButton, wireframeButton, gridButton, axesButton];
 
   buttons.forEach(button => {
@@ -177,10 +179,10 @@ export default async function renderModel(
     state.hidden = status === 'ready';
     state.classList.toggle('error', status === 'error');
     if (status === 'loading') {
-      state.textContent = '正在解析 3D 模型...';
+      state.textContent = t('model.state.loading');
     } else if (status === 'error') {
       state.replaceChildren(
-        createElement('strong', undefined, '模型解析失败'),
+        createElement('strong', undefined, t('model.state.parseFailed')),
         createElement('span', undefined, errorMessage)
       );
     }
@@ -320,12 +322,12 @@ export default async function renderModel(
     const { meshes, points } = countMeshes(object);
     const parts = [];
     if (meshes) {
-      parts.push(`${meshes} 个网格`);
+      parts.push(t('model.summary.meshes', { count: meshes }));
     }
     if (points) {
-      parts.push(`${points} 个点云`);
+      parts.push(t('model.summary.points', { count: points }));
     }
-    objectSummary = parts.length ? parts.join('，') : '模型已加载';
+    objectSummary = parts.length ? parts.join(' · ') : t('model.state.loaded');
     updateUi();
   };
 
@@ -442,7 +444,7 @@ export default async function renderModel(
     const { ColladaLoader } = await import('three/addons/loaders/ColladaLoader.js');
     const result = new ColladaLoader().parse(readText(), getResourcePath(sourceUrl));
     if (!result?.scene) {
-      throw new Error('DAE 模型未解析出有效场景');
+      throw new Error(t('model.error.daeEmpty'));
     }
     return result.scene;
   };
@@ -475,7 +477,7 @@ export default async function renderModel(
   const explainEngineeringModel = (modelType: string): never => {
     const inspection = inspectGeometryKernelFile(buffer, modelType);
     const notice = formatGeometryKernelNotice(inspection.format || modelType);
-    const signature = inspection.signature ? `检测到文件签名: ${inspection.signature}。` : '';
+    const signature = inspection.signature ? t('model.notice.signature', { signature: inspection.signature }) : '';
     const warnings = inspection.warnings.length ? ` ${inspection.warnings.join(' ')}` : '';
     throw new ModelPreviewNotice(`${signature}${notice}${warnings}`);
   };
@@ -557,7 +559,7 @@ export default async function renderModel(
         if (isGeometryKernelFormat(modelType)) {
           return explainEngineeringModel(modelType);
         }
-        throw new Error(`暂不支持 .${modelType} 模型格式`);
+        throw new Error(t('model.error.unsupported', { type: modelType }));
     }
   };
 
@@ -565,7 +567,7 @@ export default async function renderModel(
     const version = ++activeVersion;
     status = 'loading';
     errorMessage = '';
-    objectSummary = '正在加载模型';
+    objectSummary = t('model.state.loadingSummary');
     updateUi();
     ensureScene();
 
@@ -586,7 +588,7 @@ export default async function renderModel(
         console.error(reason);
       }
       status = 'error';
-      errorMessage = normalizeError(reason) || `${normalizedType.toUpperCase()} 模型解析失败`;
+      errorMessage = normalizeError(reason) || t('model.error.parseFailed', { type: normalizedType.toUpperCase() });
       updateUi();
     }
   };

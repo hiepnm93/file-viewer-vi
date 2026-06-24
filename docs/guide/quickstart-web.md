@@ -12,7 +12,7 @@
 新项目优先使用标准包名:
 
 ```bash
-npm install @file-viewer/web
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 历史包名仍同步维护:
@@ -26,6 +26,7 @@ npm install @flyfish-group/file-viewer-web
   id="viewer"
   src="/files/demo.pdf"
   filename="demo.pdf"
+  locale="zh-CN"
   theme="light"
   toolbar-position="bottom-right"
   style="height: 720px"
@@ -50,6 +51,29 @@ viewer.zoomIn()
 ```
 
 元素容器需要有明确高度，预览器会填满组件本身。
+
+如果项目使用 Vite，推荐加入 `@file-viewer/vite-plugin`。插件会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer，Custom Element 和 `mountViewer` 都能直接获得对应格式能力：
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+只安装 `@file-viewer/web` 是最轻的原生组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力请安装对应 preset 或 renderer。重度用户需要完整能力时，直接把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，Vite 配置不需要变化：
+
+```bash
+npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+如果需要精确控制构建结果，再使用 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认路径保持 `fileViewerRenderers({ copyAssets:true })`，插件会根据已安装 preset 自动激活能力。
 
 ## 命令式挂载
 
@@ -146,12 +170,32 @@ npx file-viewer-copy-assets ./public/file-viewer
 
 | 类型 | 支持项 |
 | --- | --- |
-| HTML 属性 | `src` / `url`、`filename` / `name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options` |
-| JS property | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size`、`options`、`coreOptions`、`source` |
+| HTML 属性 | `src` / `url`、`filename` / `name`、`type`、`size`、`locale`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options` |
+| JS property | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size`、`locale`、`options`、`coreOptions`、`source` |
 | 原生事件 | `viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`，以及 `viewer-load-complete`、`viewer-search-change` 等按事件类型派发的细分事件 |
 | 实例方法 | `load`、`update`、`reload`、`destroy`、`downloadOriginalFile`、`printRenderedHtml`、`exportRenderedHtml`、`zoomIn`、`zoomOut`、`resetZoom`、`searchDocument`、`nextSearchResult`、`previousSearchResult`、`collectDocumentAnchors`、`scrollToAnchor`、`scrollToLine`、`getDocumentTextChunks`、`getOperationAvailability`、`getZoomState`、`getSearchState`、`subscribe` |
 
 `options` 与 Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包保持一致，支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks、压缩包缓存和格式专项参数。
+
+### 国际化
+
+Custom Element 可以直接使用 `locale` 属性，也可以通过 `options.locale`、`options.messages` 或 `options.i18n` 定制:
+
+```html
+<flyfish-file-viewer src="/files/report.pdf" locale="en-US"></flyfish-file-viewer>
+```
+
+```ts
+viewer.locale = 'zh-CN'
+viewer.options = {
+  i18n: {
+    locale: 'zh-CN',
+    messages: {
+      'toolbar.print': '打印文档'
+    }
+  }
+}
+```
 
 ## 常见问题
 

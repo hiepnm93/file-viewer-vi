@@ -12,7 +12,7 @@
 新项目优先使用标准包名:
 
 ```bash
-npm install @file-viewer/react
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 历史包名仍同步维护:
@@ -22,6 +22,29 @@ npm install @flyfish-group/file-viewer-react
 ```
 
 React 16.8 / 17 老项目可以使用 `@file-viewer/react-legacy`，props、options 和 controller 语义保持一致。
+
+如果你只安装 `@file-viewer/react`，得到的是最轻的 React 原生组件和 core 基础能力；PDF、Office、CAD、Typst、压缩包等格式能力需要安装对应 preset 或 renderer。Vite 项目推荐加入插件，插件会自动发现已安装的 `@file-viewer/preset-*`：
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+重度用户需要完整能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可，Vite 配置不需要改：
+
+```bash
+npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+需要更强自定义时，再配置 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认推荐保持 `fileViewerRenderers({ copyAssets:true })`，让插件根据已安装 preset 自动激活能力。
 
 ## 最短示例
 

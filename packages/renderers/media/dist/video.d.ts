@@ -1,4 +1,4 @@
-import type { FileRenderContext, FileViewerRenderedInstance } from '@file-viewer/core';
+import { type FileRenderContext, type FileViewerRenderedInstance } from '@file-viewer/core';
 /**
  * Pure TypeScript video renderer.
  *
