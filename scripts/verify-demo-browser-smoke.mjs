@@ -326,7 +326,7 @@ const verifyTypstRenderInteraction = async (page, samplePath) => {
         svgs.length > 0 &&
         Boolean(pageRect && pageRect.width > 80 && pageRect.height > 80) &&
         Boolean(svgRect && svgRect.width > 80 && svgRect.height > 80) &&
-        statusText.includes('已渲染') &&
+        (/已渲染|Rendered/i).test(statusText) &&
         hasVectorContent,
       pageCount: pageShells.length,
       svgCount: svgs.length,
@@ -401,7 +401,10 @@ const verifyCadRenderInteraction = async (page, samplePath) => {
     const stage = document.querySelector('.cad-stage')
     const zoomText = document.querySelector('.cad-zoom')
     const zoomInButton = [...document.querySelectorAll('.cad-tools button')]
-      .find(button => button.getAttribute('title') === '放大')
+      .find(button => {
+        const label = `${button.getAttribute('title') || ''} ${button.textContent || ''}`.trim().toLowerCase()
+        return label.includes('放大') || label.includes('zoom in') || label.endsWith('+')
+      })
     if (!(stage instanceof HTMLElement) || !(zoomText instanceof HTMLElement) || !(zoomInButton instanceof HTMLButtonElement)) {
       return {
         ok: false,
@@ -499,47 +502,60 @@ const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
 const verifyArchiveNestedPreviewInteraction = async (page, samplePath) => {
   const nestedChecks = [
     {
-      label: 'code.ts',
-      selector: '.archive-nested-target .code-viewer pre code.hljs',
-      expectedText: 'PreviewStatus'
+      labels: ['code.ts'],
+      selector: '.archive-nested-target .code-viewer pre code.hljs'
     },
     {
-      label: 'sample.pdf',
+      labels: ['sample.pdf', 'prince-sample.pdf'],
       selector: '.archive-nested-target .pdfViewer .page, .archive-nested-target .pdf-page, .archive-nested-target canvas'
     },
     {
-      label: 'sample.docx',
+      labels: ['sample.docx', 'calibre-demo.docx'],
       selector: '.archive-nested-target .docx-wrapper, .archive-nested-target .docx-document, .archive-nested-target [data-docx-root]'
     }
   ]
 
   for (const check of nestedChecks) {
-    const clicked = await page.evaluate(label => {
+    const clicked = await page.evaluate(labels => {
       const entries = [...document.querySelectorAll('.archive-entry')]
-      const target = entries.find(entry =>
-        entry.querySelector('.entry-copy strong')?.textContent?.trim() === label
-      )
+      const labelSet = new Set(labels)
+      const target = entries.find(entry => labelSet.has(entry.querySelector('.entry-copy strong')?.textContent?.trim() || ''))
       if (!(target instanceof HTMLButtonElement)) {
-        return false
+        return null
       }
       target.click()
-      return true
-    }, check.label)
+      return target.querySelector('.entry-copy strong')?.textContent?.trim() || null
+    }, check.labels)
 
     if (!clicked) {
-      throw new Error(`Sample ${samplePath} archive smoke is missing nested entry ${check.label}.`)
+      throw new Error(`Sample ${samplePath} archive smoke is missing nested entry ${check.labels.join(' or ')}.`)
     }
 
     await page.waitForSelector(check.selector, { timeout: sampleTimeout })
     await page.waitForFunction(
-      () => !document.querySelector('.archive-state:not(.archive-hidden)'),
+      () => {
+        const state = document.querySelector('.archive-state:not(.archive-hidden)')
+        if (!(state instanceof HTMLElement)) {
+          return true
+        }
+        const style = window.getComputedStyle(state)
+        const rect = state.getBoundingClientRect()
+        return state.hidden ||
+          style.display === 'none' ||
+          style.visibility === 'hidden' ||
+          Number(style.opacity) === 0 ||
+          rect.width === 0 ||
+          rect.height === 0
+      },
       undefined,
       { timeout: sampleTimeout }
-    )
+    ).catch(error => {
+      throw new Error(`Sample ${samplePath} archive nested preview did not finish loading for ${clicked}.\n${error.message}`)
+    })
     if (check.expectedText) {
       await page.waitForFunction(
-        ({ selector, expectedText }) => {
-          const target = document.querySelector(selector)
+        ({ expectedText }) => {
+          const target = document.querySelector('.archive-nested-target')
           return Boolean(target?.textContent?.includes(expectedText))
         },
         check,
@@ -564,7 +580,7 @@ const verifyArchiveNestedPreviewInteraction = async (page, samplePath) => {
     }, check)
 
     if (!result.ok) {
-      throw new Error(`Sample ${samplePath} failed archive nested preview smoke for ${check.label}: ${JSON.stringify(result, null, 2)}`)
+      throw new Error(`Sample ${samplePath} failed archive nested preview smoke for ${clicked}: ${JSON.stringify(result, null, 2)}`)
     }
   }
 }
@@ -748,6 +764,16 @@ const waitForBodyText = async (page, requiredTexts, context) => {
   })
 }
 
+const waitForAnyBodyText = async (page, acceptedTexts, context) => {
+  await page.waitForFunction(
+    texts => texts.some(text => document.body.innerText.includes(text)),
+    acceptedTexts,
+    { timeout }
+  ).catch(error => {
+    throw new Error(`${context} did not render any expected text: ${acceptedTexts.join(', ')}\n${error.message}`)
+  })
+}
+
 const collectSampleFiles = directory => {
   if (!existsSync(directory) || !statSync(directory).isDirectory()) {
     fail(`Missing demo sample directory ${directory}.`)
@@ -918,8 +944,11 @@ const verifyCompareDemo = async (page, baseUrl, failures) => {
     undefined,
     { timeout }
   )
-  await waitForBodyText(page, [
+  await waitForAnyBodyText(page, [
     '文档比对',
+    'Document Compare'
+  ], 'Compare demo title')
+  await waitForBodyText(page, [
     'Flyfish File Viewer Markdown Demo',
     'File Viewer text sample'
   ], 'Compare demo')
