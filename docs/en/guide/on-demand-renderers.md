@@ -40,20 +40,34 @@ export default defineConfig({
 
 ## Automatic Preset Assembly
 
-`@file-viewer/vite-plugin` can discover installed presets and inject the generated virtual module into the Vite HTML entry. In the common path, install the component package plus a preset and the framework component automatically receives that preview capability:
+`@file-viewer/vite-plugin` can discover installed presets and inject the generated virtual module into the Vite HTML entry. In the common path, install the component package plus a preset, add the plugin once, and the framework component automatically receives that preview capability:
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
+  copyAssets: true
+  // No preset option required: installed @file-viewer/preset-* packages are discovered.
+})
+```
+
+`inject` defaults to true. Preset packages register themselves in core when imported, and `FileViewerOptions.autoRenderers` defaults to true in normal `extend` mode. Set `autoRenderers:false` only when a product needs full manual control.
+
+Install `@file-viewer/preset-all` when a heavy user wants the fastest full-capability setup:
+
+```bash
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+Use `preset:'auto'` or `autoPresets:true` when you also enable `scan:true`; this keeps installed preset discovery active while source hints add extra renderers. If `preset-all` is installed, it takes precedence to avoid importing narrower presets twice.
+
+```ts
+fileViewerRenderers({
+  preset: 'auto',
   scan: true,
+  formats: ['pdf'],
   copyAssets: true,
   chunkStrategy: 'renderer'
 })
 ```
-
-`inject` defaults to true. Preset packages register themselves in core when imported, and `FileViewerOptions.autoRenderers` defaults to true in normal `extend` mode. Set `autoRenderers:false` when a product needs full manual control.
-
-Use `preset:'auto'` to discover installed preset packages automatically. If `preset-all` is installed, it takes precedence to avoid importing narrower presets twice.
 
 ## Manual Control
 

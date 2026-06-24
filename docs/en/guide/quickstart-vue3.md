@@ -9,8 +9,10 @@
 ## Install
 
 ```bash
-npm install @file-viewer/vue3
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
+
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when you want the complete official demo capability in one install.
 
 ## Register Globally
 
@@ -72,14 +74,14 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default defineConfig({
   plugins: [
     fileViewerRenderers({
-      preset: 'office',
-      scan: true,
-      copyAssets: true,
-      chunkStrategy: 'renderer'
+      copyAssets: true
+      // Installed @file-viewer/preset-* packages are discovered automatically.
     })
   ]
 })
 ```
+
+Use `preset:'auto'` or `autoPresets:true` when `scan:true` is also enabled, so installed presets and source hints work together.
 
 ## Compatibility Names
 
@@ -89,4 +91,3 @@ Historical packages remain synchronized:
 - `file-viewer3`
 
 New Vue 3 projects should use `@file-viewer/vue3`.
-

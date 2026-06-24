@@ -13,7 +13,7 @@
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | 安装更快   | 默认组件包只安装 core、组件本身和必要轻量依赖；PDF、Office、CAD、Typst、3D、archive 等重链路不再默认进入 core `dependencies`。 |
 | 打包更轻   | 用户只 `import` 自己装配的 renderer，Vite / Rollup / Webpack / Rspack 才会把对应依赖打进最终产物。                             |
-| 调试简单   | Vue、React、Svelte、jQuery、Vanilla JS 都仍然是原生组件体验，不回退 iframe；只是在组件 options 中显式传入 renderer/preset。    |
+| 调试简单   | Vue、React、Svelte、jQuery、Vanilla JS 都仍然是原生组件体验，不回退 iframe；Vite 项目默认由插件自动发现已安装 preset，也保留手动 renderer 控制。 |
 | 自动化友好 | 提供 preset、Vite 插件、资产复制 CLI 和校验脚本，让用户可以“一行装配”，也能精确控制企业内网部署资源。                          |
 | 渐进兼容   | 先支持 `@file-viewer/preset-all` 维持完整能力，再逐步把默认安装切到 lightweight preset，避免一次性破坏现有客户。               |
 
@@ -31,9 +31,9 @@
 关键原则：
 
 - **默认轻量**：安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 只得到 core 和组件能力，不得到全部重渲染依赖。
-- **显式能力**：用户要 PDF、Office、CAD、Typst、Archive、3D 等能力时，通过 renderer 或 preset 显式引入。
-- **导入即装配**：业务代码 import 了哪个 renderer/preset，构建工具才有机会把对应依赖纳入产物；没有 import 的能力不进入最终 bundle。
-- **全量仍简单**：需要最完整体验时，`@file-viewer/preset-all` 保留“一行安装、一行装配”的路径，官方 demo 使用它展示完整能力。
+- **显式能力**：用户要 PDF、Office、CAD、Typst、Archive、3D 等能力时，安装对应 renderer 或 preset。
+- **安装即装配**：Vite 项目使用 `@file-viewer/vite-plugin` 后，会自动发现已安装 preset 并注入 virtual module；没有安装的能力不进入最终 bundle。
+- **全量仍简单**：需要最完整体验时，`@file-viewer/preset-all` 保留“一行安装、一行自动装配”的路径，官方 demo 使用它展示完整能力。
 - **资产可追踪**：每个 renderer 的 worker、wasm、字体、vendor 文件必须通过 manifest/CLI 暴露，避免业务方手抄路径。
 
 ## 行业基线
@@ -64,7 +64,7 @@
 | 只需要 PDF/Word/Excel/PPT/OFD   | 安装组件包 + `@file-viewer/preset-office`，极致裁剪时再按 renderer 安装 | Office 依赖按文档 preset 聚合   | 只会产生文档相关异步 chunk               |
 | CAD/3D/Typst/Archive 等专项能力 | 安装组件包 + `@file-viewer/preset-engineering` 或对应单 renderer | 工程链路按产品形态聚合          | worker/wasm 跟随 renderer asset manifest |
 | 企业内网全格式平台              | 安装组件包 + `@file-viewer/preset-all` + asset copy CLI   | 一次性完整安装                  | chunk 按 renderer 拆分，避免首屏全部执行 |
-| 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 配置 `formats`                 | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
+| 大型业务前端希望自动化          | `@file-viewer/vite-plugin` 自动发现已安装 preset，必要时配置 `formats` / `scan` | 由插件提示缺失 renderer         | 自动生成 virtual module 和部署 manifest  |
 
 因此“分包”不是让用户手动拼很多碎片，而是把默认能力变轻，把完整能力保留为 preset，把工程化项目交给插件自动装配。
 
@@ -113,22 +113,38 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default defineConfig({
   plugins: [
     fileViewerRenderers({
-      preset: 'office',
-      scan: true,
-      copyAssets: true,
-      chunkStrategy: 'renderer'
+      copyAssets: true
+      // 无需 preset:'office'，插件会自动发现已安装 preset。
     })
   ]
 })
 ```
 
-常见轻附件使用 `preset-lite`，CAD / 3D / Typst / EDA / 数据资产等工程附件使用 `preset-engineering`，完整样例矩阵或全格式后台使用 `preset-all`。`copyAssets:true` 会把 Worker、WASM、PDF 字体、CAD、Typst WASM/字体、Archive、Data 等离线资源复制到部署目录，避免企业内网环境依赖公共 CDN。
+常见轻附件使用 `preset-lite`，CAD / 3D / Typst / EDA / 数据资产等工程附件使用 `preset-engineering`，完整样例矩阵或全格式后台使用 `preset-all`。插件无参或只传 `copyAssets:true` 时会自动发现已安装 preset；`copyAssets:true` 会把 Worker、WASM、PDF 字体、CAD、Typst WASM/字体、Archive、Data 等离线资源复制到部署目录，避免企业内网环境依赖公共 CDN。
+
+全量一键安装:
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+如果需要同时扫描源码 hint 并自动发现已安装 preset，请使用 `preset:'auto'` 或 `autoPresets:true`：
+
+```ts
+fileViewerRenderers({
+  preset: 'auto',
+  scan: true,
+  formats: ['pdf'],
+  copyAssets: true,
+  chunkStrategy: 'renderer'
+})
+```
 
 如果需要完全手动控制 registry，可以关闭注入并显式传入 virtual module：
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
+  formats: ['pdf'],
   inject: false,
   copyAssets: true
 })
@@ -184,14 +200,14 @@ const options = {
 
 ### 方式三：全量体验
 
-```ts
-import { FileViewer } from '@file-viewer/vue3'
-import { allRenderers } from '@file-viewer/preset-all'
+```bash
+npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
 
-const options = {
-  builtinRenderers: 'none',
-  renderers: allRenderers
-}
+```ts
+fileViewerRenderers({
+  copyAssets: true
+})
 ```
 
 ### 方式四：构建插件自动装配

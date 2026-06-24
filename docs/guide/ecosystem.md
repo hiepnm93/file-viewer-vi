@@ -29,13 +29,13 @@
 | 策略 | 安装方式 | 说明 |
 | --- | --- | --- |
 | 最轻组件入口 | `npm i @file-viewer/vue3` | 适合先接入组件壳、再按业务选择格式能力 |
-| 常见轻附件 | `npm i @file-viewer/vue3 @file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 |
-| 办公文档平台 | `npm i @file-viewer/vue3 @file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument |
-| 工程附件平台 | `npm i @file-viewer/vue3 @file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
-| 完整 Demo 能力 | `npm i @file-viewer/vue3 @file-viewer/preset-all` | 全量依赖最大，适合演示站和内部全格式工作台 |
-| 极致裁剪 | `npm i @file-viewer/vue3 @file-viewer/renderer-pdf` | 只安装需要的 renderer，并用 Vite 插件精确生成 import |
+| 常见轻附件 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频，Vite 插件自动发现 preset |
+| 办公文档平台 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument，推荐业务默认路线 |
+| 工程附件平台 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
+| 完整 Demo 能力 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all` | 全量一键安装，适合演示站、后台运维和内部全格式附件中心 |
+| 极致裁剪 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf` | 只安装需要的 renderer，并用 `formats` 精确生成 import |
 
-`preset-all` 能力最完整，但安装依赖也最多。发布前冷安装验证中，`vue3 + preset-all` 作为最重目标单独通过；生产业务建议优先选择 `preset-lite`、`preset-office`、`preset-engineering` 或单个 renderer。
+`fileViewerRenderers()` 或 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装的 `@file-viewer/preset-*`，并把生成的 virtual module 注入 Vite HTML 入口。组件默认 `autoRenderers:true`，所以 Vue、React、Svelte、jQuery 和 Vanilla JS / Pure Web 都能直接获得对应预览能力。`preset-all` 能力最完整，但安装依赖也最多；生产业务建议优先选择 `preset-lite`、`preset-office`、`preset-engineering` 或单个 renderer。
 
 ## 选型一览
 

@@ -23,6 +23,12 @@ Available presets:
 - `@file-viewer/preset-engineering`: CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, and EDA.
 - `@file-viewer/preset-all`: the complete official demo format matrix.
 
+Heavy users that want the fastest full-capability setup can install the full preset:
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
 ## vite.config.ts
 
 ```ts
@@ -41,11 +47,10 @@ export default defineConfig({
 })
 ```
 
-Or use one preset package:
+Or use one preset package. With no explicit `preset` option, or only `copyAssets:true`, the plugin auto-discovers installed `@file-viewer/preset-*` packages:
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
   copyAssets: true
 })
 ```
@@ -63,7 +68,7 @@ For strict registry control, disable injection and pass the virtual module expli
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
+  formats: ['pdf'],
   inject: false,
   copyAssets: true
 })
@@ -78,7 +83,17 @@ const options = {
 }
 ```
 
-You can also use `preset: 'auto'` to discover installed preset packages. When `preset-all` is installed, it wins to avoid importing narrower presets twice.
+You can also use `preset: 'auto'` to discover installed preset packages. When `preset-all` is installed, it wins to avoid importing narrower presets twice. Note: when `scan:true` is enabled, use `preset:'auto'` or `autoPresets:true` explicitly; otherwise the plugin treats source hints as the explicit renderer selection and skips zero-config preset discovery.
+
+```ts
+fileViewerRenderers({
+  preset: 'auto',
+  scan: true,
+  formats: ['pdf'],
+  copyAssets: true,
+  chunkStrategy: 'renderer'
+})
+```
 
 `scan: true` inspects common source folders for lightweight hints and merges them with `formats`:
 

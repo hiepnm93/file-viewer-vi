@@ -12,14 +12,33 @@
 ## 安装
 
 ```bash
-pnpm add @file-viewer/vue3
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
 
 也可以使用 `npm`:
 
 ```bash
-npm install --save @file-viewer/vue3
+npm install --save @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
 ```
+
+## 推荐 Vite 配置
+
+`@file-viewer/vite-plugin` 会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer。常规 Vue3 项目无需手写 `renderers`：
+
+```ts
+import { defineConfig } from 'vite'
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+    })
+  ]
+})
+```
+
+需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可；需要同时扫描源码 hint 时使用 `preset:'auto'` 或 `autoPresets:true`。
 
 ## 全局注册
 

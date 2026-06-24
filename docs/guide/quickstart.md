@@ -37,7 +37,37 @@
 | `@file-viewer/preset-all` | 官方 Demo 的完整格式矩阵 | 演示站、内部全格式附件中心 |
 | 单个 renderer | 例如 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` | 只需要少数格式、追求最小依赖 |
 
-`@file-viewer/vite-plugin` 可以自动发现已安装的 preset 并注入 renderer，常规业务无需手写 `renderers`。如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+`@file-viewer/vite-plugin` 可以免配置自动发现已安装的 preset 并注入 renderer，常规业务无需手写 `renderers`。如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+
+### Vite 项目推荐配置
+
+在 Vite 项目中，安装任意标准组件包、`@file-viewer/vite-plugin` 和一个 preset 后，插件会根据已安装 preset 自动激活能力：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+      // 无需 preset:'office'，插件会自动发现已安装的 @file-viewer/preset-office。
+    })
+  ]
+}
+```
+
+重度用户需要最快拥有全部能力时，直接安装全量 preset，Vite 配置保持一致：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+需要自定义时再显式配置：`preset:'auto'` 用于在开启 `scan:true` 时继续自动发现已安装 preset；`formats` 用于额外补充精确 renderer；`inject:false` 用于完全手动传入 `virtual:file-viewer-renderers`。
 
 ## 运行环境
 
@@ -81,10 +111,7 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default {
   plugins: [
     fileViewerRenderers({
-      preset: 'office',
-      scan: true,
-      copyAssets: true,
-      chunkStrategy: 'renderer'
+      copyAssets: true
     })
   ]
 }

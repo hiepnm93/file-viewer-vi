@@ -23,6 +23,12 @@ pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/preset-office
 - `@file-viewer/preset-engineering`: CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA。
 - `@file-viewer/preset-all`: 官方 demo 完整格式矩阵。
 
+重度用户需要最快拥有全部预览能力时，直接安装全量 preset：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
 ## vite.config.ts
 
 ```ts
@@ -41,11 +47,10 @@ export default defineConfig({
 })
 ```
 
-或者使用 preset 一包装配：
+或者使用 preset 一包装配。无参或只传 `copyAssets:true` 时，插件会自动发现已安装的 `@file-viewer/preset-*`，无需写 `preset:'office'`：
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
   copyAssets: true
 })
 ```
@@ -63,7 +68,7 @@ const options = {
 
 ```ts
 fileViewerRenderers({
-  preset: 'office',
+  formats: ['pdf'],
   inject: false,
   copyAssets: true
 })
@@ -78,7 +83,17 @@ const options = {
 }
 ```
 
-也可以使用 `preset: 'auto'` 发现项目中已安装的 preset 包；当 `preset-all` 存在时会优先使用它，避免重复导入其它 preset。
+也可以使用 `preset: 'auto'` 发现项目中已安装的 preset 包；当 `preset-all` 存在时会优先使用它，避免重复导入其它 preset。注意：如果同时开启 `scan:true`，请显式使用 `preset:'auto'` 或 `autoPresets:true`，否则插件会以源码 hint 为准，不再做“无配置 preset 自动发现”。
+
+```ts
+fileViewerRenderers({
+  preset: 'auto',
+  scan: true,
+  formats: ['pdf'],
+  copyAssets: true,
+  chunkStrategy: 'renderer'
+})
+```
 
 `scan: true` 会扫描常见源码目录里的轻量 hint，并把它们合并到 `formats`：
 

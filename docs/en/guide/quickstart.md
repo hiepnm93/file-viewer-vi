@@ -21,7 +21,37 @@ Add a preset or a single renderer package for the file formats your product actu
 | `@file-viewer/preset-all` | Full official demo matrix | Demos and internal all-format workbenches |
 | Single renderer | For example `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word` | Minimal custom format cuts |
 
-`@file-viewer/vite-plugin` can auto-discover installed presets and inject renderer modules. If a file extension is supported but the required renderer is not assembled, the viewer shows an install-oriented hint instead of a vague unsupported state.
+`@file-viewer/vite-plugin` can auto-discover installed presets and inject renderer modules without explicit preset configuration. If a file extension is supported but the required renderer is not assembled, the viewer shows an install-oriented hint instead of a vague unsupported state.
+
+### Recommended Vite Setup
+
+In Vite projects, install a standard component package, `@file-viewer/vite-plugin`, and one preset. The plugin automatically activates the installed preset:
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      copyAssets: true
+      // No preset:'office' needed; the plugin discovers installed @file-viewer/preset-office.
+    })
+  ]
+}
+```
+
+Heavy users that want the fastest full-capability setup can install the complete preset and keep the same Vite config:
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+```
+
+Use explicit options only when you need customization: `preset:'auto'` keeps installed preset auto-discovery while `scan:true` is enabled; `formats` adds exact renderers; `inject:false` lets you pass `virtual:file-viewer-renderers` manually.
 
 ## Vanilla JavaScript / Web Component
 
@@ -59,10 +89,7 @@ import { fileViewerRenderers } from '@file-viewer/vite-plugin'
 export default {
   plugins: [
     fileViewerRenderers({
-      preset: 'office',
-      scan: true,
-      copyAssets: true,
-      chunkStrategy: 'renderer'
+      copyAssets: true
     })
   ]
 }
