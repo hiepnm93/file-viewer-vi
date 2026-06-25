@@ -12,7 +12,7 @@
 新项目优先使用标准包名:
 
 ```bash
-npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/web @file-viewer/preset-office
 ```
 
 历史包名仍同步维护:
@@ -35,12 +35,21 @@ npm install @flyfish-group/file-viewer-web
 
 ```ts
 import { defineFileViewerElement } from '@file-viewer/web'
+import officePreset from '@file-viewer/preset-office'
 
 defineFileViewerElement()
 
 const viewer = document.getElementById('viewer') as HTMLElement & {
+  options: unknown
   zoomIn(): Promise<unknown>
   printRenderedHtml(): Promise<void>
+}
+
+viewer.options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
 }
 
 viewer.addEventListener('viewer-event', event => {
@@ -52,7 +61,11 @@ viewer.zoomIn()
 
 元素容器需要有明确高度，预览器会填满组件本身。
 
-如果项目使用 Vite，推荐加入 `@file-viewer/vite-plugin`。插件会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer，Custom Element 和 `mountViewer` 都能直接获得对应格式能力：
+如果项目使用 Vite，可以再加入 `@file-viewer/vite-plugin`。插件会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer，Custom Element 和 `mountViewer` 都能直接获得对应格式能力，业务代码可以省去上面的 preset import。注意：只安装插件包不会让 Vite 自动运行，仍需要在 `vite.config.ts` 注册一次：
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -67,13 +80,13 @@ export default defineConfig({
 })
 ```
 
-只安装 `@file-viewer/web` 是最轻的原生组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力请安装对应 preset 或 renderer。重度用户需要完整能力时，直接把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，Vite 配置不需要变化：
+只安装 `@file-viewer/web` 是最轻的原生组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力请安装对应 preset 或 renderer。重度用户需要完整能力时，直接把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`：
 
 ```bash
-npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/web @file-viewer/preset-all
 ```
 
-如果需要精确控制构建结果，再使用 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认路径保持 `fileViewerRenderers({ copyAssets:true })`，插件会根据已安装 preset 自动激活能力。
+如果需要精确控制构建结果，Vite 插件再使用 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认路径保持 `fileViewerRenderers({ copyAssets:true })`，插件会根据已安装 preset 自动激活能力。
 
 ## 命令式挂载
 
@@ -81,10 +94,13 @@ npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-vi
 
 ```ts
 import { mountViewer } from '@file-viewer/web'
+import officePreset from '@file-viewer/preset-office'
 
 const controller = mountViewer(document.getElementById('viewer')!, {
   url: '/files/demo.pdf',
   options: {
+    preset: officePreset,
+    rendererMode: 'replace',
     theme: 'light',
     toolbar: { position: 'bottom-right' },
     archive: { cache: true, workerTimeoutMs: 30000 }

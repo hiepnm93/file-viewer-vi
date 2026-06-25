@@ -36,7 +36,8 @@ The 2.1.0 architecture is modular by default: use minimal renderer imports when 
 For heavy users that need everything immediately:
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/vue3 @file-viewer/preset-all
+npm install -D @file-viewer/vite-plugin # optional for Vite
 ```
 
 ```ts

@@ -10,16 +10,33 @@
 ## 安装
 
 ```bash
-pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue2.7 @file-viewer/preset-office
 ```
 
 Vue2.6 项目请安装:
 
 ```bash
-pnpm add @file-viewer/vue2.6 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue2.6 @file-viewer/preset-office
 ```
 
-只安装 `@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 是最轻组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力由 preset 或 renderer 提供。Vite 项目推荐加入插件，它会自动发现已安装的 `@file-viewer/preset-*` 并注入能力：
+只安装 `@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 是最轻组件入口；PDF、Office、CAD、Typst、压缩包等具体格式能力由 preset 或 renderer 提供。Webpack、Rspack、Rollup、Umi、传统多页应用等非 Vite 项目优先通过 `options.preset` 显式注入能力：
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite 项目可以额外加入插件，插件会自动发现已安装的 `@file-viewer/preset-*` 并省去手动 import preset。注意：只安装插件包不会让 Vite 自动运行，仍需要在 `vite.config.ts` 注册一次插件：
+
+```bash
+pnpm add -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -37,7 +54,7 @@ export default defineConfig({
 需要完整格式矩阵时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，Vite 配置保持一致：
 
 ```bash
-pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+pnpm add @file-viewer/vue2.7 @file-viewer/preset-all
 ```
 
 如果是 Vue 2.6 项目，把组件包替换为 `@file-viewer/vue2.6` 即可。需要更强自定义时，再配置 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；常规项目保持 `fileViewerRenderers({ copyAssets:true })` 即可。
@@ -68,12 +85,16 @@ Vue2 入口会自动带上样式，不需要再额外 import CSS。
 </template>
 
 <script>
+import officePreset from '@file-viewer/preset-office'
+
 export default {
   data() {
     return {
       url: 'https://example.com/demo.pdf',
       options: {
         theme: 'light',
+        preset: officePreset,
+        rendererMode: 'replace',
         toolbar: { position: 'bottom-right' },
         watermark: { text: '内部预览', opacity: 0.14 },
         archive: {

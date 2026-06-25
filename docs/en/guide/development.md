@@ -32,7 +32,7 @@ pnpm docs:build
 pnpm verify:format-support
 pnpm verify:renderer-assets
 pnpm verify:smoke-matrix
+pnpm verify:npm-install-smoke
 ```
 
 Use `pnpm verify:migration-gates` for a broader migration gate.
-

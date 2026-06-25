@@ -12,7 +12,7 @@
 新项目优先使用标准包名:
 
 ```bash
-npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/react @file-viewer/preset-office
 ```
 
 历史包名仍同步维护:
@@ -23,7 +23,24 @@ npm install @flyfish-group/file-viewer-react
 
 React 16.8 / 17 老项目可以使用 `@file-viewer/react-legacy`，props、options 和 controller 语义保持一致。
 
-如果你只安装 `@file-viewer/react`，得到的是最轻的 React 原生组件和 core 基础能力；PDF、Office、CAD、Typst、压缩包等格式能力需要安装对应 preset 或 renderer。Vite 项目推荐加入插件，插件会自动发现已安装的 `@file-viewer/preset-*`：
+如果你只安装 `@file-viewer/react`，得到的是最轻的 React 原生组件和 core 基础能力；PDF、Office、CAD、Typst、压缩包等格式能力需要安装对应 preset 或 renderer。非 Vite 项目优先通过 `options.preset` 显式注入：
+
+```tsx
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite 项目可以额外加入插件，插件会自动发现已安装的 `@file-viewer/preset-*` 并省去手动 import：
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -38,10 +55,10 @@ export default defineConfig({
 })
 ```
 
-重度用户需要完整能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可，Vite 配置不需要改：
+重度用户需要完整能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可：
 
 ```bash
-npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/react @file-viewer/preset-all
 ```
 
 需要更强自定义时，再配置 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认推荐保持 `fileViewerRenderers({ copyAssets:true })`，让插件根据已安装 preset 自动激活能力。
@@ -50,6 +67,7 @@ npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-
 
 ```tsx
 import FileViewer from '@file-viewer/react'
+import officePreset from '@file-viewer/preset-office'
 
 export function Preview() {
   return (
@@ -60,6 +78,8 @@ export function Preview() {
           console.log(event.type, event.payload)
         }}
         options={{
+          preset: officePreset,
+          rendererMode: 'replace',
           theme: 'light',
           toolbar: { position: 'bottom-right' },
           watermark: { text: '内部预览', opacity: 0.14 },

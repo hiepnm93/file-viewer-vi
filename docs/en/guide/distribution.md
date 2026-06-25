@@ -11,10 +11,16 @@
 Common installs:
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/vue3 @file-viewer/preset-office
 # Heavy users / all-format attachment centers:
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/vue3 @file-viewer/preset-all
 # Replace @file-viewer/vue3 with @file-viewer/web / react / vue2.7 / vue2.6 / jquery / svelte for other stacks.
+```
+
+Pass the preset through `options.preset` in Webpack, Rspack, Rollup, Umi, classic multi-page apps, or internal component libraries. Vite projects can additionally install and register the plugin:
+
+```bash
+npm install -D @file-viewer/vite-plugin
 ```
 
 Recommended Vite setup:
@@ -25,7 +31,7 @@ fileViewerRenderers({
 })
 ```
 
-The plugin auto-discovers installed `@file-viewer/preset-*` packages and injects the capability layer. Use single renderer packages plus `formats` only for strict custom cuts.
+After registration, the plugin auto-discovers installed `@file-viewer/preset-*` packages and injects the capability layer. Use single renderer packages plus `formats` only for strict custom cuts.
 
 Common customization boundaries:
 

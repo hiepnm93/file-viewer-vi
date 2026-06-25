@@ -139,11 +139,13 @@ file.value = new File([buffer], 'report.xlsx')
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
+import officePreset from '@file-viewer/preset-office'
 
 const url = ref('/example/archive.zip')
 const options = {
   theme: 'light',
-  builtinRenderers: 'all',
+  preset: officePreset,
+  rendererMode: 'replace',
   toolbar: {
     position: 'bottom-right',
     download: true,
@@ -186,11 +188,14 @@ const options = {
 </template>
 ```
 
+标准组件包默认保持轻量。PDF、Word、Excel、PPTX、OFD、CAD、Typst、压缩包、EDA、3D 等具体能力需要通过 `preset` 或 `renderers` 装配；`builtinRenderers` 只保留给历史兼容和极细 registry 控制，不再作为快速开始示例。
+
 | 选项 | 说明 |
 | --- | --- |
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
-| `builtinRenderers` | 内置渲染器集合，支持 `all`、`lite`、`none`。`lite` 只注册图片等 core 原生低成本链路；音视频请通过 `@file-viewer/renderer-media` 装配，代码、文本和 Markdown 请通过 `@file-viewer/renderer-text` 装配，EPUB / UMD 请通过 `@file-viewer/renderer-epub` 装配，也可以按产品形态使用 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`；`none` 适合只通过 `renderers` / renderer preset 显式装配业务需要的格式 |
-| `renderers` / `rendererMode` | 按需 renderer package 或 preset 装配入口。`rendererMode: 'replace'` 从空 registry 开始，`extend` 会在当前内置集合上追加；新项目要压安装体积时，建议用 `builtinRenderers: 'none'` 或 `lite` 再传入需要的 renderer |
+| `preset` | 通用 preset 装配入口，支持传入 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering`、`@file-viewer/preset-all` 的默认导出，也支持 `preset: [officePreset, engineeringPreset]` 数组组合。这个方式不依赖 Vite，适合 Webpack、Rspack、Rollup、Umi、传统多页应用、微前端和内部组件库；`presets` 仅作为早期 2.x 草案的兼容 alias 保留 |
+| `renderers` / `rendererMode` | 按需单 renderer package 或自定义 renderer 装配入口。`rendererMode: 'replace'` 从空 registry 开始，适合与 `preset` / `renderers` 组成清晰的显式能力集；`extend` 会在当前内置集合上追加 |
+| `builtinRenderers` | 高级内置基线开关，支持 `all`、`lite`、`none`。普通快速接入无需设置；只有需要保留历史全量基线、只启用 core 原生低成本链路，或做极细 registry 控制时再使用 |
 | `toolbar` | `true`、`false` 或对象；声明是否显示下载原文件、打印完整渲染结果、导出渲染后 HTML 和统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.items` 可按 `download`、`print`、`export-html`、`zoom-in`、`zoom-out`、`zoom-reset` 精确控制内置按钮显隐；`toolbar.permissions` 使用同一套 key 做强权限控制，设为 `false` 时内置按钮和外部 API 调用都会被拦截。`toolbar.zoom` 可单独关闭缩放按钮组；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |
@@ -227,6 +232,54 @@ const options = {
 | `cad.workerTimeoutMs` | DWG Worker 解析超时，默认 120000ms。传 `0` 表示不限制 |
 | `cad.dwfPreferWebgl` / `cad.dwfPreferWasm` | DWF/DWFx/XPS native renderer 的 WebGL 和 WASM backend 偏好，默认都启用 |
 | `cad.dwfLineWeightMode` | DWF/XPS 线宽策略，支持 `adaptive`、`physical`、`hairline` |
+
+## preset 与 renderer 装配矩阵
+
+`preset` 是产品级能力包，适合大多数项目；`renderers` 是精确装配入口，适合只要少数格式或自研 renderer 的项目。两者可以一起使用，但建议保持 `rendererMode:'replace'`，让当前 viewer 的能力集可读、可审计、可复现。
+
+| Preset | 包含 renderer | 典型格式 | 适合场景 |
+| --- | --- | --- | --- |
+| `@file-viewer/preset-lite` | `renderer-text`、`renderer-image`、`renderer-media` | Markdown、代码、文本、图片、音频、视频、HLS、HEIC | 工单、IM、轻附件、移动端首屏优先 |
+| `@file-viewer/preset-office` | `renderer-pdf`、`renderer-word`、`renderer-spreadsheet`、`renderer-presentation`、`renderer-ofd` | PDF、DOC/DOCX/DOT、RTF、ODT、XLS/XLSX/ODS、PPT/PPTX、OFD | OA、合同、知识库、审批、档案 |
+| `@file-viewer/preset-engineering` | `renderer-cad`、`renderer-3d`、`renderer-drawing`、`renderer-mindmap`、`renderer-geo`、`renderer-typst`、`renderer-archive`、`renderer-data`、`renderer-eda` | DWG/DXF/DWF、3D、draw.io、Excalidraw、Mermaid、PlantUML、XMind、GeoJSON/KML/GPX/SHP、Typst、压缩包、PSD/SQLite/Parquet、OLB/DRA/GDS/OASIS | 工程图纸、研发附件、设计资产、压缩包归档 |
+| `@file-viewer/preset-all` | 上述全部 renderer，并保留 core 原生低成本链路 | 官方 Demo 完整格式矩阵 | 全格式附件中心、验收环境、演示站 |
+
+单 renderer 适合极小集成。每个 renderer 都可以直接传入 `options.renderers`：
+
+| Renderer 包 | 导出 | 覆盖链路 |
+| --- | --- | --- |
+| `@file-viewer/renderer-pdf` | `pdfRenderer` | PDF、AI 中 PDF-backed 文件 |
+| `@file-viewer/renderer-word` | `wordRenderer` | DOCX/DOC/DOT/RTF/ODT/OpenDocument |
+| `@file-viewer/renderer-spreadsheet` | `spreadsheetRenderer` | XLSX/XLS/ODS/CSV 等表格 |
+| `@file-viewer/renderer-presentation` | `presentationRenderer` | PPT/PPTX/PPS/POT 等演示文稿，内部按需使用 `@file-viewer/pptx` |
+| `@file-viewer/renderer-ofd` | `ofdRenderer` | OFD |
+| `@file-viewer/renderer-cad` | `cadRenderer` | DWG/DXF/DWF/DWFx/XPS 等 CAD |
+| `@file-viewer/renderer-3d` | `modelRenderer` | GLB/GLTF/OBJ/STL/PLY/FBX/DAE/USD/STEP/IFC 等模型和几何签名 |
+| `@file-viewer/renderer-drawing` | `drawingRenderer` | draw.io、Excalidraw、Mermaid、PlantUML |
+| `@file-viewer/renderer-mindmap` | `mindmapRenderer` | XMind |
+| `@file-viewer/renderer-geo` | `geoRenderer` | GeoJSON、KML、GPX、SHP |
+| `@file-viewer/renderer-typst` | `typstRenderer` | Typst 源文件本地 WASM 预览 |
+| `@file-viewer/renderer-archive` | `archiveRenderer` | ZIP/RAR/7Z/TAR/GZ/ISO/APK/CBZ/CBR 等压缩包与内部文件预览 |
+| `@file-viewer/renderer-email` | `emailRenderer` | EML、MSG、MBOX |
+| `@file-viewer/renderer-epub` | `ebookRenderer` | EPUB、UMD |
+| `@file-viewer/renderer-text` | `textRenderer` | Markdown、代码、日志、JSON/YAML、patch、git bundle |
+| `@file-viewer/renderer-image` | `imageRenderer` | 图片、HEIC/HEIF 等图片链路 |
+| `@file-viewer/renderer-media` | `mediaRenderer` | 音频、视频、HLS、MIDI 摘要 |
+| `@file-viewer/renderer-data` | `dataRenderer` | PSD、字体、SQLite、Parquet、Avro、WASM、WebArchive、AI/EPS 摘要 |
+| `@file-viewer/renderer-eda` | `edaRenderer` | OLB、DRA、GDS、OAS/OASIS |
+
+`@file-viewer/eda-layout`、`@file-viewer/eda-orcad`、`@file-viewer/geometry-engine` 和 `@file-viewer/pptx` 是 renderer 内部可复用引擎包。它们可以单独用于高级二开，但常规预览集成应优先安装对应 renderer 或 preset。
+
+### 装配决策
+
+| 目标 | 推荐写法 |
+| --- | --- |
+| 非 Vite、需要稳定接入 | 显式 `import officePreset from '@file-viewer/preset-office'`，传 `options.preset` |
+| Vite、希望省掉手动 import | 安装 preset + `@file-viewer/vite-plugin`，注册 `fileViewerRenderers({ copyAssets:true })` |
+| 只要一个格式 | 安装单 renderer，传 `options.renderers: [pdfRenderer]` |
+| 需要组合办公和工程 | `preset: [officePreset, engineeringPreset]` |
+| 打开支持矩阵内但未装配的格式 | 预览器会提示应安装的 preset / renderer |
+| 完全未知扩展名 | 才显示真正“不支持此格式” |
 
 图片水印可以传相对路径、业务内网 URL 或 data URL。开启图片水印时，文字水印不会重复绘制；纯离线部署建议使用随业务静态资源发布的图片或 data URL。
 

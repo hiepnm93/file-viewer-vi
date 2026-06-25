@@ -63,7 +63,7 @@
   </div>
   <div class="doc-card">
     <h3>选择模块化装配方式</h3>
-    <p>最小化接入只安装命中格式的 renderer；组合接入优先使用 preset-lite、preset-office、preset-engineering 或 preset-all，并通过 @file-viewer/vite-plugin 免配置自动装配。</p>
+    <p>最小化接入只安装命中格式的 renderer；组合接入优先使用 preset-lite、preset-office、preset-engineering 或 preset-all，通过 options.preset 稳定注入；Vite 项目可再用 @file-viewer/vite-plugin 自动发现 preset。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>

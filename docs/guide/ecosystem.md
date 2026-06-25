@@ -29,13 +29,24 @@
 | 策略 | 安装方式 | 说明 |
 | --- | --- | --- |
 | 最轻组件入口 | `npm i @file-viewer/vue3` | 适合先接入组件壳、再按业务选择格式能力 |
-| 常见轻附件 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频，Vite 插件自动发现 preset |
-| 办公文档平台 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument，推荐业务默认路线 |
-| 工程附件平台 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
-| 完整 Demo 能力 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all` | 全量一键安装，适合演示站、后台运维和内部全格式附件中心 |
-| 极致裁剪 | `npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf` | 只安装需要的 renderer，并用 `formats` 精确生成 import |
+| 常见轻附件 | `npm i @file-viewer/vue3 @file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频，通过 `options.preset` 注入 |
+| 办公文档平台 | `npm i @file-viewer/vue3 @file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument，推荐业务默认路线 |
+| 工程附件平台 | `npm i @file-viewer/vue3 @file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
+| 完整 Demo 能力 | `npm i @file-viewer/vue3 @file-viewer/preset-all` | 全量一键安装，适合演示站、后台运维和内部全格式附件中心 |
+| 极致裁剪 | `npm i @file-viewer/vue3 @file-viewer/renderer-pdf` | 只安装需要的 renderer，并通过 `options.renderers` 注入 |
 
-`fileViewerRenderers()` 或 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装的 `@file-viewer/preset-*`，并把生成的 virtual module 注入 Vite HTML 入口。组件默认 `autoRenderers:true`，所以 Vue、React、Svelte、jQuery 和 Vanilla JS / Pure Web 都能直接获得对应预览能力。`preset-all` 能力最完整，但安装依赖也最多；生产业务建议优先选择 `preset-lite`、`preset-office`、`preset-engineering` 或单个 renderer。
+`options.preset` 是跨构建工具的稳定装配方式。Webpack、Rspack、Rollup、Umi、传统多页应用、微前端壳和内部组件库都可以显式 import preset，然后传给当前生态组件:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace'
+}
+```
+
+Vite 项目可以额外安装 `@file-viewer/vite-plugin` 省去手动 import。Vite 不会因为安装了插件包就自动运行，仍需要在 `vite.config.ts` 注册一次；注册后 `fileViewerRenderers()` 或 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装的 `@file-viewer/preset-*`，并把生成的 virtual module 注入 Vite HTML 入口。组件默认 `autoRenderers:true`，所以 Vue、React、Svelte、jQuery 和 Vanilla JS / Pure Web 都能直接获得对应预览能力。`preset-all` 能力最完整，但安装依赖也最多；生产业务建议优先选择 `preset-lite`、`preset-office`、`preset-engineering` 或单个 renderer。
 
 ```ts
 // vite.config.ts
@@ -45,7 +56,7 @@ export default {
   plugins: [
     fileViewerRenderers({
       copyAssets: true
-      // 已安装的 preset 会自动激活，不需要手写 renderers。
+      // 已安装的 preset 会自动激活，不需要手写 import 或 renderers。
     })
   ]
 }

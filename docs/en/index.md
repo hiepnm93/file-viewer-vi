@@ -24,7 +24,7 @@ Flyfish Viewer brings browser-side file preview into product workflows. Componen
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/en/guide/quickstart">Open quickstart</a>
 <a class="doc-action" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">Try the demo</a>
-<a class="doc-action" href="/en/guide/on-demand-renderers">Modular assembly</a>
+<a class="doc-action" href="/en/guide/on-demand-renderers">Modular Integration</a>
 </div>
 <div class="doc-start-stats" aria-label="Flyfish Viewer capability metrics">
 <div><strong>206</strong><span>extension mappings</span></div>
@@ -40,20 +40,20 @@ Flyfish Viewer brings browser-side file preview into product workflows. Componen
 </div>
 <div class="doc-install-block">
 <span>1. Choose the native component</span>
-<pre><code>pnpm add @file-viewer/vue3 @file-viewer/core</code></pre>
+<pre><code>pnpm add @file-viewer/vue3</code></pre>
 </div>
 <div class="doc-install-block">
 <span>2. Add the required document capability</span>
-<pre><code>pnpm add @file-viewer/preset-office
-pnpm add -D @file-viewer/vite-plugin</code></pre>
+<pre><code>pnpm add @file-viewer/preset-office</code></pre>
 </div>
 <div class="doc-install-block">
-<span>3. Let the Vite plugin activate installed presets</span>
-<pre><code>fileViewerRenderers({ copyAssets: true })</code></pre>
+<span>3. Inject it through options.preset</span>
+<pre><code>import officePreset from '@file-viewer/preset-office'
+const options = { preset: officePreset }</code></pre>
 </div>
 <div class="doc-install-note">
 <strong>Component packages are intentionally light.</strong>
-<span><code>@file-viewer/vue3</code>, <code>@file-viewer/react</code>, and <code>@file-viewer/web</code> provide native integration. Office, CAD, EDA, Typst, archive, and other heavy capabilities come from presets or renderers. <code>@file-viewer/vite-plugin</code> auto-discovers installed presets and injects the capability layer, so normal apps do not hand-write <code>renderers</code>.</span>
+<span><code>@file-viewer/vue3</code>, <code>@file-viewer/react</code>, and <code>@file-viewer/web</code> provide native integration. Office, CAD, EDA, Typst, archive, and other heavy capabilities come from presets or renderers. Webpack, Rspack, Rollup, Umi, and classic apps can use <code>options.preset</code>; Vite projects can register <code>@file-viewer/vite-plugin</code> to auto-discover installed presets.</span>
 </div>
 </div>
 </section>
@@ -119,7 +119,8 @@ pnpm add -D @file-viewer/vite-plugin</code></pre>
 </div>
 <div class="doc-callout doc-callout-compact">
 <strong>Full one-shot setup:</strong> heavy users, internal attachment centers, and validation environments can install <code>@file-viewer/preset-all</code>, keep the same <code>fileViewerRenderers({ copyAssets:true })</code> config, and get the complete official demo capability set immediately.
-<pre><code>pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all</code></pre>
+<pre><code>pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add -D @file-viewer/vite-plugin # optional for Vite</code></pre>
 </div>
 </section>
 

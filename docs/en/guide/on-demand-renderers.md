@@ -11,7 +11,22 @@
 For a PDF-only Vue 3 product:
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+npm install @file-viewer/vue3 @file-viewer/renderer-pdf
+```
+
+```ts
+import { pdfRenderer } from '@file-viewer/renderer-pdf'
+
+const options = {
+  rendererMode: 'replace',
+  renderers: [pdfRenderer]
+}
+```
+
+This path is bundler-neutral and works in Webpack, Rspack, Rollup, Umi, classic multi-page apps, and micro-frontends. Vite projects can add the plugin to generate and inject the renderer import automatically:
+
+```bash
+npm install -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -38,9 +53,56 @@ export default defineConfig({
 | `@file-viewer/preset-engineering` | CAD, EDA, Typst, archives, email, data, 3D, geo, drawing, and mind maps |
 | `@file-viewer/preset-all` | Admin workbenches and demos that need every official renderer |
 
+## Renderer Package Reference
+
+Install a single renderer when a product needs the smallest possible capability set:
+
+| Renderer package | Export | Main pipeline |
+| --- | --- | --- |
+| `@file-viewer/renderer-pdf` | `pdfRenderer` | PDF |
+| `@file-viewer/renderer-word` | `wordRenderer` | DOCX, DOC, DOT, RTF, ODT |
+| `@file-viewer/renderer-spreadsheet` | `spreadsheetRenderer` | Excel, OpenDocument spreadsheet, CSV-like tables |
+| `@file-viewer/renderer-presentation` | `presentationRenderer` | PPT / PPTX and presentation files |
+| `@file-viewer/renderer-ofd` | `ofdRenderer` | OFD |
+| `@file-viewer/renderer-cad` | `cadRenderer` | DWG, DXF, DWF, DWFx, XPS |
+| `@file-viewer/renderer-3d` | `modelRenderer` | 3D models and lightweight geometry signatures |
+| `@file-viewer/renderer-drawing` | `drawingRenderer` | draw.io, Excalidraw, Mermaid, PlantUML |
+| `@file-viewer/renderer-mindmap` | `mindmapRenderer` | XMind |
+| `@file-viewer/renderer-geo` | `geoRenderer` | GeoJSON, KML, GPX, SHP |
+| `@file-viewer/renderer-typst` | `typstRenderer` | Typst source rendered through local WASM assets |
+| `@file-viewer/renderer-archive` | `archiveRenderer` | Archives and nested file preview |
+| `@file-viewer/renderer-email` | `emailRenderer` | EML, MSG, MBOX |
+| `@file-viewer/renderer-epub` | `ebookRenderer` | EPUB, UMD |
+| `@file-viewer/renderer-text` | `textRenderer` | Markdown, highlighted code, patch, git bundle |
+| `@file-viewer/renderer-image` | `imageRenderer` | Image and HEIC / HEIF paths |
+| `@file-viewer/renderer-media` | `mediaRenderer` | Audio, video, HLS, MIDI summaries |
+| `@file-viewer/renderer-data` | `dataRenderer` | PSD, fonts, SQLite, Parquet, Avro, WASM, WebArchive |
+| `@file-viewer/renderer-eda` | `edaRenderer` | OLB, DRA, GDS, OAS/OASIS |
+
+Engine packages such as `@file-viewer/pptx`, `@file-viewer/geometry-engine`, `@file-viewer/eda-layout`, and `@file-viewer/eda-orcad` are maintained for renderer internals and advanced reuse. Normal viewer integrations should use the renderer or preset package above.
+
 ## Automatic Preset Assembly
 
-`@file-viewer/vite-plugin` can discover installed presets and inject the generated virtual module into the Vite HTML entry. In the common path, install the component package plus a preset, add the plugin once, and the framework component automatically receives that preview capability:
+For an Office document platform, the bundler-neutral path is:
+
+```bash
+npm install @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  rendererMode: 'replace',
+  preset: officePreset
+}
+```
+
+`@file-viewer/vite-plugin` can discover installed presets and inject the generated virtual module into the Vite HTML entry. In Vite projects, add the plugin once and the framework component automatically receives that preview capability without a manual preset import:
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 fileViewerRenderers({
@@ -56,7 +118,9 @@ The default experience is intentionally zero-config: if the plugin receives no e
 Install `@file-viewer/preset-all` when a heavy user wants the fastest full-capability setup:
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/vue3 @file-viewer/preset-all
+# Vite projects add the plugin:
+npm install -D @file-viewer/vite-plugin
 ```
 
 Use `preset:'auto'` or `autoPresets:true` when you also enable `scan:true`; this keeps installed preset discovery active while source hints add extra renderers. If `preset-all` is installed, it takes precedence to avoid importing narrower presets twice.
@@ -96,7 +160,6 @@ fileViewerRenderers({
 import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
 
 const options = {
-  builtinRenderers: 'none',
   rendererMode: 'replace',
   renderers: configuredFileViewerRenderers
 }

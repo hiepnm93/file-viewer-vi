@@ -48,7 +48,7 @@
 | 包                                                                  | 定位                                                                                                       | 依赖原则                                                                                  |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `@file-viewer/core`                                                 | 纯 TS 核心：类型、格式注册表、source loader、dispatcher、生命周期、搜索、缩放、打印/导出 API、资产解析协议 | 只保留无渲染重依赖的基础代码；不依赖 Vue/React/Svelte，不依赖 Office/CAD/PDF/Typst 等重库 |
-| `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/svelte` 等 | 生产可用标准组件                                                                                           | 只依赖 core 和自身生态依赖；通过 props/options 接收 renderers/presets                     |
+| `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/svelte` 等 | 生产可用标准组件                                                                                           | 只依赖 core 和自身生态依赖；通过 props/options 接收 `preset` / `renderers`                     |
 | `@file-viewer/renderer-*`                                           | 单条或一组强相关渲染链路                                                                                   | 自己声明真实重依赖、worker、wasm、vendor assets 和 smoke 样本                             |
 | `@file-viewer/preset-lite`                                          | 文本、Markdown、图片、音视频基础预览                                                                       | 聚合 `renderer-text`、`renderer-image`、`renderer-media`，适合常见轻附件场景               |
 | `@file-viewer/preset-office`                                        | Word、Spreadsheet、PPT、PDF、OFD 均由独立 renderer 承接                                                   | 聚合文档链路，避免业务手写多个 Office renderer import                                    |
@@ -103,7 +103,22 @@ export default defineConfig({
 以 PDF-only 场景为例：
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/renderer-pdf
+npm i @file-viewer/vue3 @file-viewer/renderer-pdf
+```
+
+```ts
+import { pdfRenderer } from '@file-viewer/renderer-pdf'
+
+const options = {
+  rendererMode: 'replace',
+  renderers: [pdfRenderer]
+}
+```
+
+这条路径不依赖 Vite，Webpack、Rspack、Rollup、Umi、传统多页应用和微前端壳都可以稳定使用。Vite 项目可以额外安装插件，让插件生成 import 并自动注入：
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -131,7 +146,22 @@ export default defineConfig({
 办公文档平台推荐：
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  rendererMode: 'replace',
+  preset: officePreset
+}
+```
+
+如果项目使用 Vite，可以再装插件省去手动 import：
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -153,7 +183,9 @@ export default defineConfig({
 全量一键安装:
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
+# Vite 项目再安装插件:
+npm i -D @file-viewer/vite-plugin
 ```
 
 如果需要同时扫描源码 hint 并自动发现已安装 preset，请使用 `preset:'auto'` 或 `autoPresets:true`：
@@ -182,11 +214,38 @@ fileViewerRenderers({
 import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
 
 const options = {
-  builtinRenderers: 'none',
   rendererMode: 'replace',
   renderers: configuredFileViewerRenderers
 }
 ```
+
+## renderer 包参考
+
+只需要少数格式时，可以跳过 preset，直接安装对应 renderer 并传给 `options.renderers`：
+
+| Renderer 包 | 导出 | 主要链路 |
+| --- | --- | --- |
+| `@file-viewer/renderer-pdf` | `pdfRenderer` | PDF |
+| `@file-viewer/renderer-word` | `wordRenderer` | DOCX、DOC、DOT、RTF、ODT |
+| `@file-viewer/renderer-spreadsheet` | `spreadsheetRenderer` | Excel、OpenDocument 表格、CSV 类表格 |
+| `@file-viewer/renderer-presentation` | `presentationRenderer` | PPT / PPTX 演示文稿 |
+| `@file-viewer/renderer-ofd` | `ofdRenderer` | OFD |
+| `@file-viewer/renderer-cad` | `cadRenderer` | DWG、DXF、DWF、DWFx、XPS |
+| `@file-viewer/renderer-3d` | `modelRenderer` | 3D 模型和轻量几何签名 |
+| `@file-viewer/renderer-drawing` | `drawingRenderer` | draw.io、Excalidraw、Mermaid、PlantUML |
+| `@file-viewer/renderer-mindmap` | `mindmapRenderer` | XMind |
+| `@file-viewer/renderer-geo` | `geoRenderer` | GeoJSON、KML、GPX、SHP |
+| `@file-viewer/renderer-typst` | `typstRenderer` | Typst 源文件本地 WASM 预览 |
+| `@file-viewer/renderer-archive` | `archiveRenderer` | 压缩包和内部文件预览 |
+| `@file-viewer/renderer-email` | `emailRenderer` | EML、MSG、MBOX |
+| `@file-viewer/renderer-epub` | `ebookRenderer` | EPUB、UMD |
+| `@file-viewer/renderer-text` | `textRenderer` | Markdown、代码高亮、patch、git bundle |
+| `@file-viewer/renderer-image` | `imageRenderer` | 图片、HEIC / HEIF 链路 |
+| `@file-viewer/renderer-media` | `mediaRenderer` | 音频、视频、HLS、MIDI 摘要 |
+| `@file-viewer/renderer-data` | `dataRenderer` | PSD、字体、SQLite、Parquet、Avro、WASM、WebArchive |
+| `@file-viewer/renderer-eda` | `edaRenderer` | OLB、DRA、GDS、OAS/OASIS |
+
+`@file-viewer/pptx`、`@file-viewer/geometry-engine`、`@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 是 renderer 内部引擎包，也支持高级二开复用；常规业务预览优先使用上表 renderer 或 preset。
 
 `preset: 'auto'` 会发现项目中已安装的 preset 包；当 `preset-all` 存在时会优先使用它，避免重复导入其它 preset。
 
@@ -221,7 +280,6 @@ import { spreadsheetRenderer } from '@file-viewer/renderer-spreadsheet'
 import { cadRenderer } from '@file-viewer/renderer-cad'
 
 const options = {
-  builtinRenderers: 'none',
   renderers: [pdfRenderer, ofdRenderer, wordRenderer, spreadsheetRenderer, cadRenderer]
 }
 ```
@@ -229,7 +287,8 @@ const options = {
 ### 方式三：全量体验
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts

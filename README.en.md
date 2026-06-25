@@ -21,6 +21,7 @@
   <a href="https://github.com/flyfish-dev/file-viewer/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?label=release&color=7c3aed" /></a>
   <a href="https://doc.file-viewer.app"><img alt="Documentation" src="https://img.shields.io/badge/docs-doc.file--viewer.app-1d6fd6" /></a>
   <a href="https://demo.file-viewer.app"><img alt="Live demo" src="https://img.shields.io/badge/demo-demo.file--viewer.app-16a34a" /></a>
+  <a href="https://linux.do"><img alt="Linux Do" src="https://img.shields.io/badge/Linux%20Do-community-1f2937" /></a>
   <a href="https://github.com/flyfish-dev/file-viewer/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/flyfish-dev/file-viewer?color=0f766e" /></a>
   <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker" src="https://img.shields.io/badge/docker-flyfishdev%2Ffile--viewer-2496ed?logo=docker" /></a>
   <img alt="Supported formats" src="https://img.shields.io/badge/formats-206%2B-f59e0b" />
@@ -55,13 +56,14 @@ The integration promise is simple: **one component, one line of code, fast integ
 | Comparison demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
 | Release downloads | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker image | `flyfishdev/file-viewer:latest` |
+| Linux Do friend link | [linux.do](https://linux.do) |
 | Sponsorship and priority support | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
 
 ## Why Use It
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
 - **Modular by design.** `@file-viewer/core` owns the format matrix, source loading, renderer protocol, lifecycle, and shared APIs. Heavy PDF, Word, PPTX, CAD, Typst, archive, EDA, and data-asset capabilities live in independent renderer packages; `preset-lite`, `preset-office`, `preset-engineering`, and `preset-all` compose product-shaped bundles; Vue, React, Svelte, jQuery, and Vanilla JavaScript packages stay focused on native ecosystem integration.
-- **Zero-config Vite assembly.** `@file-viewer/vite-plugin` auto-activates capabilities from installed `@file-viewer/preset-*` packages. Most apps only need `fileViewerRenderers({ copyAssets:true })`; heavy users can switch to `@file-viewer/preset-all` for the complete official demo matrix.
+- **Optional Vite auto assembly.** Non-Vite apps can inject capability through `options.preset` / `options.renderers`; Vite apps register `@file-viewer/vite-plugin` once and then usually only need `fileViewerRenderers({ copyAssets:true })` to auto-activate installed presets.
 - **Broad format coverage.** The current release maps 206 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, Mermaid, PlantUML, EPUB, UMD, Markdown, images, audio/video, source code, Git patch/bundle, fonts, PSD layer assets, and structured data.
 - **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
@@ -117,12 +119,49 @@ The motion preview above shows the main demo, Office/PDF reading surface, PPTX r
 
 Starting from 2.1.0, treat the component package and the format capability as separate layers. Components provide the native framework experience; renderer packages and presets decide which file formats enter your install, bundle, Worker/WASM asset plan, and future extension path.
 
-### Fastest Path: Component + Preset + Zero-config Vite Assembly
+### Universal Path: Component + Preset + options.preset
 
-`@file-viewer/vite-plugin` can auto-activate capabilities from the `@file-viewer/preset-*` packages installed in the current project. In a normal Vite app, install one standard component package, the plugin, and one preset. `fileViewerRenderers({ copyAssets:true })` discovers the installed preset, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets. Components keep `autoRenderers:true` by default, so application code does not pass a manual `renderers` prop.
+Standard component packages stay lightweight. Concrete format capability comes from presets or individual renderers. The most stable path is to import a preset explicitly and pass it through `options.preset`; this works in Webpack, Rspack, Rollup, Umi, classic multi-page apps, micro-frontends, and internal component libraries.
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+export const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+```vue
+<file-viewer url="/files/report.docx" :options="viewerOptions" />
+```
+
+When you need to combine capability bundles, keep the same `preset` field and pass an array, for example Office documents plus engineering drawings:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+import engineeringPreset from '@file-viewer/preset-engineering'
+
+export const viewerOptions = {
+  preset: [officePreset, engineeringPreset],
+  rendererMode: 'replace'
+}
+```
+
+Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, while preset assembly and `viewerOptions` semantics stay the same.
+
+### Vite Enhancement: Register Once, Discover Presets
+
+Vite projects can add the plugin to remove manual imports. Installing the npm package alone does not make Vite run the plugin; register it once in `vite.config.ts`. After that, `fileViewerRenderers({ copyAssets:true })` discovers installed presets, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets.
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -138,15 +177,6 @@ export default {
   ]
 }
 ```
-
-```ts
-export const viewerOptions = {
-  // Defaults to true; consumes renderers / presets auto-registered by the Vite plugin.
-  autoRenderers: true
-}
-```
-
-Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, while preset assembly and `viewerOptions` semantics stay the same.
 
 ### Internationalization
 
@@ -179,7 +209,7 @@ Custom Element users can also set the attribute directly:
 Heavy users that need every capability immediately can use the full one-shot install and keep the zero-config Vite setup above:
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
 ```
 
 ### Exact Cuts And Advanced Control
@@ -210,9 +240,25 @@ Common customization options:
 For plain JavaScript pages, install `@file-viewer/web` and use the `<flyfish-file-viewer>` Custom Element or the imperative `mountViewer(...)` API. For intranet deployment, copy the bundled workers, WASM files, PDF assets, CAD assets, Typst assets, archive assets, and data assets into your own static directory.
 
 ```bash
-npm i @file-viewer/web @file-viewer/core @file-viewer/preset-all
+npm i @file-viewer/web @file-viewer/preset-all
 npm exec file-viewer-copy-assets ./public/file-viewer
 ```
+
+For the fastest no-build Custom Element trial, you can also load the IIFE bundle from an npm CDN. `@file-viewer/web` declares `jsdelivr` and `unpkg` entrypoints in package metadata. cdnjs does not currently list this package, so production and intranet deployments should still prefer npm install or self-hosted static assets.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web@latest"></script>
+<!-- Or: <script src="https://unpkg.com/@file-viewer/web@latest"></script> -->
+
+<flyfish-file-viewer
+  src="/files/demo.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
+```
+
+The CDN path is meant for quick Vanilla JS validation. For PDF, Office, CAD, Typst, archive, and other heavy renderers, install the matching preset / renderer package and self-host workers, WASM, fonts, and vendor assets with `file-viewer-copy-assets`.
 
 See the [official docs](https://doc.file-viewer.app/guide/ecosystem) for detailed Vanilla JavaScript, Vue, React, Svelte, jQuery, Core API, and offline asset steps.
 
@@ -317,6 +363,8 @@ GitHub Releases provide all distribution downloads:
 
 The unscoped `file-viewer3` historical alias remains part of the npm release flow. The open-source main repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
 
+If npm 11 fails during tgz or dependency installation with `Cannot read properties of null (reading 'matches')`, it is usually not a File Viewer version mismatch. It is an npm Arborist crash commonly triggered by a `node_modules` directory produced by another package manager. Remove `node_modules` and the current lockfile, then install with one package manager consistently. For offline tgz workflows, make sure the same-version core, preset, renderer, and component packages resolve from a private registry or from the local tgz dependency closure. Release verification includes `pnpm verify:npm-install-smoke`, which checks registry and tgz installs with npm 11.17.0.
+
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## Standard Ecosystem Packages and Public Repositories
 
@@ -337,10 +385,48 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 
 ## Engineering-Grade On-Demand Renderer Assembly
 
-One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Install the component package for the current ecosystem, choose a product-shaped preset such as `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`, then let `@file-viewer/vite-plugin` auto-discover installed presets and inject the renderer virtual module. Regular application code does not pass `renderers`; components receive capability through the default `autoRenderers` flow.
+One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Install the component package for the current ecosystem, then choose `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`. For Webpack, Rspack, Rollup, Umi, classic multi-page apps, and other non-Vite stacks, pass capability explicitly through `options.preset` or `options.renderers`. The Vite plugin is an optional convenience layer that removes manual imports and copies offline assets.
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  preset: officePreset,
+  rendererMode: 'replace'
+}
+```
+
+When a product combines Office documents with engineering drawings, keep the same `preset` field and pass an array:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+import engineeringPreset from '@file-viewer/preset-engineering'
+
+const options = {
+  preset: [officePreset, engineeringPreset],
+  rendererMode: 'replace'
+}
+```
+
+For exact small cuts, install one renderer and pass it through `options.renderers`:
+
+```ts
+import { pdfRenderer } from '@file-viewer/renderer-pdf'
+
+const options = {
+  renderers: [pdfRenderer],
+  rendererMode: 'replace'
+}
+```
+
+Vite projects can add the plugin. It auto-discovers installed presets, injects the virtual module, and copies matching Worker / WASM / font / vendor assets:
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -356,17 +442,10 @@ export default {
 }
 ```
 
-```ts
-const options = {
-  // This defaults to true; set false only for total manual registry control.
-  autoRenderers: true
-}
-```
-
-Heavy users that want the complete official demo capability can install the full preset and keep the same Vite config:
+Heavy users that want the complete official demo capability can switch to the full preset. Non-Vite projects keep `options.preset`; the Vite config stays the same:
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
 ```
 
 Use explicit plugin options only when you need customization:
@@ -393,7 +472,6 @@ fileViewerRenderers({ formats: ['pdf'], inject: false, copyAssets: true })
 import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
 
 const options = {
-  builtinRenderers: 'none',
   renderers: configuredFileViewerRenderers,
   rendererMode: 'replace'
 }
@@ -401,10 +479,11 @@ const options = {
 
 - Vue, React, Svelte, jQuery, and Vanilla JavaScript / Pure Web all receive the same `options`; each package maps them to native props, hooks, actions, plugins, or `mountViewer(...)` parameters.
 - `preset-lite` covers text, Markdown, code, images, audio, and video; `preset-office` covers PDF / Word / Excel / PowerPoint / OFD; `preset-engineering` covers CAD / 3D / drawing / XMind / Geo / Typst / EDA / Data.
-- For the smallest custom bundle, skip presets, install individual renderers such as `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word`, and let `formats` generate exact imports.
+- For the smallest custom bundle, skip presets, install individual renderers such as `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word`, and pass them through `options.renderers`.
 - `fileViewerRenderers()` or `fileViewerRenderers({ copyAssets:true })` auto-discovers installed presets without explicit configuration. When `scan:true` is also enabled, use `preset:'auto'` or `autoPresets:true` to keep preset auto-discovery.
 - `scan:true` detects `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` hints so development and production builds select matching renderers automatically.
 - `copyAssets:true` copies PDF/CAD/Typst/Archive/Data workers, WASM, and vendor assets for offline and enterprise intranet deployment.
+- `builtinRenderers` remains available for advanced baseline control or historical compatibility. Normal quick starts only need `preset` / `renderers` plus `rendererMode`.
 - If a file is in the supported matrix but its renderer is not assembled, the viewer shows the recommended preset / renderer package. Truly unknown extensions still show an unsupported-format state.
 - `@file-viewer/preset-all` is the full one-step capability path for demos, admin tools, and enterprise all-format workbenches. Normal product surfaces should still prefer narrower presets.
 
@@ -599,8 +678,9 @@ Historical package names remain compatible, but new projects should prefer the s
 | Option                         | Description                                                                                                                                                                                                                                                               |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `theme`                        | `light`, `dark`, or `system`. Default is `system`. Use `light` when embedding in a fixed light UI.                                                                                                                                                                        |
-| `builtinRenderers`             | Core built-in renderer set: `all`, `lite`, or `none`. Use `lite` for the low-cost image path only; use `none` when renderer packages or presets should be the only installed rendering surface. Use `@file-viewer/preset-lite` for lightweight attachments, `@file-viewer/preset-office` for office documents, `@file-viewer/preset-engineering` for engineering attachments, and `@file-viewer/preset-all` for the complete demo matrix. UMD and EPUB ebooks are provided on demand by `@file-viewer/renderer-epub`. |
-| `renderers` / `rendererMode`   | Installs renderer packages or presets into the viewer. `replace` starts from an empty registry; `extend` appends to the current built-in set. New projects can combine `builtinRenderers: 'none'` or `lite` with explicit renderers to keep installs and bundles small.   |
+| `preset`                       | Recommended capability assembly path. Pass `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`; compose multiple bundles with `preset: [officePreset, engineeringPreset]`. |
+| `renderers` / `rendererMode`   | Installs individual renderer packages or custom renderers into the viewer. `replace` starts from an empty registry, while `extend` appends to the current built-in baseline. |
+| `builtinRenderers`             | Advanced baseline switch for built-in browser renderers: `all`, `lite`, or `none`. Most quick starts do not need it; keep it for historical compatibility or strict registry control. |
 | `toolbar`                      | `true`, `false`, or an object that controls download, print, HTML export, unified zoom controls, and toolbar position.                                                                                                                                                    |
 | `toolbar.zoom`                 | Shows or hides the built-in zoom group. The actual capability is provided by each renderer, so unsupported or interaction-sensitive formats are not force-scaled.                                                                                                         |
 | `toolbar.position`             | `auto`, `top`, or `bottom-right`. Default `auto` floats the operation bar at bottom right for PDF and keeps other formats at top.                                                                                                                                         |

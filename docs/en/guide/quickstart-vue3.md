@@ -9,13 +9,28 @@
 ## Install
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/vue3 @file-viewer/preset-office
 ```
 
-Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when you want the complete official demo capability in one install. Keep the same `fileViewerRenderers({ copyAssets:true })` config:
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when you want the complete official demo capability in one install.
 
 ```bash
-npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/vue3 @file-viewer/preset-all
+```
+
+## Universal Renderer Assembly
+
+The Vue package stays lightweight. Concrete PDF, Office, CAD, Typst, archive, and engineering capabilities are injected through presets or renderer packages. This path works in Vite, Webpack, Rspack, Rollup, Umi, and internal component libraries:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
 ```
 
 ## Register Globally
@@ -40,7 +55,11 @@ createApp(App).use(FileViewer).mount('#app')
 </template>
 
 <script setup lang="ts">
+import officePreset from '@file-viewer/preset-office'
+
 const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
   theme: 'light',
   toolbar: { position: 'bottom-right' },
   search: { enabled: true },
@@ -67,9 +86,13 @@ import { FileViewer } from '@file-viewer/vue3'
 </script>
 ```
 
-## Recommended Vite Setup
+## Vite Zero-Config Setup
 
-Use the Vite plugin to assemble renderer imports and copy worker/WASM assets:
+Vite projects can add the plugin to assemble renderer imports and copy Worker/WASM assets automatically. Installing the npm package alone does not make Vite run it; register the plugin once in `vite.config.ts`. The plugin discovers installed preset packages, so application code can omit the manual preset import:
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'

@@ -9,10 +9,27 @@
 ## Install
 
 ```bash
-npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/react @file-viewer/preset-office
 ```
 
-Installing only `@file-viewer/react` gives you the lightest React component and core foundation. PDF, Office, CAD, Typst, archive, and other heavy format capabilities come from presets or renderer packages. In Vite projects, add the plugin once; it auto-discovers installed `@file-viewer/preset-*` packages:
+Installing only `@file-viewer/react` gives you the lightest React component and core foundation. PDF, Office, CAD, Typst, archive, and other heavy format capabilities come from presets or renderer packages. The stable path for every bundler is to import a preset or renderer and pass it through `options.preset` / `options.renderers`:
+
+```tsx
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite projects can add the plugin once to avoid manual preset imports. Vite still requires a one-line plugin registration; after that, `fileViewerRenderers({ copyAssets:true })` auto-discovers installed `@file-viewer/preset-*` packages:
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -27,10 +44,10 @@ export default defineConfig({
 })
 ```
 
-Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when heavy users need the complete capability set immediately. The Vite config stays the same:
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when heavy users need the complete capability set immediately. Non-Vite apps keep passing the preset through `options.preset`; Vite apps keep the same plugin config:
 
 ```bash
-npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/react @file-viewer/preset-all
 ```
 
 Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only when the product needs explicit control. The recommended default remains `fileViewerRenderers({ copyAssets:true })`, with installed presets auto-activated by the plugin.
@@ -40,6 +57,7 @@ Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'rend
 ```tsx
 import { useRef } from 'react'
 import FileViewer, { type FileViewerHandle } from '@file-viewer/react'
+import officePreset from '@file-viewer/preset-office'
 
 export function Preview() {
   const viewerRef = useRef<FileViewerHandle>(null)
@@ -50,6 +68,8 @@ export function Preview() {
         ref={viewerRef}
         url="/files/report.pdf"
         options={{
+          preset: officePreset,
+          rendererMode: 'replace',
           theme: 'light',
           toolbar: { position: 'bottom-right' },
           search: { enabled: true },
