@@ -31,50 +31,182 @@
 
 ---
 
+## Positioning
+
+Flyfish Viewer is a browser-native file preview component for business applications. One component and one API cover Office, PDF, OFD, Typst, CAD, XMind, archives, email, diagrams, media, source code, PSD, fonts, and structured data.
+
+No backend conversion service is required. It fits OA systems, knowledge bases, attachment centers, approval flows, support portals, intranet deployments, and private offline environments. New projects should prefer `@file-viewer/*`; historical `@flyfish-group/*` packages remain synchronized.
+
+## Highlights
+
+- **Fast integration.** Native packages for Vanilla JS, Vue, React, Svelte, and jQuery; full packages provide the complete capability set in one install.
+- **Broad coverage.** 206+ extensions across 24 preview pipelines for office, engineering, design, data, media, and code attachments.
+- **Pure frontend.** Browser-side parsing and rendering with offline, intranet, Docker, private CDN, and self-hosted asset support.
+- **Modular.** Lightweight components, renderers, presets, and full packages are separated for clean dependency control.
+- **Lazy loaded.** Heavy PDF, Office, CAD, Typst, archive, drawing, PSD, Mermaid, and WASM paths load only when needed.
+- **Complete operations.** Search, highlight, zoom, print, HTML export, download, watermark, theme, lifecycle hooks, and before-operation guards share one API.
+- **Consistent ecosystem.** Core owns preview capabilities; framework packages provide native wrappers with the same options, events, and controller semantics.
+
 ## Live Demo
 
 ![Flyfish Viewer demo showing Word, PDF, PPTX, and document comparison](docs/public/_media/flyfish-viewer-demo.gif)
 
-Open [demo.file-viewer.app](https://demo.file-viewer.app) to try the complete sample matrix, upload preview, toolbar behavior, document comparison, and offline asset loading. The demo uses the same rendering pipeline as the npm packages, so it is the best first validation step before integration.
+Open [demo.file-viewer.app](https://demo.file-viewer.app) to try the complete sample matrix, upload preview, toolbar behavior, document comparison, and offline asset loading.
 
-## Positioning
+## Quick Start
 
-Bring Word, Excel, PowerPoint, PDF, Typst, XMind mind maps, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
+Choose the integration layer first, then select the format capability. Use a `*-full` package when you want the complete experience immediately.
 
-`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Independent renderer packages such as `@file-viewer/pptx` own heavy format engines that can evolve separately. Vanilla JavaScript / Pure Web, Vue 3, Vue 2.7, Vue 2.6, React, React Legacy, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
+| Scenario | Recommended install |
+| --- | --- |
+| Script tag / CDN full capability | `@file-viewer/web-full` |
+| Vanilla JS npm | `@file-viewer/web` + `@file-viewer/preset-all` |
+| Vue 3 | `@file-viewer/vue3-full`, or `@file-viewer/vue3` + preset |
+| Vue 2.7 / 2.6 | `@file-viewer/vue2.7-full` / `@file-viewer/vue2.6-full` |
+| React 18/19 | `@file-viewer/react-full` |
+| React 16.8/17 | `@file-viewer/react-legacy-full` |
+| Svelte | `@file-viewer/svelte-full` |
+| jQuery | `@file-viewer/jquery-full` |
+| Exact capability cuts | Any component package + `@file-viewer/preset-*` or standalone renderers |
 
-The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
+### CDN / Script Tag
 
-The integration promise is simple: **one component, one line of code, fast integration**. Pick the standard package for your stack, then use the same options, events, search, zoom, print, export, and watermark capabilities everywhere.
+```html
+<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script>
+
+<flyfish-file-viewer
+  src="/files/report.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
+```
+
+### Vanilla JS
+
+```bash
+npm i @file-viewer/web @file-viewer/preset-all
+```
+
+```ts
+import { mountViewer } from '@file-viewer/web'
+import presetAll from '@file-viewer/preset-all'
+
+mountViewer(document.querySelector('#viewer')!, {
+  url: '/files/report.docx',
+  options: { preset: presetAll, theme: 'light' }
+})
+```
+
+### Vue 3
+
+```bash
+npm i @file-viewer/vue3-full
+```
+
+```ts
+import { createApp } from 'vue'
+import FileViewer from '@file-viewer/vue3-full'
+
+createApp(App).use(FileViewer).mount('#app')
+```
+
+```vue
+<file-viewer url="/files/report.docx" />
+```
+
+### Vue 2
+
+```bash
+npm i @file-viewer/vue2.7-full
+# Use @file-viewer/vue2.6-full for Vue 2.6 projects.
+```
+
+```ts
+import Vue from 'vue'
+import FileViewer from '@file-viewer/vue2.7-full'
+
+Vue.use(FileViewer)
+```
+
+### React
+
+```bash
+npm i @file-viewer/react-full
+```
+
+```tsx
+import FileViewer from '@file-viewer/react-full'
+
+export function Preview() {
+  return <FileViewer url="/files/report.pdf" style={{ height: 720 }} />
+}
+```
+
+### Svelte
+
+```bash
+npm i @file-viewer/svelte-full
+```
+
+```svelte
+<script>
+  import FileViewer from '@file-viewer/svelte-full'
+</script>
+
+<FileViewer url="/files/report.pdf" containerStyle="height:720px" />
+```
+
+### jQuery
+
+```bash
+npm i @file-viewer/jquery-full
+```
+
+```ts
+import '@file-viewer/jquery-full'
+
+$('#viewer').fileViewer({ url: '/files/report.pdf' })
+```
+
+### Composed Imports
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  preset: officePreset,
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite projects can add `@file-viewer/vite-plugin` to auto-discover installed presets and copy Worker/WASM/font/vendor assets. Non-Vite projects can use `options.preset` directly.
+
+## Architecture
+
+- `@file-viewer/core`: format detection, source loading, renderer protocol, lifecycle, search, zoom, print, export, and controller APIs.
+- `@file-viewer/renderer-*`: independent PDF, Word, PPTX, CAD, Typst, Archive, Drawing, Data, EDA, and other rendering capabilities.
+- `@file-viewer/preset-*`: `lite`, `office`, `engineering`, and `all` capability bundles.
+- `@file-viewer/web|vue3|vue2.7|vue2.6|react|react-legacy|svelte|jquery`: native component packages for each ecosystem.
+- `@file-viewer/*-full`: component package plus `preset-all` for one-step full capability.
+
+## Links
 
 | Entry | URL |
 | --- | --- |
 | Official site | [file-viewer.app](https://file-viewer.app) |
 | Documentation | [doc.file-viewer.app](https://doc.file-viewer.app) |
-| Quickstart | [doc.file-viewer.app/guide/quickstart](https://doc.file-viewer.app/guide/quickstart) |
 | Live demo | [demo.file-viewer.app](https://demo.file-viewer.app) |
 | Comparison demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
 | Release downloads | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker image | `flyfishdev/file-viewer:latest` |
 | Linux Do friend link | [linux.do](https://linux.do) |
 | Sponsorship and priority support | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
-
-## Why Use It
-
-- **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
-- **Modular by design.** `@file-viewer/core` owns the format matrix, source loading, renderer protocol, lifecycle, and shared APIs. Heavy PDF, Word, PPTX, CAD, Typst, archive, EDA, and data-asset capabilities live in independent renderer packages; `preset-lite`, `preset-office`, `preset-engineering`, and `preset-all` compose product-shaped bundles; Vue, React, Svelte, jQuery, and Vanilla JavaScript packages stay focused on native ecosystem integration.
-- **Optional Vite auto assembly.** Non-Vite apps can inject capability through `options.preset` / `options.renderers`; Vite apps register `@file-viewer/vite-plugin` once and then usually only need `fileViewerRenderers({ copyAssets:true })` to auto-activate installed presets.
-- **Broad format coverage.** The current release maps 206 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, Mermaid, PlantUML, EPUB, UMD, Markdown, images, audio/video, source code, Git patch/bundle, fonts, PSD layer assets, and structured data.
-- **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
-- **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
-- **Real internationalization.** `locale` supports `auto`, `zh-CN`, and `en-US`, and every built-in label can be overridden with `messages` / `i18n.messages`. Vanilla JavaScript / Pure Web, Vue, React, jQuery, and Svelte packages share the same options, while the demo automatically selects the Chinese or English sample system from the browser language.
-- **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
-- **Renderer-native zoom controls.** The common toolbar can zoom in, zoom out, and reset through per-format providers for PDF, Word, PPTX, virtual Excel tables, images, CAD, OFD, Typst, Markdown, code, and drawing files, avoiding fragile host-level CSS transforms.
-- **Controlled theming.** `options.theme` supports `light`, `dark`, and `system`. Light business UIs can lock the viewer to `light` even when the operating system is in dark mode.
-- **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
-- **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
-- **Consistent native component package experience.** Core focuses on preview capabilities while Vanilla JavaScript / Pure Web, Vue 3, Vue 2, React, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
-- **Open-source main distribution.** The open-source main repository contains core, standalone renderer packages, standard component packages, compatibility packages, the runnable main demo source, documentation source, minified build artifacts, sample files, Docker deployment assets, npm tarballs, and release downloads. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
 
 ## Supported Formats
 
@@ -111,156 +243,29 @@ The viewer is organized around preview pipelines rather than one-off file extens
 | Video                          | `mp4`, `webm`, `m3u8`                                                                                                                                                                                                                                                                                                          | `@file-viewer/renderer-media` uses native browser video playback with a lazy `hls.js` fallback for HLS streams                                                                                                                                                | Screen recordings, demo videos, HLS previews                    |
 | Fonts, design assets, and data | `ttf`, `otf`, `woff`, `woff2`, `psd`, `ai`, `eps`, `sqlite`, `wasm`, `parquet`, `avro`, `webarchive`                                                                                                                                                                                                                           | Standalone `@file-viewer/renderer-data` with FontFace previews, PSD layer selection/visibility/zoom via `ag-psd`, PDF-backed AI handoff, SQLite/Parquet/Avro/WASM structural summaries, and configurable SQLite WASM URL                                       | Asset review, local databases, binary package inspection        |
 
-## Visual Preview
+## Capability Assembly
 
-The motion preview above shows the main demo, Office/PDF reading surface, PPTX rendering, and side-by-side document comparison in a real browser. Open [demo.file-viewer.app](https://demo.file-viewer.app) for the full sample matrix; the documentation site also uses GIF previews for key flows instead of static-only screenshots.
+Component packages stay lightweight. Format capability is assembled through presets or renderers.
 
-## Minimal And Composed Imports
-
-Starting from 2.1.0, treat the component package and the format capability as separate layers. Components provide the native framework experience; renderer packages and presets decide which file formats enter your install, bundle, Worker/WASM asset plan, and future extension path.
-
-### Universal Path: Component + Preset + options.preset
-
-Standard component packages stay lightweight. Concrete format capability comes from presets or individual renderers. The most stable path is to import a preset explicitly and pass it through `options.preset`; this works in Webpack, Rspack, Rollup, Umi, classic multi-page apps, micro-frontends, and internal component libraries.
-
-```bash
-npm i @file-viewer/vue3 @file-viewer/preset-office
-```
-
-```ts
-import officePreset from '@file-viewer/preset-office'
-
-export const viewerOptions = {
-  preset: officePreset,
-  rendererMode: 'replace',
-  theme: 'light',
-  toolbar: { position: 'bottom-right' }
-}
-```
-
-```vue
-<file-viewer url="/files/report.docx" :options="viewerOptions" />
-```
-
-When you need to combine capability bundles, keep the same `preset` field and pass an array, for example Office documents plus engineering drawings:
-
-```ts
-import officePreset from '@file-viewer/preset-office'
-import engineeringPreset from '@file-viewer/preset-engineering'
-
-export const viewerOptions = {
-  preset: [officePreset, engineeringPreset],
-  rendererMode: 'replace'
-}
-```
-
-Replace `@file-viewer/vue3` with `@file-viewer/web`, `@file-viewer/react`, `@file-viewer/svelte`, `@file-viewer/jquery`, `@file-viewer/vue2.7`, or `@file-viewer/vue2.6` for other stacks. The component changes, while preset assembly and `viewerOptions` semantics stay the same.
-
-### Vite Enhancement: Register Once, Discover Presets
-
-Vite projects can add the plugin to remove manual imports. Installing the npm package alone does not make Vite run the plugin; register it once in `vite.config.ts`. After that, `fileViewerRenderers({ copyAssets:true })` discovers installed presets, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets.
-
-```bash
-npm i -D @file-viewer/vite-plugin
-```
-
-```ts
-// vite.config.ts
-import { fileViewerRenderers } from '@file-viewer/vite-plugin'
-
-export default {
-  plugins: [
-    fileViewerRenderers({
-      copyAssets: true
-      // No preset:'office' needed: installed @file-viewer/preset-office is discovered.
-    })
-  ]
-}
-```
-
-### Internationalization
-
-The viewer defaults to `locale:'auto'` and follows the browser language. Applications can lock the language or override built-in copy:
-
-```ts
-const viewerOptions = {
-  locale: 'en-US',
-  messages: {
-    'toolbar.download': 'Save file'
-  }
-}
-```
-
-Custom Element users can also set the attribute directly:
-
-```html
-<flyfish-file-viewer src="/files/report.pdf" locale="en-US"></flyfish-file-viewer>
-```
-
-### Preset Selection
-
-| Need | Recommended package | Coverage |
+| Mode | Best for | Example |
 | --- | --- | --- |
-| Lightweight attachments | `@file-viewer/preset-lite` | Text, Markdown, code, image, audio, video |
-| Office documents | `@file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument |
-| Engineering files | `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA |
-| Full capability | `@file-viewer/preset-all` | The complete official demo matrix for heavy users, internal all-format workbenches, and validation environments |
+| `*-full` | Fastest complete capability | `@file-viewer/vue3-full` |
+| Component + preset | Most production apps | `@file-viewer/vue3` + `@file-viewer/preset-office` |
+| Component + multiple presets | Office plus engineering attachments | `preset: [officePreset, engineeringPreset]` |
+| Component + renderer | One or a few exact formats | `@file-viewer/renderer-pdf` |
+| CDN full | No-build script tags and fast validation | `@file-viewer/web-full` |
+| Vite plugin | Auto-discover installed presets and copy assets | `@file-viewer/vite-plugin` |
 
-Heavy users that need every capability immediately can use the full one-shot install and keep the zero-config Vite setup above:
+Preset selection:
 
-```bash
-npm i @file-viewer/vue3 @file-viewer/preset-all
-```
-
-### Exact Cuts And Advanced Control
-
-When a product only needs one or a few formats, skip presets, install individual renderers, and let `formats` generate exact imports:
-
-```ts
-fileViewerRenderers({
-  formats: ['pdf'],
-  copyAssets: true,
-  chunkStrategy: 'renderer'
-})
-```
-
-Common customization options:
-
-| Option | Purpose |
+| Preset | Coverage |
 | --- | --- |
-| `copyAssets:true` | Copies matched renderer Worker, WASM, font, and vendor assets for intranet / offline deployment |
-| `scan:true` | Reads source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
-| `preset:'auto'` / `autoPresets:true` | Keeps installed preset discovery active while `scan:true` is enabled |
-| `formats` / `renderers` | Adds exact extensions or renderer ids |
-| `inject:false` | Disables auto injection so you can import `virtual:file-viewer-renderers` and pass `options.renderers` manually |
-| `chunkStrategy:'renderer'` | Splits chunks by renderer for better caching and debugging of heavy pipelines |
+| `@file-viewer/preset-lite` | Text, Markdown, code, image, audio, video |
+| `@file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument |
+| `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA |
+| `@file-viewer/preset-all` | The complete official demo matrix |
 
-### Path 3: No Build Tool Or Script Tags
-
-For plain JavaScript pages, install `@file-viewer/web` and use the `<flyfish-file-viewer>` Custom Element or the imperative `mountViewer(...)` API. For intranet deployment, copy the bundled workers, WASM files, PDF assets, CAD assets, Typst assets, archive assets, and data assets into your own static directory.
-
-```bash
-npm i @file-viewer/web @file-viewer/preset-all
-npm exec file-viewer-copy-assets ./public/file-viewer
-```
-
-For the fastest no-build full-capability integration, load the full IIFE bundle from an npm CDN. `@file-viewer/web-full` exposes `window.FlyfishFileViewerWebFull`, enables the complete format matrix by default, and resolves bundled workers, WASM files, fonts, and vendor assets relative to the script URL. jsDelivr / unpkg distribute it directly from npm, so the full dependency set does not need to be committed into the host application.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script>
-<!-- Or: <script src="https://unpkg.com/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script> -->
-
-<flyfish-file-viewer
-  src="/files/demo.pdf"
-  theme="light"
-  toolbar-position="bottom-right"
-  style="display:block;height:720px"
-></flyfish-file-viewer>
-```
-
-The CDN full path is suitable for complete Vanilla JS integration. Public production pages can keep using an npm CDN. For intranet, strict-CSP, fully offline, or private Cloudflare / cdnjs-style static domains, mirror `@file-viewer/web-full/dist` or the assets generated by `file-viewer-copy-assets` to your own CDN. cdnjs.com does not automatically host arbitrary npm packages; a cdnjs URL is available only after the library is accepted there, while the jsDelivr / unpkg URLs above are real npm-backed paths.
-
-See the [official docs](https://doc.file-viewer.app/guide/ecosystem) for detailed Vanilla JavaScript, Vue, React, Svelte, jQuery, Core API, and offline asset steps.
+Internationalization, theme, watermark, toolbar, search, print, export, lifecycle hooks, and before-operation guards are controlled by the same `options` object. See the [official options guide](https://doc.file-viewer.app/guide/options) for the full API.
 
 ## Current npm Ecosystem
 
@@ -539,147 +544,33 @@ Flyfish Viewer remains Apache-2.0 open source. The open-source edition is design
 
 The commercial edition comes from the Flyfish Office product line. It provides a self-developed native Office document engine for serious enterprise Word, Excel, and PowerPoint scenarios, with stronger fidelity for complex layout, large files, pagination, high-quality rendering, and stable performance. The open-source edition will continue to evolve; commercial support is mainly for faster maintainer response, private deployment evaluation, and custom delivery.
 
-## Vanilla JavaScript Integration
+## Demo And Docker
 
-One component, one line of code, fast integration. Whether you use Vanilla JavaScript, Vue, React, jQuery, or Svelte, start from the standard component package for your ecosystem so the preview capability stays consistent while the host integration remains native.
+The repository keeps two runnable demo surfaces:
 
-Use this path for framework-free pages, micro-frontend shells, classic admin systems, low-code platforms, and any product that wants a native Custom Element or imperative controller without Vue, React, or jQuery.
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Main demo, matching [demo.file-viewer.app](https://demo.file-viewer.app) |
+| `pnpm dev:components` | Vanilla JS, Vue, React, Svelte, and jQuery component demo |
+| `pnpm build:component-demo` | Build the component demo as static assets |
+| `pnpm docs:dev` | Run the documentation site |
 
-```bash
-npm install @file-viewer/web
-```
-
-```html
-<flyfish-file-viewer
-  src="/files/demo.pdf"
-  theme="light"
-  toolbar-position="bottom-right"
-  style="display:block;height:100vh"
-></flyfish-file-viewer>
-
-<script type="module">
-  import { defineFileViewerElement } from '@file-viewer/web'
-
-  defineFileViewerElement()
-</script>
-```
-
-`@file-viewer/web` also provides `mountViewer(container, options)`, the script-tag IIFE build, and `file-viewer-copy-assets` for offline worker/WASM asset deployment.
-
-## Vue 3 Integration
+Docker is available for intranet, private-cloud, customer-site, and local full-demo deployment:
 
 ```bash
-npm install @flyfish-group/file-viewer3
+docker run -d \
+  --name flyfish-viewer \
+  --restart unless-stopped \
+  -p 8080:80 \
+  flyfishdev/file-viewer:latest
 ```
 
-```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer3'
-
-createApp(App).use(FileViewer).mount('#app')
-```
-
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const url = ref('/files/demo.pdf')
-
-const options = {
-  theme: 'light',
-  toolbar: { position: 'bottom-right', download: true, print: true, exportHtml: true },
-  watermark: { text: 'Internal Preview', opacity: 0.14 },
-  pdf: { streaming: 'same-origin', rangeChunkSize: 64 * 1024 }
-}
-</script>
-
-<template>
-  <div style="height: 100vh">
-    <file-viewer :url="url" :options="options" />
-  </div>
-</template>
-```
-
-For local files or authenticated downloads, pass a `File` object:
-
-```ts
-const response = await fetch('/api/files/contract', { credentials: 'include' })
-const blob = await response.blob()
-
-file.value = new File([blob], 'contract.pdf', { type: blob.type })
-```
-
-The filename matters. The viewer uses the extension to choose the correct rendering pipeline.
-
-## Vue 2.7 Integration
+Local image build:
 
 ```bash
-npm install @flyfish-group/file-viewer
+pnpm docker:build
+docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 ```
-
-```ts
-import Vue from 'vue'
-import FileViewer from '@flyfish-group/file-viewer'
-
-Vue.use(FileViewer)
-```
-
-```vue
-<template>
-  <div style="height: 100vh">
-    <file-viewer :url="url" :options="options" />
-  </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      url: '/files/demo.pdf',
-      options: {
-        theme: 'light',
-        toolbar: { position: 'bottom-right' }
-      }
-    }
-  }
-}
-</script>
-```
-
-The Vue 2 and Vue 3 package lines share the same user-facing capabilities and option semantics.
-
-## React Integration
-
-The React package is a native component package. It renders a React container and mounts the complete viewer through its local controller on top of `@file-viewer/core` and the core browser engine.
-
-```bash
-npm install @file-viewer/react
-```
-
-```tsx
-import FileViewer from '@file-viewer/react'
-
-export function Preview() {
-  return (
-    <div style={{ height: '100vh' }}>
-      <FileViewer
-        url="/files/demo.pdf"
-        options={{
-          theme: 'light',
-          toolbar: { position: 'bottom-right' },
-          watermark: { text: 'Internal Preview', opacity: 0.14 }
-        }}
-        onEvent={(event) => {
-          console.log(event.type, event.payload)
-        }}
-      />
-    </div>
-  )
-}
-```
-
-Historical package names remain compatible, but new projects should prefer the standard `@file-viewer/*` packages.
 
 ## Core Options
 

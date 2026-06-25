@@ -31,51 +31,182 @@
 
 ---
 
+## 项目定位
+
+Flyfish Viewer 是面向业务系统的浏览器原生文件预览组件。一个组件、一套 API，覆盖 Office、PDF、OFD、Typst、CAD、XMind、压缩包、邮件、绘图、音视频、代码、PSD、字体和结构化数据。
+
+无需后端转码服务，适合 OA、知识库、附件中心、审批流、客服工单、内网和私有化部署。新项目优先使用 `@file-viewer/*`；`@flyfish-group/*` 历史包继续同步维护。
+
+## 亮点
+
+- **接入快。** Vanilla JS、Vue、React、Svelte、jQuery 都有原生组件；full 包可一步拿到完整能力。
+- **覆盖广。** 206+ 扩展名，24 条预览链路，覆盖常见办公、工程、设计、数据和代码附件。
+- **纯前端。** 浏览器内解析和渲染，支持离线、内网、Docker、私有 CDN 和严格资源自托管。
+- **模块化。** 轻量组件、renderer、preset、full 包分层清晰，既能极简安装，也能一键全量。
+- **按需加载。** PDF、Office、CAD、Typst、压缩包、图纸、PSD、Mermaid 等重型能力只在命中格式时加载。
+- **操作完整。** 搜索、高亮、缩放、打印、导出 HTML、下载、水印、主题、生命周期钩子和按钮前置校验都走统一 API。
+- **生态一致。** Core 聚焦底层能力，各框架组件只做原生封装，参数、事件和 controller 体验保持一致。
+
 ## 在线效果
 
 ![Flyfish Viewer 演示: Word、PDF、PPTX 与文档比对](docs/public/_media/flyfish-viewer-demo.gif)
 
-打开 [demo.file-viewer.app](https://demo.file-viewer.app) 可以直接体验完整样例矩阵、上传预览、工具栏、文档比对和离线资产加载效果。Demo 使用与 npm 包一致的渲染链路，适合作为接入前的第一轮验收。
+打开 [demo.file-viewer.app](https://demo.file-viewer.app) 可以直接体验完整样例矩阵、上传预览、工具栏、文档比对和离线资产加载效果。
 
-## 项目定位
+## 快速开始
 
-把 Word、Excel、PPT、PDF、Typst、XMind 脑图、压缩包、邮件、音视频、地理数据、工程图纸、字体、设计资产和结构化数据稳稳带进浏览器里。
+先选接入层，再按需选择格式能力。只想最快拿到完整体验时，直接使用 `*-full` 包。
 
-`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
+| 场景 | 推荐安装 |
+| --- | --- |
+| Script 标签 / CDN 完整能力 | `@file-viewer/web-full` |
+| Vanilla JS npm | `@file-viewer/web` + `@file-viewer/preset-all` |
+| Vue 3 | `@file-viewer/vue3-full`，或 `@file-viewer/vue3` + preset |
+| Vue 2.7 / 2.6 | `@file-viewer/vue2.7-full` / `@file-viewer/vue2.6-full` |
+| React 18/19 | `@file-viewer/react-full` |
+| React 16.8/17 | `@file-viewer/react-legacy-full` |
+| Svelte | `@file-viewer/svelte-full` |
+| jQuery | `@file-viewer/jquery-full` |
+| 精确裁剪 | 任意组件包 + `@file-viewer/preset-*` 或独立 renderer |
 
-它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
+### CDN / Script 标签
 
-接入主张很简单: **一个组件，一行代码，快速集成**。先选择对应技术栈的标准组件包，再用同一套 options、事件、搜索、缩放、打印、导出和水印能力完成业务接入。
+```html
+<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script>
+
+<flyfish-file-viewer
+  src="/files/report.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
+```
+
+### Vanilla JS
+
+```bash
+npm i @file-viewer/web @file-viewer/preset-all
+```
+
+```ts
+import { mountViewer } from '@file-viewer/web'
+import presetAll from '@file-viewer/preset-all'
+
+mountViewer(document.querySelector('#viewer')!, {
+  url: '/files/report.docx',
+  options: { preset: presetAll, theme: 'light' }
+})
+```
+
+### Vue 3
+
+```bash
+npm i @file-viewer/vue3-full
+```
+
+```ts
+import { createApp } from 'vue'
+import FileViewer from '@file-viewer/vue3-full'
+
+createApp(App).use(FileViewer).mount('#app')
+```
+
+```vue
+<file-viewer url="/files/report.docx" />
+```
+
+### Vue 2
+
+```bash
+npm i @file-viewer/vue2.7-full
+# Vue 2.6 项目使用 @file-viewer/vue2.6-full
+```
+
+```ts
+import Vue from 'vue'
+import FileViewer from '@file-viewer/vue2.7-full'
+
+Vue.use(FileViewer)
+```
+
+### React
+
+```bash
+npm i @file-viewer/react-full
+```
+
+```tsx
+import FileViewer from '@file-viewer/react-full'
+
+export function Preview() {
+  return <FileViewer url="/files/report.pdf" style={{ height: 720 }} />
+}
+```
+
+### Svelte
+
+```bash
+npm i @file-viewer/svelte-full
+```
+
+```svelte
+<script>
+  import FileViewer from '@file-viewer/svelte-full'
+</script>
+
+<FileViewer url="/files/report.pdf" containerStyle="height:720px" />
+```
+
+### jQuery
+
+```bash
+npm i @file-viewer/jquery-full
+```
+
+```ts
+import '@file-viewer/jquery-full'
+
+$('#viewer').fileViewer({ url: '/files/report.pdf' })
+```
+
+### 按需组合
+
+```bash
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  preset: officePreset,
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite 项目可额外安装 `@file-viewer/vite-plugin`，自动发现已安装 preset 并复制 Worker/WASM/字体/vendor 资源；非 Vite 项目直接使用 `options.preset`，不需要额外插件。
+
+## 架构
+
+- `@file-viewer/core`: 格式识别、资源加载、renderer 协议、生命周期、搜索、缩放、打印、导出和 controller API。
+- `@file-viewer/renderer-*`: PDF、Word、PPTX、CAD、Typst、Archive、Drawing、Data、EDA 等独立渲染能力。
+- `@file-viewer/preset-*`: `lite`、`office`、`engineering`、`all` 四类能力组合。
+- `@file-viewer/web|vue3|vue2.7|vue2.6|react|react-legacy|svelte|jquery`: 各生态的原生组件。
+- `@file-viewer/*-full`: 组件 + `preset-all` 的一步到位包，适合快速验证和全格式附件中心。
+
+## 入口
 
 | 入口 | 地址 |
 | --- | --- |
 | 官方网站 | [file-viewer.app](https://file-viewer.app) |
 | 官方文档 | [doc.file-viewer.app](https://doc.file-viewer.app) |
-| 快速开始 | [doc.file-viewer.app/guide/quickstart](https://doc.file-viewer.app/guide/quickstart) |
 | 在线 Demo | [demo.file-viewer.app](https://demo.file-viewer.app) |
 | 文档比对 Demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
 | Release 下载 | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker 镜像 | `flyfishdev/file-viewer:latest` |
 | Linux Do 友链 | [linux.do](https://linux.do) |
 | 打赏与优先支持 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
-
-## 为什么值得接入
-
-- **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
-- **模块化架构清晰。** `@file-viewer/core` 只负责格式矩阵、资源加载、renderer 协议、生命周期和统一 API；PDF、Word、PPTX、CAD、Typst、压缩包、EDA、数据资产等重型能力下沉到独立 renderer；`preset-lite`、`preset-office`、`preset-engineering`、`preset-all` 按产品形态组合；Vue、React、Svelte、jQuery 和 Vanilla JS 组件只做各自生态的原生封装。
-- **Vite 可选自动装配。** 非 Vite 项目优先通过 `options.preset` / `options.renderers` 稳定注入能力；Vite 项目注册一次 `@file-viewer/vite-plugin` 后，会根据已安装的 `@file-viewer/preset-*` 自动激活预览能力，通常只需要 `fileViewerRenderers({ copyAssets:true })`。
-- **格式覆盖完整。** 当前内置 206 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、Git patch/bundle、字体、PSD 图层资产和结构化数据，能覆盖绝大多数业务附件场景。
-- **按需异步加载。** PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
-- **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关、水印 options、主题 options、搜索高亮、上一个 / 下一个命中、行级定位和 AI 友好文本切片；PDF 使用 PDF.js 原生搜索，Word / Markdown / 代码等文本类格式使用通用 DOM 搜索，避免污染 PDF 文本层、canvas 等特殊渲染结构；`theme` 支持 `light`、`dark`、`system`，默认跟随系统，浅色业务 UI 可显式锁定 `light`；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
-- **集成控制更完整。** 提供加载/卸载生命周期钩子、原生事件回调和按钮前置校验机制，下载、打印、导出前可以接入权限验证、审计确认或业务二次弹窗。
-- **国际化可控。** `locale` 支持 `auto`、`zh-CN`、`en-US`，也可通过 `messages` / `i18n.messages` 覆盖任意内置文案；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包共享同一套参数，Demo 会按浏览器语言自动选择中文或英文样例体系。
-- **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色阅读面、居中阅读和自适应缩放；DOCX 由 `@file-viewer/renderer-word` 按需加载自研 `@file-viewer/docx`，默认走 Worker 解析、连续流式阅读和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；PDF 兼容旋转页和页面 / 目录导航，Excel 会尽量还原图片、自动文本色和可滚动的多 sheet 标签，避免“内容能打开但不好读”的落差。
-- **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
-- **Demo 更适合验收。** 示例文件按文档、表格、图纸、脑图与绘图、邮件与 EDA、代码、图片和数据资产等类型分组展示，点击样例即可打开并自动收起选择器。
-- **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
-- **各框架体验一致。** core 聚焦底层预览能力，Vanilla JS / Pure Web、Vue3、Vue2、React、jQuery 和 Svelte 标准组件包各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
-- **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
-- **适合开源分发和二次接入。** 开源总仓库同时维护 core、独立渲染引擎包、标准组件包、兼容包、主 Demo 源码、文档源码、混淆压缩产物、npm tarball、静态部署产物和 release 下载物，便于下载、运行、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
 
 ## 支持格式
 
@@ -112,156 +243,29 @@
 | 视频           | `mp4`、`webm`、`m3u8`                                                                                                                                                                                                                                                                                                          | `@file-viewer/renderer-media` 使用浏览器原生视频播放；HLS 清单必要时按需加载 `hls.js`                                                                                                                               | 演示视频、录屏、HLS 流                      |
 | 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive`                                                                                                                                                                                                                           | `@file-viewer/renderer-data` 独立承接，基于 FontFace、`ag-psd`、`sql.js`、`hyparquet`、`avsc`、WebAssembly Module 和安全摘要；PSD 支持图层选择显隐、重绘和统一缩放；SQLite WASM 支持私有化配置                  | 字体、设计资产、数据库、列式数据和 Web 归档 |
 
-## 效果预览
+## 能力组合
 
-上方动图展示了主 Demo、Office/PDF 阅读面、PPTX 和文档比对的真实浏览器效果。更多样例可以直接打开 [demo.file-viewer.app](https://demo.file-viewer.app)，文档站也会以 GIF 展示关键链路，避免静态截图无法体现交互质量。
+组件包默认保持轻量，格式能力通过 preset 或 renderer 装配。
 
-## 最小化引入与组合引入
-
-2.1.0 之后推荐把“组件包”和“格式能力”分开理解：组件负责当前技术栈的原生体验，renderer / preset 负责具体文件格式能力。这个模块化边界让你既能一行接入，也能控制首屏体积、安装依赖、Worker/WASM 资产和后续扩展节奏。
-
-### 通用路径：组件 + preset + options.preset
-
-标准组件包本身保持轻量，具体格式能力通过 preset 或单 renderer 装配。最稳定、最通用的方式是显式 import preset，再通过 `options.preset` 传给组件；这条路径不依赖 Vite，Webpack、Rspack、Rollup、Umi、传统多页应用、微前端壳和内部组件库都能直接使用。
-
-```bash
-npm i @file-viewer/vue3 @file-viewer/preset-office
-```
-
-```ts
-import officePreset from '@file-viewer/preset-office'
-
-export const viewerOptions = {
-  preset: officePreset,
-  rendererMode: 'replace',
-  theme: 'light',
-  toolbar: { position: 'bottom-right' }
-}
-```
-
-```vue
-<file-viewer url="/files/report.docx" :options="viewerOptions" />
-```
-
-组合多个能力包时仍然使用同一个 `preset` 字段传数组，例如办公文档 + 工程图纸:
-
-```ts
-import officePreset from '@file-viewer/preset-office'
-import engineeringPreset from '@file-viewer/preset-engineering'
-
-export const viewerOptions = {
-  preset: [officePreset, engineeringPreset],
-  rendererMode: 'replace'
-}
-```
-
-`@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，preset 和 `viewerOptions` 保持同一套语义。
-
-### Vite 增强：注册一次插件，自动发现 preset
-
-Vite 项目可以额外安装插件省去手动 import。注意：只安装 npm 包不会让 Vite 自动运行插件，仍需要在 `vite.config.ts` 注册一次；注册后 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。
-
-```bash
-npm i -D @file-viewer/vite-plugin
-```
-
-```ts
-// vite.config.ts
-import { fileViewerRenderers } from '@file-viewer/vite-plugin'
-
-export default {
-  plugins: [
-    fileViewerRenderers({
-      copyAssets: true
-      // 无需 preset:'office'：插件会自动发现已安装的 @file-viewer/preset-office。
-    })
-  ]
-}
-```
-
-### 国际化
-
-预览器默认 `locale:'auto'`，会根据浏览器语言选择中文或英文。业务系统可以固定语言，也可以覆盖内置文案:
-
-```ts
-const viewerOptions = {
-  locale: 'en-US',
-  messages: {
-    'toolbar.download': 'Save file'
-  }
-}
-```
-
-Custom Element 同样支持属性写法:
-
-```html
-<flyfish-file-viewer src="/files/report.pdf" locale="zh-CN"></flyfish-file-viewer>
-```
-
-### preset 选择
-
-| 需求 | 推荐安装 | 说明 |
+| 模式 | 适合场景 | 示例 |
 | --- | --- | --- |
-| 轻附件 | `@file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 |
-| 办公文档 | `@file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument |
-| 工程资料 | `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
-| 全量能力 | `@file-viewer/preset-all` | 官方 Demo 完整格式矩阵，适合重度用户、内部全格式附件中心和验收环境 |
+| `*-full` | 想最快拥有完整格式能力 | `@file-viewer/vue3-full` |
+| 组件 + preset | 大多数业务系统，体积和能力平衡 | `@file-viewer/vue3` + `@file-viewer/preset-office` |
+| 组件 + 多 preset | 组合办公和工程附件 | `preset: [officePreset, engineeringPreset]` |
+| 组件 + renderer | 只要一个或少数格式 | `@file-viewer/renderer-pdf` |
+| CDN full | 无构建工具、script 标签、快速验证 | `@file-viewer/web-full` |
+| Vite 插件 | Vite 项目自动发现已安装 preset 并复制资产 | `@file-viewer/vite-plugin` |
 
-重度用户需要最快拥有全部能力时，直接使用全量一键安装，Vite 配置保持上面的免配置形式即可：
+Preset 选择:
 
-```bash
-npm i @file-viewer/vue3 @file-viewer/preset-all
-```
-
-### 精确裁剪和进阶自定义
-
-如果业务只需要一个或少数格式，可以跳过 preset，安装单 renderer 并用 `formats` 生成精确 import：
-
-```ts
-fileViewerRenderers({
-  formats: ['pdf'],
-  copyAssets: true,
-  chunkStrategy: 'renderer'
-})
-```
-
-常用定制项：
-
-| 选项 | 用途 |
+| preset | 覆盖范围 |
 | --- | --- |
-| `copyAssets:true` | 自动复制已命中 renderer 的 Worker、WASM、字体和 vendor 资源，适合内网/离线部署 |
-| `scan:true` | 扫描源码中的 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 等 hint，自动补全格式 |
-| `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时仍保持已安装 preset 自动发现 |
-| `formats` / `renderers` | 额外指定精确格式或 renderer id |
-| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传给 `options.renderers` |
-| `chunkStrategy:'renderer'` | 按 renderer 拆分 chunk，便于缓存和排查大型格式链路 |
+| `@file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 |
+| `@file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument |
+| `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
+| `@file-viewer/preset-all` | 官方 Demo 完整格式矩阵 |
 
-### 方案三：无构建工具或 script 标签
-
-纯 JS 页面优先安装 `@file-viewer/web`，用 `<flyfish-file-viewer>` 原生组件或 `mountViewer(...)` 命令式挂载；需要内网部署时执行资源复制命令，把 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等静态资产放进自己的站点目录。
-
-```bash
-npm i @file-viewer/web @file-viewer/preset-all
-npm exec file-viewer-copy-assets ./public/file-viewer
-```
-
-如果只是想最快在传统页面里接入完整能力，也可以使用 npm CDN 的 full IIFE 包。`@file-viewer/web-full` 会暴露 `window.FlyfishFileViewerWebFull`，默认启用完整格式矩阵，并会按脚本所在目录自动定位随包分发的 Worker、WASM、字体和 vendor 资源；jsDelivr / unpkg 会直接从 npm 分发，无需把完整依赖下载到业务仓库。
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script>
-<!-- 或者: <script src="https://unpkg.com/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script> -->
-
-<flyfish-file-viewer
-  src="/files/demo.pdf"
-  theme="light"
-  toolbar-position="bottom-right"
-  style="display:block;height:720px"
-></flyfish-file-viewer>
-```
-
-CDN full 方式适合纯 JS 快速接入完整能力。生产公网可继续使用 npm CDN；内网、严格 CSP、完全离线或需要走自有 Cloudflare/CDNJS 风格静态域时，把 `@file-viewer/web-full/dist` 或 `file-viewer-copy-assets` 生成的 Worker、WASM、字体和 vendor 资源同步到自己的 CDN 即可。cdnjs 不会自动托管任意 npm 包，若需要 cdnjs.com 形式，需要先完成库收录；文档中的 jsDelivr / unpkg 地址是发布后即可复制使用的真实路径。
-
-更详细的 Vanilla JS、Vue、React、Svelte、jQuery、Core API 和离线资源步骤见 [官方文档](https://doc.file-viewer.app/guide/ecosystem)。
+国际化、主题、水印、工具栏、搜索、打印、导出、生命周期和前置权限校验都通过同一套 `options` 配置。完整 API 见 [官方文档](https://doc.file-viewer.app/guide/options)。
 
 ## 当前 npm 生态
 
@@ -528,145 +532,18 @@ Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预
 
 商业版来自 Flyfish Office 产品线，面向严肃企业场景提供自研原生 Office 文档引擎，重点解决 Word、Excel、PowerPoint 在复杂版式、大文件、分页布局、高保真渲染和稳定性能上的更高要求。开源版会继续维护，商业支持主要用于更快响应、私有化评估和定制交付。
 
-## 接入路线
+## Demo 与 Docker
 
-一个组件，一行代码，快速集成。无论是 Vanilla JS、Vue、React、jQuery 还是 Svelte，都优先选择对应的标准组件包，让底层格式能力保持一致、上层接入方式保持原生。
+本仓库保留两个可运行演示入口:
 
-### 1. Vanilla JS / Pure Web 集成
+| 命令 | 说明 |
+| --- | --- |
+| `pnpm dev` | 主 Demo，和 [demo.file-viewer.app](https://demo.file-viewer.app) 使用同一条链路 |
+| `pnpm dev:components` | Vanilla JS、Vue、React、Svelte、jQuery 生态组件演示 |
+| `pnpm build:component-demo` | 构建组件演示静态产物 |
+| `pnpm docs:dev` | 启动文档站 |
 
-适合非框架页面、微前端壳、传统后台、低代码平台和任意希望直接通过原生 Web 组件接入的系统。`@file-viewer/web` 同时提供 `<flyfish-file-viewer>`、`mountViewer(container, options)`、IIFE script 标签包和资源复制 CLI。
-
-```bash
-npm install @file-viewer/web
-```
-
-```html
-<flyfish-file-viewer
-  src="https://example.com/demo.pdf"
-  theme="light"
-  toolbar-position="bottom-right"
-  style="display:block;height:100vh"
-></flyfish-file-viewer>
-
-<script type="module">
-  import { defineFileViewerElement } from '@file-viewer/web'
-
-  defineFileViewerElement()
-</script>
-```
-
-完整的 script 标签、Custom Element、`mountViewer` 和离线资源复制说明见 [纯 JS 集成文档](https://doc.file-viewer.app/guide/quickstart-web)。
-
-### 2. Vue 3 组件集成
-
-适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。Vue3 标准组件包 直接使用共享 core 能力，并承担 Vue 生态内的插件安装、组件 props、ref API 和类型出口。
-
-```bash
-pnpm add @flyfish-group/file-viewer3
-```
-
-```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer3'
-
-createApp(App).use(FileViewer).mount('#app')
-```
-
-Vue3 入口会把样式一起带到安装器里，所以这里不需要再额外引入 `dist/file-viewer3.css`。
-
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const url = ref('https://example.com/demo.pdf')
-</script>
-
-<template>
-  <div style="height: 100vh">
-    <file-viewer :url="url" />
-  </div>
-</template>
-```
-
-### 3. Vue 2 组件集成
-
-适合仍在 Vue2.7 技术栈上，希望直接以内嵌组件方式完成接入的团队。Vue2 入口也会自动带上样式，不需要再额外 import CSS。
-
-```bash
-pnpm add @flyfish-group/file-viewer
-```
-
-```ts
-import Vue from 'vue'
-import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer'
-
-Vue.use(FileViewer)
-
-new Vue({
-  render: (h) => h(App)
-}).$mount('#app')
-```
-
-```vue
-<template>
-  <div style="height: 100vh">
-    <file-viewer :url="url" />
-  </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      url: 'https://example.com/demo.pdf'
-    }
-  }
-}
-</script>
-```
-
-### 4. React 子工程
-
-React 标准包走 native controller，直接在业务页面挂载完整预览器。React 16.8 / 17 老项目可使用 `@file-viewer/react-legacy`。
-
-```bash
-npm install @file-viewer/react
-```
-
-```tsx
-import FileViewer from '@file-viewer/react'
-
-export function Preview() {
-  return (
-    <div style={{ height: '100vh' }}>
-      <FileViewer url="https://example.com/demo.docx" />
-    </div>
-  )
-}
-```
-
-`@file-viewer/react` 支持 React 17 / 18 / 19，内部使用本包本地 controller 调用 `@file-viewer/core` 与 core browser engine，不依赖纯 Web 组件实现。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 交给预览器。资源复制命令仍保留，用于 worker/WASM 和示例资源的自托管分发；标准组件包接入不需要额外的静态页面地址。
-
-本仓库内置了一个组件演示应用，覆盖 Vanilla JS / Pure Web helper、React 组件、jQuery 和 Svelte 入口。调试时直接运行:
-
-```bash
-pnpm dev:components
-```
-
-打开本地地址即可验证 Vanilla JS `mountViewer` 和 React 组件的 native 预览效果。验证静态部署产物时运行:
-
-```bash
-pnpm build:component-demo
-pnpm --filter @flyfish-group/file-viewer-component-demo preview
-```
-
-确认无误后，`apps/component-demo/dist` 可以作为普通静态目录部署；其中只包含 Vanilla JS / Pure Web、React、Vue3、jQuery、Svelte 和 script 标签接入示例。正式在线预览站和文档比对入口由 `apps/viewer-demo` 承载。
-
-### 5. Docker 一键部署
-
-适合内网、私有云、客户现场或希望直接运行完整 Demo 的场景。镜像发布后可直接运行:
+Docker 适合内网、私有云、客户现场或希望直接运行完整 Demo 的场景:
 
 ```bash
 docker run -d \
