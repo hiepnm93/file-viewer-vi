@@ -142,6 +142,63 @@ try {
     'inject:false should keep the virtual renderer module manual-only'
   )
 
+  const strictRoot = await mkdtemp(join(tmpdir(), 'file-viewer-vite-strict-'))
+  const previousCwd = process.cwd()
+  try {
+    const fakePdfRoot = join(
+      strictRoot,
+      'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf/node_modules/pdfjs-dist'
+    )
+    await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office'), { recursive: true })
+    await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf'), { recursive: true })
+    await mkdir(join(fakePdfRoot, 'legacy/build'), { recursive: true })
+    await mkdir(join(fakePdfRoot, 'cmaps'), { recursive: true })
+    await mkdir(join(fakePdfRoot, 'wasm'), { recursive: true })
+    await mkdir(join(fakePdfRoot, 'standard_fonts'), { recursive: true })
+    await writeFile(join(strictRoot, 'package.json'), '{"name":"strict-react-app","type":"module"}\n')
+    await writeFile(
+      join(strictRoot, 'node_modules/@file-viewer/preset-office/package.json'),
+      '{"name":"@file-viewer/preset-office","version":"0.0.0","dependencies":{"@file-viewer/renderer-pdf":"0.0.0"}}\n'
+    )
+    await writeFile(
+      join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf/package.json'),
+      '{"name":"@file-viewer/renderer-pdf","version":"0.0.0","dependencies":{"pdfjs-dist":"0.0.0"}}\n'
+    )
+    await writeFile(join(fakePdfRoot, 'package.json'), '{"name":"pdfjs-dist","version":"0.0.0"}\n')
+    await writeFile(join(fakePdfRoot, 'legacy/build/pdf.worker.mjs'), 'export default null\n')
+    await writeFile(join(fakePdfRoot, 'cmaps/LICENSE'), 'fake cmap\n')
+    await writeFile(join(fakePdfRoot, 'wasm/pdf.wasm'), 'fake wasm\n')
+    await writeFile(join(fakePdfRoot, 'standard_fonts/LICENSE'), 'fake font\n')
+
+    process.chdir(strictRoot)
+    const strictPlugin = fileViewerRenderers({
+      preset: 'office',
+      copyAssets: { publicDir: 'public', mode: 'dev' }
+    })
+    strictPlugin.config?.({ root: '.' })
+    strictPlugin.configResolved?.({
+      root: strictRoot,
+      publicDir: join(strictRoot, 'public'),
+      build: { outDir: join(strictRoot, 'dist') }
+    })
+    await strictPlugin.buildStart?.()
+    await strictPlugin.configureServer?.({})
+    for (const assetPath of [
+      'vendor/pdf/pdf.worker.mjs',
+      'vendor/pdf/cmaps/LICENSE',
+      'vendor/pdf/wasm/pdf.wasm',
+      'vendor/pdf/standard_fonts/LICENSE'
+    ]) {
+      assert(
+        existsSync(join(strictRoot, 'public', assetPath)),
+        `strict preset dependency asset copy missed ${assetPath}`
+      )
+    }
+  } finally {
+    process.chdir(previousCwd)
+    await rm(strictRoot, { recursive: true, force: true })
+  }
+
   const autoPresetSelection = resolveFileViewerRendererSelection({ preset: 'auto' }, tempRoot)
   assert(
     autoPresetSelection.autoPresetPackages.length > 0,

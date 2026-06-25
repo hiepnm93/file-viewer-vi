@@ -769,17 +769,24 @@ function resolveWorkspacePackageJson(packageName) {
 function resolvePackageJson(packageName, anchorPackages = []) {
     const requireFns = [projectRequire(), pluginRequire];
     const effectiveAnchorPackages = unique([
-        ...anchorPackages,
-        ...Object.values(presetModules).map((preset) => preset.packageName)
+        ...Object.values(presetModules).map((preset) => preset.packageName),
+        ...anchorPackages
     ]);
-    effectiveAnchorPackages.forEach((anchorPackage) => {
-        const anchorPackageJson = requireFns
-            .map((requireFn) => tryResolvePackageJson(anchorPackage, requireFn))
-            .find(Boolean);
-        if (anchorPackageJson) {
-            requireFns.push(createRequire(anchorPackageJson));
+    const anchorPackageJsons = new Set();
+    let discoveredAnchor = true;
+    while (discoveredAnchor) {
+        discoveredAnchor = false;
+        for (const anchorPackage of effectiveAnchorPackages) {
+            for (const requireFn of [...requireFns]) {
+                const anchorPackageJson = tryResolvePackageJson(anchorPackage, requireFn);
+                if (anchorPackageJson && !anchorPackageJsons.has(anchorPackageJson)) {
+                    anchorPackageJsons.add(anchorPackageJson);
+                    requireFns.push(createRequire(anchorPackageJson));
+                    discoveredAnchor = true;
+                }
+            }
         }
-    });
+    }
     for (const requireFn of requireFns) {
         const packageJson = tryResolvePackageJson(packageName, requireFn);
         if (packageJson) {
