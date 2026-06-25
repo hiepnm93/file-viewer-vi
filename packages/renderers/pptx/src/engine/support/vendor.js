@@ -1,6 +1,9 @@
 import tinycolor from 'tinycolor2'
 import { parse } from './txml'
 import * as dingbatToUnicode from "dingbat-to-unicode";
+import UTIFModule from 'utif';
+
+const UTIF = UTIFModule.default || UTIFModule;
 
 // 共享变量，记录图表信息
 export const Charts = {
@@ -369,7 +372,9 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
     "themeResObj": themeResObj,
     "digramFileContent": digramFileContent,
     "diagramResObj": diagramResObj,
-    "defaultTextStyle": defaultTextStyle
+    "defaultTextStyle": defaultTextStyle,
+    "slideIndex": index,
+    "slideNumber": index + 1
   };
   var bgResult = "";
   if (processFullTheme === true) {
@@ -378,7 +383,7 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
 
   var bgColor = "";
   if (processFullTheme == "colorsAndImageOnly") {
-    bgColor = await getSlideBackgroundFill(warpObj, index);
+    bgColor = await getSlideBackgroundFill(warpObj, index) || "";
   }
 
   var result = "<div class='slide' style='width:" + slideSize.width + "px; height:" + slideSize.height + "px;" + bgColor + "'>"
@@ -1008,15 +1013,88 @@ function convertEmfToSvgDataUrl(arrayBuffer) {
   }
 }
 
-function getImageDataUrl(imgFileExt, imgArrayBuffer) {
+function arrayBufferToUint8ClampedArray(bufferLike) {
+  if (bufferLike instanceof Uint8ClampedArray) {
+    return bufferLike;
+  }
+  if (bufferLike instanceof Uint8Array) {
+    return new Uint8ClampedArray(bufferLike.buffer, bufferLike.byteOffset, bufferLike.byteLength);
+  }
+  return new Uint8ClampedArray(bufferLike);
+}
+
+async function canvasToPngDataUrl(canvas) {
+  if (typeof canvas.convertToBlob === "function") {
+    var blob = await canvas.convertToBlob({ type: "image/png" });
+    var blobBuffer = await blob.arrayBuffer();
+    return "data:image/png;base64," + base64ArrayBuffer(blobBuffer);
+  }
+
+  if (typeof canvas.toDataURL === "function") {
+    return canvas.toDataURL("image/png");
+  }
+
+  return undefined;
+}
+
+async function convertTiffToPngDataUrl(imgArrayBuffer) {
+  try {
+    var ifds = UTIF.decode(imgArrayBuffer);
+    if (!ifds || !ifds.length) {
+      return undefined;
+    }
+
+    UTIF.decodeImage(imgArrayBuffer, ifds[0]);
+    var width = ifds[0].width;
+    var height = ifds[0].height;
+    if (!width || !height) {
+      return undefined;
+    }
+
+    var rgba = arrayBufferToUint8ClampedArray(UTIF.toRGBA8(ifds[0]));
+    var imageData = new ImageData(rgba, width, height);
+    var canvas;
+
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(width, height);
+    } else if (typeof document !== "undefined" && document.createElement) {
+      canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+    } else {
+      return undefined;
+    }
+
+    var context = canvas.getContext("2d");
+    if (!context) {
+      return undefined;
+    }
+    context.putImageData(imageData, 0, 0);
+    return await canvasToPngDataUrl(canvas);
+  } catch (e) {
+    console.warn("Unable to convert TIFF image", e);
+    return undefined;
+  }
+}
+
+async function getImageDataUrl(imgFileExt, imgArrayBuffer) {
   var normalizedExt = (imgFileExt || "").toLowerCase();
+  if (normalizedExt == "tif" || normalizedExt == "tiff") {
+    return await convertTiffToPngDataUrl(imgArrayBuffer);
+  }
   if (normalizedExt == "emf") {
     var svgDataUrl = convertEmfToSvgDataUrl(imgArrayBuffer);
     if (svgDataUrl !== undefined) {
       return svgDataUrl;
     }
   }
-  return "data:" + getMimeType(normalizedExt) + ";base64," + base64ArrayBuffer(imgArrayBuffer);
+
+  var mimeType = getMimeType(normalizedExt);
+  if (!mimeType) {
+    return undefined;
+  }
+
+  return "data:" + mimeType + ";base64," + base64ArrayBuffer(imgArrayBuffer);
 }
 
 function getBlipCropStyles(blipFillNode) {
@@ -1048,6 +1126,14 @@ function getBlipCropStyles(blipFillNode) {
       "%;height:" + (10000 / visibleHeight) + "%;left:" + (-left / visibleWidth * 100) +
       "%;top:" + (-top / visibleHeight * 100) + "%;"
   };
+}
+
+function getBlipEffectStyles(blipFillNode) {
+  var duotone = getTextByPathList(blipFillNode, ["a:blip", "a:duotone"]);
+  if (duotone !== undefined) {
+    return "filter:grayscale(1);";
+  }
+  return "";
 }
 
 // Group transforms use a child coordinate space (chOff/chExt) mapped into the
@@ -8752,7 +8838,10 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
   //console.log(node)
   //////////////////////////////////////////////////////////////////////////
   mimeType = getMimeType(imgFileExt);
-  var imageDataUrl = getImageDataUrl(imgFileExt, imgArrayBuffer);
+  var imageDataUrl = await getImageDataUrl(imgFileExt, imgArrayBuffer);
+  if (!imageDataUrl && ((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag)) {
+    return "";
+  }
   var cropStyles = getBlipCropStyles(node["p:blipFill"]);
   rtrnData = "<div class='block content' style='" +
     ((mediaProcess && audioPlayerFlag) ? getPosition(audioObjc, node, undefined, undefined, sType, groupContext) : getPosition(xfrmNode, node, undefined, undefined, sType, groupContext)) +
@@ -8762,7 +8851,7 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
     (((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) ? cropStyles.container : "") +
     "'>";
   if ((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) {
-    rtrnData += "<img src='" + imageDataUrl + "' style='" + cropStyles.image + "'/>";
+    rtrnData += "<img src='" + imageDataUrl + "' style='" + cropStyles.image + getBlipEffectStyles(node["p:blipFill"]) + "'/>";
   } else if ((vdoNode !== undefined || audioNode !== undefined) && mediaProcess && mediaSupportFlag) {
     if (vdoNode !== undefined && !isVdeoLink) {
       rtrnData += "<video  src='" + vdoBlob + "' controls style='width: 100%; height: 100%'>Your browser does not support the video tag.</video>";
@@ -9553,6 +9642,10 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
   var slideMasterTextStyles = warpObj["slideMasterTextStyles"];
 
   var text = node["a:t"];
+  var fieldType = getTextByPathList(node, [ "a:fld", "attrs", "type" ]);
+  if (typeof fieldType === "string" && fieldType.toLowerCase() === "slidenum") {
+    text = String((warpObj && warpObj.slideNumber) || "");
+  }
   //var text_count = text.length;
 
   var openElemnt = "<span";//"<bdi";
@@ -11866,7 +11959,7 @@ function getBorder(node, pNode, isSvgMode, bType, warpObj) {
     } else if (fillTyp == "SOLID_FILL") {
       borderColor = getSolidFill(lineNode["a:solidFill"], undefined, undefined, warpObj);
     } else if (fillTyp == "GRADIENT_FILL") {
-      borderColor = getGradientFill(lineNode["a:gradFill"], warpObj);
+      borderColor = getVisibleGradientColor(getGradientFill(lineNode["a:gradFill"], warpObj, node));
       //console.log("shpFill",shpFill,grndColor.color)
     } else if (fillTyp == "PATTERN_FILL") {
       borderColor = getPatternFill(lineNode["a:pattFill"], warpObj);
@@ -12602,7 +12695,7 @@ async function getShapeFill(node, pNode, isSvgMode, warpObj, source) {
     fillColor = getSolidFill(shpFill, undefined, undefined, warpObj);
   } else if (fillType == "GRADIENT_FILL") {
     shpFill = node["p:spPr"]["a:gradFill"];
-    fillColor = getGradientFill(shpFill, warpObj);
+    fillColor = getGradientFill(shpFill, warpObj, node);
     //console.log("shpFill",shpFill,grndColor.color)
   } else if (fillType == "PATTERN_FILL") {
     shpFill = node["p:spPr"]["a:pattFill"];
@@ -12704,7 +12797,7 @@ async function getShapeFill(node, pNode, isSvgMode, warpObj, source) {
     if (isSvgMode) {
       return "none";
     } else {
-      return "background-color: inherit;";
+      return "";
     }
 
   }
@@ -12741,9 +12834,49 @@ function getFillType(node = {}) {
 
   return fillType;
 }
-function getGradientFill(node, warpObj) {
+function normalizeDegrees(degrees) {
+  return ((degrees % 360) + 360) % 360;
+}
+
+function applyShapeFlipToGradientAngle(angle, ownerNode) {
+  var xfrmAttrs = getTextByPathList(ownerNode, [ "p:spPr", "a:xfrm", "attrs" ]) || {};
+  var flipH = xfrmAttrs["flipH"] === "1";
+  var flipV = xfrmAttrs["flipV"] === "1";
+  var result = angle;
+
+  if (flipH) {
+    result = 180 - result;
+  }
+  if (flipV) {
+    result = -result;
+  }
+
+  return normalizeDegrees(result);
+}
+
+function getVisibleGradientColor(gradientFill) {
+  var colors = gradientFill && gradientFill.color;
+  if (!Array.isArray(colors) || !colors.length) {
+    return undefined;
+  }
+
+  var bestColor = colors[0];
+  var bestAlpha = -1;
+  colors.forEach(function (color) {
+    var parsed = tinycolor("#" + color);
+    var alpha = parsed.getAlpha();
+    if (alpha > bestAlpha) {
+      bestColor = parsed.toHex8();
+      bestAlpha = alpha;
+    }
+  });
+
+  return bestColor;
+}
+
+function getGradientFill(node, warpObj, ownerNode) {
   //console.log("getGradientFill: node", node)
-  var gsLst = node["a:gsLst"]["a:gs"];
+  var gsLst = asArray(node["a:gsLst"]["a:gs"]);
   //get start color
   var color_ary = [];
   var tint_ary = [];
@@ -12759,6 +12892,7 @@ function getGradientFill(node, warpObj) {
   if (lin !== undefined) {
     rot = angleToDegrees(lin["attrs"]["ang"]) + 90;
   }
+  rot = applyShapeFlipToGradientAngle(rot, ownerNode);
   return {
     "color": color_ary,
     "rot": rot
@@ -12797,7 +12931,7 @@ async function getPicFill(type, node, warpObj) {
       return undefined;
     }
     var imgArrayBuffer = await warpObj["zip"].file(imgPath).async('arraybuffer');
-    img = getImageDataUrl(imgExt, imgArrayBuffer);
+    img = await getImageDataUrl(imgExt, imgArrayBuffer);
     //warpObj["loaded-images"][imgPath] = img; //"defaultTextStyle": defaultTextStyle,
     setTextByPathList(warpObj, [ "loaded-images", imgPath ], img); //, type, rId
   }
@@ -14012,7 +14146,7 @@ function getMimeType(imgFileExt) {
   return mimeType;
 }
 function getSvgGradient(w, h, angl, color_arry, shpId) {
-  var stopsArray = getMiddleStops(color_arry - 2);
+  var stopsArray = getMiddleStops(color_arry.length - 2);
 
   var svgAngle = '',
     svgHeight = h,

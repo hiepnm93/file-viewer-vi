@@ -1040,6 +1040,9 @@ importers:
       tinycolor2:
         specifier: ^1.6.0
         version: 1.6.0
+      utif:
+        specifier: ^3.1.0
+        version: 3.1.0
     devDependencies:
       '@types/d3-format':
         specifier: ^3.0.4
@@ -5305,6 +5308,9 @@ packages:
     resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
+
+  utif@3.1.0:
+    resolution: {integrity: sha512-WEo4D/xOvFW53K5f5QTaTbbiORcm2/pCL9P6qmJnup+17eYfKaEhDeX9PeQkuyEoIxlbGklDuGl8xwuXYMrrXQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -9751,6 +9757,10 @@ snapshots:
   use-sync-external-store@1.2.0(react@19.2.7):
     dependencies:
       react: 19.2.7
+
+  utif@3.1.0:
+    dependencies:
+      pako: 1.0.11
 
   util-deprecate@1.0.2: {}
 

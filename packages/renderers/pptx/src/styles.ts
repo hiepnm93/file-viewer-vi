@@ -1,5 +1,5 @@
 const legacyPptxCss = `
-.slide{position:relative;border:1px solid #333;border-radius:10px;overflow:hidden;margin-bottom:50px;margin-left:auto;margin-right:auto;z-index:100}
+.slide{position:relative;border:0;border-radius:0;overflow:hidden;margin-bottom:50px;margin-left:auto;margin-right:auto;z-index:100}
 .slide div.block{position:absolute;top:0;left:0;width:100%;line-height:1}
 .slide div.content{display:flex;flex-direction:column}
 .slide div.diagram-content{display:flex;flex-direction:column}
