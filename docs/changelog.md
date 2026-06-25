@@ -2,6 +2,13 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.4` 文档首页专业化与 IIFE 按格式异步加载
+
+- 文档站首页重构为能力驱动入口，首屏突出浏览器端文件预览基础设施、多格式覆盖、统一交互、模块化装配、离线资源和企业部署能力，避免只围绕快速开始展开
+- 中英文文档首页同步新增核心能力区，说明高还原格式链路、按需性能策略、搜索/缩放/打印/导出/水印等统一交互，以及公网、内网、Docker、Cloudflare Pages、Release 包和私有 CDN 的交付边界
+- `@file-viewer/web-full` IIFE 首包改为只注册 Custom Element、controller 和 lazy full preset；PDF、Word、Excel、CAD、Typst、压缩包等重型 renderer 会在命中文件类型时异步加载 `dist/renderers/*.iife.js`
+- Worker、WASM、字体、PDF cMap、CAD、Typst、Archive、Docx、Excel 和 Draw.io 离线资源继续按脚本 URL 自动解析，保持 CDN 与企业自托管一致体验
+
 ## `v2.1.3` CDN 全量接入与生态 full 包
 
 - 新增 `@file-viewer/web-full`、`@file-viewer/vue3-full`、`@file-viewer/vue2.7-full`、`@file-viewer/vue2.6-full`、`@file-viewer/react-full`、`@file-viewer/react-legacy-full`、`@file-viewer/jquery-full` 和 `@file-viewer/svelte-full`，面向“先验收完整能力，再按业务边界裁剪”的快速接入场景
