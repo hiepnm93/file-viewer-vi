@@ -1294,7 +1294,15 @@ function updateSampleMenuGeometry() {
 </script>
 
 <template>
-  <div class='demo-shell' :class="{ hidden, 'mobile-controls-open': mobileControlsOpen, 'mobile-actions-open': mobileActionsOpen }">
+  <div
+    class='demo-shell'
+    :class="{
+      hidden,
+      'mobile-controls-open': mobileControlsOpen,
+      'mobile-actions-open': mobileActionsOpen,
+      'sample-picker-open': samplePickerOpen
+    }"
+  >
     <main class='workspace'>
       <div v-if='!hidden' class='layout-shell'>
         <aside ref='controlPanelRef' class='control-panel'>
@@ -1783,11 +1791,14 @@ function updateSampleMenuGeometry() {
 
 .workspace {
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
   padding: 16px;
 }
 
 .layout-shell {
   height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(276px, 320px) minmax(0, 1fr);
   gap: 16px;
@@ -1808,6 +1819,7 @@ function updateSampleMenuGeometry() {
   z-index: 3;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
   overflow: visible;
   padding: 12px;
   gap: 12px;
@@ -1815,6 +1827,7 @@ function updateSampleMenuGeometry() {
 
 .brand-card {
   position: relative;
+  flex-shrink: 0;
   min-height: 144px;
   overflow: hidden;
   display: flex;
@@ -1947,6 +1960,7 @@ function updateSampleMenuGeometry() {
 }
 
 .current-card {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2044,11 +2058,18 @@ function updateSampleMenuGeometry() {
   position: relative;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 2px 2px 4px;
+  padding: 2px 4px 4px 2px;
+}
+
+.sample-picker-open .panel-body {
+  overflow: visible;
 }
 
 .scenario-grid {
@@ -2219,10 +2240,12 @@ function updateSampleMenuGeometry() {
   z-index: 4;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .sample-trigger {
   width: 100%;
+  flex-shrink: 0;
   min-height: 70px;
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -3263,6 +3286,11 @@ function updateSampleMenuGeometry() {
   }
 
   .panel-body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .sample-picker-open .panel-body {
     overflow: visible;
   }
 }
@@ -3362,6 +3390,10 @@ function updateSampleMenuGeometry() {
     transition: transform 0.24s ease, opacity 0.2s ease;
   }
 
+  .sample-picker-open .control-panel {
+    max-height: min(86dvh, 680px);
+  }
+
   .mobile-controls-open .control-panel {
     transform: translateY(0);
     opacity: 1;
@@ -3406,9 +3438,26 @@ function updateSampleMenuGeometry() {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     gap: 10px;
     padding-right: 2px;
+  }
+
+  .sample-picker-open .panel-body {
+    overflow: hidden;
+  }
+
+  .sample-picker-open .scenario-grid,
+  .sample-picker-open .field-group,
+  .sample-picker-open .primary-button,
+  .sample-picker-open .snippet-card {
+    display: none;
+  }
+
+  .sample-picker-open .sample-picker {
+    flex: 1;
+    min-height: 0;
   }
 
   .compact-field,
@@ -3433,6 +3482,12 @@ function updateSampleMenuGeometry() {
     max-height: min(48dvh, 430px) !important;
     margin-top: 8px;
     border-radius: 18px;
+  }
+
+  .sample-picker-open .sample-menu {
+    flex: 1;
+    min-height: 0;
+    max-height: none !important;
   }
 
   .sample-menu--bottom,
