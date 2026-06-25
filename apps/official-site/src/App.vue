@@ -148,7 +148,7 @@ const copy = {
       '从 OA 审批到工程图纸，从客服工单到 AI 文档工作台，File Viewer 更关注真实文件、复杂网络、私有化部署和用户每天都会遇到的细节。',
     ecosystemTitle: '原生组件接入，统一参数与事件。',
     ecosystemIntro:
-      '一个组件，一行代码，快速集成。Vanilla JS、Vue、React、Svelte、jQuery 与 Vue2 均提供独立接入示例；Vite 插件会自动发现已安装 preset 并激活能力，也保留单 renderer 精确裁剪。',
+      '一个组件，一行代码，快速集成。Vanilla JS、Vue、React、Svelte、jQuery 与 Vue2 均提供独立接入示例；非 Vite 项目通过 options.preset 稳定注入能力，Vite 项目可注册插件自动发现已安装 preset。',
     demoTitle: '在线 Demo，直接验证真实预览体验。',
     demoIntro:
       '打开完整样例矩阵，验证 Word、PDF、PPTX、CAD、Typst、压缩包、图形、代码、媒体、上传预览与文档比对等核心场景。',
@@ -196,7 +196,7 @@ const copy = {
       'From approvals to engineering drawings, support tickets, and AI document workflows, File Viewer focuses on real files, private networks, self-hosted delivery, and the details users meet every day.',
     ecosystemTitle: 'Native integrations with one options and event model.',
     ecosystemIntro:
-      'One component, one line of code, fast integration. Vanilla JS, Vue, React, Svelte, jQuery, and Vue 2 each get a dedicated entry path; the Vite plugin auto-discovers installed presets while exact renderer cuts remain available.',
+      'One component, one line of code, fast integration. Vanilla JS, Vue, React, Svelte, jQuery, and Vue 2 each get a dedicated entry path; non-Vite apps use options.preset, while Vite apps can register the plugin to auto-discover installed presets.',
     demoTitle: 'Live demo for real preview validation.',
     demoIntro:
       'Open the complete sample matrix to validate Word, PDF, PPTX, CAD, Typst, archives, diagrams, code, media, upload preview, and document comparison flows.',
@@ -370,13 +370,13 @@ const capabilities = computed<Capability[]>(() =>
         { title: '统一搜索与定位', detail: 'Ctrl/Command + F 调出浮层搜索，命中高亮、上一条/下一条和行级/页级定位可复用。', icon: SearchCheck },
         { title: '高保真打印导出', detail: 'PDF、Word、Markdown、图片等按渲染链路动态启用打印与 HTML 导出，避免只打印当前视口。', icon: Download },
         { title: '主题与水印', detail: 'light、dark、system 可控，文字/图片水印通过 options 统一注入。', icon: PanelTop },
-        { title: '模块化按需装配', detail: 'core、renderer、preset 和生态组件职责分离；Vite 插件自动发现已安装 preset，重度用户可用 preset-all 一键获得完整能力。', icon: Boxes }
+        { title: '模块化按需装配', detail: 'core、renderer、preset 和生态组件职责分离；options.preset 覆盖所有构建工具，Vite 插件可自动发现已安装 preset，重度用户可用 preset-all 一键获得完整能力。', icon: Boxes }
       ]
     : [
         { title: 'Unified search and anchors', detail: 'Ctrl/Command + F opens focused search with highlights, next/previous navigation, and reusable page/line anchors.', icon: SearchCheck },
         { title: 'High-fidelity print and export', detail: 'PDF, Word, Markdown, images, and other printable renderers expose print and HTML export only when the output is trustworthy.', icon: Download },
         { title: 'Theme and watermark options', detail: 'light, dark, and system themes are controlled by options; text and image watermarks use one contract.', icon: PanelTop },
-        { title: 'Modular on-demand assembly', detail: 'Core, renderer packages, presets, and native component packages keep separate responsibilities; the Vite plugin auto-discovers installed presets, and preset-all gives heavy users the full one-step capability set.', icon: Boxes }
+        { title: 'Modular on-demand assembly', detail: 'Core, renderer packages, presets, and native component packages keep separate responsibilities; options.preset works with every bundler, the Vite plugin can auto-discover installed presets, and preset-all gives heavy users the full one-step capability set.', icon: Boxes }
       ]
 )
 
@@ -433,7 +433,7 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
   {
     label: isZh.value ? 'Vanilla JS' : 'Vanilla JS',
     packageName: '@file-viewer/web',
-    install: 'npm install @file-viewer/web',
+    install: 'npm install @file-viewer/web @file-viewer/preset-office',
     title: isZh.value ? '无框架页面也有原生组件' : 'Native components for framework-free pages',
     summary: isZh.value
       ? 'Custom Element、命令式 controller 和 script 标签入口都走同一套 core 能力，最适合快速标准化接入。'
@@ -450,10 +450,15 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
 ></flyfish-file-viewer>
 
 ${snippetImport("{ defineFileViewerElement } from '@file-viewer/web'")}
+${snippetImport("officePreset from '@file-viewer/preset-office'")}
 
 defineFileViewerElement()
 
 const viewer = document.getElementById('viewer')
+viewer.options = {
+  preset: officePreset,
+  rendererMode: 'replace'
+}
 viewer.addEventListener('viewer-load-complete', event => {
   console.log('loaded', event.detail.payload.fileName)
 })
@@ -462,7 +467,7 @@ viewer.zoomIn()`
   {
     label: 'Vue 3',
     packageName: '@file-viewer/vue3',
-    install: 'npm install @file-viewer/vue3',
+    install: 'npm install @file-viewer/vue3 @file-viewer/preset-office',
     title: isZh.value ? 'Vue 3 项目原生组件接入' : 'Native Vue 3 component integration',
     summary: isZh.value
       ? '保持 Vue 插件、组件 props、事件和样式入口的原生体验，适合管理后台、知识库和企业门户。'
@@ -473,24 +478,28 @@ viewer.zoomIn()`
     icon: PanelTop,
     code: `${snippetImport("{ createApp } from 'vue'")}
 ${snippetImport("FileViewer from '@file-viewer/vue3'")}
+${snippetImport("officePreset from '@file-viewer/preset-office'")}
 ${snippetImport("'@file-viewer/vue3/style.css'")}
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right', zoom: true }
+}
 
 createApp(App).use(FileViewer).mount('#app')
 
 <file-viewer
   url="/files/contract.pdf"
-  :options="{
-    theme: 'light',
-    toolbar: { position: 'bottom-right', zoom: true },
-    watermark: { text: 'Internal Preview' }
-  }"
+  :options="viewerOptions"
   @load-complete="handleLoadComplete"
 />`
   },
   {
     label: 'React',
     packageName: '@file-viewer/react',
-    install: 'npm install @file-viewer/react',
+    install: 'npm install @file-viewer/react @file-viewer/preset-office',
     title: isZh.value ? 'React 项目使用组件与 hooks' : 'React components and hooks',
     summary: isZh.value
       ? '提供 React 组件、类型化 options、事件回调和 ref/controller，便于在业务页面内组合权限、工具栏和状态。'
@@ -500,16 +509,23 @@ createApp(App).use(FileViewer).mount('#app')
     tone: 'blue',
     icon: Rocket,
     code: `${snippetImport("{ FileViewer, useFileViewerController } from '@file-viewer/react'")}
+${snippetImport("officePreset from '@file-viewer/preset-office'")}
 ${snippetImport("'@file-viewer/react/style.css'")}
 
 export function Preview() {
   const controller = useFileViewerController()
+  const options = {
+    preset: officePreset,
+    rendererMode: 'replace',
+    theme: 'light',
+    toolbar: { position: 'bottom-right' }
+  }
 
   return (
     <FileViewer
       src="/files/report.docx"
       controller={controller}
-      options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
+      options={options}
       onLoadComplete={event => console.log(event.fileName)}
     />
   )
@@ -518,7 +534,7 @@ export function Preview() {
   {
     label: 'Svelte',
     packageName: '@file-viewer/svelte',
-    install: 'npm install @file-viewer/svelte',
+    install: 'npm install @file-viewer/svelte @file-viewer/preset-office',
     title: isZh.value ? 'Svelte 页面保持轻量原生' : 'Lightweight native Svelte entry',
     summary: isZh.value
       ? 'Svelte 组件独立依赖 core，保留同样的 options、事件、主题、搜索、缩放和打印导出能力。'
@@ -529,9 +545,12 @@ export function Preview() {
     icon: Zap,
     code: `<script lang="ts">
   ${snippetImport("FileViewer from '@file-viewer/svelte'")}
+  ${snippetImport("officePreset from '@file-viewer/preset-office'")}
   ${snippetImport("'@file-viewer/svelte/style.css'")}
 
   const options = {
+    preset: officePreset,
+    rendererMode: 'replace',
     theme: 'light',
     toolbar: { position: 'bottom-right', zoom: true }
   }
@@ -546,7 +565,7 @@ ${'<\\/script>'}
   {
     label: 'Vue 2',
     packageName: '@file-viewer/vue2.7',
-    install: isZh.value ? 'npm install @file-viewer/vue2.7 或 @file-viewer/vue2.6' : 'npm install @file-viewer/vue2.7 or @file-viewer/vue2.6',
+    install: 'npm install @file-viewer/vue2.7 @file-viewer/preset-office',
     title: isZh.value ? 'Vue 2.7 / 2.6 项目平滑接入' : 'Smooth Vue 2.7 / 2.6 integration',
     summary: isZh.value
       ? 'Vue legacy 组件保持同样的 props、事件和样式入口，适合存量 Vue2 系统逐步升级预览能力。'
@@ -557,6 +576,7 @@ ${'<\\/script>'}
     icon: Layers3,
     code: `${snippetImport("Vue from 'vue'")}
 ${snippetImport("FileViewer from '@file-viewer/vue2.7'")}
+${snippetImport("officePreset from '@file-viewer/preset-office'")}
 ${snippetImport("'@file-viewer/vue2.7/style.css'")}
 
 Vue.use(FileViewer)
@@ -565,16 +585,24 @@ new Vue({
   template: \`
     <file-viewer
       url="/files/archive.zip"
-      :options="{ theme: 'light', toolbar: true }"
+      :options="viewerOptions"
       @load-complete="handleLoadComplete"
     />
-  \`
+  \`,
+  data: () => ({
+    viewerOptions: {
+      preset: officePreset,
+      rendererMode: 'replace',
+      theme: 'light',
+      toolbar: true
+    }
+  })
 }).$mount('#app')`
   },
   {
     label: 'jQuery',
     packageName: '@file-viewer/jquery',
-    install: 'npm install @file-viewer/jquery',
+    install: 'npm install @file-viewer/jquery @file-viewer/preset-office',
     title: isZh.value ? '传统页面使用命令式挂载' : 'Imperative mounting for classic pages',
     summary: isZh.value
       ? '面向传统多页应用和渐进式改造，保留 controller、事件解绑、销毁和运行时更新能力。'
@@ -584,11 +612,17 @@ new Vue({
     tone: 'orange',
     icon: Wrench,
     code: `${snippetImport("{ mountViewer } from '@file-viewer/jquery'")}
+${snippetImport("officePreset from '@file-viewer/preset-office'")}
 ${snippetImport("'@file-viewer/jquery/style.css'")}
 
 const viewer = mountViewer('#viewer', {
   src: '/files/sheet.xlsx',
-  options: { theme: 'light', toolbar: { zoom: true } },
+  options: {
+    preset: officePreset,
+    rendererMode: 'replace',
+    theme: 'light',
+    toolbar: { zoom: true }
+  },
   onLoadComplete(event) {
     console.log(event.fileName)
   }
@@ -597,15 +631,15 @@ const viewer = mountViewer('#viewer', {
 viewer.setSrc('/files/contract.pdf')`
   },
   {
-    label: isZh.value ? '按需装配' : 'On-demand',
+    label: isZh.value ? 'Vite 自动装配' : 'Vite Auto',
     packageName: '@file-viewer/vite-plugin',
     install: isZh.value
-      ? 'npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office'
-      : 'npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office',
-    title: isZh.value ? '按产品体量选择 lite / office / engineering / all' : 'Choose lite, office, engineering, or all by product scope',
+      ? 'npm install @file-viewer/vue3 @file-viewer/preset-office && npm install -D @file-viewer/vite-plugin'
+      : 'npm install @file-viewer/vue3 @file-viewer/preset-office && npm install -D @file-viewer/vite-plugin',
+    title: isZh.value ? '注册一次插件，自动发现已安装 preset' : 'Register once, auto-discover installed presets',
     summary: isZh.value
-      ? '装了哪个 preset，Vite 插件就免配置激活哪个能力；重度用户把 preset-office 换成 preset-all，即可最快拥有完整格式矩阵。'
-      : 'The Vite plugin auto-activates whichever preset is installed; heavy users can swap preset-office for preset-all to get the full matrix immediately.',
+      ? 'Vite 不会仅因安装包而自动运行插件；在 vite.config.ts 注册后，插件会免手写 import 激活已安装 preset。'
+      : 'Vite will not run a plugin just because it is installed; after vite.config.ts registration, installed presets activate without manual imports.',
     language: 'Vite',
     href: `${docsUrl}guide/on-demand-renderers`,
     tone: 'blue',

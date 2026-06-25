@@ -21,6 +21,7 @@
   <a href="https://github.com/flyfish-dev/file-viewer/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?label=release&color=7c3aed" /></a>
   <a href="https://doc.file-viewer.app"><img alt="Documentation" src="https://img.shields.io/badge/docs-doc.file--viewer.app-1d6fd6" /></a>
   <a href="https://demo.file-viewer.app"><img alt="Live demo" src="https://img.shields.io/badge/demo-demo.file--viewer.app-16a34a" /></a>
+  <a href="https://linux.do"><img alt="Linux Do" src="https://img.shields.io/badge/Linux%20Do-community-1f2937" /></a>
   <a href="https://github.com/flyfish-dev/file-viewer/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/flyfish-dev/file-viewer?color=0f766e" /></a>
   <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker" src="https://img.shields.io/badge/docker-flyfishdev%2Ffile--viewer-2496ed?logo=docker" /></a>
   <img alt="Supported formats" src="https://img.shields.io/badge/formats-206%2B-f59e0b" />
@@ -55,13 +56,14 @@
 | 文档比对 Demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) |
 | Release 下载 | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker 镜像 | `flyfishdev/file-viewer:latest` |
+| Linux Do 友链 | [linux.do](https://linux.do) |
 | 打赏与优先支持 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
 
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
 - **模块化架构清晰。** `@file-viewer/core` 只负责格式矩阵、资源加载、renderer 协议、生命周期和统一 API；PDF、Word、PPTX、CAD、Typst、压缩包、EDA、数据资产等重型能力下沉到独立 renderer；`preset-lite`、`preset-office`、`preset-engineering`、`preset-all` 按产品形态组合；Vue、React、Svelte、jQuery 和 Vanilla JS 组件只做各自生态的原生封装。
-- **Vite 免配置装配。** `@file-viewer/vite-plugin` 会根据当前项目已安装的 `@file-viewer/preset-*` 自动激活预览能力；业务通常只需要 `fileViewerRenderers({ copyAssets:true })`，重度用户把 preset 换成 `@file-viewer/preset-all` 即可最快获得官方 Demo 的完整格式矩阵。
+- **Vite 可选自动装配。** 非 Vite 项目优先通过 `options.preset` / `options.renderers` 稳定注入能力；Vite 项目注册一次 `@file-viewer/vite-plugin` 后，会根据已安装的 `@file-viewer/preset-*` 自动激活预览能力，通常只需要 `fileViewerRenderers({ copyAssets:true })`。
 - **格式覆盖完整。** 当前内置 206 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、图片、音频、视频、代码/文本、Git patch/bundle、字体、PSD 图层资产和结构化数据，能覆盖绝大多数业务附件场景。
 - **按需异步加载。** PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、Office、EPUB、UMD、Markdown、代码高亮、HLS、HEIC、字体/数据资产渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关、水印 options、主题 options、搜索高亮、上一个 / 下一个命中、行级定位和 AI 友好文本切片；PDF 使用 PDF.js 原生搜索，Word / Markdown / 代码等文本类格式使用通用 DOM 搜索，避免污染 PDF 文本层、canvas 等特殊渲染结构；`theme` 支持 `light`、`dark`、`system`，默认跟随系统，浅色业务 UI 可显式锁定 `light`；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
@@ -118,12 +120,49 @@
 
 2.1.0 之后推荐把“组件包”和“格式能力”分开理解：组件负责当前技术栈的原生体验，renderer / preset 负责具体文件格式能力。这个模块化边界让你既能一行接入，也能控制首屏体积、安装依赖、Worker/WASM 资产和后续扩展节奏。
 
-### 最快路径：组件 + preset + Vite 插件免配置装配
+### 通用路径：组件 + preset + options.preset
 
-`@file-viewer/vite-plugin` 已经支持根据当前项目安装的 `@file-viewer/preset-*` 自动激活能力。常规 Vite 项目只需要安装一个标准组件包、插件和一个 preset；`fileViewerRenderers({ copyAssets:true })` 会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。组件默认 `autoRenderers:true`，无需业务代码手动传 `renderers`。
+标准组件包本身保持轻量，具体格式能力通过 preset 或单 renderer 装配。最稳定、最通用的方式是显式 import preset，再通过 `options.preset` 传给组件；这条路径不依赖 Vite，Webpack、Rspack、Rollup、Umi、传统多页应用、微前端壳和内部组件库都能直接使用。
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+export const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+```vue
+<file-viewer url="/files/report.docx" :options="viewerOptions" />
+```
+
+组合多个能力包时仍然使用同一个 `preset` 字段传数组，例如办公文档 + 工程图纸:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+import engineeringPreset from '@file-viewer/preset-engineering'
+
+export const viewerOptions = {
+  preset: [officePreset, engineeringPreset],
+  rendererMode: 'replace'
+}
+```
+
+`@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，preset 和 `viewerOptions` 保持同一套语义。
+
+### Vite 增强：注册一次插件，自动发现 preset
+
+Vite 项目可以额外安装插件省去手动 import。注意：只安装 npm 包不会让 Vite 自动运行插件，仍需要在 `vite.config.ts` 注册一次；注册后 `fileViewerRenderers({ copyAssets:true })` 会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -139,15 +178,6 @@ export default {
   ]
 }
 ```
-
-```ts
-export const viewerOptions = {
-  // 默认 true；会读取 Vite 插件自动注册的 renderer / preset。
-  autoRenderers: true
-}
-```
-
-`@file-viewer/vue3` 可以替换为 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`；上层组件不同，preset 和 `viewerOptions` 保持同一套语义。
 
 ### 国际化
 
@@ -180,7 +210,7 @@ Custom Element 同样支持属性写法:
 重度用户需要最快拥有全部能力时，直接使用全量一键安装，Vite 配置保持上面的免配置形式即可：
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
 ```
 
 ### 精确裁剪和进阶自定义
@@ -211,9 +241,25 @@ fileViewerRenderers({
 纯 JS 页面优先安装 `@file-viewer/web`，用 `<flyfish-file-viewer>` 原生组件或 `mountViewer(...)` 命令式挂载；需要内网部署时执行资源复制命令，把 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等静态资产放进自己的站点目录。
 
 ```bash
-npm i @file-viewer/web @file-viewer/core @file-viewer/preset-all
+npm i @file-viewer/web @file-viewer/preset-all
 npm exec file-viewer-copy-assets ./public/file-viewer
 ```
+
+如果只是想最快在传统页面里试跑 Custom Element，也可以使用 npm CDN 的 IIFE 包。`@file-viewer/web` 已在包元数据中声明 `jsdelivr` / `unpkg` 入口；cdnjs 当前尚未收录本包，正式生产和内网部署仍建议走 npm 安装或自托管静态资源。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@file-viewer/web@latest"></script>
+<!-- 或者: <script src="https://unpkg.com/@file-viewer/web@latest"></script> -->
+
+<flyfish-file-viewer
+  src="/files/demo.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
+```
+
+CDN 方式适合快速验证纯 JS 集成；如果要预览 PDF、Office、CAD、Typst、压缩包等重型格式，请使用 npm 安装对应 preset / renderer，并通过 `file-viewer-copy-assets` 自托管 Worker、WASM、字体和 vendor 资源。
 
 更详细的 Vanilla JS、Vue、React、Svelte、jQuery、Core API 和离线资源步骤见 [官方文档](https://doc.file-viewer.app/guide/ecosystem)。
 
@@ -306,6 +352,8 @@ GitHub Release 会同步提供完整下载项:
 
 `file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；开源总仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
 
+如果 npm 11 安装 tgz 或依赖时报 `Cannot read properties of null (reading 'matches')`，通常不是 File Viewer 版本不匹配，而是 npm 在混用包管理器后的 `node_modules` symlink 上触发 Arborist 内部错误。请删除 `node_modules` 和当前锁文件后，用同一个包管理器重新安装；离线 tgz 场景请确保同版本 core、preset、renderer 和组件包能从私有 npm 源或本地 tarball 依赖闭包解析。项目发布前可运行 `pnpm verify:npm-install-smoke`，它会用 npm 11.17.0 验证 registry 与 tgz 安装。
+
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## 标准生态包与公开仓库
 
@@ -326,10 +374,48 @@ GitHub Release 会同步提供完整下载项:
 
 ## 工程级按需 renderer 装配
 
-一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐先安装当前生态组件包，再按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`。`@file-viewer/vite-plugin` 会免配置自动发现当前项目已安装的 preset、注入 renderer virtual module，并让组件通过默认开启的 `autoRenderers` 获得对应能力，常规业务无需手写 `renderers`。
+一个组件，一行代码，快速集成；真正影响安装体积和首屏包体的是 renderer 装配。推荐先安装当前生态组件包，再按产品形态选择 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`。Webpack、Rspack、Rollup、Umi、传统多页应用等非 Vite 项目，优先通过 `options.preset` 或 `options.renderers` 显式注入能力；Vite 插件只是进一步省掉手动 import 并复制离线资产。
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm i @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  preset: officePreset,
+  rendererMode: 'replace'
+}
+```
+
+需要组合办公文档与工程图纸等能力时，继续使用同一个 `preset` 字段传数组即可：
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+import engineeringPreset from '@file-viewer/preset-engineering'
+
+const options = {
+  preset: [officePreset, engineeringPreset],
+  rendererMode: 'replace'
+}
+```
+
+如果只需要少数格式，也可以安装单 renderer 并传给 `options.renderers`：
+
+```ts
+import { pdfRenderer } from '@file-viewer/renderer-pdf'
+
+const options = {
+  renderers: [pdfRenderer],
+  rendererMode: 'replace'
+}
+```
+
+Vite 项目可以再加插件，插件会免配置发现已安装 preset、注入 virtual module，并按命中格式复制 Worker / WASM / 字体 / vendor 资源：
+
+```bash
+npm i -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -345,17 +431,10 @@ export default {
 }
 ```
 
-```ts
-const options = {
-  // 默认就是 true；需要完全手动控制 registry 时才设为 false。
-  autoRenderers: true
-}
-```
-
-重度用户需要一次拥有官方 Demo 的完整能力时，直接安装全量 preset，仍然使用同一个 Vite 配置：
+重度用户需要一次拥有官方 Demo 的完整能力时，直接把 preset 换成全量包；非 Vite 项目继续传 `options.preset`，Vite 配置也保持不变：
 
 ```bash
-npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm i @file-viewer/vue3 @file-viewer/preset-all
 ```
 
 需要自定义装配时，再显式配置插件：
@@ -382,7 +461,6 @@ fileViewerRenderers({ formats: ['pdf'], inject: false, copyAssets: true })
 import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
 
 const options = {
-  builtinRenderers: 'none',
   renderers: configuredFileViewerRenderers,
   rendererMode: 'replace'
 }
@@ -390,10 +468,11 @@ const options = {
 
 - Vue、React、Svelte、jQuery、Vanilla JS / Pure Web 都传同一份 `options`，只是在各自生态中映射为 props、hook、action、plugin 或 `mountViewer(...)` 参数。
 - `preset-lite` 面向文本、Markdown、代码、图片和音视频；`preset-office` 面向 PDF / Word / Excel / PowerPoint / OFD；`preset-engineering` 面向 CAD / 3D / 绘图 / XMind / Geo / Typst / EDA / Data。
-- 想要最小包体时，可以不用 preset，直接安装 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` 等单个 renderer，并用 `formats` 精确生成 import。
+- 想要最小包体时，可以不用 preset，直接安装 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` 等单个 renderer，并通过 `options.renderers` 手动注入。
 - `fileViewerRenderers()` 或 `fileViewerRenderers({ copyAssets:true })` 会免配置自动发现已安装 preset；如果同时开启 `scan:true`，请使用 `preset:'auto'` 或 `autoPresets:true` 保留 preset 自动发现。
 - `scan:true` 会识别 `fileViewerFormats`、`data-file-viewer-formats` 和上传控件 `accept`，调试与打包时自动选择 renderer。
 - `copyAssets:true` 会复制 PDF/CAD/Typst/Archive/Data 等 worker、WASM 和 vendor 资源，满足离线和企业内网部署。
+- `builtinRenderers` 仍可用于高级基线控制或历史兼容；普通快速接入只需要 `preset` / `renderers` 与 `rendererMode`。
 - 如果打开的是支持矩阵内但未装配的格式，预览器会提示应安装的 preset / renderer；只有真正不在矩阵中的扩展名才提示不支持。
 - `@file-viewer/preset-all` 是全量一键方案，适合 demo、后台运维工具和企业全格式附件中心；普通业务仍建议优先选择更窄的 preset。
 
@@ -612,7 +691,7 @@ docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
 - PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
 - OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 和默认字体可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.typst.fontAssetsUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
-- 按需装配可通过 `options.builtinRenderers` 控制 core 内置集合: `lite` 只启用图片等低成本原生链路，`none` 适合完全由 `renderers` / preset 显式装配；轻量附件可用 `@file-viewer/preset-lite`，办公文档可用 `@file-viewer/preset-office`，工程附件可用 `@file-viewer/preset-engineering`，完整 Demo 能力使用 `@file-viewer/preset-all`；UMD / EPUB 电子书均由 `@file-viewer/renderer-epub` 按需提供
+- 普通业务优先通过 `options.preset` 装配 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`；多个能力包直接使用 `preset: [officePreset, engineeringPreset]`。`builtinRenderers` 仅作为高级基线控制或历史兼容开关保留；UMD / EPUB 电子书均由 `@file-viewer/renderer-epub` 按需提供
 - `options.archive` 一般只需要配置 `cache`、`workerTimeoutMs` 和体积上限；预览器会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`。手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时时，会继续降级到 ZIP/TAR/GZIP 兼容模式，避免压缩包一直停在 loading。只有静态目录、CDN 路径或 WASM 位置特殊时，才需要显式传 `archive.workerUrl` / `archive.wasmUrl`
 - 表格列宽拖拽通过 `options.spreadsheet.resizableColumns: true` 显式开启，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便查看被截断的长文本
 - `options.theme` 支持 `light`、`dark`、`system`，默认继续跟随系统；DOCX 由 `@file-viewer/renderer-word` 内部 `@file-viewer/docx` Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批挂载，可通过 `options.docx.workerUrl`、`options.docx.workerJsZipUrl` 覆盖离线资源路径；如业务明确需要页式预览，可显式设置 `options.docx.visualPagination: true`；Excel/XLSX 默认使用主线程解析，避免本地服务器、手机 WebView、MIME 或 CSP 导致 Worker 卡住，确实需要静态 Worker 时再传 `options.spreadsheet.worker: true` 和 `options.spreadsheet.workerUrl`；`options.pdf.workerUrl` 可覆盖 PDF.js Worker，适合内网、离线或 CSP 较严的私有化部署；`options.watermark` 支持文字或图片水印；`options.toolbar` 可控制下载原文件、打印完整渲染结果、导出 HTML、统一缩放按钮和操作栏位置，`toolbar.zoom` 可单独控制缩放按钮显示，`toolbar.position` 支持 `auto`、`top`、`bottom-right`，PDF 默认悬浮到右下角以避开自身导航栏；统一缩放通过渲染器内部 provider 适配 PDF、Word、PPTX、Excel 虚拟表格、图片、CAD、OFD、Typst、Markdown、代码和绘图等链路，避免业务侧外层 CSS 缩放造成表格坐标或 canvas 交互偏移；Excel 多 sheet 时标签栏按内容宽度展示并横向滚动，不会被平均压缩；`options.pdf.toolbar` 可隐藏 PDF 自身页码缩放工具栏；`options.search` 可控制搜索高亮、整词/大小写和命中数量；`options.ai` 可开启文本切片结构，返回行号、页码、锚点和 label 等溯源字段，便于业务侧做向量化、召回、AI 摘要、高亮回填和来源定位；`options.hooks` 可接收加载/卸载生命周期；`options.beforeOperation` 可在下载、打印、导出和缩放前做权限校验；打印按钮会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Word / PDF 会生成完整页面，Excel 等虚拟表格会隐藏打印按钮，避免只打印当前视口或第一页

@@ -151,6 +151,7 @@ pnpm release:ecosystem:pack
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准组件包和历史兼容包不会漂移，且标准组件包仍指向对应 GitHub 公开仓库
 - 根 README 与开源总仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main`，确认组件入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免未声明源码、工作区目录、source map、构建配置和本地元数据泄露
+- npm 最新版安装链路是否已经通过 `pnpm verify:npm-install-smoke`，确认 registry 安装和本地 tgz 依赖闭包安装在 npm 11.17.0 下都能正常完成并导入
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、PPTX、Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认组件 manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
 - 本地构建和文档构建是否全部通过
 - 主 Demo、文档比对页和 组件 Demo 是否已经通过 `pnpm verify:browser-smoke`，确认轻量文档实际渲染、左右比对组件挂载、`Ctrl/Command+F` 搜索浮层、React/Web/Vue3/jQuery/Svelte standard component package 和 script tag IIFE 行为正常

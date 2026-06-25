@@ -9,7 +9,7 @@
 ## Install
 
 ```bash
-npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/web @file-viewer/preset-office
 ```
 
 The historical package name remains synchronized for compatibility:
@@ -34,13 +34,29 @@ npm install @flyfish-group/file-viewer-web
 
 ```ts
 import { defineFileViewerElement } from '@file-viewer/web'
+import officePreset from '@file-viewer/preset-office'
 
 defineFileViewerElement()
+
+const viewer = document.getElementById('viewer') as HTMLElement & {
+  options: unknown
+}
+
+viewer.options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
 ```
 
 Keep the host element or parent container at a stable height. The viewer fills that surface.
 
-For Vite projects, add `@file-viewer/vite-plugin`. It auto-discovers installed `@file-viewer/preset-*` packages and injects renderers, so both the Custom Element and `mountViewer` receive the matching format capabilities:
+For Vite projects, add `@file-viewer/vite-plugin`. Installing the package alone does not make Vite run it; register the plugin once in `vite.config.ts`. It auto-discovers installed `@file-viewer/preset-*` packages and injects renderers, so both the Custom Element and `mountViewer` receive the matching format capabilities without manually importing the preset:
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -55,10 +71,10 @@ export default defineConfig({
 })
 ```
 
-Installing only `@file-viewer/web` gives you the lightest native web component. Add a preset or renderer package for PDF, Office, CAD, Typst, archives, and other concrete formats. Heavy users can replace `@file-viewer/preset-office` with `@file-viewer/preset-all` for the complete capability set; the Vite config does not change:
+Installing only `@file-viewer/web` gives you the lightest native web component. Add a preset or renderer package for PDF, Office, CAD, Typst, archives, and other concrete formats. Heavy users can replace `@file-viewer/preset-office` with `@file-viewer/preset-all` for the complete capability set:
 
 ```bash
-npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/web @file-viewer/preset-all
 ```
 
 Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only when the product needs exact registry control. The default path stays `fileViewerRenderers({ copyAssets:true })`, with installed presets auto-activated by the plugin.
@@ -67,10 +83,13 @@ Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'rend
 
 ```ts
 import { mountViewer } from '@file-viewer/web'
+import officePreset from '@file-viewer/preset-office'
 
 const controller = mountViewer(document.getElementById('viewer')!, {
   url: '/files/report.docx',
   options: {
+    preset: officePreset,
+    rendererMode: 'replace',
     theme: 'light',
     toolbar: { position: 'bottom-right' },
     archive: { cache: true }

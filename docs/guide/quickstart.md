@@ -8,6 +8,16 @@
   一个组件，一行代码，快速集成。
 </p>
 
+## 三步接入
+
+| 步骤 | 做什么 | 最短答案 |
+| --- | --- | --- |
+| 1 | 选生态组件 | 纯 JS 用 `@file-viewer/web`，Vue 用 `@file-viewer/vue3` / `@file-viewer/vue2.7` / `@file-viewer/vue2.6`，React 用 `@file-viewer/react`，其他见生态总览 |
+| 2 | 选格式能力 | 轻附件选 `preset-lite`，办公文档选 `preset-office`，工程资料选 `preset-engineering`，全格式选 `preset-all` |
+| 3 | 传入文件和 options | `url="/files/demo.pdf"` 或 `file={file}`，再把 `preset` 放进 `options` |
+
+本页只保留最短可运行路径。完整 options、renderer 包清单和工具栏/水印/打印/搜索等参数见 [组件用法](/guide/usage)，按需装配和 Vite 插件细节见 [模块化与按需装配](/guide/on-demand-renderers)。
+
 ## 先选接入路线
 
 | 方案 | 适合谁 | 优点 | 你应该看哪页 |
@@ -37,14 +47,69 @@
 | `@file-viewer/preset-all` | 官方 Demo 的完整格式矩阵 | 演示站、内部全格式附件中心 |
 | 单个 renderer | 例如 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` | 只需要少数格式、追求最小依赖 |
 
-`@file-viewer/vite-plugin` 可以免配置自动发现已安装的 preset 并注入 renderer，常规业务无需手写 `renderers`。如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+最稳定的通用接入方式是显式 import preset 或 renderer，并通过 `options.preset` / `options.renderers` 注入给组件。这个方案不依赖 Vite，适用于 Webpack、Rspack、Rollup、Umi、传统多页应用、微前端壳和内部组件库。Vite 项目可以再使用 `@file-viewer/vite-plugin` 省去手动 import，并自动复制离线资源。
 
-### Vite 项目推荐配置
+### 通用方案：options.preset 注入
 
-在 Vite 项目中，安装任意标准组件包、`@file-viewer/vite-plugin` 和一个 preset 后，插件会根据已安装 preset 自动激活能力：
+安装当前生态组件包和一个 preset：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+export const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+组件层只需要传同一份 options：
+
+```vue
+<file-viewer url="/files/demo.docx" :options="viewerOptions" />
+```
+
+多个能力包直接组合到同一个 `preset` 字段，不需要再学习第二个 options 名称：
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+import engineeringPreset from '@file-viewer/preset-engineering'
+
+export const viewerOptions = {
+  preset: [officePreset, engineeringPreset],
+  rendererMode: 'replace'
+}
+```
+
+只需要少数格式时，跳过 preset，直接安装单 renderer：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/renderer-pdf
+```
+
+```ts
+import { pdfRenderer } from '@file-viewer/renderer-pdf'
+
+export const viewerOptions = {
+  renderers: [pdfRenderer],
+  rendererMode: 'replace'
+}
+```
+
+如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+
+### Vite 插件：免配置自动装配
+
+Vite 项目可以在通用方案基础上安装并注册插件。安装 `@file-viewer/vite-plugin` 和任意 `@file-viewer/preset-*` 后，在 `vite.config.ts` 注册 `fileViewerRenderers({ copyAssets:true })`，插件就会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。业务代码可以不再手动 import preset：
+
+```bash
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
+pnpm add -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -61,10 +126,11 @@ export default {
 }
 ```
 
-重度用户需要最快拥有全部能力时，直接安装全量 preset，Vite 配置保持一致：
+重度用户需要最快拥有全部能力时，直接把 preset 换成全量包：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add -D @file-viewer/vite-plugin
 ```
 
 需要自定义时再显式配置：
@@ -117,7 +183,7 @@ const options = {
 ## 纯 JS 最短路径
 
 ```bash
-npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/web @file-viewer/preset-office
 ```
 
 ```html
@@ -131,8 +197,15 @@ npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-vi
 
 <script type="module">
   import { defineFileViewerElement } from '@file-viewer/web'
+  import officePreset from '@file-viewer/preset-office'
 
   defineFileViewerElement()
+
+  const viewer = document.querySelector('flyfish-file-viewer')
+  viewer.options = {
+    preset: officePreset,
+    rendererMode: 'replace'
+  }
 </script>
 ```
 
@@ -141,20 +214,7 @@ npm install @file-viewer/web @file-viewer/core @file-viewer/vite-plugin @file-vi
 ## Vue3 最短路径
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
-```
-
-```ts
-// vite.config.ts
-import { fileViewerRenderers } from '@file-viewer/vite-plugin'
-
-export default {
-  plugins: [
-    fileViewerRenderers({
-      copyAssets: true
-    })
-  ]
-}
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
 ```
 
 ```ts
@@ -167,7 +227,11 @@ createApp(App).use(FileViewer).mount('#app')
 
 ```vue
 <script setup lang="ts">
+import officePreset from '@file-viewer/preset-office'
+
 const options = {
+  preset: officePreset,
+  rendererMode: 'replace',
   theme: 'light',
   toolbar: { position: 'bottom-right' },
   watermark: { text: '内部预览', opacity: 0.14 }
@@ -186,7 +250,7 @@ const options = {
 Vue2.7 项目优先使用 `@file-viewer/vue2.7`，能力与 Vue3 包保持一致，入口会自动带上样式:
 
 ```bash
-pnpm add @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue2.7 @file-viewer/preset-office
 ```
 
 ```ts
@@ -206,18 +270,24 @@ Vue2.6 老项目使用 `@file-viewer/vue2.6`。完整步骤见 [Vue2 集成](/gu
 ## React 最短路径
 
 ```bash
-npm install @file-viewer/react @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/react @file-viewer/preset-office
 ```
 
 ```tsx
 import FileViewer from '@file-viewer/react'
+import officePreset from '@file-viewer/preset-office'
 
 export function Preview() {
   return (
     <div style={{ height: '100vh' }}>
       <FileViewer
         url="/files/demo.docx"
-        options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
+        options={{
+          preset: officePreset,
+          rendererMode: 'replace',
+          theme: 'light',
+          toolbar: { position: 'bottom-right' }
+        }}
       />
     </div>
   )

@@ -9,10 +9,27 @@
 ## Vue 2.7
 
 ```bash
-npm install @file-viewer/vue2.7 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/vue2.7 @file-viewer/preset-office
 ```
 
-Installing only `@file-viewer/vue2.7` gives you the lightest native Vue 2.7 component. Add presets or renderer packages for concrete PDF, Office, CAD, Typst, archive, and engineering formats. In Vite projects, the plugin auto-discovers installed presets:
+Installing only `@file-viewer/vue2.7` gives you the lightest native Vue 2.7 component. Add presets or renderer packages for concrete PDF, Office, CAD, Typst, archive, and engineering formats. For Webpack, Rspack, Rollup, Umi, and non-Vite applications, pass the capability through `options.preset`:
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+Vite projects can add the plugin to avoid manual preset imports. Installing the package alone is not enough because Vite plugins must be registered once; after registration the plugin auto-discovers installed presets:
+
+```bash
+npm install -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -46,10 +63,14 @@ Vue.use(FileViewer)
 </template>
 
 <script>
+import officePreset from '@file-viewer/preset-office'
+
 export default {
   data() {
     return {
       viewerOptions: {
+        preset: officePreset,
+        rendererMode: 'replace',
         theme: 'light',
         toolbar: { position: 'bottom-right' }
       }
@@ -67,13 +88,13 @@ export default {
 ## Vue 2.6
 
 ```bash
-npm install @file-viewer/vue2.6 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install @file-viewer/vue2.6 @file-viewer/preset-office
 ```
 
 Use the same component API as Vue 2.7. Keep your host container at a fixed or viewport-relative height. Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when heavy users need the full format matrix in one install:
 
 ```bash
-npm install @file-viewer/vue2.6 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+npm install @file-viewer/vue2.6 @file-viewer/preset-all
 ```
 
 Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only for explicit registry control. Normal projects should keep `fileViewerRenderers({ copyAssets:true })` and let the plugin auto-activate installed presets.

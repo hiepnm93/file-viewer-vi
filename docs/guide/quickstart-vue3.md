@@ -12,18 +12,45 @@
 ## 安装
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
 ```
 
 也可以使用 `npm`:
 
 ```bash
-npm install --save @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+npm install --save @file-viewer/vue3 @file-viewer/preset-office
 ```
 
-## 推荐 Vite 配置
+## 通用 renderer 装配
 
-`@file-viewer/vite-plugin` 会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer。常规 Vue3 项目无需手写 `renderers`：
+Vue3 组件本身很轻，具体格式能力由 preset 或 renderer 注入。Webpack、Rspack、Rollup、Umi、Vite 和内部组件库都可以使用同一套 `options.preset`：
+
+```ts
+import officePreset from '@file-viewer/preset-office'
+
+const options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+页面里直接传入：
+
+```vue
+<file-viewer url="/files/demo.docx" :options="options" />
+```
+
+需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，并把 `options.preset` 指向全量 preset。
+
+## Vite 免配置装配
+
+Vite 项目可以额外安装 `@file-viewer/vite-plugin`。插件会自动发现已安装的 `@file-viewer/preset-*` 并注入 renderer，业务代码可以省去手动 import preset。注意：只安装插件包不会让 Vite 自动运行，仍需要在 `vite.config.ts` 注册一次：
+
+```bash
+pnpm add -D @file-viewer/vite-plugin
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -38,10 +65,10 @@ export default defineConfig({
 })
 ```
 
-需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可，Vite 配置保持 `fileViewerRenderers({ copyAssets:true })` 不变：
+使用插件时需要完整 Demo 能力，仍然只需要把安装的 preset 换成全量包，Vite 配置保持 `fileViewerRenderers({ copyAssets:true })` 不变：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+pnpm add @file-viewer/vue3 @file-viewer/preset-all
 ```
 
 需要同时扫描源码 hint 时使用 `preset:'auto'` 或 `autoPresets:true`，这样插件会继续保留“根据已安装 preset 自动激活能力”，再额外合并源码中声明的格式。

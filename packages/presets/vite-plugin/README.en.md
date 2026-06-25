@@ -4,10 +4,11 @@ Vite plugin for Flyfish File Viewer on-demand renderer assembly. It can auto-dis
 
 ## Fastest Start
 
-The fastest path is a standard component package, this Vite plugin, and one preset. The plugin auto-discovers installed `@file-viewer/preset-*` packages, so application code does not hand-write renderer imports and the plugin does not need `preset:'office'`:
+The fastest path is a standard component package, one preset, and one Vite plugin registration. The plugin auto-discovers installed `@file-viewer/preset-*` packages, so application code does not hand-write renderer imports and the plugin does not need `preset:'office'`. Installing the npm package alone does not make Vite run the plugin; register it once in `vite.config.ts`:
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
+pnpm add -D @file-viewer/vite-plugin
 ```
 
 ```ts
@@ -28,7 +29,8 @@ Components keep `autoRenderers:true` by default, so `@file-viewer/vue3`, `@file-
 Heavy users that want the fastest full-capability setup can install the full preset and keep the same Vite config:
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add -D @file-viewer/vite-plugin
 ```
 
 Available presets:

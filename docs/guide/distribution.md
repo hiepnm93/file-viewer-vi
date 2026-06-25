@@ -55,13 +55,17 @@
 常用安装命令:
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
 # 重度用户 / 全格式附件中心:
-pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-all
+pnpm add @file-viewer/vue3 @file-viewer/preset-all
 # 非 Vite 或特定生态也可把 @file-viewer/vue3 替换为 @file-viewer/web / react / vue2.7 / vue2.6 / jquery / svelte。
 ```
 
-Vite 项目推荐使用免配置自动装配：
+Webpack、Rspack、Rollup、Umi、传统多页应用和内部组件库通过 `options.preset` 显式注入 preset。Vite 项目可以额外安装插件并使用免配置自动装配：
+
+```bash
+pnpm add -D @file-viewer/vite-plugin
+```
 
 ```ts
 fileViewerRenderers({

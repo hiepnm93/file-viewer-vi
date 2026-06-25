@@ -28,7 +28,7 @@ Core stays pure TypeScript and framework-neutral. Component packages depend on c
 
 Most products do not need every heavy engine on first load. Install a minimal renderer set for a focused product, or use a preset when you need broader coverage. Worker, WASM, font, and vendor assets remain self-hostable for intranet and strict-CSP deployments.
 
-In Vite projects, `@file-viewer/vite-plugin` is the recommended assembly layer. It auto-discovers installed `@file-viewer/preset-*` packages and injects the matching capability registry, so the default setup is still `fileViewerRenderers({ copyAssets:true })`. Use `@file-viewer/preset-all` for the fastest full-capability start, or explicit `formats`, `renderers`, `scan:true`, and `inject:false` only when a product needs strict bundle control.
+The bundler-neutral path is `options.preset` / `options.renderers`: import the preset or renderer package and pass it to the component. In Vite projects, `@file-viewer/vite-plugin` is an optional assembly layer that removes manual imports after one plugin registration. It auto-discovers installed `@file-viewer/preset-*` packages and injects the matching capability registry, so the default Vite setup is still `fileViewerRenderers({ copyAssets:true })`. Use `@file-viewer/preset-all` for the fastest full-capability start, or explicit `formats`, `renderers`, `scan:true`, and `inject:false` only when a product needs strict bundle control.
 
 ## Main Entry Points
 

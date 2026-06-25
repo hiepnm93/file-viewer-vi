@@ -22,6 +22,35 @@
 
 如果需要固定 Worker、WASM 或示例资源路径，可以运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
+## npm 11 安装时报 `Cannot read properties of null (reading 'matches')`
+
+这通常不是 `@file-viewer/*` 包版本不匹配。我们已经用 npm 11.17.0 在干净临时目录验证过 registry 安装和本地 tgz 依赖闭包安装，`@file-viewer/vue3 + @file-viewer/preset-office` 均可正常安装和导入。
+
+这个错误来自 npm 内部 Arborist 构建依赖树时访问了空的 link target，常见触发原因是同一个项目目录里先用 pnpm、bun、vlt 等包管理器生成过 `node_modules`，之后又执行 `npm install`。npm 看到 store-style symlink 时可能直接抛出 `matches` 的 TypeError，而不是给出清晰提示。
+
+建议按以下顺序处理:
+
+```bash
+# 如果项目决定使用 npm
+rm -rf node_modules package-lock.json npm-shrinkwrap.json
+npm cache verify
+npm install
+```
+
+```bash
+# 如果项目原本使用 pnpm，请保持同一个包管理器
+rm -rf node_modules package-lock.json
+pnpm install
+```
+
+离线 tgz 场景也要注意：只安装一个顶层 tgz 时，它的依赖仍需要能从 npm registry、私有 registry 或同目录依赖 tarball 中解析到。企业内网建议把 `@file-viewer/vue3`、所选 preset、preset 内部 renderer、`@file-viewer/core` 等同版本 tarball 一起放入私有 npm 源，或在安装命令/业务 package.json 中同时声明这些本地 tgz。
+
+项目内置了安装烟测命令，发布前可复核 npm 最新版兼容性:
+
+```bash
+pnpm verify:npm-install-smoke
+```
+
 ## URL 预览为什么失败或空白
 
 组件在浏览器里通过 `axios` 请求目标文件，所以最常见的失败原因是:

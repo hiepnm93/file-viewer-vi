@@ -90,6 +90,7 @@
     "verify:smoke-matrix": "node scripts/verify-smoke-matrix.mjs",
     "verify:experience-baseline": "node scripts/verify-experience-baseline.mjs",
     "verify:ecosystem-tarballs": "node scripts/verify-ecosystem-tarballs.mjs",
+    "verify:npm-install-smoke": "node scripts/verify-npm-install-smoke.mjs",
     "verify:ecosystem-versions": "node scripts/verify-ecosystem-versions.mjs",
     "verify:cloudflare-compression": "node scripts/verify-cloudflare-compression.mjs",
     "verify:docs-portal": "node scripts/verify-docs-portal.mjs",
