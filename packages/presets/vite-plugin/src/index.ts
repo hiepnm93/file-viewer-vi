@@ -1375,17 +1375,20 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       )
       reportAssetCopy(results, targetRoot, missingMode)
     },
-    transformIndexHtml() {
-      if (options.inject === false || !hasConfiguredRenderers()) {
-        return undefined
-      }
-      return [
-        {
-          tag: 'script',
-          attrs: { type: 'module', src: injectedModulePath },
-          injectTo: 'head'
+    transformIndexHtml: {
+      order: 'pre',
+      handler() {
+        if (options.inject === false || !hasConfiguredRenderers()) {
+          return undefined
         }
-      ]
+        return [
+          {
+            tag: 'script',
+            attrs: { type: 'module', src: injectedModulePath },
+            injectTo: 'head'
+          }
+        ]
+      }
     },
     handleHotUpdate(context) {
       if (!options.scan || !resolvedConfig) {
