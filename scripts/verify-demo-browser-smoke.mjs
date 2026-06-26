@@ -500,6 +500,59 @@ const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
 }
 
 const verifyArchiveNestedPreviewInteraction = async (page, samplePath) => {
+  await page.locator('.archive-sidebar .archive-sidebar-toggle').click()
+  await page.waitForFunction(
+    () => document.querySelector('.archive-shell.archive-sidebar-collapsed, .archive-viewer.archive-sidebar-collapsed'),
+    undefined,
+    { timeout }
+  )
+
+  const collapsedLayout = await page.evaluate(() => {
+    const readRect = selector => {
+      const element = document.querySelector(selector)
+      if (!(element instanceof HTMLElement)) {
+        return null
+      }
+      const rect = element.getBoundingClientRect()
+      return {
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      }
+    }
+    const shell = readRect('.archive-shell, .archive-viewer')
+    const preview = readRect('.archive-preview')
+    const toolbar = readRect('.archive-preview-toolbar')
+    const nestedTarget = readRect('.archive-nested-target')
+    const titleLabel = readRect('.archive-preview-toolbar span')
+    const expectedWidth = Math.max(320, (shell?.width || 0) * 0.9)
+
+    return {
+      ok: Boolean(shell && preview && toolbar && nestedTarget) &&
+        preview.width >= expectedWidth &&
+        toolbar.width >= expectedWidth &&
+        nestedTarget.width >= expectedWidth &&
+        Math.abs(preview.left - shell.left) <= 2 &&
+        (!titleLabel || titleLabel.height < 40),
+      shell,
+      preview,
+      toolbar,
+      nestedTarget,
+      titleLabel
+    }
+  })
+
+  if (!collapsedLayout.ok) {
+    throw new Error(`Sample ${samplePath} archive sidebar collapse collapsed the preview layout: ${JSON.stringify(collapsedLayout, null, 2)}`)
+  }
+
+  await page.locator('.archive-preview-toolbar .archive-sidebar-toggle').click()
+  await page.waitForFunction(
+    () => !document.querySelector('.archive-shell.archive-sidebar-collapsed, .archive-viewer.archive-sidebar-collapsed'),
+    undefined,
+    { timeout }
+  )
+
   const nestedChecks = [
     {
       labels: ['code.ts'],
