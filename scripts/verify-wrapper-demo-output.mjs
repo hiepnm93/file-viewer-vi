@@ -17,6 +17,9 @@ const requiredFiles = [
   'vendor/xlsx/sheet.worker.js',
   'vendor/file-viewer/flyfish-viewer-assets.json',
   'vendor/file-viewer-web/flyfish-file-viewer-web.iife.js',
+  'vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js',
+  'vendor/file-viewer-web-full/renderers/word.iife.js',
+  'vendor/file-viewer-web-full/vendor/docx/docx.worker.js',
   'wasm/cad/dwg-worker.js'
 ]
 
@@ -46,22 +49,22 @@ for (const requiredFile of requiredFiles) {
 }
 
 const manualIifeHtml = readFileSync(join(outputDir, 'manual-iife.html'), 'utf8')
-if (!manualIifeHtml.includes('/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js')) {
-  fail('manual-iife.html does not reference the browser global helper bundle.')
+if (!manualIifeHtml.includes('/vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js')) {
+  fail('manual-iife.html does not reference the full browser global helper bundle.')
 }
-if (!manualIifeHtml.includes('window.FlyfishFileViewerWeb')) {
-  fail('manual-iife.html does not use the browser global API.')
+if (!manualIifeHtml.includes('window.FlyfishFileViewerWebFull')) {
+  fail('manual-iife.html does not use the full browser global API.')
 }
 if (!manualIifeHtml.includes('<flyfish-file-viewer')) {
   fail('manual-iife.html does not exercise the script-tag custom element.')
 }
-if (!manualIifeHtml.includes('/example/preview.md')) {
-  fail('manual-iife.html does not use the lightweight markdown smoke sample.')
+if (!manualIifeHtml.includes('/example/word.docx')) {
+  fail('manual-iife.html does not use the DOCX full-preset smoke sample.')
 }
 
-const iifeBundle = readFileSync(join(outputDir, 'vendor/file-viewer-web/flyfish-file-viewer-web.iife.js'), 'utf8')
+const iifeBundle = readFileSync(join(outputDir, 'vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js'), 'utf8')
 for (const requiredExport of [
-  'FlyfishFileViewerWeb',
+  'FlyfishFileViewerWebFull',
   'mountViewer',
   'createViewerControllerHandle',
   'defineFileViewerElement',
@@ -79,6 +82,9 @@ for (const legacyExport of ['mountViewerFrame', 'postFileToViewer', 'viewerUrl',
 }
 
 assertNotHtmlFallback('vendor/file-viewer-web/flyfish-file-viewer-web.iife.js')
+assertNotHtmlFallback('vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js')
+assertNotHtmlFallback('vendor/file-viewer-web-full/renderers/word.iife.js')
+assertNotHtmlFallback('vendor/file-viewer-web-full/vendor/docx/docx.worker.js')
 assertNotHtmlFallback('vendor/docx/docx.worker.js')
 assertNotHtmlFallback('vendor/xlsx/sheet.worker.js')
 assertNotHtmlFallback('wasm/cad/dwg-worker.js')

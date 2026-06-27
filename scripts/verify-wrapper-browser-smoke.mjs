@@ -164,6 +164,49 @@ const assertNativeViewerMounted = async (page, selector, label) => {
   }
 }
 
+const assertNoAssemblyNotice = async (page, label) => {
+  const notice = await page.evaluate(() => {
+    const text = document.body.innerText.replace(/\s+/g, ' ').trim()
+    const match = text.match(/(?:未装配|尚未装配|not assembled|renderer is not assembled|Word OpenXML renderer)/i)
+    return match ? text.slice(Math.max(0, match.index - 160), match.index + 360) : ''
+  })
+  if (notice) {
+    fail(`${label} rendered an assembly/missing-renderer notice instead of the full DOCX renderer:\n${notice}`)
+  }
+}
+
+const assertDocxRendered = async (page, label, expectedCount = 1) => {
+  try {
+    await page.waitForFunction(
+      count => {
+        const roots = Array.from(document.querySelectorAll('.docx-wrapper, .docx-document, [data-docx-root]'))
+        const renderedTextLength = roots.reduce((total, node) => (
+          total + ((node.innerText || node.textContent || '').replace(/\s+/g, '').length)
+        ), 0)
+        return roots.length >= count && renderedTextLength >= Math.max(160, count * 80)
+      },
+      expectedCount,
+      { timeout }
+    )
+  } catch (error) {
+    const snapshot = await page.evaluate(() => ({
+      title: document.title,
+      bodyStatus: document.body.getAttribute('data-viewer-status') || '',
+      docxNodes: document.querySelectorAll('.docx-wrapper, .docx-document, [data-docx-root]').length,
+      docxTextLength: Array.from(document.querySelectorAll('.docx-wrapper, .docx-document, [data-docx-root]')).reduce((total, node) => (
+        total + ((node.innerText || node.textContent || '').replace(/\s+/g, '').length)
+      ), 0),
+      bodyText: document.body.innerText.replace(/\s+/g, ' ').trim().slice(0, 1000)
+    }))
+    fail([
+      `${label} did not render the DOCX document with the full preset.`,
+      JSON.stringify(snapshot, null, 2),
+      error instanceof Error ? error.message : String(error)
+    ].join('\n'))
+  }
+  await assertNoAssemblyNotice(page, label)
+}
+
 const verifyWrapperIndexDemo = async (page, baseUrl, failures) => {
   await page.goto(`${baseUrl}/index.html`, {
     waitUntil: 'domcontentloaded',
@@ -176,6 +219,7 @@ const verifyWrapperIndexDemo = async (page, baseUrl, failures) => {
 
   await assertNativeViewerMounted(page, '[data-testid="react-viewer"]', 'React wrapper')
   await assertNativeViewerMounted(page, '[data-testid="web-viewer-host"]', 'Pure Web wrapper')
+  await assertDocxRendered(page, 'Wrapper index demo', 2)
   assertNoBrowserFailures(failures, 'Wrapper index demo emitted browser errors.')
   failures.length = 0
 }
@@ -194,6 +238,7 @@ const verifySingleWrapperDemo = async (page, baseUrl, config, failures) => {
     { timeout }
   )
   await assertNativeViewerMounted(page, config.hostSelector, config.label)
+  await assertDocxRendered(page, config.label)
   assertNoBrowserFailures(failures, `${config.label} demo emitted browser errors.`)
   failures.length = 0
 }
@@ -205,7 +250,7 @@ const verifyIifeDemo = async (page, baseUrl, failures) => {
   })
   await page.waitForFunction(
     () => {
-      const api = window.FlyfishFileViewerWeb
+      const api = window.FlyfishFileViewerWebFull
       return Boolean(
         api &&
         typeof api.mountViewer === 'function' &&
@@ -217,6 +262,7 @@ const verifyIifeDemo = async (page, baseUrl, failures) => {
     { timeout }
   )
   await assertNativeViewerMounted(page, '#viewer', 'IIFE script tag demo')
+  await assertDocxRendered(page, 'IIFE script tag demo')
 
   const status = await page.getAttribute('body', 'data-viewer-status')
   if (status === 'missing-global') {
@@ -232,6 +278,7 @@ const verifyManualJsDemo = async (page, baseUrl, failures) => {
     timeout
   })
   await assertNativeViewerMounted(page, '#viewer', 'Manual JS demo')
+  await assertDocxRendered(page, 'Manual JS demo')
 
   try {
     await page.waitForFunction(
@@ -245,7 +292,7 @@ const verifyManualJsDemo = async (page, baseUrl, failures) => {
     const snapshot = await page.evaluate(() => ({
       statusText: document.querySelector('#status')?.textContent?.trim() || '',
       bodyStatus: document.body.getAttribute('data-viewer-status') || '',
-      hasGlobalApi: Boolean(window.FlyfishFileViewerWeb?.mountViewer),
+      hasGlobalApi: Boolean(window.FlyfishFileViewerWebFull?.mountViewer),
       hostHtml: document.querySelector('#viewer')?.innerHTML.slice(0, 240) || ''
     }))
     fail([

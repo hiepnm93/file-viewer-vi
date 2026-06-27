@@ -53,18 +53,33 @@ importers:
       '@file-viewer/jquery':
         specifier: workspace:^2.1.8
         version: link:../../packages/components/jquery
+      '@file-viewer/jquery-full':
+        specifier: workspace:^2.1.8
+        version: link:../../packages/components/jquery-full
       '@file-viewer/react':
         specifier: workspace:^2.1.8
         version: link:../../packages/components/react
+      '@file-viewer/react-full':
+        specifier: workspace:^2.1.8
+        version: link:../../packages/components/react-full
       '@file-viewer/svelte':
         specifier: workspace:^2.1.8
         version: link:../../packages/components/svelte
+      '@file-viewer/svelte-full':
+        specifier: workspace:^2.1.8
+        version: link:../../packages/components/svelte-full
       '@file-viewer/vue3':
         specifier: workspace:^2.1.8
         version: link:../../packages/components/vue3
+      '@file-viewer/vue3-full':
+        specifier: workspace:^2.1.8
+        version: link:../../packages/components/vue3-full
       '@file-viewer/web':
         specifier: workspace:^2.1.8
         version: link:../../packages/components/web
+      '@file-viewer/web-full':
+        specifier: workspace:^2.1.8
+        version: link:../../packages/components/web-full
       jquery:
         specifier: ^4.0.0
         version: 4.0.0
