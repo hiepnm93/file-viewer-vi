@@ -38,6 +38,7 @@ import {
   normalizeCellStyle,
   normalizeRowHeight,
   RESIZABLE_COLUMN_MIN_WIDTH,
+  RESIZABLE_ROW_MIN_HEIGHT,
 } from './spreadsheet/view.js';
 
 type EVirtTableInstance = {
@@ -63,6 +64,11 @@ type EVirtTableInstance = {
 type ResizeColumnChangeEvent = {
   key?: string | number;
   width?: number;
+};
+
+type ResizeRowChangeEvent = {
+  rowIndex?: number;
+  height?: number;
 };
 
 type EVirtTableConstructor = new (
@@ -406,6 +412,7 @@ const renderFileViewerSpreadsheet = async (
   let disposed = false;
   let hasNotifiedFirstPaint = false;
   const resizableColumns = context?.options?.spreadsheet?.resizableColumns === true;
+  const resizableRows = context?.options?.spreadsheet?.resizableRows === true;
 
   const controller = createFileViewerWorkerController(
     createSpreadsheetWorkerFactory(target, context),
@@ -638,6 +645,7 @@ const renderFileViewerSpreadsheet = async (
     config: createTableConfig({
       hostHeight: getHostHeight(),
       resizableColumns,
+      resizableRows,
       sheetDefaults,
       virtualState,
       zoomScale: zoom,
@@ -699,6 +707,7 @@ const renderFileViewerSpreadsheet = async (
       config: createTableConfig({
         hostHeight: getHostHeight(),
         resizableColumns,
+        resizableRows,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,
@@ -708,6 +717,7 @@ const renderFileViewerSpreadsheet = async (
     table.on('onScrollY', scheduleViewportLoad);
     table.on('resize', scheduleViewportLoad);
     table.on('resizeColumnChange', handleColumnResizeChange);
+    table.on('resizeRowChange', handleRowResizeChange);
 
     return table;
   };
@@ -722,6 +732,7 @@ const renderFileViewerSpreadsheet = async (
       config: createTableConfig({
         hostHeight: getHostHeight(),
         resizableColumns,
+        resizableRows,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,
@@ -811,6 +822,40 @@ const renderFileViewerSpreadsheet = async (
     }
 
     clearTableResizableHeaderCache();
+    syncTableLayout();
+  }
+
+  function handleRowResizeChange(event: ResizeRowChangeEvent) {
+    if (!resizableRows || disposed) {
+      return;
+    }
+
+    const rowIndex = Number(event?.rowIndex);
+    const displayHeight = Number(event?.height);
+    if (!Number.isInteger(rowIndex) || rowIndex < 0 || !Number.isFinite(displayHeight) || displayHeight <= 0) {
+      return;
+    }
+
+    const row = virtualState.rows[rowIndex];
+    if (!row) {
+      return;
+    }
+
+    const baseHeight = normalizeRowHeight(
+      Math.max(
+        RESIZABLE_ROW_MIN_HEIGHT,
+        Math.round(displayHeight / Math.max(zoom, 0.01))
+      ),
+      virtualState.defaults.rowHeight
+    );
+    applyRowHeight(row, baseHeight);
+    virtualState.rowHeightCache.set(rowIndex, baseHeight);
+
+    const activeSheetId = getActiveSheetId();
+    if (activeSheetId !== undefined) {
+      sheetStateCache.set(activeSheetId, virtualState);
+    }
+
     syncTableLayout();
   }
 

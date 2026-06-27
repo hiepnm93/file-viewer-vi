@@ -525,6 +525,8 @@ export interface FileViewerSpreadsheetOptions {
   workerUrl?: string;
   /** 允许用户在 Excel / CSV / ODS 预览中拖拽表头边界调整列宽，默认关闭以保持历史行为。 */
   resizableColumns?: boolean;
+  /** 允许用户在 Excel / CSV / ODS 预览中拖拽行头边界调整行高，默认关闭以保持历史行为。 */
+  resizableRows?: boolean;
 }
 
 export type FileRenderExportMode = 'export' | 'print';

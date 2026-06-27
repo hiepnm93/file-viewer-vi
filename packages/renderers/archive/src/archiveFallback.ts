@@ -21,6 +21,37 @@ type FallbackEntrySource = {
   load: () => Promise<ArrayBuffer>;
 };
 
+type JSZipLike = {
+  loadAsync(data: ArrayBuffer): Promise<{
+    forEach(callback: (relativePath: string, file: {
+      dir?: boolean;
+      date?: Date;
+      async(type: 'arraybuffer'): Promise<ArrayBuffer>;
+    }) => void): void;
+  }>;
+};
+
+const resolveJSZip = (module: unknown): JSZipLike => {
+  const record = module as Record<string, unknown> | undefined;
+  const defaultRecord = record?.default as Record<string, unknown> | undefined;
+  const candidates = [
+    record?.default,
+    defaultRecord?.default,
+    record?.JSZip,
+    module,
+  ];
+  const JSZip = candidates.find(candidate =>
+    !!candidate &&
+    typeof candidate === 'object' &&
+    typeof (candidate as { loadAsync?: unknown }).loadAsync === 'function'
+  ) as JSZipLike | undefined;
+
+  if (!JSZip) {
+    throw new Error('JSZip module does not expose loadAsync.');
+  }
+  return JSZip;
+};
+
 const toArrayBuffer = (bytes: Uint8Array) => {
   const output = new Uint8Array(bytes.byteLength);
   output.set(bytes);
@@ -182,7 +213,7 @@ const getGzipEntryName = (filename: string) => {
 };
 
 const loadZipEntries = async (data: ArrayBuffer) => {
-  const { default: JSZip } = await import('jszip');
+  const JSZip = resolveJSZip(await import('jszip'));
   const zip = await JSZip.loadAsync(data);
   const entries: ArchiveEntryView[] = [];
 

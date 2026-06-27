@@ -35,6 +35,10 @@ const DOCX_EMU_PER_CSS_PIXEL = 9525
 const ZIP_SIGNATURE_PK = 0x504b
 
 type DocxZip = JSZip
+type DocxZipFile = JSZip.JSZipObject
+type JSZipConstructorLike = {
+  loadAsync(data: ArrayBuffer): Promise<DocxZip>
+}
 
 interface DocxRelationship {
   id: string;
@@ -46,7 +50,9 @@ interface DocxRelationship {
 interface DocxImageFallback {
   role: 'watermark' | 'ole-preview' | 'vml-image';
   key: string;
-  dataUrl: string;
+  kind: 'image' | 'math-text';
+  dataUrl?: string;
+  text?: string;
   sourcePath: string;
   partPath: string;
   title?: string;
@@ -54,6 +60,27 @@ interface DocxImageFallback {
   width?: number;
   height?: number;
   paragraphIndex?: number;
+}
+
+const resolveJSZip = (module: unknown): JSZipConstructorLike => {
+  const record = module as Record<string, unknown> | undefined
+  const defaultRecord = record?.default as Record<string, unknown> | undefined
+  const candidates = [
+    record?.default,
+    defaultRecord?.default,
+    record?.JSZip,
+    module
+  ]
+  const JSZip = candidates.find(candidate =>
+    !!candidate &&
+    typeof candidate === 'object' &&
+    typeof (candidate as { loadAsync?: unknown }).loadAsync === 'function'
+  ) as JSZipConstructorLike | undefined
+
+  if (!JSZip) {
+    throw new Error('JSZip module does not expose loadAsync.')
+  }
+  return JSZip
 }
 
 interface DocxChartSeries {
@@ -274,14 +301,32 @@ const DOCX_RESPONSIVE_CSS = `
 .docx-fit-viewer .docx-vml-fallback {
   text-align: center;
 }
-.docx-fit-viewer .docx-vml-fallback img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-}
-.docx-fit-viewer .docx-chart-fallback {
-  box-sizing: border-box;
+	.docx-fit-viewer .docx-vml-fallback img {
+	  display: block;
+	  max-width: 100%;
+	  height: auto;
+	  margin: 0 auto;
+	}
+	.docx-fit-viewer .docx-math-fallback {
+	  display: inline-block;
+	  max-width: 100%;
+	  margin: 0 4px;
+	  padding: 1px 6px 2px;
+	  border-bottom: 1px solid currentColor;
+	  color: #111827;
+	  font-family: "Cambria Math", "Times New Roman", serif;
+	  font-size: 0.95em;
+	  line-height: 1.15;
+	  text-align: right;
+	  white-space: pre;
+	  vertical-align: middle;
+	}
+	.docx-fit-viewer figure.docx-math-fallback {
+	  display: table;
+	  margin: 4px auto;
+	}
+	.docx-fit-viewer .docx-chart-fallback {
+	  box-sizing: border-box;
   overflow: hidden;
   border: 1px solid #d7dee8;
   border-radius: 8px;
@@ -395,7 +440,7 @@ function resolveRelationshipTarget(partPath: string, target: string) {
 }
 
 function getMimeType(path: string) {
-  const extension = path.split('.').pop()?.toLowerCase()
+  const extension = getPathExtension(path)
   switch (extension) {
     case 'png':
       return 'image/png'
@@ -413,6 +458,86 @@ function getMimeType(path: string) {
     default:
       return 'application/octet-stream'
   }
+}
+
+function getPathExtension(path: string) {
+  return path.split('.').pop()?.toLowerCase() || ''
+}
+
+function isBrowserUnsupportedImagePath(path: string) {
+  const extension = getPathExtension(path)
+  return extension === 'wmf' || extension === 'emf'
+}
+
+function decodeBinaryText(bytes: Uint8Array) {
+  if (typeof TextDecoder !== 'undefined') {
+    return new TextDecoder('latin1').decode(bytes)
+  }
+
+  let output = ''
+  const chunkSize = 0x8000
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    output += String.fromCharCode(...bytes.slice(offset, offset + chunkSize))
+  }
+  return output
+}
+
+function normalizeMathTextValue(value: string) {
+  const trimmed = value.replace(/\s+/g, ' ').trim()
+  if (/^[\d.,+\-\s]+$/.test(trimmed)) {
+    return trimmed.replace(/\s+/g, '')
+  }
+  return trimmed
+}
+
+function normalizeMathTypeTexFallback(tex: string) {
+  const rows: string[] = []
+  tex.replace(/(?:\\\\\s*)?([+\-])?\s*\\text\{([^}]*)\}/g, (_match, operator: string | undefined, value: string) => {
+    const normalized = normalizeMathTextValue(value)
+    if (normalized) {
+      rows.push(`${operator || ''}${normalized}`)
+    }
+    return ''
+  })
+  if (rows.length) {
+    return rows.join('\n')
+  }
+
+  return tex
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)')
+    .replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\begin\{[^}]+\}|\\end\{[^}]+\}/g, '')
+    .replace(/\\underline\{([^{}]*)\}/g, '$1')
+    .replace(/\\\\/g, '\n')
+    .replace(/\\[a-zA-Z]+\*?/g, '')
+    .replace(/[{}]/g, '')
+    .split('\n')
+    .map(line => normalizeMathTextValue(line))
+    .filter(Boolean)
+    .join('\n')
+}
+
+function extractMathTypeTextFromBytes(bytes: Uint8Array) {
+  const text = decodeBinaryText(bytes)
+  const marker = 'fjTeX Input Language'
+  const markerIndex = text.indexOf(marker)
+  const searchText = markerIndex >= 0 ? text.slice(markerIndex + marker.length) : text
+  const mathStart = searchText.search(/\\(?:underline|begin|frac|text|sqrt|sum|int|[a-zA-Z]+)/)
+  if (mathStart < 0) {
+    return undefined
+  }
+
+  const raw = searchText
+    .slice(mathStart)
+    .split('\0')[0]
+    .replace(/[\u0001-\u0008\u000b\u000c\u000e-\u001f\u007f]+/g, '')
+    .trim()
+  if (!raw || raw.length > 3000) {
+    return undefined
+  }
+
+  const normalized = normalizeMathTypeTexFallback(raw)
+  return normalized || undefined
 }
 
 function parseCssLengthToPixels(value: string | undefined) {
@@ -510,13 +635,37 @@ async function readDocxRelationships(zip: DocxZip, partPath: string, target: HTM
   return relationships
 }
 
-async function getDataUrlFromZip(zip: DocxZip, sourcePath: string) {
+async function getDataUrlFromZipFile(file: DocxZipFile, sourcePath: string) {
+  const base64 = await file.async('base64')
+  return `data:${getMimeType(sourcePath)};base64,${base64}`
+}
+
+async function getMathTextFromZipFile(file: DocxZipFile) {
+  const buffer = await file.async('uint8array')
+  return extractMathTypeTextFromBytes(buffer)
+}
+
+async function getImageFallbackFromZip(zip: DocxZip, sourcePath: string) {
   const file = zip.file(sourcePath)
   if (!file) {
     return undefined
   }
-  const base64 = await file.async('base64')
-  return `data:${getMimeType(sourcePath)};base64,${base64}`
+
+  if (isBrowserUnsupportedImagePath(sourcePath)) {
+    const text = await getMathTextFromZipFile(file)
+    if (text) {
+      return {
+        kind: 'math-text' as const,
+        text
+      }
+    }
+    return undefined
+  }
+
+  return {
+    kind: 'image' as const,
+    dataUrl: await getDataUrlFromZipFile(file, sourcePath)
+  }
 }
 
 function getDocxPartPaths(zip: DocxZip) {
@@ -581,8 +730,8 @@ async function collectDocxVmlFallbacks(zip: DocxZip, target: HTMLDivElement) {
       }
 
       const sourcePath = resolveRelationshipTarget(partPath, relationship.target)
-      const dataUrl = await getDataUrlFromZip(zip, sourcePath)
-      if (!dataUrl) {
+      const fallbackContent = await getImageFallbackFromZip(zip, sourcePath)
+      if (!fallbackContent) {
         continue
       }
 
@@ -601,7 +750,7 @@ async function collectDocxVmlFallbacks(zip: DocxZip, target: HTMLDivElement) {
       fallbacks.push({
         role,
         key,
-        dataUrl,
+        ...fallbackContent,
         sourcePath,
         partPath,
         title: imagedata.getAttribute('o:title') || imagedata.getAttribute('title') || undefined,
@@ -808,6 +957,51 @@ function insertDocxFallback(target: HTMLDivElement, node: HTMLElement, paragraph
   }
 }
 
+function isUnsupportedDocxImageElement(image: HTMLImageElement) {
+  const alt = (image.getAttribute('alt') || '').toLowerCase()
+  const src = (image.getAttribute('src') || '').toLowerCase()
+  return alt.includes('embedded object') ||
+    src.startsWith('data:application/octet-stream') ||
+    src.startsWith('data:image/wmf') ||
+    src.startsWith('data:image/x-wmf') ||
+    src.startsWith('data:image/emf') ||
+    src.startsWith('data:image/x-emf')
+}
+
+function replaceDocxUnsupportedImage(
+  target: HTMLDivElement,
+  node: HTMLElement,
+  paragraphIndex: number | undefined
+) {
+  const anchor = getDocxParagraphAnchor(target, paragraphIndex)
+  if (!anchor) {
+    return false
+  }
+
+  const image = Array.from(anchor.querySelectorAll<HTMLImageElement>('img'))
+    .find(candidate => !candidate.dataset.docxFallbackReplaced && isUnsupportedDocxImageElement(candidate))
+  if (!image) {
+    return false
+  }
+
+  image.dataset.docxFallbackReplaced = 'true'
+  image.replaceWith(node)
+  return true
+}
+
+function createDocxMathFallbackNode(target: HTMLDivElement, fallback: DocxImageFallback) {
+  const node = target.ownerDocument.createElement('span')
+  node.className = 'docx-math-fallback'
+  node.dataset.docxFallback = fallback.key
+  node.setAttribute('role', 'img')
+  node.setAttribute('aria-label', fallback.title || 'MathType equation')
+  node.textContent = fallback.text || ''
+  if (fallback.width) {
+    node.style.minWidth = `${Math.round(Math.min(fallback.width, 180))}px`
+  }
+  return node
+}
+
 function injectDocxImageFallbacks(target: HTMLDivElement, fallbacks: DocxImageFallback[]) {
   const sections = getDocxSections(target)
   if (!sections.length) {
@@ -816,14 +1010,34 @@ function injectDocxImageFallbacks(target: HTMLDivElement, fallbacks: DocxImageFa
 
   fallbacks.forEach(fallback => {
     if (fallback.role === 'watermark') {
+      const dataUrl = fallback.dataUrl
+      if (!dataUrl) {
+        return
+      }
       sections.forEach(section => {
         const image = target.ownerDocument.createElement('img')
         image.className = 'docx-vml-watermark'
-        image.src = fallback.dataUrl
+        image.src = dataUrl
         image.alt = fallback.title || ''
         image.dataset.docxFallback = fallback.key
         section.prepend(image)
       })
+      return
+    }
+
+    if (fallback.kind === 'math-text') {
+      const node = createDocxMathFallbackNode(target, fallback)
+      if (!replaceDocxUnsupportedImage(target, node, fallback.paragraphIndex)) {
+        const figure = target.ownerDocument.createElement('figure')
+        figure.className = 'docx-math-fallback'
+        figure.dataset.docxFallback = fallback.key
+        figure.textContent = fallback.text || ''
+        insertDocxFallback(target, figure, fallback.paragraphIndex)
+      }
+      return
+    }
+
+    if (!fallback.dataUrl) {
       return
     }
 
@@ -863,7 +1077,7 @@ function injectDocxChartFallbacks(target: HTMLDivElement, fallbacks: DocxChartFa
 
 async function enhanceDocxFallbacks(buffer: ArrayBuffer, target: HTMLDivElement) {
   try {
-    const { default: JSZip } = await import('jszip')
+    const JSZip = resolveJSZip(await import('jszip'))
     const zip = await JSZip.loadAsync(buffer.slice(0))
     const [imageFallbacks, chartFallbacks] = await Promise.all([
       collectDocxVmlFallbacks(zip, target),

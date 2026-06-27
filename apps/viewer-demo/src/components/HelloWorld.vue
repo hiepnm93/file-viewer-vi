@@ -962,6 +962,7 @@ const viewerOptions = computed((): FileViewerOptions => {
   }
   options.spreadsheet = {
     resizableColumns: true,
+    resizableRows: true,
     ...runtime.spreadsheet
   }
   options.drawing = { ...runtime.drawing }

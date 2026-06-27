@@ -5,6 +5,23 @@ const TAR_BLOCK_SIZE = 512;
 const ZIP_CENTRAL_FILE_HEADER = 0x02014b50;
 const ZIP_LOCAL_FILE_HEADER = 0x04034b50;
 const ZIP_GENERAL_PURPOSE_ENCRYPTED_FLAG = 0x0001;
+const resolveJSZip = (module) => {
+    const record = module;
+    const defaultRecord = record === null || record === void 0 ? void 0 : record.default;
+    const candidates = [
+        record === null || record === void 0 ? void 0 : record.default,
+        defaultRecord === null || defaultRecord === void 0 ? void 0 : defaultRecord.default,
+        record === null || record === void 0 ? void 0 : record.JSZip,
+        module,
+    ];
+    const JSZip = candidates.find(candidate => !!candidate &&
+        typeof candidate === 'object' &&
+        typeof candidate.loadAsync === 'function');
+    if (!JSZip) {
+        throw new Error('JSZip module does not expose loadAsync.');
+    }
+    return JSZip;
+};
 const toArrayBuffer = (bytes) => {
     const output = new Uint8Array(bytes.byteLength);
     output.set(bytes);
@@ -140,7 +157,7 @@ const getGzipEntryName = (filename) => {
     return `${filename || 'archive'}.bin`;
 };
 const loadZipEntries = async (data) => {
-    const { default: JSZip } = await import('jszip');
+    const JSZip = resolveJSZip(await import('jszip'));
     const zip = await JSZip.loadAsync(data);
     const entries = [];
     zip.forEach((relativePath, file) => {

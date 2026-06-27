@@ -32,6 +32,7 @@ const CELL_PADDING = 2
 const CELL_LINE_HEIGHT = 1.2
 export const HEADER_HEIGHT = 34
 export const RESIZABLE_COLUMN_MIN_WIDTH = 40
+export const RESIZABLE_ROW_MIN_HEIGHT = 18
 const EXCEL_HEADER_BG = '#f3f3f3'
 const EXCEL_HEADER_TEXT = '#5f6368'
 const EXCEL_GRID = '#d7dbe0'
@@ -64,6 +65,7 @@ const LOADING_CELL_STYLE: CellStyleCache = {
 interface TableConfigOptions {
   hostHeight: number
   resizableColumns?: boolean
+  resizableRows?: boolean
   sheetDefaults: SheetDefaults
   virtualState: VirtualSheetState
   zoomScale?: number
@@ -72,6 +74,12 @@ interface TableConfigOptions {
 interface TextOverflowLayout {
   left: number
   width: number
+}
+
+interface TextOverflowMirror {
+  value: unknown
+  style: CellStyleCache
+  overflowLayout: TextOverflowLayout
 }
 
 let measureCanvas: HTMLCanvasElement | undefined
@@ -642,6 +650,102 @@ const getExcelOverflowLayout = (
   }
 }
 
+const getDataColumnSpanWidth = (
+  virtualState: VirtualSheetState,
+  startDataColIndex: number,
+  endDataColIndex: number
+) => {
+  let width = 0
+  for (let index = startDataColIndex; index < endDataColIndex; index += 1) {
+    width += getRenderColumnWidth(virtualState.columns[index + 1])
+  }
+  return width
+}
+
+const getLeftOverflowMirror = (
+  virtualState: VirtualSheetState,
+  row: VirtualRow,
+  rowIndex: number,
+  targetDataColIndex: number,
+  zoomScale: number,
+  documentRef?: Document
+): TextOverflowMirror | undefined => {
+  if (!isBlankOverflowTarget(virtualState, row, rowIndex, targetDataColIndex)) {
+    return undefined
+  }
+
+  const targetColumn = virtualState.columns[targetDataColIndex + 1]
+  const targetWidth = getRenderColumnWidth(targetColumn)
+  if (!targetWidth) {
+    return undefined
+  }
+
+  for (let step = 1; step <= MAX_OVERFLOW_SCAN_COLS; step += 1) {
+    const sourceDataColIndex = targetDataColIndex - step
+    if (sourceDataColIndex < 0) {
+      break
+    }
+
+    const sourceColumn = virtualState.columns[sourceDataColIndex + 1]
+    if (!isVisibleDataColumn(sourceColumn)) {
+      break
+    }
+
+    const sourceValue = row[getDataKey(sourceDataColIndex)]
+    if (!hasRenderableValue(sourceValue)) {
+      if (!isBlankOverflowTarget(virtualState, row, rowIndex, sourceDataColIndex)) {
+        break
+      }
+      continue
+    }
+
+    const sourceCellKey = getCellKeyByDataColumn(rowIndex, sourceDataColIndex)
+    const rawSourceStyle = virtualState.cellCache.get(sourceCellKey)
+    const sourceStyle: CellStyleCache = {
+      ...(scaleCellStyle(rawSourceStyle, zoomScale) || {}),
+      horizontalAlign: rawSourceStyle?.horizontalAlign || sourceColumn?.align,
+      verticalAlign: rawSourceStyle?.verticalAlign || sourceColumn?.verticalAlign
+    }
+    const sourceLayout = getExcelOverflowLayout(
+      virtualState,
+      row,
+      rowIndex,
+      sourceDataColIndex,
+      sourceColumn,
+      sourceStyle,
+      sourceValue,
+      zoomScale,
+      documentRef
+    )
+    if (!sourceLayout) {
+      return undefined
+    }
+
+    const targetOffset = getDataColumnSpanWidth(
+      virtualState,
+      sourceDataColIndex,
+      targetDataColIndex
+    )
+    const sourceTextLeft = sourceLayout.left
+    const sourceTextRight = sourceLayout.left + sourceLayout.width
+    const targetLeft = targetOffset
+    const targetRight = targetOffset + targetWidth
+    if (sourceTextLeft < targetRight && sourceTextRight > targetLeft) {
+      return {
+        value: sourceValue,
+        style: sourceStyle,
+        overflowLayout: {
+          left: sourceLayout.left - targetOffset,
+          width: sourceLayout.width
+        }
+      }
+    }
+    return undefined
+  }
+
+  return undefined
+}
+
 const getBorderScore = (border?: CellBorderCache) => {
   if (!border) {
     return 0
@@ -771,8 +875,9 @@ const applyOverflowLayout = (text: HTMLSpanElement, overflowLayout?: TextOverflo
 // 这里借助官方的 BODY_CELL_RENDER_METHOD，只在可视区补轻量 DOM 覆盖层。
 const renderCellOverlay = (
   cellEl: HTMLDivElement,
-  style: CellStyleCache,
-  value: unknown,
+  borderStyle: CellStyleCache,
+  textStyle: CellStyleCache,
+  textValue: unknown,
   renderText: boolean,
   overflowLayout: TextOverflowLayout | undefined,
   zoomScale: number
@@ -781,27 +886,27 @@ const renderCellOverlay = (
   cellEl.replaceChildren()
   Object.assign(cellEl.style, {
     pointerEvents: 'none',
-    overflow: 'visible',
+    overflow: overflowLayout ? 'hidden' : 'visible',
     background: 'transparent'
   } satisfies Partial<CSSStyleDeclaration>)
 
   const fragment = documentRef.createDocumentFragment()
   if (renderText) {
-    const text = createTextLayer(documentRef, value, style, scaleNumber(CELL_PADDING, zoomScale))
+    const text = createTextLayer(documentRef, textValue, textStyle, scaleNumber(CELL_PADDING, zoomScale))
     applyOverflowLayout(text, overflowLayout)
     fragment.appendChild(text)
   }
-  if (style.borderTop) {
-    fragment.appendChild(createBorderLine(documentRef, 'top', style.borderTop))
+  if (borderStyle.borderTop) {
+    fragment.appendChild(createBorderLine(documentRef, 'top', borderStyle.borderTop))
   }
-  if (style.borderRight) {
-    fragment.appendChild(createBorderLine(documentRef, 'right', style.borderRight))
+  if (borderStyle.borderRight) {
+    fragment.appendChild(createBorderLine(documentRef, 'right', borderStyle.borderRight))
   }
-  if (style.borderBottom) {
-    fragment.appendChild(createBorderLine(documentRef, 'bottom', style.borderBottom))
+  if (borderStyle.borderBottom) {
+    fragment.appendChild(createBorderLine(documentRef, 'bottom', borderStyle.borderBottom))
   }
-  if (style.borderLeft) {
-    fragment.appendChild(createBorderLine(documentRef, 'left', style.borderLeft))
+  if (borderStyle.borderLeft) {
+    fragment.appendChild(createBorderLine(documentRef, 'left', borderStyle.borderLeft))
   }
 
   cellEl.appendChild(fragment)
@@ -875,6 +980,7 @@ export const normalizeCellStyle = (
 export const createTableConfig = ({
   hostHeight,
   resizableColumns = false,
+  resizableRows = false,
   sheetDefaults,
   virtualState,
   zoomScale = 1
@@ -950,22 +1056,34 @@ export const createTableConfig = ({
       return undefined
     }
 
-    const style = scaleCellStyle(virtualState.cellCache.get(cellKey), normalizedScale)
-    const dataColIndex = getDataColumnIndex(column, colIndex)
-    const overflowLayout = getExcelOverflowLayout(
-      virtualState,
-      currentRow,
+      const style = scaleCellStyle(virtualState.cellCache.get(cellKey), normalizedScale)
+      const dataColIndex = getDataColumnIndex(column, colIndex)
+      const measureDocument = typeof document === 'undefined' ? undefined : document
+      const overflowLayout = getExcelOverflowLayout(
+        virtualState,
+        currentRow,
       rowIndex,
       dataColIndex,
       column,
-      style,
-      value,
-      normalizedScale
-    )
-    const renderText = shouldRenderTextInOverlay(style, column) || !!overflowLayout
-    if (!hasBorder(style) && !renderText) {
-      return undefined
-    }
+        style,
+        value,
+        normalizedScale,
+        measureDocument
+      )
+      const mirror = !hasRenderableValue(value)
+        ? getLeftOverflowMirror(
+          virtualState,
+          currentRow,
+          rowIndex,
+          dataColIndex,
+          normalizedScale,
+          measureDocument
+        )
+        : undefined
+      const renderText = shouldRenderTextInOverlay(style, column) || !!overflowLayout || !!mirror
+      if (!hasBorder(style) && !renderText) {
+        return undefined
+      }
 
     return ((cellEl: HTMLDivElement) => {
       const baseStyle: CellStyleCache = {
@@ -976,7 +1094,15 @@ export const createTableConfig = ({
       const collapsedStyle = hasBorder(style)
         ? getCollapsedBorderStyle(virtualState, rowIndex, dataColIndex, baseStyle, normalizedScale)
         : baseStyle
-      renderCellOverlay(cellEl, collapsedStyle, value, renderText, overflowLayout, normalizedScale)
+      renderCellOverlay(
+        cellEl,
+        collapsedStyle,
+        mirror?.style || collapsedStyle,
+        mirror ? mirror.value : value,
+        renderText,
+        mirror?.overflowLayout || overflowLayout,
+        normalizedScale
+      )
     }) as unknown as string
   }
 
@@ -1028,7 +1154,9 @@ export const createTableConfig = ({
     RESIZE_COLUMN_LINE_COLOR: EXCEL_GREEN,
     RESIZE_COLUMN_TEXT_BG_COLOR: EXCEL_GREEN,
     RESIZE_COLUMN_MIN_WIDTH: RESIZABLE_COLUMN_MIN_WIDTH,
-    ENABLE_RESIZE_ROW: false,
+    ENABLE_RESIZE_ROW: resizableRows,
+    RESIZE_ROW_LINE_COLOR: EXCEL_GREEN,
+    RESIZE_ROW_MIN_HEIGHT: scaleNumber(RESIZABLE_ROW_MIN_HEIGHT, normalizedScale),
     ENABLE_KEYBOARD: true,
     ENABLE_COPY: true,
     // 预览态只开放“拖动扩选”的交互，不允许真正写回单元格内容。
@@ -1050,17 +1178,30 @@ export const createTableConfig = ({
       }
       const currentRow = row as VirtualRow
       const style = scaleCellStyle(virtualState.cellCache.get(getCellCacheKey(rowIndex, colIndex, column)), normalizedScale)
+      const dataColIndex = getDataColumnIndex(column, colIndex)
+      const measureDocument = typeof document === 'undefined' ? undefined : document
       const overflowLayout = getExcelOverflowLayout(
         virtualState,
         currentRow,
         rowIndex,
-        getDataColumnIndex(column, colIndex),
+        dataColIndex,
         column,
         style,
         value,
-        normalizedScale
+        normalizedScale,
+        measureDocument
       )
-      if (shouldRenderTextInOverlay(style, column) || overflowLayout) {
+      const mirror = !hasRenderableValue(value)
+        ? getLeftOverflowMirror(
+          virtualState,
+          currentRow,
+          rowIndex,
+          dataColIndex,
+          normalizedScale,
+          measureDocument
+        )
+        : undefined
+      if (shouldRenderTextInOverlay(style, column) || overflowLayout || mirror) {
         return ''
       }
       if (value === null || value === undefined) {
