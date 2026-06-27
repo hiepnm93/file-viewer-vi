@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { readJson } from './lib/ecosystem-packages.mjs'
@@ -30,6 +30,42 @@ const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.j
 const remoteUrl = readArg('--remote-url', branchRoles.publicMainRepository.gitee)
 const message = readArg('--message', 'chore: publish open-source main snapshot mirror')
 const packageMetadataFiles = ['package.json', 'README.md', 'README.en.md', 'LICENSE']
+const excludedSnapshotPrefixes = [
+  'apps/',
+  'demo/',
+  'component-demo/',
+  'docs-dist/',
+  'example/',
+  'docs/.vitepress/cache/',
+  'packages/'
+]
+const excludedRuntimePrefixes = [
+  'packages/components/web/viewer/',
+  'packages/compat/web/viewer/',
+  'packages/components/web-full/dist/renderers/',
+  'packages/components/web-full/dist/vendor/',
+  'packages/components/web-full/dist/wasm/'
+]
+const excludedSnapshotFiles = [
+  /^artifacts\/file-viewer-v[23]-.*-(demo|component-demo|docs)\.tar\.gz$/
+]
+const skipStats = {
+  count: 0,
+  bytes: 0,
+  examples: []
+}
+
+function readNumberArg(name, fallback) {
+  const value = readArg(name, fallback)
+  const number = Number(value)
+  return Number.isFinite(number) ? number : Number(fallback)
+}
+
+const maxFileMegabytes = Math.max(
+  1,
+  readNumberArg('--max-file-mb', process.env.FILE_VIEWER_PUBLIC_GITEE_MAX_FILE_MB || '25')
+)
+const maxFileBytes = maxFileMegabytes * 1024 * 1024
 
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
@@ -50,6 +86,44 @@ function run(command, commandArgs, options = {}) {
   }
 
   return (result.stdout || '').trim()
+}
+
+function toPosixPath(path) {
+  return path.split(sep).join('/')
+}
+
+function isExcludedPath(relativePath, prefixes = []) {
+  const normalized = toPosixPath(relativePath)
+  return prefixes.some(prefix => normalized === prefix.slice(0, -1) || normalized.startsWith(prefix))
+}
+
+function isExcludedSnapshotFile(relativePath) {
+  const normalized = toPosixPath(relativePath)
+  return excludedSnapshotFiles.some(pattern => pattern.test(normalized))
+}
+
+function recordSkip(relativePath, size = 0, reason = 'excluded') {
+  skipStats.count += 1
+  skipStats.bytes += size
+  if (skipStats.examples.length < 12) {
+    skipStats.examples.push(`${relativePath} (${reason})`)
+  }
+}
+
+async function shouldSkipFile(path, relativePath, reasonPrefix) {
+  const info = await stat(path)
+  if (!info.isFile()) {
+    return false
+  }
+  if (info.size > maxFileBytes) {
+    recordSkip(relativePath, info.size, `>${maxFileMegabytes}MB`)
+    return true
+  }
+  if (reasonPrefix) {
+    recordSkip(relativePath, info.size, reasonPrefix)
+    return true
+  }
+  return false
 }
 
 function assertCleanGitRepo(cwd, label) {
@@ -81,14 +155,23 @@ async function copyTrackedFiles(from, to) {
     .split('\0')
     .filter(Boolean)
 
+  let copied = 0
   for (const file of trackedFiles) {
     const source = join(from, file)
+    if (isExcludedPath(file, excludedSnapshotPrefixes) || isExcludedSnapshotFile(file)) {
+      await shouldSkipFile(source, file, 'gitee-slim')
+      continue
+    }
+    if (await shouldSkipFile(source, file)) {
+      continue
+    }
     const target = join(to, file)
     await mkdir(dirname(target), { recursive: true })
     await cp(source, target, { force: true, preserveTimestamps: true })
+    copied += 1
   }
 
-  return trackedFiles.length
+  return copied
 }
 
 async function pathExists(path) {
@@ -103,15 +186,34 @@ async function pathExists(path) {
   }
 }
 
-async function copyIfExists(source, target) {
+async function copyIfExists(source, target, options = {}) {
   if (!(await pathExists(source))) {
+    return false
+  }
+  const sourceRelative = toPosixPath(relative(sourceRoot, source))
+  const skippedByPrefix = options.runtime ? isExcludedPath(sourceRelative, excludedRuntimePrefixes) : false
+  if (skippedByPrefix) {
+    recordSkip(sourceRelative, 0, 'gitee-runtime-slim')
     return false
   }
   await mkdir(dirname(target), { recursive: true })
   await cp(source, target, {
     recursive: true,
     force: true,
-    preserveTimestamps: true
+    preserveTimestamps: true,
+    filter: async path => {
+      const relativePath = toPosixPath(relative(sourceRoot, path))
+      if (options.runtime && isExcludedPath(relativePath, excludedRuntimePrefixes)) {
+        recordSkip(relativePath, 0, 'gitee-runtime-slim')
+        return false
+      }
+      const info = await stat(path)
+      if (info.isFile() && info.size > maxFileBytes) {
+        recordSkip(relativePath, info.size, `>${maxFileMegabytes}MB`)
+        return false
+      }
+      return true
+    }
   })
   return true
 }
@@ -193,9 +295,9 @@ async function copyRuntimePackage(relativePackageDir, snapshotRoot) {
   const packageJson = normalizeRuntimePackageJson(JSON.parse(await readFile(packageJsonPath, 'utf8')))
   await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
 
-  await copyIfExists(join(sourcePackageDir, 'dist'), join(targetPackageDir, 'dist'))
-  await copyIfExists(join(sourcePackageDir, 'vendor'), join(targetPackageDir, 'vendor'))
-  await copyIfExists(join(sourcePackageDir, 'viewer'), join(targetPackageDir, 'viewer'))
+  await copyIfExists(join(sourcePackageDir, 'dist'), join(targetPackageDir, 'dist'), { runtime: true })
+  await copyIfExists(join(sourcePackageDir, 'vendor'), join(targetPackageDir, 'vendor'), { runtime: true })
+  await copyIfExists(join(sourcePackageDir, 'viewer'), join(targetPackageDir, 'viewer'), { runtime: true })
   await copyIfExists(
     join(sourcePackageDir, 'scripts', 'copy-assets.mjs'),
     join(targetPackageDir, 'scripts', 'copy-assets.mjs')
@@ -215,15 +317,6 @@ async function rewriteSnapshotRootPackage(snapshotRoot) {
   const packagePath = join(snapshotRoot, 'package.json')
   const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
   packageJson.scripts = {
-    dev: packageJson.scripts?.dev || 'pnpm --filter @flyfish-group/file-viewer-demo dev',
-    'site:dev': packageJson.scripts?.['site:dev'] || 'pnpm --filter @flyfish-group/file-viewer-site dev',
-    'site:build': packageJson.scripts?.['site:build'] || 'pnpm --filter @flyfish-group/file-viewer-site build',
-    'site:preview': packageJson.scripts?.['site:preview'] || 'pnpm --filter @flyfish-group/file-viewer-site preview',
-    build: packageJson.scripts?.['build:demo'] || 'pnpm --filter @flyfish-group/file-viewer-demo build',
-    'build:demo': packageJson.scripts?.['build:demo'] || 'pnpm --filter @flyfish-group/file-viewer-demo build',
-    'build:component-demo':
-      packageJson.scripts?.['build:component-demo'] ||
-      'pnpm --filter @flyfish-group/file-viewer-component-demo build',
     'docs:dev': packageJson.scripts?.['docs:dev'] || 'vitepress dev docs',
     'docs:build': packageJson.scripts?.['docs:build'] || 'vitepress build docs',
     'docs:preview': packageJson.scripts?.['docs:preview'] || 'vitepress preview docs'
@@ -276,6 +369,11 @@ const snapshotTree = run('git', ['rev-parse', 'HEAD^{tree}'], { cwd: snapshotDir
 console.log(`Prepared Gitee snapshot mirror in ${snapshotDir}`)
 console.log(`Tracked files: ${fileCount}`)
 console.log(`Runtime package directories: ${packageCount}`)
+console.log(`Skipped Gitee-only heavy/resource files: ${skipStats.count}`)
+console.log(`Skipped bytes: ${(skipStats.bytes / 1024 / 1024).toFixed(1)} MiB`)
+if (skipStats.examples.length) {
+  console.log(`Skipped examples: ${skipStats.examples.join('; ')}`)
+}
 console.log(`Public source commit: ${publicHead}`)
 console.log(`Snapshot commit: ${snapshotHead}`)
 console.log(`Public tree: ${publicTree}`)
