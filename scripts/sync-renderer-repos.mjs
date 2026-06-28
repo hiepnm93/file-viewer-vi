@@ -261,7 +261,9 @@ for (const renderer of renderers) {
   await assertDirectory(sourcePackageDir)
   const targetDir = join(outputRoot, renderer.repository)
   await copyPackage(sourcePackageDir, targetDir)
-  await cp(join(sourceRoot, 'LICENSE'), join(targetDir, 'LICENSE'), { force: true })
+  if (!existsSync(join(targetDir, 'LICENSE'))) {
+    await cp(join(sourceRoot, 'LICENSE'), join(targetDir, 'LICENSE'), { force: true })
+  }
   await writeGitignore(targetDir)
   await normalizePackageJson(targetDir, renderer)
   await normalizeStandaloneTsConfig(targetDir)

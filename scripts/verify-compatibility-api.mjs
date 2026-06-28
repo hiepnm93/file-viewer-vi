@@ -240,10 +240,33 @@ async function verifyVue27ScopedCompatibility() {
   assertNoLegacyIframeTokens(buildScript, `${entry.packageName} build script`)
 }
 
+async function verifyMsdocViewerCompatibility() {
+  const entry = requireEntry('msdoc-viewer')
+  const dependencies = installDependencies(entry.packageJson)
+  assert(
+    dependencies['@file-viewer/doc'] === expectedWorkspaceRange,
+    `${entry.packageName} must depend on @file-viewer/doc@${expectedWorkspaceRange}`
+  )
+  assert(
+    !dependencies['@file-viewer/core'] && !dependencies['@file-viewer/renderer-word'],
+    `${entry.packageName} must remain a thin DOC alias instead of depending on core or the Word renderer`
+  )
+
+  const source = await readSource(entry, 'src/index.ts')
+  assertImportsFrom(source, '@file-viewer/doc', entry.packageName)
+  assertTokens(source, ['export *'], entry.packageName)
+  assertNoLegacyIframeTokens(source, entry.packageName)
+
+  const workerSource = await readSource(entry, 'src/worker.ts')
+  assertTokens(workerSource, ["import '@file-viewer/doc/worker';"], `${entry.packageName} worker alias`)
+  assertNoLegacyIframeTokens(workerSource, `${entry.packageName} worker alias`)
+}
+
 await verifyWebCompatibility()
 await verifyReactCompatibility()
 await verifyVue3ScopedCompatibility()
 await verifyVue3UnscopedCompatibility()
 await verifyVue27ScopedCompatibility()
+await verifyMsdocViewerCompatibility()
 
-console.log('Verified native compatibility aliases, Vue 2.7/Vue 3 scoped packages, and PPTX renderer ownership.')
+console.log('Verified native compatibility aliases, renderer aliases, and Vue 2.7/Vue 3 scoped packages.')

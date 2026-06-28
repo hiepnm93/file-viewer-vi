@@ -56,6 +56,14 @@ const packageBudgets = {
     maxExternalDependencyClosure: 5,
     maxLocalPackageClosure: 1
   },
+  '@file-viewer/doc': {
+    maxPackedBytes: 90_000,
+    maxUnpackedBytes: 380_000,
+    maxFiles: 65,
+    maxDirectRuntimeDependencies: 0,
+    maxExternalDependencyClosure: 0,
+    maxLocalPackageClosure: 1
+  },
   '@file-viewer/eda-layout': {
     maxPackedBytes: 25_000,
     maxUnpackedBytes: 90_000,

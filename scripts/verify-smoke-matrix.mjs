@@ -10,6 +10,7 @@ const examplesRoot = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example'
 const vitePluginSourcePath = join(sourceRoot, 'packages', 'presets', 'vite-plugin', 'src', 'index.ts')
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
+  '@file-viewer/doc',
   '@file-viewer/eda-layout',
   '@file-viewer/eda-orcad',
   '@file-viewer/geometry-engine'

@@ -429,6 +429,7 @@ async function writePublicRootPackage(repoDir) {
       'build:demo': 'pnpm --filter @flyfish-group/file-viewer-demo build',
       'build:component-demo': 'pnpm --filter @flyfish-group/file-viewer-component-demo build',
       'build:pptx': 'pnpm --filter @file-viewer/pptx build',
+      'build:doc': 'pnpm --filter @file-viewer/doc build',
       'build:core': 'pnpm --filter @file-viewer/core build',
       'build:components': 'pnpm build:core && pnpm --filter @file-viewer/web build && pnpm --filter @file-viewer/react build && pnpm --filter @file-viewer/react-legacy build && pnpm --filter @file-viewer/vue3 build && pnpm --filter @file-viewer/vue2.7 build && pnpm --filter @file-viewer/vue2.6 build && pnpm --filter @file-viewer/jquery build && pnpm --filter @file-viewer/svelte build',
       'type-check': 'pnpm --filter @flyfish-group/file-viewer-demo type-check && pnpm type-check:core && pnpm type-check:components',

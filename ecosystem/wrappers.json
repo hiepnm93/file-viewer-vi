@@ -49,9 +49,21 @@
       "publicSource": true
     },
     {
+      "id": "doc",
+      "packageName": "@file-viewer/doc",
+      "description": "Browser-native legacy MS-DOC parser and HTML renderer extracted from the public msdoc-viewer 0.2.0 line, maintained as the docjs source package.",
+      "packageDir": "packages/renderers/doc",
+      "repository": "docjs",
+      "github": "https://github.com/flyfish-dev/docjs",
+      "gitee": "https://gitee.com/flyfish-dev/docjs",
+      "entryFormats": ["esm", "types", "worker"],
+      "historicalPackages": ["msdoc-viewer"],
+      "publicSource": true
+    },
+    {
       "id": "word",
       "packageName": "@file-viewer/renderer-word",
-      "description": "Standalone Word and compatible document renderer plugin for File Viewer with @file-viewer/docx, msdoc-viewer, RTF, ODT, worker assets, zoom, print, and export support.",
+      "description": "Standalone Word and compatible document renderer plugin for File Viewer with @file-viewer/docx, @file-viewer/doc, RTF, ODT, worker assets, zoom, print, and export support.",
       "packageDir": "packages/renderers/word",
       "repository": "file-viewer-renderer-word",
       "github": "https://github.com/flyfish-dev/file-viewer-renderer-word",
@@ -375,6 +387,17 @@
       "targetPackage": "@file-viewer/react",
       "packageDir": "packages/compat/react",
       "publicSource": false,
+      "releaseArtifact": {
+        "includeTarball": true
+      }
+    },
+    {
+      "id": "msdoc-viewer-compat",
+      "packageName": "msdoc-viewer",
+      "targetPackage": "@file-viewer/doc",
+      "packageDir": "packages/compat/msdoc-viewer",
+      "publicSource": true,
+      "releaseVersion": "0.2.1",
       "releaseArtifact": {
         "includeTarball": true
       }

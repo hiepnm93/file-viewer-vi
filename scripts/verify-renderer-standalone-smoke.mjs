@@ -13,6 +13,7 @@ const sourceRoot = resolve(scriptDir, '..')
 const args = process.argv.slice(2)
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
+  '@file-viewer/doc',
   '@file-viewer/eda-layout',
   '@file-viewer/eda-orcad',
   '@file-viewer/geometry-engine'

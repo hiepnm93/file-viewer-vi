@@ -6,7 +6,7 @@ export const rendererModularizationLines = [
     phase: 2,
     status: 'extracted',
     renderers: ['office-word-openxml', 'office-word-binary', 'open-document'],
-    dependencies: ['@file-viewer/docx', 'msdoc-viewer', 'rtf.js', 'jszip', 'linkedom'],
+    dependencies: ['@file-viewer/docx', '@file-viewer/doc', 'rtf.js', 'jszip', 'linkedom'],
   },
   {
     id: 'office-presentation',

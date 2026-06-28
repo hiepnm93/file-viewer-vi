@@ -24,6 +24,7 @@ const wrapperPackageNames = new Set([
 const rendererEntries = entries.filter(entry => entry.kind === 'renderer')
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
+  '@file-viewer/doc',
   '@file-viewer/eda-layout',
   '@file-viewer/eda-orcad',
   '@file-viewer/geometry-engine'

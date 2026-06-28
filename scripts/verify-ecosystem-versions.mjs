@@ -17,6 +17,16 @@ const standardPackageByHistoricalName = new Map()
 const compatibilityPackageByName = new Map()
 const standardWrapperPackageNames = new Set(wrapperManifest.wrappers.map(wrapper => wrapper.packageName))
 const wrapperByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
+const historicalOwners = [
+  ...wrapperManifest.wrappers.map(wrapper => ({
+    packageName: wrapper.packageName,
+    historicalPackages: wrapper.historicalPackages || []
+  })),
+  ...(wrapperManifest.renderers || []).map(renderer => ({
+    packageName: renderer.packageName,
+    historicalPackages: renderer.historicalPackages || []
+  }))
+]
 
 function assert(condition, message) {
   if (!condition) {
@@ -73,11 +83,11 @@ function assertRepositoryMetadata(entry, expectedUrl, expectedDirectory) {
   )
 }
 
-for (const wrapper of wrapperManifest.wrappers) {
-  for (const packageName of wrapper.historicalPackages) {
+for (const owner of historicalOwners) {
+  for (const packageName of owner.historicalPackages) {
     assert(!historicalPackageNames.has(packageName), `Duplicate historical package ${packageName}`)
     historicalPackageNames.add(packageName)
-    standardPackageByHistoricalName.set(packageName, wrapper.packageName)
+    standardPackageByHistoricalName.set(packageName, owner.packageName)
   }
 }
 
@@ -151,9 +161,10 @@ for (const entry of entries) {
   assertUnique(entryById, entry.id, 'package id', entry.packageName)
   assertUnique(entryByDir, entry.packageDir, 'package directory', entry.packageName)
 
+  const expectedVersion = entry.compatibilityPackage?.releaseVersion || rootVersion
   assert(
-    entry.version === rootVersion,
-    `${entry.packageName} version ${entry.version} must match root version ${rootVersion}`
+    entry.version === expectedVersion,
+    `${entry.packageName} version ${entry.version} must match expected version ${expectedVersion}`
   )
   assert(entry.packageJson.private !== true, `${entry.packageName} must not be private`)
   assert(
@@ -250,6 +261,12 @@ for (const entry of entries) {
       `${entry.packageName} target package must be ${standardPackageName}`
     )
     const dependencies = installDependencies(entry.packageJson)
+    if (!['@file-viewer/react', '@file-viewer/web', '@file-viewer/vue2.7', '@file-viewer/vue3'].includes(standardPackageName)) {
+      assert(
+        dependencies[standardPackageName] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on ${standardPackageName}@${expectedWorkspaceRange}`
+      )
+    }
     if (standardPackageName === '@file-viewer/react') {
       assert(
         !dependencies[corePackageName] && !dependencies['@file-viewer/web'],

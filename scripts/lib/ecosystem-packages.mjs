@@ -139,6 +139,7 @@ export function ecosystemPackageManifestEntry(entry) {
     publicSource: entry.publicSource,
     releaseArtifact: entry.releaseArtifact,
     targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
+    releaseVersion: entry.compatibilityPackage?.releaseVersion ?? null,
     github: entry.wrapper?.github ?? entry.renderer?.github ?? entry.preset?.github ?? null,
     gitee: entry.wrapper?.gitee ?? entry.renderer?.gitee ?? entry.preset?.gitee ?? null,
     sourceRepository: entry.corePackage?.sourceRepository ?? null

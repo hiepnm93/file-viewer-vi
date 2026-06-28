@@ -26,6 +26,7 @@ const highLevelPackageNames = new Set([
 ])
 const pluginEnginePackageNames = new Set([
   '@file-viewer/pptx',
+  '@file-viewer/doc',
   '@file-viewer/eda-layout',
   '@file-viewer/eda-orcad',
   '@file-viewer/geometry-engine'

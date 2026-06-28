@@ -153,8 +153,9 @@ async function verifyPackage(entry, options) {
   if (entry.packageJson.private === true) {
     throw new Error(`${entry.packageName} is private and cannot be released`)
   }
-  if (entry.version !== rootPackage.version) {
-    throw new Error(`${entry.packageName} version ${entry.version} does not match root version ${rootPackage.version}`)
+  const expectedVersion = entry.compatibilityPackage?.releaseVersion || rootPackage.version
+  if (entry.version !== expectedVersion) {
+    throw new Error(`${entry.packageName} version ${entry.version} does not match expected version ${expectedVersion}`)
   }
   if (entry.packageJson.publishConfig?.access !== 'public') {
     throw new Error(`${entry.packageName} must publish with access=public`)
