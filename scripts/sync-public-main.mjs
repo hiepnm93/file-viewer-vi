@@ -28,6 +28,10 @@ const includeLegacyVue2Tarball =
 const skipVue2Tarball = args.includes('--skip-vue2-tarball') || !includeLegacyVue2Tarball
 const keepExpandedAssets =
   args.includes('--expanded-assets') || process.env.FILE_VIEWER_PUBLIC_EXPANDED_ASSETS === '1'
+const includeStaticSiteArchives =
+  keepExpandedAssets ||
+  args.includes('--static-site-archives') ||
+  process.env.FILE_VIEWER_PUBLIC_STATIC_SITE_ARCHIVES === '1'
 const slimArtifacts = !keepExpandedAssets
 const {
   rootPackage: packageJson,
@@ -514,10 +518,16 @@ async function removeOldArtifacts(artifactsDir) {
     ecosystemPackageEntries.map(ecosystemPackage => ecosystemPackage.tarballName)
   )
   const currentStaticArchives = new Set([
-    `file-viewer-v2-${version}-demo.tar.gz`,
-    `file-viewer-v2-${version}-component-demo.tar.gz`,
     `file-viewer-v2-${version}-lib-dist.tar.gz`,
-    `file-viewer-v2-${version}-docs.tar.gz`
+    ...(
+      includeStaticSiteArchives
+        ? [
+            `file-viewer-v2-${version}-demo.tar.gz`,
+            `file-viewer-v2-${version}-component-demo.tar.gz`,
+            `file-viewer-v2-${version}-docs.tar.gz`
+          ]
+        : []
+    )
   ])
   for (const entry of entries) {
     if (
@@ -597,6 +607,32 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
       description: 'JSON Schema for release-status.json.'
     }
   ]
+  const staticArtifacts = [
+    {
+      name: `file-viewer-v2-${version}-lib-dist.tar.gz`,
+      role: 'library-dist',
+      artifactIncluded: true,
+      description: 'Minified Vue 3 library dist archive for direct download checks.'
+    },
+    {
+      name: `file-viewer-v2-${version}-demo.tar.gz`,
+      role: 'demo-site',
+      artifactIncluded: includeStaticSiteArchives,
+      description: 'Main demo static site archive. Distributed via Cloudflare Pages by default to keep git clones small.'
+    },
+    {
+      name: `file-viewer-v2-${version}-component-demo.tar.gz`,
+      role: 'component-demo-site',
+      artifactIncluded: includeStaticSiteArchives,
+      description: 'Component demo static site archive. Distributed via Cloudflare Pages by default to keep git clones small.'
+    },
+    {
+      name: `file-viewer-v2-${version}-docs.tar.gz`,
+      role: 'docs-site',
+      artifactIncluded: includeStaticSiteArchives,
+      description: 'Documentation static site archive. Distributed via Cloudflare Pages by default to keep git clones small.'
+    }
+  ]
   const manifest = {
     version,
     package: packageJson.name,
@@ -608,6 +644,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
       packages.map(packageRecord => [packageRecord.packageName, packageRecord.version])
     ),
     metadataAssets,
+    staticArtifacts,
     ecosystemArtifacts: packages.map(packageRecord => {
       const wrapper = wrappersByPackageName.get(packageRecord.packageName)
       const renderer = renderersByPackageName.get(packageRecord.packageName)
@@ -652,6 +689,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     layout: keepExpandedAssets ? 'expanded' : 'slim',
     allowedRoots,
     archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'component-demo', 'docs-dist', 'example'],
+    staticSiteArchivesIncluded: includeStaticSiteArchives,
     slimMode: slimArtifacts
   }
   const manifestPath = join(repoDir, 'artifacts', 'release-manifest.json')
@@ -749,10 +787,12 @@ if (!skipVue2Tarball) {
   await copyFileIfChanged(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), basename(vue2Tarball))
 }
 
-await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-demo.tar.gz`))
-await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-component-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v2-${version}-lib-dist.tar.gz`))
-await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
+if (includeStaticSiteArchives) {
+  await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-demo.tar.gz`))
+  await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-component-demo.tar.gz`))
+  await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
+}
 await copyFileIfChanged(
   join(sourceRoot, 'ecosystem', 'release-status.schema.json'),
   join(artifactsDir, 'release-status.schema.json'),

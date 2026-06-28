@@ -131,13 +131,39 @@ async function assertReleaseManifest(repoDir) {
     )
   }
 
-  for (const requiredTarball of [
-    `file-viewer-v2-${version}-demo.tar.gz`,
-    `file-viewer-v2-${version}-component-demo.tar.gz`,
-    `file-viewer-v2-${version}-lib-dist.tar.gz`,
-    `file-viewer-v2-${version}-docs.tar.gz`
+  const staticArtifactRecords = manifest.staticArtifacts || []
+  const staticArtifacts = new Map(staticArtifactRecords.map(record => [record.name, record]))
+  for (const expected of [
+    {
+      name: `file-viewer-v2-${version}-lib-dist.tar.gz`,
+      role: 'library-dist',
+      required: true
+    },
+    {
+      name: `file-viewer-v2-${version}-demo.tar.gz`,
+      role: 'demo-site',
+      required: false
+    },
+    {
+      name: `file-viewer-v2-${version}-component-demo.tar.gz`,
+      role: 'component-demo-site',
+      required: false
+    },
+    {
+      name: `file-viewer-v2-${version}-docs.tar.gz`,
+      role: 'docs-site',
+      required: false
+    }
   ]) {
-    await assertFile(join(repoDir, 'artifacts', requiredTarball), requiredTarball)
+    const record = staticArtifacts.get(expected.name)
+    assert(record, `Release manifest is missing static artifact ${expected.name}`)
+    assert(record.role === expected.role, `Static artifact ${expected.name} role drifted`)
+    if (expected.required) {
+      assert(record.artifactIncluded === true, `Static artifact ${expected.name} must be included`)
+    }
+    if (record.artifactIncluded) {
+      await assertFile(join(repoDir, 'artifacts', expected.name), expected.name)
+    }
   }
 
   if (manifest.vue2Package) {
