@@ -92,6 +92,23 @@ type QuickStartItem = {
   icon: Component
 }
 
+type NavAnchorId =
+  | 'formats'
+  | 'demo'
+  | 'solutions'
+  | 'ecosystem'
+  | 'docs'
+  | 'commercial'
+  | 'delivery'
+  | 'support'
+
+type SectionId = 'top' | NavAnchorId
+
+type NavItem = {
+  id: NavAnchorId
+  label: string
+}
+
 const docsUrl = 'https://doc.file-viewer.app/'
 const docsQuickstartUrl = `${docsUrl}guide/quickstart`
 const demoUrl = 'https://demo.file-viewer.app/'
@@ -106,10 +123,13 @@ const commercialDemoUrl = 'https://office.flyfish.dev/'
 
 const locale = ref<Locale>('zh')
 const localeStorageKey = 'flyfish-file-viewer-site-locale'
+const topbar = ref<HTMLElement | null>(null)
 const heroCanvas = ref<HTMLCanvasElement | null>(null)
 const demoReveal = ref<HTMLElement | null>(null)
 const quickStartSection = ref<HTMLElement | null>(null)
 const quickStartTrack = ref<HTMLElement | null>(null)
+const isTopbarPinned = ref(false)
+const activeSectionId = ref<SectionId>('top')
 const demoRevealActive = ref(false)
 const demoFrameLoaded = ref(false)
 const quickStartSectionActive = ref(false)
@@ -734,6 +754,29 @@ const qrItems = computed<QrItem[]>(() =>
 
 const currentCopy = computed(() => copy[locale.value])
 
+const pageSectionIds: readonly SectionId[] = [
+  'top',
+  'formats',
+  'demo',
+  'solutions',
+  'ecosystem',
+  'docs',
+  'commercial',
+  'delivery',
+  'support'
+]
+
+const primaryNavItems = computed<NavItem[]>(() => [
+  { id: 'formats', label: currentCopy.value.nav.formats },
+  { id: 'demo', label: currentCopy.value.nav.demo },
+  { id: 'solutions', label: currentCopy.value.nav.solutions },
+  { id: 'ecosystem', label: currentCopy.value.nav.ecosystem },
+  { id: 'docs', label: currentCopy.value.nav.docs },
+  { id: 'commercial', label: currentCopy.value.nav.commercial },
+  { id: 'delivery', label: currentCopy.value.nav.delivery },
+  { id: 'support', label: currentCopy.value.nav.support }
+])
+
 function resolveInitialLocale(): Locale {
   const stored = window.localStorage.getItem(localeStorageKey)
   if (stored === 'zh' || stored === 'en') {
@@ -765,6 +808,7 @@ function selectQuickStart(index: number) {
 }
 
 let quickStartScrollFrame = 0
+let pageScrollFrame = 0
 
 function syncQuickStartFromScroll() {
   const track = quickStartTrack.value
@@ -807,6 +851,62 @@ function handleQuickStartKeydown(event: KeyboardEvent, index: number) {
   }
 }
 
+function isPageSectionId(id: string): id is SectionId {
+  return pageSectionIds.includes(id as SectionId)
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function getTopbarScrollOffset() {
+  const rect = topbar.value?.getBoundingClientRect()
+  const height = rect?.height ?? 72
+  const top = rect ? Math.max(8, rect.top) : 14
+  return Math.ceil(height + top + 62)
+}
+
+function updateAnchorOffsetVariable() {
+  const rect = topbar.value?.getBoundingClientRect()
+  const styles = topbar.value ? window.getComputedStyle(topbar.value) : null
+  const marginTop = styles ? Number.parseFloat(styles.marginTop) || 0 : 14
+  const marginBottom = styles ? Number.parseFloat(styles.marginBottom) || 0 : 32
+  const topbarSpace = Math.ceil((rect?.height ?? 72) + marginTop + marginBottom)
+  document.documentElement.style.setProperty('--site-anchor-offset', `${getTopbarScrollOffset()}px`)
+  document.documentElement.style.setProperty('--site-topbar-space', `${topbarSpace}px`)
+}
+
+function resolveActiveSection() {
+  const anchorY = window.scrollY + getTopbarScrollOffset() + 6
+  let nextSection: SectionId = 'top'
+
+  pageSectionIds.forEach((id) => {
+    const section = document.getElementById(id)
+    if (section && section.offsetTop <= anchorY) {
+      nextSection = id
+    }
+  })
+
+  const pageBottom = window.scrollY + window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
+  if (pageBottom >= documentHeight - 8) {
+    nextSection = 'support'
+  }
+
+  return nextSection
+}
+
+function updatePageNavStateNow() {
+  isTopbarPinned.value = window.scrollY > 24
+  updateAnchorOffsetVariable()
+  activeSectionId.value = resolveActiveSection()
+}
+
+function requestPageNavStateUpdate() {
+  window.cancelAnimationFrame(pageScrollFrame)
+  pageScrollFrame = window.requestAnimationFrame(updatePageNavStateNow)
+}
+
 function scrollInitialHashIntoView() {
   const hashId = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : ''
   const target = hashId ? document.getElementById(hashId) : null
@@ -816,23 +916,33 @@ function scrollInitialHashIntoView() {
     if (hashId === 'ecosystem') {
       quickStartSectionActive.value = true
     }
-    const top = target.getBoundingClientRect().top + window.scrollY
+    if (isPageSectionId(hashId)) {
+      activeSectionId.value = hashId
+    }
+    const top =
+      hashId === 'top'
+        ? 0
+        : Math.max(0, target.getBoundingClientRect().top + window.scrollY - getTopbarScrollOffset())
     window.scrollTo({ top, behavior: 'auto' })
+    updatePageNavStateNow()
   })
 }
 
-function scrollToSection(event: MouseEvent, id: string) {
+function scrollToSection(event: MouseEvent, id: SectionId) {
   event.preventDefault()
   const target = document.getElementById(id)
   if (!target) return
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const top = target.getBoundingClientRect().top + window.scrollY
+  const top =
+    id === 'top'
+      ? 0
+      : Math.max(0, target.getBoundingClientRect().top + window.scrollY - getTopbarScrollOffset())
   if (id === 'ecosystem') {
     quickStartSectionActive.value = true
   }
+  activeSectionId.value = id
   window.history.replaceState(null, '', `#${id}`)
-  window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' })
+  window.scrollTo({ top, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
 function disposeScene(scene: Scene, renderer: WebGLRenderer) {
@@ -1036,10 +1146,18 @@ let disposeHeroScene: (() => void) | undefined
 let heroSceneDisposed = false
 let demoRevealObserver: IntersectionObserver | undefined
 let quickStartObserver: IntersectionObserver | undefined
+let topbarResizeObserver: ResizeObserver | undefined
 
 onMounted(async () => {
   locale.value = resolveInitialLocale()
   await nextTick()
+  topbarResizeObserver = new ResizeObserver(requestPageNavStateUpdate)
+  if (topbar.value) {
+    topbarResizeObserver.observe(topbar.value)
+  }
+  window.addEventListener('scroll', requestPageNavStateUpdate, { passive: true })
+  window.addEventListener('resize', requestPageNavStateUpdate)
+  updatePageNavStateNow()
   if (window.location.hash === '#ecosystem') {
     quickStartSectionActive.value = true
   }
@@ -1085,28 +1203,40 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   heroSceneDisposed = true
+  window.removeEventListener('scroll', requestPageNavStateUpdate)
+  window.removeEventListener('resize', requestPageNavStateUpdate)
   demoRevealObserver?.disconnect()
   quickStartObserver?.disconnect()
+  topbarResizeObserver?.disconnect()
   window.cancelAnimationFrame(quickStartScrollFrame)
+  window.cancelAnimationFrame(pageScrollFrame)
   disposeHeroScene?.()
 })
 </script>
 
 <template>
-  <main class="site-shell" :lang="locale">
-    <nav class="topbar" aria-label="Primary navigation">
+  <main class="site-shell" :class="{ 'has-pinned-nav': isTopbarPinned }" :lang="locale">
+    <nav
+      ref="topbar"
+      class="topbar"
+      :class="{ 'is-pinned': isTopbarPinned }"
+      aria-label="Primary navigation"
+    >
       <a class="brand" href="#top" aria-label="Flyfish File Viewer" @click="scrollToSection($event, 'top')">
         <img src="/logo.png" alt="" />
         <span>File Viewer</span>
       </a>
       <div class="topbar-links">
-        <a href="#formats" @click="scrollToSection($event, 'formats')">{{ currentCopy.nav.formats }}</a>
-        <a href="#demo" @click="scrollToSection($event, 'demo')">{{ currentCopy.nav.demo }}</a>
-        <a href="#solutions" @click="scrollToSection($event, 'solutions')">{{ currentCopy.nav.solutions }}</a>
-        <a href="#ecosystem" @click="scrollToSection($event, 'ecosystem')">{{ currentCopy.nav.ecosystem }}</a>
-        <a href="#docs" @click="scrollToSection($event, 'docs')">{{ currentCopy.nav.docs }}</a>
-        <a href="#commercial" @click="scrollToSection($event, 'commercial')">{{ currentCopy.nav.commercial }}</a>
-        <a href="#delivery" @click="scrollToSection($event, 'delivery')">{{ currentCopy.nav.delivery }}</a>
+        <a
+          v-for="item in primaryNavItems"
+          :key="item.id"
+          :href="`#${item.id}`"
+          :class="{ 'is-active': activeSectionId === item.id }"
+          :aria-current="activeSectionId === item.id ? 'location' : undefined"
+          @click="scrollToSection($event, item.id)"
+        >
+          {{ item.label }}
+        </a>
       </div>
       <div class="topbar-actions">
         <a class="nav-icon-button" :href="githubUrl" target="_blank" rel="noreferrer" aria-label="GitHub repository">
