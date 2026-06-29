@@ -5,7 +5,13 @@ const TAR_BLOCK_SIZE = 512;
 const ZIP_CENTRAL_FILE_HEADER = 0x02014b50;
 const ZIP_LOCAL_FILE_HEADER = 0x04034b50;
 const ZIP_GENERAL_PURPOSE_ENCRYPTED_FLAG = 0x0001;
-const resolveJSZip = (module) => {
+const isJSZipLike = (value) => {
+    return !!value &&
+        (typeof value === 'object' || typeof value === 'function') &&
+        typeof value.loadAsync === 'function';
+};
+// Vite can expose the CJS constructor as a function-shaped default export.
+export const resolveJSZip = (module) => {
     const record = module;
     const defaultRecord = record === null || record === void 0 ? void 0 : record.default;
     const candidates = [
@@ -14,9 +20,7 @@ const resolveJSZip = (module) => {
         record === null || record === void 0 ? void 0 : record.JSZip,
         module,
     ];
-    const JSZip = candidates.find(candidate => !!candidate &&
-        typeof candidate === 'object' &&
-        typeof candidate.loadAsync === 'function');
+    const JSZip = candidates.find(isJSZipLike);
     if (!JSZip) {
         throw new Error('JSZip module does not expose loadAsync.');
     }

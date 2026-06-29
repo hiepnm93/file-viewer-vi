@@ -1,4 +1,22 @@
 import { createFileViewerTranslator, } from '@file-viewer/core';
+const isEpubFactory = (value) => {
+    return typeof value === 'function';
+};
+// epub.js can surface as `{ default: { default: ePub } }` in optimized builds.
+export const resolveEpubJs = (module) => {
+    const record = module;
+    const defaultRecord = record === null || record === void 0 ? void 0 : record.default;
+    const candidates = [
+        defaultRecord === null || defaultRecord === void 0 ? void 0 : defaultRecord.default,
+        record === null || record === void 0 ? void 0 : record.default,
+        module,
+    ];
+    const ePub = candidates.find(isEpubFactory);
+    if (!ePub) {
+        throw new Error('epubjs module does not expose a callable factory.');
+    }
+    return ePub;
+};
 const epubStyle = `
 .epub-viewer{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4;color:#172033;box-sizing:border-box}
 .epub-viewer *{box-sizing:border-box}
@@ -243,7 +261,7 @@ export default async function renderEpub(buffer, target, context) {
         state.textContent = t('epub.loading');
         syncUi();
         try {
-            const { default: ePub } = await import('epubjs');
+            const ePub = resolveEpubJs(await import('epubjs'));
             if (disposed) {
                 return;
             }
