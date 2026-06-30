@@ -260,6 +260,7 @@ export class PptxViewer {
     this.content.style.width = `${slideWidth}px`;
     this.content.style.transform = `scale(${effectiveScale})`;
     this.scaleBox.style.width = `${Math.ceil(slideWidth * effectiveScale)}px`;
-    this.scaleBox.style.minHeight = `${Math.ceil(this.content.scrollHeight * effectiveScale)}px`;
+    this.scaleBox.style.height = `${Math.ceil(this.content.scrollHeight * effectiveScale)}px`;
+    this.scaleBox.style.minHeight = '';
   }
 }
