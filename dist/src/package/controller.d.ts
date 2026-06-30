@@ -1,4 +1,4 @@
-import { FileViewerAiOptions, FileViewerArchiveOptions, FileViewerCadOptions, FileViewerDocxOptions, FileViewerDocumentAnchor, FileViewerDocumentChunk, FileViewerEvent, FileViewerEventHandler, FileViewerEventType, FileViewerFileRef, FileViewerInstance, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOperationContext, FileViewerOptions, FileViewerPdfOptions, FileViewerSpreadsheetOptions, FileViewerPublicApi, FileViewerSearchOptions, FileViewerSearchState, FileViewerThemeMode, FileViewerToolbarOptions, FileViewerToolbarPosition, FileViewerTypstOptions, FileViewerWatermarkOptions, FileViewerZoomState, RendererRegistry } from '@file-viewer/core';
+import { FileViewerAiOptions, FileViewerApplyViewStateOptions, FileViewerArchiveOptions, FileViewerCadOptions, FileViewerDocxOptions, FileViewerDocumentAnchor, FileViewerDocumentChunk, FileViewerEvent, FileViewerEventHandler, FileViewerEventType, FileViewerFileRef, FileViewerInstance, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOperationContext, FileViewerOptions, FileViewerPdfOptions, FileViewerSpreadsheetOptions, FileViewerPublicApi, FileViewerSearchOptions, FileViewerSearchState, FileViewerThemeMode, FileViewerToolbarOptions, FileViewerToolbarPosition, FileViewerTypstOptions, FileViewerViewState, FileViewerWatermarkOptions, FileViewerZoomState, RendererRegistry } from '@file-viewer/core';
 export type FileRef = FileViewerFileRef;
 export type ViewerWatermarkOptions = FileViewerWatermarkOptions;
 export type ViewerToolbarPosition = FileViewerToolbarPosition;
@@ -11,6 +11,8 @@ export type ViewerTypstOptions = FileViewerTypstOptions;
 export type ViewerCadOptions = FileViewerCadOptions;
 export type ViewerSearchOptions = FileViewerSearchOptions;
 export type ViewerAiOptions = FileViewerAiOptions;
+export type ViewerViewState = FileViewerViewState;
+export type ViewerApplyViewStateOptions = FileViewerApplyViewStateOptions;
 export type ViewerThemeMode = FileViewerThemeMode;
 export type ViewerOptions = FileViewerOptions;
 export type ViewerEventType = FileViewerEventType;
@@ -28,6 +30,7 @@ export interface ViewerState {
     search: FileViewerSearchState | null;
     zoom: FileViewerZoomState | null;
     location: FileViewerDocumentAnchor | null;
+    viewState: FileViewerViewState | null;
 }
 export type ViewerStateListener = (state: ViewerState, event?: ViewerEvent) => void;
 export interface ViewerMountOptions {
@@ -75,6 +78,8 @@ export interface ViewerController {
     zoomIn(): Promise<FileViewerZoomState | null>;
     zoomOut(): Promise<FileViewerZoomState | null>;
     resetZoom(): Promise<FileViewerZoomState | null>;
+    getViewState(): FileViewerViewState | null;
+    applyViewState(state: FileViewerViewState, options?: FileViewerApplyViewStateOptions): Promise<FileViewerViewState | null>;
     searchDocument(query: string): Promise<FileViewerSearchState | null>;
     clearDocumentSearch(): Promise<FileViewerSearchState | null>;
     nextSearchResult(): Promise<FileViewerSearchState | null>;
@@ -103,6 +108,8 @@ export interface ViewerControllerHandle {
     zoomIn(): Promise<FileViewerZoomState | null>;
     zoomOut(): Promise<FileViewerZoomState | null>;
     resetZoom(): Promise<FileViewerZoomState | null>;
+    getViewState(): FileViewerViewState | null;
+    applyViewState(state: FileViewerViewState, options?: FileViewerApplyViewStateOptions): Promise<FileViewerViewState | null>;
     searchDocument(query: string): Promise<FileViewerSearchState | null>;
     clearDocumentSearch(): Promise<FileViewerSearchState | null>;
     nextSearchResult(): Promise<FileViewerSearchState | null>;

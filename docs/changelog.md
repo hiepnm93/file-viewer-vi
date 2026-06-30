@@ -2,6 +2,21 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 当前主线视图状态同步能力
+
+- 新增统一 `initialViewState`、`view-state-change`、`getViewState()` 和 `applyViewState()` 协议，面向投屏、远端协同、双栏对比和阅读进度恢复
+- 所有标准 renderer loader 自动注册通用 view-state provider，未写专属适配的格式也能记录 / 恢复 renderer、缩放和滚动比例
+- PDF 提供页码、页数、缩放、旋转、滚动和导航状态；XMind、Geo、3D、CAD 追加画布 pan、地图中心、相机视角或底层视图快照等高交互状态
+- 程序化恢复使用 `source: 'api'` / `action: 'restore'`，并抑制中间滚动和缩放回弹事件，避免操作端和展示端互相触发
+- README、中英文使用文档、快速开始和格式能力页已统一说明 view-state、真实 zoom 状态和 PPTX Worker 自托管配置，方便几轮修复后对外口径保持一致
+
+## 当前主线缩放状态准确性修复
+
+- core 的 zoom controller 会订阅 renderer provider 的异步状态变更，首屏自适应、容器 resize 和内部重排后同步抛出真实 `zoom-change`
+- `getOperationAvailability()` / `operation-availability-change` 会结合当前 `zoomState` 动态计算 `zoomIn`、`zoomOut`、`zoomReset`，各生态组件和自定义工具栏不再拿到静态缩放能力
+- PDF、Word/DOCX、DOC 和图片预览修正首屏 fit 后的真实比例、缩放步进和 reset 状态，避免显示默认 `100%` 或点击缩放时来回跳
+- 新增 `pnpm verify:zoom-state` 浏览器回归，覆盖 DOCX、PDF 和图片的首屏比例、内部 scale 与工具栏显示一致性
+
 ## `v2.1.9` OFD 资源路径解析加固
 
 - OFD renderer 加固电子发票资源路径归一化和查找逻辑，兼容 `DocumentRes`、`PublicRes`、`BaseLoc`、大小写差异和缺失目录等组合场景

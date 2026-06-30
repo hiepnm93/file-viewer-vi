@@ -216,6 +216,8 @@ const options = {
 | `spreadsheet.workerAutoThreshold` | `worker: 'auto'` 时的大文件阈值，单位字节，默认 1MB。需要更激进优化可调低；WebView、CSP 或静态资源不稳定环境可调高或设 `worker: false` |
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
 | `spreadsheet.resizableColumns` | 是否允许用户在 Excel / CSV / ODS 等表格预览中拖拽表头边界调整列宽，默认 `false` 以保持历史兼容；Demo 默认开启，便于查看被截断的长文本 |
+| `presentation.workerUrl` | 自定义 `@file-viewer/pptx` Worker 地址。默认由 `@file-viewer/renderer-presentation` 按需创建模块 Worker；内网静态目录、严格 CSP 或自托管 CDN 改写资源路径时可显式传入绝对 URL |
+| `presentation.workerType` | PPTX Worker 类型，通常保持默认 `module`；只有旧 WebView、特殊 CSP 或构建系统要求 classic Worker 时再覆盖 |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.navigation` / `pdf.defaultNavigationVisible` | 是否启用左侧导航窗格以及初始是否展开。导航窗格支持页面列表和目录树切换 |
@@ -349,6 +351,8 @@ const options = {
 
 内置操作当前包括 `download`、`print`、`export-html`、`zoom-in`、`zoom-out` 和 `zoom-reset`。`toolbar.items` 只控制内置工具栏展示，适合把默认按钮交给业务 UI 接管；`toolbar.permissions` 是强权限门禁，会在 `options.beforeOperation` 之前执行，外部自定义按钮调用 controller API 时同样生效。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意权限项为 `false` 或任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部下载、打印、HTML 和缩放按钮；缩放后的最终比例会通过 `zoom-change` 回传，适合 DOCX / PPTX 这类下一帧重排后才拿到有效比例的格式。
 
+首屏默认会按当前容器自适应文档宽高，因此初始比例不一定是 `100%`。PDF、Word/DOCX、图片等 renderer 会在页面加载、首屏 fit、图片 natural size 读取、容器 resize 或内部重排完成后重新上报真实 `scale` / `label`；内置工具栏和 `getOperationAvailability()` 会同步更新 `zoomIn`、`zoomOut`、`zoomReset` 是否可用。自定义工具栏不要把首屏状态写死成 `100%`，应以 `zoom-change` 或 `getZoomState()` 的值为准。
+
 自定义工具栏不要在预览器外层套 `transform: scale()`。这会破坏虚拟表格、canvas、PDF 文本层或 CAD 交互坐标。请通过组件 ref 调用标准缩放 API：
 
 ```ts
@@ -373,6 +377,36 @@ mountViewer(container, {
   }
 })
 ```
+
+## 视图状态同步
+
+`initialViewState`、`view-state-change`、`getViewState()` 和 `applyViewState()` 面向投屏系统、远端协同、双栏对比和阅读进度恢复。所有标准 renderer 路径都会注册 view-state provider：没有专属实现的格式会使用通用 DOM provider，记录 renderer、缩放和滚动比例；PDF 会额外记录页码、页数、旋转和目录/缩略图导航；XMind 会记录 sheet、panX、panY 和 zoom；Geo 会记录地图中心、zoom、bearing 和 pitch；3D 会记录相机位置、target 和显示选项；CAD 会上报底层 viewer 暴露的视图快照。
+
+```ts
+const lastState = ref(null)
+
+const options = {
+  initialViewState: {
+    page: 3,
+    scale: 1.25,
+    scroll: { topRatio: 0.18 }
+  }
+}
+
+function onViewerEvent(event) {
+  if (event.type === 'view-state-change') {
+    lastState.value = event.payload.state
+    syncToDisplay(event.payload)
+  }
+}
+
+await displayViewer.applyViewState(lastState.value, {
+  source: 'api',
+  action: 'restore'
+})
+```
+
+业务侧同步时建议发送完整 `state` 快照，而不是只发送单个按钮事件。PDF 页码点击、缩放、滚动，XMind 拖动画布，Geo 地图移动和 3D 相机变化都会归并成同一种事件结构，展示端只需要调用 `applyViewState()`。
 
 ## 搜索、定位与 AI 友好结构
 

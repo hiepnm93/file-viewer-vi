@@ -6,11 +6,19 @@ import {
 } from '@ljheee/xmind-parser';
 import {
   createFileViewerTranslator,
+  createFileViewerViewStateChange,
+  createFileViewerViewStateChangeEmitter,
   createFileViewerZoomChangeEmitter,
+  registerFileViewerViewStateProvider,
   registerFileViewerZoomProvider,
+  unregisterFileViewerViewStateProvider,
   unregisterFileViewerZoomProvider,
+  type FileViewerApplyViewStateOptions,
   type FileRenderContext,
   type FileViewerRenderedInstance,
+  type FileViewerViewState,
+  type FileViewerViewStateChangeAction,
+  type FileViewerViewStateChangeSource,
   type FileViewerZoomState,
 } from '@file-viewer/core';
 
@@ -436,6 +444,7 @@ export default async function renderXMind(
 ): Promise<FileViewerRenderedInstance> {
   const t = createFileViewerTranslator(context?.options);
   const zoomEmitter = createFileViewerZoomChangeEmitter();
+  const viewStateEmitter = createFileViewerViewStateChangeEmitter();
   let status: XMindStatus = 'loading';
   let errorMessage = '';
   let zoom = 1;
@@ -450,6 +459,7 @@ export default async function renderXMind(
   let resizeFrame: number | undefined;
   let panzoom: PanzoomObject | null = null;
   let programmaticPanzoomUpdate = false;
+  let applyingViewState = false;
   let panStartState: { x: number; y: number; scale: number } | null = null;
 
   const root = createElement('section', 'xmind-viewer');
@@ -498,6 +508,42 @@ export default async function renderXMind(
     canReset: zoom !== 1 || panX !== 0 || panY !== 0,
     minScale: 0.25,
     maxScale: 2.5,
+  });
+
+  const getXMindViewState = (): FileViewerViewState => {
+    const sheet = sheets[activeSheetIndex];
+    return {
+      renderer: 'mindmap',
+      scale: zoom,
+      zoom: getZoomState(),
+      navigation: {
+        mode: 'sheet',
+      },
+      extra: {
+        status,
+        sheetIndex: activeSheetIndex,
+        sheetTitle: sheet?.title,
+        panX,
+        panY,
+        width: sheet?.width,
+        height: sheet?.height,
+      },
+    };
+  };
+
+  const emitViewStateChange = (
+    action: FileViewerViewStateChangeAction,
+    source: FileViewerViewStateChangeSource = 'viewer'
+  ) => {
+    const state = getXMindViewState();
+    if (!disposed && !applyingViewState) {
+      viewStateEmitter.emit(createFileViewerViewStateChange(state, { action, source }));
+    }
+    return state;
+  };
+
+  const waitForFrame = () => new Promise<void>(resolve => {
+    ownerWindow.requestAnimationFrame(() => resolve());
   });
 
   const clampPan = () => {
@@ -549,6 +595,9 @@ export default async function renderXMind(
       userAdjustedViewport = true;
     }
     zoomEmitter.emit();
+    if (markUserAdjusted) {
+      emitViewStateChange('pan', 'user');
+    }
   };
 
   const updatePanzoom = (update: () => void) => {
@@ -587,6 +636,7 @@ export default async function renderXMind(
     zoom = clampZoom(scale);
     applyZoom();
     zoomEmitter.emit();
+    emitViewStateChange('zoom-change', 'user');
     return getZoomState();
   };
 
@@ -613,6 +663,7 @@ export default async function renderXMind(
       applyZoom();
       zoomEmitter.emit();
     }
+    emitViewStateChange('zoom-change', 'user');
     return getZoomState();
   };
 
@@ -636,6 +687,9 @@ export default async function renderXMind(
     panY = (stage.clientHeight - sheet.height * zoom) / 2;
     applyZoom();
     zoomEmitter.emit();
+    if (markAsUserReset) {
+      emitViewStateChange('zoom-reset', 'user');
+    }
     return getZoomState();
   };
 
@@ -645,6 +699,7 @@ export default async function renderXMind(
     panY = stage.clientHeight / 2 - (node.y + node.height / 2) * zoom;
     applyZoom();
     zoomEmitter.emit();
+    emitViewStateChange('node-click', 'user');
   };
 
   const renderSidebar = (sheet: SheetView) => {
@@ -710,6 +765,7 @@ export default async function renderXMind(
         activeSheetIndex = index;
         renderTabs();
         renderSheet();
+        emitViewStateChange('sheet-change', 'user');
       });
       tabs.append(button);
     });
@@ -741,6 +797,7 @@ export default async function renderXMind(
       renderSheet();
       status = 'ready';
       syncState();
+      ownerWindow.requestAnimationFrame(() => emitViewStateChange('init', 'viewer'));
     } catch (error) {
       if (disposed) {
         return;
@@ -759,6 +816,51 @@ export default async function renderXMind(
     setZoom,
     getState: getZoomState,
     subscribe: zoomEmitter.subscribe,
+  });
+  registerFileViewerViewStateProvider(root, {
+    getState: getXMindViewState,
+    async applyState(
+      state: FileViewerViewState,
+      applyOptions: FileViewerApplyViewStateOptions = {}
+    ) {
+      const source = applyOptions.source || 'api';
+      const action = applyOptions.action || 'restore';
+      const notify = applyOptions.notify !== false;
+      const nextSheetIndex = Number(state.extra?.sheetIndex);
+      const nextScale = Number(state.scale ?? state.zoom?.scale);
+      const nextPanX = Number(state.extra?.panX);
+      const nextPanY = Number(state.extra?.panY);
+
+      applyingViewState = true;
+      try {
+        if (Number.isInteger(nextSheetIndex) && sheets[nextSheetIndex] && nextSheetIndex !== activeSheetIndex) {
+          activeSheetIndex = nextSheetIndex;
+          renderTabs();
+          renderSheet();
+          await waitForFrame();
+          await waitForFrame();
+        }
+        if (Number.isFinite(nextScale)) {
+          zoom = clampZoom(nextScale);
+        }
+        if (Number.isFinite(nextPanX)) {
+          panX = nextPanX;
+        }
+        if (Number.isFinite(nextPanY)) {
+          panY = nextPanY;
+        }
+        userAdjustedViewport = true;
+        applyZoom();
+      } finally {
+        applyingViewState = false;
+      }
+
+      if (notify) {
+        return emitViewStateChange(action, source);
+      }
+      return getXMindViewState();
+    },
+    subscribe: viewStateEmitter.subscribe,
   });
 
   const getPanTargetElement = (targetValue: EventTarget | null) => {
@@ -882,6 +984,7 @@ export default async function renderXMind(
         applyZoom();
         zoomEmitter.emit();
       }
+      emitViewStateChange('pan', 'user');
       return;
     }
     const direction = event.deltaY > 0 ? -1 : 1;
@@ -919,12 +1022,13 @@ export default async function renderXMind(
     }
     if (panzoom) {
       updatePanzoom(() => {
-        panzoom?.pan(panX, panY, { animate: false, force: true });
+      panzoom?.pan(panX, panY, { animate: false, force: true });
       });
     } else {
       applyZoom();
       zoomEmitter.emit();
     }
+    emitViewStateChange('pan', 'user');
     event.preventDefault();
   };
 
@@ -1026,6 +1130,7 @@ export default async function renderXMind(
         resizeFrame = undefined;
       }
       resizeObserver?.disconnect();
+      unregisterFileViewerViewStateProvider(root);
       unregisterFileViewerZoomProvider(root);
       zoomBox.removeEventListener('panzoomstart', onPanzoomStart);
       zoomBox.removeEventListener('panzoomchange', onPanzoomChange);

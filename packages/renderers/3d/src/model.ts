@@ -1,9 +1,17 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
+  createFileViewerViewStateChange,
+  createFileViewerViewStateChangeEmitter,
   createFileViewerTranslator,
+  registerFileViewerViewStateProvider,
+  unregisterFileViewerViewStateProvider,
   type FileRenderContext,
   type FileViewerRenderedInstance,
+  type FileViewerApplyViewStateOptions,
+  type FileViewerViewState,
+  type FileViewerViewStateChangeAction,
+  type FileViewerViewStateChangeSource,
 } from '@file-viewer/core';
 import {
   formatGeometryKernelNotice,
@@ -132,6 +140,7 @@ export default async function renderModel(
   let activeVersion = 0;
   let mixer: THREE.AnimationMixer | null = null;
   const clock = new THREE.Clock();
+  const viewStateEmitter = createFileViewerViewStateChangeEmitter();
 
   const root = createElement('div', 'model-viewer');
   const toolbar = createElement('div', 'model-toolbar');
@@ -196,6 +205,79 @@ export default async function renderModel(
       axesHelper.visible = showAxes;
     }
     updateUi();
+  };
+
+  const vectorToArray = (vector?: THREE.Vector3 | null) => {
+    return vector ? [vector.x, vector.y, vector.z] : undefined;
+  };
+
+  const readVector = (value: unknown, fallback: THREE.Vector3) => {
+    if (!Array.isArray(value)) {
+      return fallback.clone();
+    }
+    const [x, y, z] = value.map(Number);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+      return fallback.clone();
+    }
+    return new THREE.Vector3(x, y, z);
+  };
+
+  const getModelViewState = (): FileViewerViewState => ({
+    renderer: 'model',
+    extra: {
+      status,
+      cameraPosition: vectorToArray(camera?.position),
+      cameraTarget: vectorToArray(controls?.target),
+      autoRotate,
+      wireframe,
+      showGrid,
+      showAxes,
+    },
+  });
+
+  const emitViewStateChange = (
+    action: FileViewerViewStateChangeAction,
+    source: FileViewerViewStateChangeSource = 'viewer'
+  ) => {
+    const state = getModelViewState();
+    viewStateEmitter.emit(createFileViewerViewStateChange(state, { action, source }));
+    return state;
+  };
+
+  const applyModelViewState = (
+    state: FileViewerViewState,
+    applyOptions: FileViewerApplyViewStateOptions = {}
+  ) => {
+    const source = applyOptions.source || 'api';
+    const action = applyOptions.action || 'restore';
+    const notify = applyOptions.notify !== false;
+    if (camera) {
+      camera.position.copy(readVector(state.extra?.cameraPosition, camera.position));
+      camera.updateProjectionMatrix();
+    }
+    if (controls) {
+      controls.target.copy(readVector(state.extra?.cameraTarget, controls.target));
+      controls.update();
+    }
+    if (typeof state.extra?.autoRotate === 'boolean') {
+      autoRotate = state.extra.autoRotate;
+    }
+    if (typeof state.extra?.wireframe === 'boolean') {
+      wireframe = state.extra.wireframe;
+      updateWireframe();
+    }
+    if (typeof state.extra?.showGrid === 'boolean') {
+      showGrid = state.extra.showGrid;
+    }
+    if (typeof state.extra?.showAxes === 'boolean') {
+      showAxes = state.extra.showAxes;
+    }
+    updateHelperVisibility();
+    updateUi();
+    if (notify) {
+      return emitViewStateChange(action, source);
+    }
+    return getModelViewState();
   };
 
   const resize = () => {
@@ -350,7 +432,7 @@ export default async function renderModel(
     };
   };
 
-  const fitToView = () => {
+  const fitToView = (source: FileViewerViewStateChangeSource = 'viewer') => {
     if (!modelRoot || !camera || !controls) {
       return;
     }
@@ -368,6 +450,7 @@ export default async function renderModel(
 
     controls.target.copy(center);
     controls.update();
+    emitViewStateChange('fit', source);
   };
 
   const addModelToScene = async (object: THREE.Object3D) => {
@@ -613,26 +696,41 @@ export default async function renderModel(
     updateUi();
   };
 
-  fitButton.addEventListener('click', fitToView);
+  const onControlsEnd = () => {
+    emitViewStateChange('camera-change', 'user');
+  };
+
+  fitButton.addEventListener('click', () => fitToView('user'));
   rotateButton.addEventListener('click', () => {
     autoRotate = !autoRotate;
     updateUi();
+    emitViewStateChange('view-option-change', 'user');
   });
   wireframeButton.addEventListener('click', () => {
     wireframe = !wireframe;
     updateWireframe();
+    emitViewStateChange('view-option-change', 'user');
   });
   gridButton.addEventListener('click', () => {
     showGrid = !showGrid;
     updateHelperVisibility();
+    emitViewStateChange('view-option-change', 'user');
   });
   axesButton.addEventListener('click', () => {
     showAxes = !showAxes;
     updateHelperVisibility();
+    emitViewStateChange('view-option-change', 'user');
   });
 
   updateUi();
   ensureScene();
+  const controlsWithEvents = controls as OrbitControls | null;
+  controlsWithEvents?.addEventListener('end', onControlsEnd);
+  registerFileViewerViewStateProvider(root, {
+    getState: getModelViewState,
+    applyState: applyModelViewState,
+    subscribe: viewStateEmitter.subscribe,
+  });
   resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(canvas);
   clock.start();
@@ -647,6 +745,8 @@ export default async function renderModel(
       resizeObserver?.disconnect();
       resizeObserver = null;
       clearModel();
+      controlsWithEvents?.removeEventListener('end', onControlsEnd);
+      unregisterFileViewerViewStateProvider(root);
       controls?.dispose();
       controls = null;
       renderer?.dispose();
