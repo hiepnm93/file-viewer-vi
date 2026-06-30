@@ -923,9 +923,9 @@ export default async function renderPdf(
   const getPdfZoomState = (): FileViewerZoomState => ({
     scale: currentScale,
     label: scaleText(),
-    canZoomIn: !!pdfContext.viewer && canZoomIn(),
-    canZoomOut: !!pdfContext.viewer && canZoomOut(),
-    canReset: !!pdfContext.viewer,
+    canZoomIn: loadStatus === 'ready' && !!pdfContext.viewer && canZoomIn(),
+    canZoomOut: loadStatus === 'ready' && !!pdfContext.viewer && canZoomOut(),
+    canReset: loadStatus === 'ready' && !!pdfContext.viewer && !autoFitWidth,
     minScale: MIN_SCALE,
     maxScale: MAX_SCALE,
   });
@@ -1237,10 +1237,10 @@ export default async function renderPdf(
       eventBus.on('updatefindmatchescount', handlePdfFindMatchesCount);
       eventBus.on('updatefindcontrolstate', handlePdfFindControlState);
       eventBus.on('pagesinit', () => {
+        loadStatus = 'ready';
         applyRotation(currentRotation);
         fitToWidth();
         scheduleLegacyPageDimensionPatch();
-        loadStatus = 'ready';
         syncUi();
         context?.onProgressiveRender?.();
         if (pdfContext.search) {

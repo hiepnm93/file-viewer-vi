@@ -2,6 +2,13 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 当前主线缩放状态准确性修复
+
+- core 的 zoom controller 会订阅 renderer provider 的异步状态变更，首屏自适应、容器 resize 和内部重排后同步抛出真实 `zoom-change`
+- `getOperationAvailability()` / `operation-availability-change` 会结合当前 `zoomState` 动态计算 `zoomIn`、`zoomOut`、`zoomReset`，各生态组件和自定义工具栏不再拿到静态缩放能力
+- PDF、Word/DOCX、DOC 和图片预览修正首屏 fit 后的真实比例、缩放步进和 reset 状态，避免显示默认 `100%` 或点击缩放时来回跳
+- 新增 `pnpm verify:zoom-state` 浏览器回归，覆盖 DOCX、PDF 和图片的首屏比例、内部 scale 与工具栏显示一致性
+
 ## `v2.1.9` OFD 资源路径解析加固
 
 - OFD renderer 加固电子发票资源路径归一化和查找逻辑，兼容 `DocumentRes`、`PublicRes`、`BaseLoc`、大小写差异和缺失目录等组合场景

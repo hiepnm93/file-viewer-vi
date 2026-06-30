@@ -46,6 +46,7 @@ export type {
 
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
+  applyFileViewerZoomAvailability,
   createUnsupportedAvailability,
   DEFAULT_OPERATION_AVAILABILITY,
   DOM_PRINTABLE_EXTENSIONS,

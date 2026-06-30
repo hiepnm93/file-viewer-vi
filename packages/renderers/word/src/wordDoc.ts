@@ -218,39 +218,52 @@ function makeMsDocResponsive(target: HTMLDivElement) {
     return Math.min(MSDOC_MAX_SCALE, Math.max(MSDOC_MIN_SCALE, Number(scale.toFixed(2))))
   }
 
+  const applyResponsiveLayout = () => {
+    let firstScale = currentScale
+    let firstFitScale = currentFitScale
+    let measured = false
+
+    pages.forEach(page => {
+      const root = page.querySelector<HTMLElement>('.msdoc-root')
+      if (!root) {
+        return
+      }
+
+      const rootWidth = root.offsetWidth || MSDOC_PAGE_SIZE.width
+      const rootHeight = Math.max(root.scrollHeight, root.offsetHeight, MSDOC_PAGE_SIZE.height)
+      const availableWidth = Math.max(target.clientWidth - 48, 120)
+      const fitScale = Math.min(1, Math.max(MSDOC_MIN_SCALE, availableWidth / rootWidth))
+      const scale = clampScale(fitScale * userZoom)
+
+      if (!measured) {
+        firstScale = scale
+        firstFitScale = fitScale
+        measured = true
+      }
+
+      root.style.transform = `translateX(-50%) scale(${scale})`
+      page.style.width = `${Math.ceil(Math.max(rootWidth * scale, 120))}px`
+      page.style.height = `${Math.ceil(rootHeight * scale)}px`
+    })
+
+    if (!measured) {
+      return
+    }
+
+    currentScale = firstScale
+    currentFitScale = firstFitScale
+    zoomEmitter.emit()
+  }
+
   const resize = () => {
     if (!view) {
+      applyResponsiveLayout()
       return
     }
 
     view.cancelAnimationFrame(resizeFrame)
     resizeFrame = view.requestAnimationFrame(() => {
-      let firstScale = 1
-      let firstFitScale = 1
-
-      pages.forEach(page => {
-        const root = page.querySelector<HTMLElement>('.msdoc-root')
-        if (!root) {
-          return
-        }
-
-        const rootWidth = root.offsetWidth || MSDOC_PAGE_SIZE.width
-        const rootHeight = Math.max(root.scrollHeight, root.offsetHeight, MSDOC_PAGE_SIZE.height)
-        const availableWidth = Math.max(target.clientWidth - 48, 120)
-        const fitScale = Math.min(1, Math.max(MSDOC_MIN_SCALE, availableWidth / rootWidth))
-        const scale = clampScale(fitScale * userZoom)
-
-        firstScale = scale
-        firstFitScale = fitScale
-
-        root.style.transform = `translateX(-50%) scale(${scale})`
-        page.style.width = `${Math.ceil(Math.max(rootWidth * scale, 120))}px`
-        page.style.height = `${Math.ceil(rootHeight * scale)}px`
-      })
-
-      currentScale = firstScale
-      currentFitScale = firstFitScale
-      zoomEmitter.emit()
+      applyResponsiveLayout()
     })
   }
 
@@ -266,14 +279,15 @@ function makeMsDocResponsive(target: HTMLDivElement) {
 
   const setUserZoom = (nextZoom: number) => {
     userZoom = Math.min(6, Math.max(0.2, Number(nextZoom.toFixed(2))))
-    resize()
+    view?.cancelAnimationFrame(resizeFrame)
+    applyResponsiveLayout()
     return getZoomState()
   }
 
   target.dataset.viewerZoomProvider = 'doc'
   registerFileViewerZoomProvider(target, {
-    zoomIn: () => setUserZoom(userZoom + MSDOC_ZOOM_STEP),
-    zoomOut: () => setUserZoom(userZoom - MSDOC_ZOOM_STEP),
+    zoomIn: () => setUserZoom((currentScale + MSDOC_ZOOM_STEP) / Math.max(currentFitScale, 0.01)),
+    zoomOut: () => setUserZoom((currentScale - MSDOC_ZOOM_STEP) / Math.max(currentFitScale, 0.01)),
     resetZoom: () => setUserZoom(1),
     setZoom: scale => setUserZoom(scale / Math.max(currentFitScale, 0.01)),
     getState: getZoomState,
@@ -288,7 +302,7 @@ function makeMsDocResponsive(target: HTMLDivElement) {
       observer?.observe(root)
     }
   })
-  resize()
+  applyResponsiveLayout()
 
   return () => {
     view?.cancelAnimationFrame(resizeFrame)

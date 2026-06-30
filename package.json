@@ -74,6 +74,7 @@
     "component-demo:deploy:cloudflare": "pnpm build:component-demo && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-component-demo CLOUDFLARE_PAGES_OUTPUT_DIR=apps/component-demo/dist node scripts/deploy-cloudflare-pages.mjs",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",
     "verify:demo-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs",
+    "verify:zoom-state": "npm exec --yes --package playwright -- node scripts/verify-zoom-state.mjs",
     "verify:component-demo-output": "node scripts/verify-wrapper-demo-output.mjs",
     "verify:component-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-wrapper-browser-smoke.mjs",
     "verify:web-full-iife-pptx": "npm exec --yes --package playwright -- node scripts/verify-web-full-iife-pptx-subpath.mjs",

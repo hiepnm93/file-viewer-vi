@@ -196,4 +196,6 @@ Framework packages expose the same operation model with ecosystem-native customi
 
 Toolbar buttons should call viewer operations rather than wrapping rendered content with outer CSS transforms. This keeps spreadsheet coordinates, PDF text layers, CAD canvases, and mobile gestures aligned.
 
+The initial zoom label is not assumed to be `100%`. Renderers report the actual scale after first-screen fit, image natural-size loading, PDF / Word layout, container resize, or any internal reflow. Built-in toolbars and `getOperationAvailability()` use the same state to keep `zoomIn`, `zoomOut`, and `zoomReset` accurate. Custom toolbars should sync from `zoom-change` or `getZoomState()` instead of caching their own default percentage.
+
 PDF default assets are probed from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. When the static worker is missing or an app server falls back to HTML, the PDF renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path, a dedicated static asset domain, or a strict CSP.

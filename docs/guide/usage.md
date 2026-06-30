@@ -349,6 +349,8 @@ const options = {
 
 内置操作当前包括 `download`、`print`、`export-html`、`zoom-in`、`zoom-out` 和 `zoom-reset`。`toolbar.items` 只控制内置工具栏展示，适合把默认按钮交给业务 UI 接管；`toolbar.permissions` 是强权限门禁，会在 `options.beforeOperation` 之前执行，外部自定义按钮调用 controller API 时同样生效。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意权限项为 `false` 或任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部下载、打印、HTML 和缩放按钮；缩放后的最终比例会通过 `zoom-change` 回传，适合 DOCX / PPTX 这类下一帧重排后才拿到有效比例的格式。
 
+首屏默认会按当前容器自适应文档宽高，因此初始比例不一定是 `100%`。PDF、Word/DOCX、图片等 renderer 会在页面加载、首屏 fit、图片 natural size 读取、容器 resize 或内部重排完成后重新上报真实 `scale` / `label`；内置工具栏和 `getOperationAvailability()` 会同步更新 `zoomIn`、`zoomOut`、`zoomReset` 是否可用。自定义工具栏不要把首屏状态写死成 `100%`，应以 `zoom-change` 或 `getZoomState()` 的值为准。
+
 自定义工具栏不要在预览器外层套 `transform: scale()`。这会破坏虚拟表格、canvas、PDF 文本层或 CAD 交互坐标。请通过组件 ref 调用标准缩放 API：
 
 ```ts

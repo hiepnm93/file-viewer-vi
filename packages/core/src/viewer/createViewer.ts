@@ -22,7 +22,11 @@ import {
   resolveFileViewerDisplayFilename,
   resolveFileViewerOperationFilename,
 } from './operations';
-import { getRendererAvailability, createUnsupportedAvailability } from '../registry/capabilities';
+import {
+  applyFileViewerZoomAvailability,
+  createUnsupportedAvailability,
+  getRendererAvailability,
+} from '../registry/capabilities';
 import {
   buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
@@ -293,10 +297,14 @@ export const createViewer = (
   const getCapabilitiesForExtension = (extension?: string) => {
     const targetExtension = extension || currentSource?.extension || '';
     const renderer = registry.getByExtension(targetExtension);
+    const zoomState = zoomController.getState();
     if (!renderer) {
-      return createUnsupportedAvailability(targetExtension);
+      return applyFileViewerZoomAvailability(createUnsupportedAvailability(targetExtension), zoomState);
     }
-    return getRendererAvailability(renderer, renderSurfaceState.session);
+    return applyFileViewerZoomAvailability(
+      getRendererAvailability(renderer, renderSurfaceState.session),
+      zoomState
+    );
   };
 
   const emitOperationAvailabilityChange = () => {
@@ -313,9 +321,15 @@ export const createViewer = (
     });
   };
 
+  const emitZoomAndOperationAvailabilityChange = (state = zoomController.getState()) => {
+    emitZoomChange(state);
+    emitOperationAvailabilityChange();
+  };
+
   const zoomController = createFileViewerZoomController({
     root: () => container,
     beforeZoom: runBeforeViewerOperation,
+    onChange: state => emitZoomAndOperationAvailabilityChange(state),
   });
   const documentActions = createFileViewerDocumentFeatureControllerActionHandlers({
     root: () => container,
@@ -347,8 +361,7 @@ export const createViewer = (
     });
     await documentActions.clearDocumentState();
     zoomController.clearProvider();
-    emitOperationAvailabilityChange();
-    emitZoomChange();
+    emitZoomAndOperationAvailabilityChange();
     await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
   };
 
@@ -369,8 +382,7 @@ export const createViewer = (
       if (!renderer?.load) {
         renderMissingRendererState(container, normalized.extension, options);
         applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
-        emitOperationAvailabilityChange();
-        emitZoomChange();
+        emitZoomAndOperationAvailabilityChange();
         await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
         return null;
       }
@@ -387,8 +399,7 @@ export const createViewer = (
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       zoomController.refreshProvider();
       await documentActions.refreshDocumentIndex({ notify: false });
-      emitOperationAvailabilityChange();
-      emitZoomChange();
+      emitZoomAndOperationAvailabilityChange();
       await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
       return session;
     },
@@ -464,17 +475,17 @@ export const createViewer = (
     },
     async zoomIn() {
       const state = await zoomController.zoomIn();
-      emitZoomChange(state);
+      emitZoomAndOperationAvailabilityChange(state);
       return state;
     },
     async zoomOut() {
       const state = await zoomController.zoomOut();
-      emitZoomChange(state);
+      emitZoomAndOperationAvailabilityChange(state);
       return state;
     },
     async resetZoom() {
       const state = await zoomController.resetZoom();
-      emitZoomChange(state);
+      emitZoomAndOperationAvailabilityChange(state);
       return state;
     },
     getZoomState() {

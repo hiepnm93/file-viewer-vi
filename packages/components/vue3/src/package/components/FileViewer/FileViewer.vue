@@ -324,6 +324,14 @@ useViewerPreviewLifecycle({
           >
             {{ zoomState.label }}
           </button>
+          <span
+            v-else
+            class='viewer-zoom-meter viewer-zoom-meter--readonly'
+            :title='zoomState.label'
+            :aria-label='zoomState.label'
+          >
+            {{ zoomState.label }}
+          </span>
           <button
             v-if='operationAvailability.zoomIn'
             type='button'
@@ -489,8 +497,20 @@ useViewerPreviewLifecycle({
 
 .viewer-actions .viewer-zoom-meter {
   min-width: 48px;
+  height: 30px;
   padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   color: #23465e;
+}
+
+.viewer-actions .viewer-zoom-meter--readonly {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .viewer-actions--floating button {
@@ -506,6 +526,7 @@ useViewerPreviewLifecycle({
 
 .viewer-actions--floating .viewer-zoom-meter {
   min-width: 54px;
+  height: 32px;
 }
 
 .viewer-actions button:hover:not(:disabled) {

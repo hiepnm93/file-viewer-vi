@@ -555,6 +555,7 @@ export {
   FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
   FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
   FILE_VIEWER_OPERATION_LABELS,
+  applyFileViewerZoomAvailability,
   buildFileViewerLifecycleContext,
   buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,

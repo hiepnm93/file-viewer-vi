@@ -278,42 +278,59 @@ function makeDocxResponsive(target: HTMLDivElement, context?: FileRenderContext)
     return Math.min(DOCX_MAX_SCALE, Math.max(DOCX_MIN_SCALE, Number(scale.toFixed(2))))
   }
 
+  const applyResponsiveLayout = () => {
+    let firstScale = currentScale
+    let firstFitScale = currentFitScale
+    let measured = false
+
+    frames.forEach(frame => {
+      const page = frame.firstElementChild
+      if (!isTargetHTMLElement(page, target)) {
+        return
+      }
+
+      page.style.transform = 'translateX(-50%)'
+
+      const pageWidth = page.offsetWidth
+      const contentHeight = pagedLayout
+        ? page.offsetHeight
+        : Math.max(page.scrollHeight, page.offsetHeight)
+      if (!pageWidth || !contentHeight) {
+        return
+      }
+      const availableWidth = Math.max(target.clientWidth - 28, 120)
+      const fitScale = Math.min(1, Math.max(DOCX_MIN_SCALE, availableWidth / pageWidth))
+      const scale = clampScale(fitScale * userZoom)
+      if (!measured) {
+        firstScale = scale
+        firstFitScale = fitScale
+        measured = true
+      }
+
+      page.style.transform = `translateX(-50%) scale(${scale})`
+      frame.style.width = `${Math.ceil(Math.max(pageWidth * scale, target.clientWidth - 28, 120))}px`
+      frame.style.maxWidth = 'none'
+      frame.style.height = `${Math.ceil(contentHeight * scale)}px`
+    })
+
+    if (!measured) {
+      return
+    }
+
+    currentScale = firstScale
+    currentFitScale = firstFitScale
+    zoomEmitter.emit()
+  }
+
   const resize = () => {
     if (!view) {
+      applyResponsiveLayout()
       return
     }
 
     view.cancelAnimationFrame(resizeFrame)
     resizeFrame = view.requestAnimationFrame(() => {
-      let firstScale = 1
-      frames.forEach(frame => {
-        const page = frame.firstElementChild
-        if (!isTargetHTMLElement(page, target)) {
-          return
-        }
-
-        page.style.transform = 'translateX(-50%)'
-
-        const pageWidth = page.offsetWidth
-        const contentHeight = pagedLayout
-          ? page.offsetHeight
-          : Math.max(page.scrollHeight, page.offsetHeight)
-        if (!pageWidth || !contentHeight) {
-          return
-        }
-        const availableWidth = Math.max(target.clientWidth - 28, 120)
-        const fitScale = Math.min(1, Math.max(DOCX_MIN_SCALE, availableWidth / pageWidth))
-        const scale = clampScale(fitScale * userZoom)
-        firstScale = scale
-        currentFitScale = fitScale
-
-        page.style.transform = `translateX(-50%) scale(${scale})`
-        frame.style.width = `${Math.ceil(Math.max(pageWidth * scale, target.clientWidth - 28, 120))}px`
-        frame.style.maxWidth = 'none'
-        frame.style.height = `${Math.ceil(contentHeight * scale)}px`
-      })
-      currentScale = firstScale
-      zoomEmitter.emit()
+      applyResponsiveLayout()
     })
   }
 
@@ -329,14 +346,15 @@ function makeDocxResponsive(target: HTMLDivElement, context?: FileRenderContext)
 
   const setUserZoom = (nextZoom: number) => {
     userZoom = Math.min(6, Math.max(0.2, Number(nextZoom.toFixed(2))))
-    resize()
+    view?.cancelAnimationFrame(resizeFrame)
+    applyResponsiveLayout()
     return getZoomState()
   }
 
   target.dataset.viewerZoomProvider = 'docx'
   registerFileViewerZoomProvider(target, {
-    zoomIn: () => setUserZoom(userZoom + DOCX_ZOOM_STEP),
-    zoomOut: () => setUserZoom(userZoom - DOCX_ZOOM_STEP),
+    zoomIn: () => setUserZoom((currentScale + DOCX_ZOOM_STEP) / Math.max(currentFitScale, 0.01)),
+    zoomOut: () => setUserZoom((currentScale - DOCX_ZOOM_STEP) / Math.max(currentFitScale, 0.01)),
     resetZoom: () => setUserZoom(1),
     setZoom: scale => setUserZoom(scale / Math.max(currentFitScale, 0.01)),
     getState: getZoomState,
@@ -351,7 +369,7 @@ function makeDocxResponsive(target: HTMLDivElement, context?: FileRenderContext)
       observer?.observe(page)
     }
   })
-  resize()
+  applyResponsiveLayout()
 
   return () => {
     view?.cancelAnimationFrame(resizeFrame)
