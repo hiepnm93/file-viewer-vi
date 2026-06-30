@@ -8,17 +8,13 @@ const getScrollableRange = (element: HTMLElement, axis: 'x' | 'y') => {
     : Math.max(0, element.scrollWidth - element.clientWidth)
 }
 
-const getScrollRatio = (element: HTMLElement, axis: 'x' | 'y') => {
-  const range = getScrollableRange(element, axis)
-  if (!range) {
-    return 0
-  }
-  return (axis === 'y' ? element.scrollTop : element.scrollLeft) / range
+export const getScrollOffset = (element: HTMLElement, axis: 'x' | 'y') => {
+  return axis === 'y' ? element.scrollTop : element.scrollLeft
 }
 
-const applyScrollRatio = (element: HTMLElement, axis: 'x' | 'y', ratio: number) => {
+export const applyScrollOffset = (element: HTMLElement, axis: 'x' | 'y', offset: number) => {
   const range = getScrollableRange(element, axis)
-  const value = Math.max(0, Math.min(range, ratio * range))
+  const value = Math.max(0, Math.min(range, offset))
   if (axis === 'y') {
     element.scrollTop = value
   } else {
@@ -54,8 +50,8 @@ export const useSynchronizedScroll = (
       window.cancelAnimationFrame(frame)
     }
     frame = window.requestAnimationFrame(() => {
-      applyScrollRatio(to, 'y', getScrollRatio(from, 'y'))
-      applyScrollRatio(to, 'x', getScrollRatio(from, 'x'))
+      applyScrollOffset(to, 'y', getScrollOffset(from, 'y'))
+      applyScrollOffset(to, 'x', getScrollOffset(from, 'x'))
       window.requestAnimationFrame(() => {
         source = null
       })
