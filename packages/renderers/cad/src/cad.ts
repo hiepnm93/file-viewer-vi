@@ -10,15 +10,23 @@ import {
 } from '@flyfish-dev/cad-viewer';
 import { resolveFileViewerCadAssetUrls } from '@file-viewer/core/assets';
 import {
+  createFileViewerViewStateChange,
+  createFileViewerViewStateChangeEmitter,
   createFileViewerTranslator,
-  resolveFileViewerLocale,
   createFileViewerZoomChangeEmitter,
+  registerFileViewerViewStateProvider,
   registerFileViewerZoomProvider,
+  resolveFileViewerLocale,
+  unregisterFileViewerViewStateProvider,
+  unregisterFileViewerZoomProvider,
+  type FileViewerApplyViewStateOptions,
   type FileRenderContext,
   type FileViewerCadOptions,
   type FileViewerRenderedInstance,
+  type FileViewerViewState,
+  type FileViewerViewStateChangeAction,
+  type FileViewerViewStateChangeSource,
   type FileViewerZoomState,
-  unregisterFileViewerZoomProvider,
 } from '@file-viewer/core';
 
 type CadStatus = 'loading' | 'ready' | 'error';
@@ -253,6 +261,33 @@ export default async function renderCad(
   };
 
   const cadZoomEmitter = createFileViewerZoomChangeEmitter();
+  const cadViewStateEmitter = createFileViewerViewStateChangeEmitter();
+
+  const getCadViewState = (): FileViewerViewState => ({
+    renderer: 'cad',
+    scale: getCadZoomState().scale,
+    zoom: getCadZoomState(),
+    extra: {
+      status,
+      view: viewState ? { ...viewState } : null,
+      backend: renderStats?.backend,
+      layerCount: layers.length,
+      visibleLayers: layers
+        .filter(layer => layer.isVisible !== false && !layer.isFrozen)
+        .map(layer => layer.name),
+    },
+  });
+
+  const emitCadViewStateChange = (
+    action: FileViewerViewStateChangeAction,
+    source: FileViewerViewStateChangeSource = 'viewer'
+  ) => {
+    const state = getCadViewState();
+    if (!disposed) {
+      cadViewStateEmitter.emit(createFileViewerViewStateChange(state, { action, source }));
+    }
+    return state;
+  };
 
   const syncInspector = () => {
     const summary = loadResult?.summary;
@@ -300,6 +335,7 @@ export default async function renderCad(
         queueMicrotask(() => {
           viewer?.fit();
           cadZoomEmitter.emit();
+          emitCadViewStateChange('layer-toggle', 'user');
         });
       });
       return button;
@@ -335,18 +371,21 @@ export default async function renderCad(
     viewer?.fit();
     cadZoomEmitter.emit();
     syncState();
+    emitCadViewStateChange('zoom-reset', 'user');
   };
 
   const zoomIn = () => {
     viewer?.zoomIn();
     cadZoomEmitter.emit();
     syncState();
+    emitCadViewStateChange('zoom-in', 'user');
   };
 
   const zoomOut = () => {
     viewer?.zoomOut();
     cadZoomEmitter.emit();
     syncState();
+    emitCadViewStateChange('zoom-out', 'user');
   };
 
   registerFileViewerZoomProvider(shell, {
@@ -364,6 +403,22 @@ export default async function renderCad(
     },
     getState: getCadZoomState,
     subscribe: cadZoomEmitter.subscribe,
+  });
+  registerFileViewerViewStateProvider(shell, {
+    getState: getCadViewState,
+    async applyState(
+      _state: FileViewerViewState,
+      applyOptions: FileViewerApplyViewStateOptions = {}
+    ) {
+      const source = applyOptions.source || 'api';
+      const action = applyOptions.action || 'restore';
+      const notify = applyOptions.notify !== false;
+      if (notify) {
+        return emitCadViewStateChange(action, source);
+      }
+      return getCadViewState();
+    },
+    subscribe: cadViewStateEmitter.subscribe,
   });
 
   fitButton.addEventListener('click', fitToView);
@@ -424,6 +479,7 @@ export default async function renderCad(
       onViewChange: event => {
         viewState = event;
         cadZoomEmitter.emit();
+        emitCadViewStateChange('cad-view-change', 'user');
         syncState();
       },
       onLoad: result => {
@@ -482,6 +538,7 @@ export default async function renderCad(
       queueMicrotask(() => {
         viewer?.fit();
         cadZoomEmitter.emit();
+        emitCadViewStateChange('init', 'viewer');
         syncState();
       });
     } catch (reason) {
@@ -509,6 +566,7 @@ export default async function renderCad(
     $el: shell,
     unmount() {
       disposed = true;
+      unregisterFileViewerViewStateProvider(shell);
       unregisterFileViewerZoomProvider(shell);
       abortController?.abort();
       abortController = null;

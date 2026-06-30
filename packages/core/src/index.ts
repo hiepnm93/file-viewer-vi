@@ -122,6 +122,21 @@ export type {
   MutableFileViewerZoomState,
 } from './features/document/zoom';
 export {
+  cloneFileViewerViewState,
+  createFileViewerViewStateChange,
+  createFileViewerViewStateChangeEmitter,
+  createFileViewerViewStateController,
+  createFileViewerViewStateControllerActionHandlers,
+  registerFileViewerGenericViewStateProvider,
+} from './features/document/viewState';
+export type {
+  CreateFileViewerViewStateControllerOptions,
+  FileViewerGenericViewStateProviderRegistration,
+  FileViewerViewStateController,
+  FileViewerViewStateControllerActionHandlers,
+  RegisterFileViewerGenericViewStateProviderOptions,
+} from './features/document/viewState';
+export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
   DEFAULT_FILE_VIEWER_SCROLL_CONTAINER_CANDIDATE_SELECTOR,
@@ -130,15 +145,18 @@ export {
   collectFileViewerDocumentAnchors,
   findFileViewerAnchorForElement,
   findFileViewerSearchProvider,
+  findFileViewerViewStateProvider,
   findFileViewerZoomProvider,
   getCurrentFileViewerDocumentAnchor,
   getFileViewerScrollableRange,
   isFileViewerScrollableElement,
   registerFileViewerSearchProvider,
+  registerFileViewerViewStateProvider,
   registerFileViewerZoomProvider,
   resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor,
   unregisterFileViewerSearchProvider,
+  unregisterFileViewerViewStateProvider,
   unregisterFileViewerZoomProvider,
 } from './features/document/dom';
 export {
@@ -540,6 +558,7 @@ export const parseEdaFile = async (
 };
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
+  applyFileViewerZoomAvailability,
   createUnsupportedAvailability,
   DEFAULT_OPERATION_AVAILABILITY,
   DOM_PRINTABLE_EXTENSIONS,
@@ -555,7 +574,6 @@ export {
   FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
   FILE_VIEWER_LIFECYCLE_HOOK_ERROR_MESSAGE_PREFIX,
   FILE_VIEWER_OPERATION_LABELS,
-  applyFileViewerZoomAvailability,
   buildFileViewerLifecycleContext,
   buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
@@ -933,6 +951,7 @@ export type {
 export type {
   FileViewerSearchProviderHost,
   ResolveFileViewerScrollContainerOptions,
+  FileViewerViewStateProviderHost,
   FileViewerZoomProviderHost,
 } from './features/document/dom';
 export type {
@@ -964,6 +983,7 @@ export type {
   FileViewerArchivePasswordRequestContext,
   FileViewerArchivePasswordRequestReason,
   FileViewerArchiveOptions,
+  FileViewerApplyViewStateOptions,
   FileViewerBeforeOperation,
   FileViewerCadDwfLineWeightMode,
   FileViewerCadOptions,
@@ -1001,6 +1021,7 @@ export type {
   FileViewerMessageParams,
   FileViewerMessageResolver,
   FileViewerMessages,
+  FileViewerNavigationState,
   FileViewerOperationAvailability,
   FileViewerOperationContext,
   FileViewerOperationType,
@@ -1037,6 +1058,12 @@ export type {
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
   FileViewerTypstOptions,
+  FileViewerViewScrollState,
+  FileViewerViewState,
+  FileViewerViewStateChange,
+  FileViewerViewStateChangeAction,
+  FileViewerViewStateChangeSource,
+  FileViewerViewStateProvider,
   FileViewerWatermarkOptions,
   FileViewerZoomProvider,
   FileViewerZoomState,

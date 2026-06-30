@@ -376,6 +376,36 @@ mountViewer(container, {
 })
 ```
 
+## 视图状态同步
+
+`initialViewState`、`view-state-change`、`getViewState()` 和 `applyViewState()` 面向投屏系统、远端协同、双栏对比和阅读进度恢复。所有标准 renderer 路径都会注册 view-state provider：没有专属实现的格式会使用通用 DOM provider，记录 renderer、缩放和滚动比例；PDF 会额外记录页码、页数、旋转和目录/缩略图导航；XMind 会记录 sheet、panX、panY 和 zoom；Geo 会记录地图中心、zoom、bearing 和 pitch；3D 会记录相机位置、target 和显示选项；CAD 会上报底层 viewer 暴露的视图快照。
+
+```ts
+const lastState = ref(null)
+
+const options = {
+  initialViewState: {
+    page: 3,
+    scale: 1.25,
+    scroll: { topRatio: 0.18 }
+  }
+}
+
+function onViewerEvent(event) {
+  if (event.type === 'view-state-change') {
+    lastState.value = event.payload.state
+    syncToDisplay(event.payload)
+  }
+}
+
+await displayViewer.applyViewState(lastState.value, {
+  source: 'api',
+  action: 'restore'
+})
+```
+
+业务侧同步时建议发送完整 `state` 快照，而不是只发送单个按钮事件。PDF 页码点击、缩放、滚动，XMind 拖动画布，Geo 地图移动和 3D 相机变化都会归并成同一种事件结构，展示端只需要调用 `applyViewState()`。
+
 ## 搜索、定位与 AI 友好结构
 
 `FileViewer` 会在渲染完成后把文档 DOM 抽象成通用锚点，并在组件 ref 上暴露搜索和定位方法。搜索会在预览区内高亮命中结果，`nextSearchResult()` / `previousSearchResult()` 会滚动到当前命中；`scrollToLine()` 和 `scrollToAnchor()` 会按照当前格式可用的锚点定位。Word、Markdown、代码等文本类文档通常能定位到段落/行块，PDF 会优先使用 PDF.js 原生查找控制器和页面锚点，避免直接改写 PDF 文本层导致文字定位异常。

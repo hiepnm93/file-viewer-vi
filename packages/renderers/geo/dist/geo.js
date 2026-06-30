@@ -1,4 +1,4 @@
-import { createFileViewerTranslator, createFileViewerZoomChangeEmitter, readFileViewerText, registerFileViewerZoomProvider, unregisterFileViewerZoomProvider, } from '@file-viewer/core';
+import { createFileViewerTranslator, createFileViewerViewStateChange, createFileViewerViewStateChangeEmitter, createFileViewerZoomChangeEmitter, readFileViewerText, registerFileViewerViewStateProvider, registerFileViewerZoomProvider, unregisterFileViewerViewStateProvider, unregisterFileViewerZoomProvider, } from '@file-viewer/core';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const GEO_WIDTH = 960;
 const GEO_HEIGHT = 620;
@@ -897,30 +897,101 @@ const mountMapLibre = async (host, root, parsed, options, basemap, t) => {
     };
     fit();
     const zoomEmitter = createFileViewerZoomChangeEmitter();
-    map.on('zoomend', zoomEmitter.emit);
+    const viewStateEmitter = createFileViewerViewStateChangeEmitter();
+    let applyingViewState = false;
+    const getGeoViewState = () => {
+        const center = map.getCenter();
+        return {
+            renderer: 'geo',
+            scale: map.getZoom(),
+            zoom: createZoomState(map, parsed.bounds),
+            extra: {
+                center: [center.lng, center.lat],
+                bearing: map.getBearing(),
+                pitch: map.getPitch(),
+                basemap: activeBasemap.label,
+            },
+        };
+    };
+    const emitViewStateChange = (action, source = 'viewer') => {
+        const state = getGeoViewState();
+        if (!applyingViewState) {
+            viewStateEmitter.emit(createFileViewerViewStateChange(state, { action, source }));
+        }
+        return state;
+    };
+    const onMapZoomEnd = () => {
+        zoomEmitter.emit();
+        emitViewStateChange('zoom-change', 'user');
+    };
+    const onMapMoveEnd = () => {
+        emitViewStateChange('map-move', 'user');
+    };
+    map.on('zoomend', onMapZoomEnd);
+    map.on('moveend', onMapMoveEnd);
     registerFileViewerZoomProvider(root, {
         zoomIn: () => {
             map.zoomTo(Math.min(MAX_MAP_ZOOM, map.getZoom() + 1), { duration: 160 });
             zoomEmitter.emit();
+            emitViewStateChange('zoom-in', 'user');
             return createZoomState(map, parsed.bounds);
         },
         zoomOut: () => {
             map.zoomTo(Math.max(MIN_MAP_ZOOM, map.getZoom() - 1), { duration: 160 });
             zoomEmitter.emit();
+            emitViewStateChange('zoom-out', 'user');
             return createZoomState(map, parsed.bounds);
         },
         resetZoom: () => {
             fit();
             zoomEmitter.emit();
+            emitViewStateChange('zoom-reset', 'user');
             return createZoomState(map, parsed.bounds);
         },
-        setZoom: scale => {
+        setZoom: (scale) => {
             map.zoomTo(Math.max(MIN_MAP_ZOOM, Math.min(MAX_MAP_ZOOM, scale)), { duration: 160 });
             zoomEmitter.emit();
             return createZoomState(map, parsed.bounds);
         },
         getState: () => createZoomState(map, parsed.bounds),
         subscribe: zoomEmitter.subscribe,
+    });
+    registerFileViewerViewStateProvider(root, {
+        getState: getGeoViewState,
+        async applyState(state, applyOptions = {}) {
+            var _a, _b, _c, _d, _e;
+            const source = applyOptions.source || 'api';
+            const action = applyOptions.action || 'restore';
+            const notify = applyOptions.notify !== false;
+            const center = Array.isArray((_a = state.extra) === null || _a === void 0 ? void 0 : _a.center)
+                ? state.extra.center.map(Number)
+                : null;
+            const zoom = Number((_b = state.scale) !== null && _b !== void 0 ? _b : (_c = state.zoom) === null || _c === void 0 ? void 0 : _c.scale);
+            const bearing = Number((_d = state.extra) === null || _d === void 0 ? void 0 : _d.bearing);
+            const pitch = Number((_e = state.extra) === null || _e === void 0 ? void 0 : _e.pitch);
+            applyingViewState = true;
+            try {
+                map.jumpTo({
+                    center: center && Number.isFinite(center[0]) && Number.isFinite(center[1])
+                        ? [center[0], center[1]]
+                        : map.getCenter(),
+                    zoom: Number.isFinite(zoom)
+                        ? Math.max(MIN_MAP_ZOOM, Math.min(MAX_MAP_ZOOM, zoom))
+                        : map.getZoom(),
+                    bearing: Number.isFinite(bearing) ? bearing : map.getBearing(),
+                    pitch: Number.isFinite(pitch) ? pitch : map.getPitch(),
+                });
+                zoomEmitter.emit();
+            }
+            finally {
+                applyingViewState = false;
+            }
+            if (notify) {
+                return emitViewStateChange(action, source);
+            }
+            return getGeoViewState();
+        },
+        subscribe: viewStateEmitter.subscribe,
     });
     const ResizeObserverCtor = (_a = host.ownerDocument.defaultView) === null || _a === void 0 ? void 0 : _a.ResizeObserver;
     const resizeObserver = ResizeObserverCtor
@@ -937,6 +1008,9 @@ const mountMapLibre = async (host, root, parsed, options, basemap, t) => {
         cleanup() {
             fitButton === null || fitButton === void 0 ? void 0 : fitButton.removeEventListener('click', fit);
             resizeObserver === null || resizeObserver === void 0 ? void 0 : resizeObserver.disconnect();
+            map.off('zoomend', onMapZoomEnd);
+            map.off('moveend', onMapMoveEnd);
+            unregisterFileViewerViewStateProvider(root);
             unregisterFileViewerZoomProvider(root);
             map.remove();
         },

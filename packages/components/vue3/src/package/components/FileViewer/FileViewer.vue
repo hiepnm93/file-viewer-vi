@@ -21,6 +21,7 @@ import { useViewerPublicApi } from './hooks/useViewerPublicApi'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
+import { useViewerViewState } from './hooks/useViewerViewState'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
 import { useViewerZoom } from './hooks/useViewerZoom'
 
@@ -162,6 +163,18 @@ const {
 })
 
 const {
+  refreshViewStateProvider,
+  startViewStateObserver,
+  stopViewStateObserver,
+  clearViewStateProvider,
+  getViewState,
+  applyViewState
+} = useViewerViewState({
+  output,
+  emitViewStateChange: change => emit('view-state-change', change)
+})
+
+const {
   activeExportAdapter,
   renderedReady,
   progressiveReady,
@@ -181,7 +194,11 @@ const {
   startZoomObserver,
   stopZoomObserver,
   clearZoomProvider,
-  refreshZoomProvider
+  refreshZoomProvider,
+  startViewStateObserver,
+  stopViewStateObserver,
+  clearViewStateProvider,
+  refreshViewStateProvider
 })
 
 const {
@@ -268,6 +285,8 @@ const publicApi = useViewerPublicApi({
   zoomOut,
   resetZoom,
   getZoomState,
+  getViewState,
+  applyViewState,
   operationAvailability,
   getScrollContainer,
   searchDocument,
@@ -289,7 +308,8 @@ useViewerPreviewLifecycle({
   refreshPreview,
   cancelPreview,
   resetLoading,
-  stopZoomObserver
+  stopZoomObserver,
+  stopViewStateObserver
 })
 </script>
 

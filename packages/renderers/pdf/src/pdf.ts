@@ -16,7 +16,11 @@ import {
   registerFileViewerZoomProvider,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
+  registerFileViewerViewStateProvider,
+  unregisterFileViewerViewStateProvider,
   createFileViewerZoomChangeEmitter,
+  createFileViewerViewStateChange,
+  createFileViewerViewStateChangeEmitter,
   createFileViewerTranslator,
   buildPrintPageStyle,
   formatCssPixels,
@@ -28,6 +32,10 @@ import {
   type FileViewerRenderedInstance,
   type FileViewerSearchOptions,
   type FileViewerSearchState,
+  type FileViewerApplyViewStateOptions,
+  type FileViewerViewState,
+  type FileViewerViewStateChangeAction,
+  type FileViewerViewStateChangeSource,
   type FileViewerZoomState,
 } from '@file-viewer/core';
 import {
@@ -332,10 +340,12 @@ export default async function renderPdf(
     throw new Error(t('pdf.error.browserWindow'));
   }
   const options = context?.options?.pdf;
+  const initialViewState = options?.initialViewState || context?.options?.initialViewState || null;
   const navigationEnabled = options?.navigation !== false;
   const toolbarVisible = options?.toolbar !== false;
   const thumbnailsEnabled = options?.thumbnails === true;
   const zoomEmitter = createFileViewerZoomChangeEmitter();
+  const viewStateEmitter = createFileViewerViewStateChangeEmitter();
   const isCompactViewport = () => {
     const width = target.clientWidth || targetWindow.innerWidth || 0;
     return width > 0 && width <= 720;
@@ -361,6 +371,11 @@ export default async function renderPdf(
   let pageDimensionFrame = 0;
   let destroyed = false;
   let loadVersion = 0;
+  let viewStateApplyVersion = 0;
+  let activeViewStateApplyVersion = 0;
+  let pendingInitialViewState: FileViewerViewState | null = initialViewState;
+  let suppressScrollEventUntil = 0;
+  let scrollStateFrame = 0;
   let pdfSearchState = createPdfSearchState();
   let pdfMatchesCount: PdfFindMatchesCount = { current: 0, total: 0 };
   let pdfSearchOptions: FileViewerSearchOptions | undefined;
@@ -502,7 +517,7 @@ export default async function renderPdf(
           thumb,
           createElement(documentRef, 'span', 'pdf-page-label', t('pdf.nav.pageLabel', { page }))
         );
-        button.addEventListener('click', () => goToPage(page));
+        button.addEventListener('click', () => goToPage(page, 'page-click', 'user'));
         navList.append(button);
       }
       return;
@@ -930,7 +945,177 @@ export default async function renderPdf(
     maxScale: MAX_SCALE,
   });
 
-  const setScale = (scale: number) => {
+  const readScrollState = () => {
+    const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
+    const maxLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+    return {
+      top: container.scrollTop || 0,
+      left: container.scrollLeft || 0,
+      width: container.scrollWidth || 0,
+      height: container.scrollHeight || 0,
+      clientWidth: container.clientWidth || 0,
+      clientHeight: container.clientHeight || 0,
+      topRatio: maxTop > 0 ? (container.scrollTop || 0) / maxTop : 0,
+      leftRatio: maxLeft > 0 ? (container.scrollLeft || 0) / maxLeft : 0,
+    };
+  };
+
+  const getPdfViewState = (): FileViewerViewState => {
+    const zoom = getPdfZoomState();
+    return {
+      renderer: 'pdf',
+      page: currentPage,
+      pageCount,
+      scale: zoom.scale,
+      zoom,
+      rotation: currentRotation,
+      scroll: readScrollState(),
+      navigation: {
+        visible: navigationEnabled ? navVisible : false,
+        mode: navMode,
+      },
+    };
+  };
+
+  const emitViewStateChange = (
+    action: FileViewerViewStateChangeAction,
+    source: FileViewerViewStateChangeSource = 'viewer'
+  ) => {
+    const state = getPdfViewState();
+    if (!destroyed) {
+      viewStateEmitter.emit(createFileViewerViewStateChange(state, {
+        action,
+        source,
+      }));
+    }
+    return state;
+  };
+
+  const resolveScrollValue = (
+    value: unknown,
+    ratio: unknown,
+    maxValue: number
+  ) => {
+    if (Number.isFinite(value)) {
+      return Number(value);
+    }
+    if (Number.isFinite(ratio)) {
+      return Number(ratio) * maxValue;
+    }
+    return undefined;
+  };
+
+  const suppressProgrammaticScrollEvents = () => {
+    suppressScrollEventUntil = Math.max(suppressScrollEventUntil, Date.now() + 180);
+  };
+
+  const restoreScrollState = (
+    scroll: FileViewerViewState['scroll'] | undefined,
+    notify = true
+  ) => {
+    if (!scroll) {
+      return;
+    }
+    const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
+    const maxLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+    const top = resolveScrollValue(scroll.top, scroll.topRatio, maxTop);
+    const left = resolveScrollValue(scroll.left, scroll.leftRatio, maxLeft);
+
+    if (!notify) {
+      suppressProgrammaticScrollEvents();
+    }
+    if (top !== undefined) {
+      container.scrollTop = Math.min(Math.max(0, top), maxTop);
+    }
+    if (left !== undefined) {
+      container.scrollLeft = Math.min(Math.max(0, left), maxLeft);
+    }
+  };
+
+  const applyPdfViewState = async (
+    state: FileViewerViewState,
+    applyOptions: FileViewerApplyViewStateOptions = {}
+  ): Promise<FileViewerViewState> => {
+    if (!pdfContext.viewer || loadStatus !== 'ready') {
+      pendingInitialViewState = state;
+      return getPdfViewState();
+    }
+
+    const source = applyOptions.source || 'api';
+    const action = applyOptions.action || 'restore';
+    const notify = applyOptions.notify !== false;
+    const applyVersion = ++viewStateApplyVersion;
+    activeViewStateApplyVersion = applyVersion;
+    suppressProgrammaticScrollEvents();
+    const nextRotation = Number(state.rotation);
+    const nextScale = Number(state.scale ?? state.zoom?.scale);
+    const nextPage = Number(state.page);
+
+    try {
+      if (state.navigation) {
+        if (navigationEnabled && typeof state.navigation.visible === 'boolean') {
+          navVisible = state.navigation.visible;
+        }
+        if (state.navigation.mode === 'pages' || state.navigation.mode === 'outline') {
+          navMode = state.navigation.mode;
+        }
+        syncUi();
+      }
+
+      if (Number.isFinite(nextRotation)) {
+        applyRotation(nextRotation, 'rotation-change', source, false);
+      }
+      if (Number.isFinite(nextScale)) {
+        autoFitWidth = false;
+        setScale(nextScale, 'zoom-change', source, false);
+      }
+      if (Number.isFinite(nextPage)) {
+        goToPage(nextPage, 'page-change', source, false);
+      }
+
+      await waitForPaint(targetWindow);
+      if (applyVersion !== viewStateApplyVersion) {
+        return getPdfViewState();
+      }
+      restoreScrollState(state.scroll, false);
+      await waitForPaint(targetWindow);
+      if (applyVersion !== viewStateApplyVersion) {
+        return getPdfViewState();
+      }
+      restoreScrollState(state.scroll, false);
+      syncUi();
+
+      if (notify && applyVersion === viewStateApplyVersion) {
+        emitViewStateChange(action, source);
+      }
+      return getPdfViewState();
+    } finally {
+      suppressProgrammaticScrollEvents();
+      if (activeViewStateApplyVersion === applyVersion) {
+        activeViewStateApplyVersion = 0;
+      }
+    }
+  };
+
+  const scheduleScrollViewStateChange = () => {
+    if (activeViewStateApplyVersion || Date.now() < suppressScrollEventUntil || destroyed) {
+      return;
+    }
+    if (scrollStateFrame) {
+      return;
+    }
+    scrollStateFrame = targetWindow.requestAnimationFrame(() => {
+      scrollStateFrame = 0;
+      emitViewStateChange('scroll', 'user');
+    });
+  };
+
+  const setScale = (
+    scale: number,
+    action: FileViewerViewStateChangeAction = 'zoom-change',
+    source: FileViewerViewStateChangeSource = 'viewer',
+    notifyViewState = true
+  ) => {
     if (!pdfContext.viewer) {
       return;
     }
@@ -940,6 +1125,9 @@ export default async function renderPdf(
     scheduleLegacyPageDimensionPatch();
     zoomEmitter.emit();
     syncUi();
+    if (notifyViewState) {
+      emitViewStateChange(action, source);
+    }
   };
 
   const getPageWidthAtScaleOne = (pdfViewer: PDFViewer) => {
@@ -966,12 +1154,15 @@ export default async function renderPdf(
     return pageWidth ? clampScale(availableWidth / pageWidth) : 1;
   };
 
-  const fitToWidth = () => {
+  const fitToWidth = (
+    source: FileViewerViewStateChangeSource = 'user',
+    notifyViewState = true
+  ) => {
     if (!pdfContext.viewer) {
       return;
     }
     autoFitWidth = true;
-    setScale(getFitWidthScale(pdfContext.viewer));
+    setScale(getFitWidthScale(pdfContext.viewer), 'zoom-reset', source, notifyViewState);
     void waitForPaint(targetWindow).then(() => {
       pdfContext.viewer?.update();
     });
@@ -982,20 +1173,25 @@ export default async function renderPdf(
       return;
     }
     targetWindow.cancelAnimationFrame(fitFrame);
-    fitFrame = targetWindow.requestAnimationFrame(() => fitToWidth());
+    fitFrame = targetWindow.requestAnimationFrame(() => fitToWidth('viewer'));
   };
 
-  const zoomIn = () => {
+  const zoomIn = (source: FileViewerViewStateChangeSource = 'user') => {
     autoFitWidth = false;
-    setScale(currentScale + SCALE_STEP);
+    setScale(currentScale + SCALE_STEP, 'zoom-in', source);
   };
 
-  const zoomOut = () => {
+  const zoomOut = (source: FileViewerViewStateChangeSource = 'user') => {
     autoFitWidth = false;
-    setScale(currentScale - SCALE_STEP);
+    setScale(currentScale - SCALE_STEP, 'zoom-out', source);
   };
 
-  const applyRotation = (rotation: number) => {
+  const applyRotation = (
+    rotation: number,
+    action: FileViewerViewStateChangeAction = 'rotation-change',
+    source: FileViewerViewStateChangeSource = 'viewer',
+    notifyViewState = true
+  ) => {
     const normalized = normalizeRotation(rotation);
     currentRotation = normalized;
     pdfThumbnails.clear();
@@ -1007,12 +1203,18 @@ export default async function renderPdf(
     pdfContext.viewer.pagesRotation = normalized;
     void waitForPaint(targetWindow).then(() => {
       if (autoFitWidth) {
-        fitToWidth();
+        fitToWidth(source, notifyViewState);
+        if (notifyViewState) {
+          emitViewStateChange(action, source);
+        }
         return;
       }
       pdfContext.viewer?.update();
       scheduleLegacyPageDimensionPatch();
       syncUi();
+      if (notifyViewState) {
+        emitViewStateChange(action, source);
+      }
     });
   };
 
@@ -1025,7 +1227,12 @@ export default async function renderPdf(
     }
   };
 
-  function goToPage(pageNumber: number) {
+  function goToPage(
+    pageNumber: number,
+    action: FileViewerViewStateChangeAction = 'page-change',
+    source: FileViewerViewStateChangeSource = 'viewer',
+    notifyViewState = true
+  ) {
     if (!pdfContext.viewer || !pageCount) {
       return;
     }
@@ -1034,10 +1241,16 @@ export default async function renderPdf(
       pdfContext.viewer!.currentPageNumber = nextPage;
       currentPage = nextPage;
       syncUi();
+      if (notifyViewState) {
+        emitViewStateChange(action, source);
+      }
     });
   }
 
-  const toggleNav = () => {
+  const toggleNav = (
+    source: FileViewerViewStateChangeSource = 'user',
+    notifyViewState = true
+  ) => {
     if (!navigationEnabled) {
       return;
     }
@@ -1045,16 +1258,26 @@ export default async function renderPdf(
     syncUi();
     void waitForPaint(targetWindow).then(() => {
       if (autoFitWidth) {
-        fitToWidth();
+        fitToWidth(source, notifyViewState);
         return;
       }
       pdfContext.viewer?.update();
     });
+    if (notifyViewState) {
+      emitViewStateChange('navigation-toggle', source);
+    }
   };
 
-  const setNavMode = (mode: PdfNavMode) => {
+  const setNavMode = (
+    mode: PdfNavMode,
+    source: FileViewerViewStateChangeSource = 'user',
+    notifyViewState = true
+  ) => {
     navMode = mode;
     syncUi();
+    if (notifyViewState) {
+      emitViewStateChange('navigation-mode-change', source);
+    }
   };
 
   const toggleOutlineItem = (item: PdfOutlineItemView) => {
@@ -1070,6 +1293,7 @@ export default async function renderPdf(
       return;
     }
     runWithStableHorizontalScroll(() => pdfContext.linkService!.goToDestination(item.dest!));
+    void waitForPaint(targetWindow).then(() => emitViewStateChange('outline-click', 'user'));
   };
 
   const destroyPdfResource = async (resource: PdfResource | null) => {
@@ -1237,25 +1461,43 @@ export default async function renderPdf(
       eventBus.on('updatefindmatchescount', handlePdfFindMatchesCount);
       eventBus.on('updatefindcontrolstate', handlePdfFindControlState);
       eventBus.on('pagesinit', () => {
+        applyRotation(currentRotation, 'rotation-change', 'viewer', false);
         loadStatus = 'ready';
-        applyRotation(currentRotation);
-        fitToWidth();
+        fitToWidth('viewer', false);
         scheduleLegacyPageDimensionPatch();
         syncUi();
         context?.onProgressiveRender?.();
+        const viewStateToRestore = pendingInitialViewState;
+        pendingInitialViewState = null;
+        if (viewStateToRestore) {
+          void applyPdfViewState(viewStateToRestore, {
+            action: 'restore',
+            source: 'initial',
+          });
+        } else {
+          emitViewStateChange('init', 'viewer');
+        }
         if (pdfContext.search) {
           eventBus.dispatch('find', { type: '', query: pdfContext.search });
         }
       });
       eventBus.on('pagechanging', ({ pageNumber }: { pageNumber: number }) => {
+        const previousPage = currentPage;
         currentPage = pageNumber;
         syncUi();
+        if (previousPage !== currentPage && !activeViewStateApplyVersion) {
+          emitViewStateChange('page-change', 'viewer');
+        }
       });
       eventBus.on('scalechanging', ({ scale }: { scale: number }) => {
+        const previousScale = currentScale;
         currentScale = clampScale(scale);
         scheduleLegacyPageDimensionPatch();
         zoomEmitter.emit();
         syncUi();
+        if (previousScale !== currentScale && !activeViewStateApplyVersion) {
+          emitViewStateChange('zoom-change', 'viewer');
+        }
       });
       eventBus.on('pagerendered', scheduleLegacyPageDimensionPatch);
 
@@ -1339,36 +1581,43 @@ export default async function renderPdf(
 
   registerFileViewerZoomProvider(root, {
     zoomIn: () => {
-      zoomIn();
+      zoomIn('api');
       return getPdfZoomState();
     },
     zoomOut: () => {
-      zoomOut();
+      zoomOut('api');
       return getPdfZoomState();
     },
     resetZoom: () => {
-      fitToWidth();
+      fitToWidth('api');
       return getPdfZoomState();
     },
     setZoom: scale => {
       autoFitWidth = false;
-      setScale(scale);
+      setScale(scale, 'zoom-change', 'api');
       return getPdfZoomState();
     },
     getState: getPdfZoomState,
     subscribe: zoomEmitter.subscribe,
   });
 
-  navToggleButton.addEventListener('click', toggleNav);
-  previousPageButton.addEventListener('click', () => goToPage(currentPage - 1));
-  nextPageButton.addEventListener('click', () => goToPage(currentPage + 1));
-  zoomOutButton.addEventListener('click', zoomOut);
-  zoomInButton.addEventListener('click', zoomIn);
-  scaleButton.addEventListener('click', fitToWidth);
-  rotateLeftButton.addEventListener('click', () => applyRotation(currentRotation - 90));
-  rotateRightButton.addEventListener('click', () => applyRotation(currentRotation + 90));
-  pagesTab.addEventListener('click', () => setNavMode('pages'));
-  outlineTab.addEventListener('click', () => setNavMode('outline'));
+  registerFileViewerViewStateProvider(root, {
+    getState: getPdfViewState,
+    applyState: applyPdfViewState,
+    subscribe: viewStateEmitter.subscribe,
+  });
+
+  navToggleButton.addEventListener('click', () => toggleNav('user'));
+  previousPageButton.addEventListener('click', () => goToPage(currentPage - 1, 'page-step', 'user'));
+  nextPageButton.addEventListener('click', () => goToPage(currentPage + 1, 'page-step', 'user'));
+  zoomOutButton.addEventListener('click', () => zoomOut('user'));
+  zoomInButton.addEventListener('click', () => zoomIn('user'));
+  scaleButton.addEventListener('click', () => fitToWidth('user'));
+  rotateLeftButton.addEventListener('click', () => applyRotation(currentRotation - 90, 'rotate-left', 'user'));
+  rotateRightButton.addEventListener('click', () => applyRotation(currentRotation + 90, 'rotate-right', 'user'));
+  pagesTab.addEventListener('click', () => setNavMode('pages', 'user'));
+  outlineTab.addEventListener('click', () => setNavMode('outline', 'user'));
+  container.addEventListener('scroll', scheduleScrollViewStateChange, { passive: true });
 
   if (targetWindow.ResizeObserver) {
     resizeObserver = new targetWindow.ResizeObserver(() => scheduleFitToWidth());
@@ -1385,12 +1634,15 @@ export default async function renderPdf(
       loadVersion += 1;
       targetWindow.cancelAnimationFrame(fitFrame);
       targetWindow.cancelAnimationFrame(pageDimensionFrame);
+      targetWindow.cancelAnimationFrame(scrollStateFrame);
       thumbnailObserver?.disconnect();
       thumbnailObserver = null;
       resizeObserver?.disconnect();
       resizeObserver = null;
+      container.removeEventListener('scroll', scheduleScrollViewStateChange);
       unregisterFileViewerSearchProvider(root);
       unregisterFileViewerZoomProvider(root);
+      unregisterFileViewerViewStateProvider(root);
       outlineItems = [];
       context?.registerExportAdapter?.(null);
       const resource = pdfContext.resource;

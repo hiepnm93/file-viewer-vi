@@ -198,4 +198,34 @@ Toolbar buttons should call viewer operations rather than wrapping rendered cont
 
 The initial zoom label is not assumed to be `100%`. Renderers report the actual scale after first-screen fit, image natural-size loading, PDF / Word layout, container resize, or any internal reflow. Built-in toolbars and `getOperationAvailability()` use the same state to keep `zoomIn`, `zoomOut`, and `zoomReset` accurate. Custom toolbars should sync from `zoom-change` or `getZoomState()` instead of caching their own default percentage.
 
+## View State Sync
+
+`initialViewState`, `view-state-change`, `getViewState()`, and `applyViewState()` are designed for projection systems, remote-control displays, side-by-side comparison, and reading-position restore. Every standard renderer path registers a view-state provider. Renderers without a dedicated provider use the generic DOM provider, which records the renderer id, current zoom, and scroll ratios. PDF adds page, page count, rotation, and navigation state. XMind adds sheet index, panX, panY, and zoom. Geo adds map center, zoom, bearing, and pitch. 3D adds camera position, target, and display options. CAD reports the view snapshot exposed by the underlying CAD viewer.
+
+```ts
+let lastState = null
+
+const options = {
+  initialViewState: {
+    page: 3,
+    scale: 1.25,
+    scroll: { topRatio: 0.18 }
+  }
+}
+
+function onEvent(event) {
+  if (event.type === 'view-state-change') {
+    lastState = event.payload.state
+    sendToDisplay(event.payload)
+  }
+}
+
+await displayViewer.applyViewState(lastState, {
+  source: 'api',
+  action: 'restore'
+})
+```
+
+For synchronization, send the full `state` snapshot instead of replaying individual button clicks. PDF page changes, zooming, scrolling, XMind panning, Geo map movement, and 3D camera updates all use the same event shape; the display side only needs to call `applyViewState()`.
+
 PDF default assets are probed from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. When the static worker is missing or an app server falls back to HTML, the PDF renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path, a dedicated static asset domain, or a strict CSP.

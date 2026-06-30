@@ -11,6 +11,7 @@ import {
   createFileViewerDocumentFeatureControllerActionHandlers,
 } from '../features/document/events';
 import { createFileViewerZoomController } from '../features/document/zoom';
+import { createFileViewerViewStateController } from '../features/document/viewState';
 import {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
@@ -56,6 +57,7 @@ import type {
   FileRenderExportAdapter,
   FileRenderHandler,
   FileViewerAiOptions,
+  FileViewerApplyViewStateOptions,
   FileViewerDocumentAnchor,
   FileViewerDownloadOptions,
   FileViewerEventHandler,
@@ -67,6 +69,7 @@ import type {
   FileViewerPrintOptions,
   FileViewerRendererPluginInput,
   FileViewerSource,
+  FileViewerViewState,
   NormalizedFileViewerSource,
   RendererRegistry,
   RendererSession,
@@ -248,6 +251,7 @@ export const createViewer = (
         ...definition,
         load: createFileRenderHandlerLoader({
           handler: registration.handler,
+          rendererId: definition.id,
           getTarget: context => context.surface.container as HTMLDivElement,
         }),
       });
@@ -331,6 +335,12 @@ export const createViewer = (
     beforeZoom: runBeforeViewerOperation,
     onChange: state => emitZoomAndOperationAvailabilityChange(state),
   });
+  const viewStateController = createFileViewerViewStateController({
+    root: () => container,
+    onChange: change => {
+      createOptions.onEvent?.({ type: 'view-state-change', payload: change });
+    },
+  });
   const documentActions = createFileViewerDocumentFeatureControllerActionHandlers({
     root: () => container,
     searchTarget: documentTarget,
@@ -344,6 +354,7 @@ export const createViewer = (
     },
   });
   zoomController.observe();
+  viewStateController.observe();
 
   const destroyCurrent = async (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     if (!currentSource) {
@@ -361,6 +372,7 @@ export const createViewer = (
     });
     await documentActions.clearDocumentState();
     zoomController.clearProvider();
+    viewStateController.clearProvider();
     emitZoomAndOperationAvailabilityChange();
     await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
   };
@@ -398,6 +410,7 @@ export const createViewer = (
       });
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       zoomController.refreshProvider();
+      viewStateController.refreshProvider();
       await documentActions.refreshDocumentIndex({ notify: false });
       emitZoomAndOperationAvailabilityChange();
       await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
@@ -407,6 +420,7 @@ export const createViewer = (
       await destroyCurrent(reason);
       documentActions.destroyDocumentFeatures();
       zoomController.destroy();
+      viewStateController.destroy();
     },
     updateOptions(nextOptions: Partial<FileViewerOptions>) {
       options = {
@@ -490,6 +504,12 @@ export const createViewer = (
     },
     getZoomState() {
       return zoomController.getState();
+    },
+    getViewState() {
+      return viewStateController.getState();
+    },
+    applyViewState(state: FileViewerViewState, applyOptions?: FileViewerApplyViewStateOptions) {
+      return viewStateController.applyState(state, applyOptions);
     },
     search(query: string) {
       return documentActions.searchDocument(query);

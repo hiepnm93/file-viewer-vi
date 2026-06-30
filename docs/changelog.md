@@ -2,6 +2,13 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 当前主线视图状态同步能力
+
+- 新增统一 `initialViewState`、`view-state-change`、`getViewState()` 和 `applyViewState()` 协议，面向投屏、远端协同、双栏对比和阅读进度恢复
+- 所有标准 renderer loader 自动注册通用 view-state provider，未写专属适配的格式也能记录 / 恢复 renderer、缩放和滚动比例
+- PDF 提供页码、页数、缩放、旋转、滚动和导航状态；XMind、Geo、3D、CAD 追加画布 pan、地图中心、相机视角或底层视图快照等高交互状态
+- 程序化恢复使用 `source: 'api'` / `action: 'restore'`，并抑制中间滚动和缩放回弹事件，避免操作端和展示端互相触发
+
 ## 当前主线缩放状态准确性修复
 
 - core 的 zoom controller 会订阅 renderer provider 的异步状态变更，首屏自适应、容器 resize 和内部重排后同步抛出真实 `zoom-change`
