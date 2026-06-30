@@ -51,6 +51,156 @@ const restoreNumericBullets = (root: ParentNode) => {
   }
 };
 
+const TEXT_FIT_MIN_SCALE = 0.7;
+const TEXT_FIT_MAX_PASSES = 8;
+const TEXT_FIT_TOLERANCE = 1;
+
+type ScalableStyleProperty =
+  | 'fontSize'
+  | 'lineHeight'
+  | 'marginTop'
+  | 'marginBottom'
+  | 'marginLeft'
+  | 'marginRight'
+  | 'paddingTop'
+  | 'paddingBottom'
+  | 'paddingLeft'
+  | 'paddingRight';
+
+const getFitDataKey = (property: ScalableStyleProperty) =>
+  `pptxFit${property.charAt(0).toUpperCase()}${property.slice(1)}`;
+
+const readOriginalPx = (
+  element: HTMLElement,
+  property: ScalableStyleProperty,
+  computed = getComputedStyle(element),
+) => {
+  const key = getFitDataKey(property);
+  const existing = Number(element.dataset[key]);
+  if (Number.isFinite(existing) && existing > 0) {
+    return existing;
+  }
+
+  const value = parseFloat(computed[property]);
+  if (!Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+
+  element.dataset[key] = String(value);
+  return value;
+};
+
+const setScaledPx = (
+  element: HTMLElement,
+  property: ScalableStyleProperty,
+  scale: number,
+  computed = getComputedStyle(element),
+) => {
+  const original = readOriginalPx(element, property, computed);
+  if (original === undefined) {
+    return;
+  }
+
+  element.style[property] = `${original * scale}px`;
+};
+
+const collectTextFitElements = (block: HTMLElement) => {
+  const elements = new Set<HTMLElement>();
+
+  block.querySelectorAll<HTMLElement>('.text-block, .numeric-bullet-style').forEach(element => {
+    elements.add(element);
+  });
+
+  block.querySelectorAll<HTMLElement>('.slide-prgrph').forEach(paragraph => {
+    Array.from(paragraph.children).forEach(child => {
+      if (!(child instanceof HTMLElement) || child.querySelector('.text-block')) {
+        return;
+      }
+
+      const computed = getComputedStyle(child);
+      const fontSize = parseFloat(computed.fontSize);
+      if (Number.isFinite(fontSize) && fontSize > 0) {
+        elements.add(child);
+      }
+    });
+  });
+
+  return elements;
+};
+
+const applyTextFitScale = (block: HTMLElement, scale: number) => {
+  block.dataset.pptxTextFitScale = String(scale);
+
+  for (const element of collectTextFitElements(block)) {
+    const computed = getComputedStyle(element);
+    setScaledPx(element, 'fontSize', scale, computed);
+    setScaledPx(element, 'lineHeight', scale, computed);
+    setScaledPx(element, 'paddingLeft', scale, computed);
+    setScaledPx(element, 'paddingRight', scale, computed);
+  }
+
+  block.querySelectorAll<HTMLElement>('.slide-prgrph').forEach(paragraph => {
+    const computed = getComputedStyle(paragraph);
+    setScaledPx(paragraph, 'lineHeight', scale, computed);
+    setScaledPx(paragraph, 'marginTop', scale, computed);
+    setScaledPx(paragraph, 'marginBottom', scale, computed);
+    setScaledPx(paragraph, 'paddingTop', scale, computed);
+    setScaledPx(paragraph, 'paddingBottom', scale, computed);
+  });
+
+  block.querySelectorAll<HTMLElement>('.slide-prgrph > *').forEach(child => {
+    const computed = getComputedStyle(child);
+    setScaledPx(child, 'marginLeft', scale, computed);
+    setScaledPx(child, 'marginRight', scale, computed);
+    setScaledPx(child, 'paddingLeft', scale, computed);
+    setScaledPx(child, 'paddingRight', scale, computed);
+  });
+};
+
+const hasTextOverflow = (block: HTMLElement) =>
+  block.scrollHeight > block.clientHeight + TEXT_FIT_TOLERANCE ||
+  block.scrollWidth > block.clientWidth + TEXT_FIT_TOLERANCE;
+
+const fitOverflowingTextBlock = (block: HTMLElement) => {
+  if (!block.querySelector('.text-block') || block.clientWidth <= 0 || block.clientHeight <= 0) {
+    return;
+  }
+
+  let scale = Number(block.dataset.pptxTextFitScale) || 1;
+  if (!hasTextOverflow(block)) {
+    return;
+  }
+
+  for (let pass = 0; pass < TEXT_FIT_MAX_PASSES && hasTextOverflow(block); pass += 1) {
+    const heightRatio = block.scrollHeight > 0
+      ? Math.min(1, block.clientHeight / block.scrollHeight)
+      : 1;
+    const widthRatio = block.scrollWidth > 0
+      ? Math.min(1, block.clientWidth / block.scrollWidth)
+      : 1;
+    const ratio = Math.min(heightRatio, widthRatio, 0.98);
+    const nextScale = Math.max(TEXT_FIT_MIN_SCALE, scale * Math.max(ratio, 0.95));
+
+    if (nextScale >= scale - 0.002) {
+      scale = Math.max(TEXT_FIT_MIN_SCALE, scale * 0.97);
+    } else {
+      scale = nextScale;
+    }
+
+    applyTextFitScale(block, scale);
+
+    if (scale <= TEXT_FIT_MIN_SCALE && hasTextOverflow(block)) {
+      break;
+    }
+  }
+};
+
+const fitOverflowingTextBlocks = (root: ParentNode) => {
+  root
+    .querySelectorAll<HTMLElement>('.slide div.content, .slide div.content-rtl')
+    .forEach(fitOverflowingTextBlock);
+};
+
 const renderChart = async (message: ChartMessage) => {
   const payload = message.data;
   if (!payload?.chartID || !payload.chartType || !payload.chartData) {
@@ -162,6 +312,7 @@ const renderChart = async (message: ChartMessage) => {
 
 export const renderPptxPostProcessing = async (charts: unknown, root: ParentNode) => {
   restoreNumericBullets(root);
+  fitOverflowingTextBlocks(root);
 
   const queue = asChartQueue(charts);
   if (!queue.length) {

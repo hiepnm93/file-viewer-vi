@@ -9250,14 +9250,16 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
     var prgrph_text = "";
     //var prgr_txt_art = [];
     var total_text_len = 0;
+    var total_text_measured = false;
     if (rNode === undefined && pNode !== undefined) {
       // without r
       var prgr_text = await genSpanElement(pNode, undefined, spNode, textBodyNode, pFontStyle, slideLayoutSpNode, idx, type, 1, warpObj, isBullate);
-      if (isBullate) {
+      if (isBullate && typeof $ !== "undefined") {
         var txt_obj = $(prgr_text)
           .css({ 'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden' })
           .appendTo($('body'));
         total_text_len += txt_obj.outerWidth();
+        total_text_measured = true;
         txt_obj.remove();
       }
       prgrph_text += prgr_text;
@@ -9265,11 +9267,12 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
       // with multi r
       for (var j = 0; j < rNode.length; j++) {
         var prgr_text = await genSpanElement(rNode[j], j, pNode, textBodyNode, pFontStyle, slideLayoutSpNode, idx, type, rNode.length, warpObj, isBullate);
-        if (isBullate) {
+        if (isBullate && typeof $ !== "undefined") {
           var txt_obj = $(prgr_text)
             .css({ 'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden' })
             .appendTo($('body'));
           total_text_len += txt_obj.outerWidth();
+          total_text_measured = true;
           txt_obj.remove();
         }
         prgrph_text += prgr_text;
@@ -9284,12 +9287,12 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
       //get prg_width_node if there is a bulltes
       //console.log("total_text_len: ", total_text_len, "prg_width_node:", prg_width_node)
 
-      if (prg_width_px !== undefined && total_text_len < prg_width_px) {
+      if (total_text_measured && prg_width_px !== undefined && total_text_len < prg_width_px) {
         prg_width_px = total_text_len + bu_width;
       }
     }
     var prg_width = ((prg_width_px !== undefined && !isNaN(prg_width_px)) ? ("width:" + prg_width_px) + "px;" : "width:inherit;");
-    text += "<div style='height: 100%;direction: initial;overflow-wrap:break-word;word-wrap: break-word;" + prg_width + margin + "' >";
+    text += "<div style='height: 100%;direction: initial;overflow-wrap:normal;word-wrap:normal;word-break:normal;" + prg_width + margin + "' >";
     text += prgrph_text;
     text += "</div>";
     text += "</div>";
@@ -9766,7 +9769,7 @@ async function genBuChar(node, i, spNode, textBodyNode, pFontStyle, idx, type, w
   //         "; margin-right: " + 0 + "px;'></div>";
   // }
   //console.log("genBuChar: width: ", $(bullet).outerWidth())
-  return [ bullet, margin_val, font_val ];//$(bullet).outerWidth()];
+  return [ bulvar, margin_val, font_val ];//$(bullet).outerWidth()];
 }
 function getHtmlBullet(typefaceNode, buChar) {
   //http://www.alanwood.net/demos/wingdings.html
@@ -9885,7 +9888,7 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
   if (typeof text !== 'string') {
     text = getTextByPathList(node, [ "a:fld", "a:t" ]);
     if (typeof text !== 'string') {
-      text = "&nbsp;";
+      text = "\u00a0";
       //return "<span class='text-block '>&nbsp;</span>";
     }
     // if (text === undefined) {
@@ -10108,9 +10111,9 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
     var linkURL = warpObj["slideResObj"][linkID]["target"];
     linkURL = escapeHtml(linkURL);
     return openElemnt + " class='text-block " + cssName + "' style='" + text_style + "'><a href='" + linkURL + "' " + linkColorSyle + "  " + linkTooltip + " target='_blank'>" +
-      text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;').replace(/\s/g, "&nbsp;") + "</a>" + closeElemnt;
+      escapeTextForHtml(text) + "</a>" + closeElemnt;
   } else {
-    return openElemnt + " class='text-block " + cssName + "' style='" + text_style + "'>" + text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;').replace(/\s/g, "&nbsp;") + closeElemnt;//"</bdi>";
+    return openElemnt + " class='text-block " + cssName + "' style='" + text_style + "'>" + escapeTextForHtml(text) + closeElemnt;//"</bdi>";
   }
 
 }
@@ -11518,7 +11521,10 @@ function getCssFontFamilies(fontName) {
 
   var normalized = String(fontName).toLowerCase();
   var fallbacks = [];
-  if (normalized === "aharoni") {
+  if (normalized === "calibri" || normalized === "calibri light" || normalized === "aptos" ||
+      normalized === "aptos display" || normalized === "aptos narrow" || normalized === "aptos body") {
+    fallbacks = [ "Helvetica Neue", "Arial", "sans-serif" ];
+  } else if (normalized === "aharoni") {
     fallbacks = [ "Arial", "Helvetica Neue", "sans-serif" ];
   } else if (normalized === "poppins bold" || normalized === "poppins extrabold") {
     fallbacks = [ "Poppins", "Arial", "Helvetica Neue", "sans-serif" ];
@@ -11536,6 +11542,23 @@ function getCssFontFamilies(fontName) {
     }
   });
   return families;
+}
+
+function escapeTextForHtml(text) {
+  return String(text)
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&apos;/g, "'")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
+    .replace(/\u00a0/g, "&nbsp;")
+    .replace(/ {2,}/g, function (spaces) {
+      return " " + new Array(spaces.length).join("&nbsp;");
+    });
 }
 
 function getDefaultFontIdx(type, pFontStyle) {
