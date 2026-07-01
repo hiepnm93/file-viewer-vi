@@ -13,6 +13,17 @@ function assert(condition, message) {
   }
 }
 
+function callTransformIndexHtml(pluginInstance) {
+  const hook = pluginInstance.transformIndexHtml
+  if (typeof hook === 'function') {
+    return hook()
+  }
+  if (hook && typeof hook.handler === 'function') {
+    return hook.handler()
+  }
+  return undefined
+}
+
 assert(
   existsSync(pluginDist),
   'packages/presets/vite-plugin/dist/index.js is missing; run pnpm --filter @file-viewer/vite-plugin build first.'
@@ -129,16 +140,56 @@ try {
     officeVirtualCode.includes('registerFileViewerAutoRendererPreset'),
     'virtual module must register selected renderers for framework auto consumption'
   )
-  const officeHtmlTags = officePlugin.transformIndexHtml?.()
+  const officeHtmlTags = callTransformIndexHtml(officePlugin)
   assert(
     Array.isArray(officeHtmlTags) &&
-      officeHtmlTags.some(tag => tag?.children?.includes('virtual:file-viewer-renderers')),
+      officeHtmlTags.some(tag => tag?.attrs?.src === '/virtual:file-viewer-renderers'),
     'configured plugin should inject the virtual renderer module into Vite HTML'
+  )
+
+  const issue71Plugin = fileViewerRenderers({ copyAssets: true })
+  const issue71Config = issue71Plugin.config?.({
+    root: '.',
+    optimizeDeps: { exclude: ['@ljheee/xmind-parser'] }
+  })
+  const issue71Excludes = issue71Config?.optimizeDeps?.exclude
+  assert(Array.isArray(issue71Excludes), 'vite plugin should return optimizeDeps.exclude')
+  for (const packageName of [
+    '@ljheee/xmind-parser',
+    '@file-viewer/pptx',
+    '@file-viewer/renderer-presentation',
+    '@file-viewer/preset-all',
+    '@file-viewer/preset-office',
+    '@file-viewer/react-full',
+    '@file-viewer/react-legacy-full',
+    '@file-viewer/vue3-full',
+    '@file-viewer/vue2.7-full',
+    '@file-viewer/vue2.6-full',
+    '@file-viewer/web-full',
+    '@file-viewer/jquery-full',
+    '@file-viewer/svelte-full'
+  ]) {
+    assert(
+      issue71Excludes.includes(packageName),
+      `vite plugin optimizeDeps.exclude should include ${packageName}`
+    )
+  }
+
+  const noChunkPlugin = fileViewerRenderers({ chunkStrategy: 'none' })
+  const noChunkConfig = noChunkPlugin.config?.({
+    root: '.',
+    optimizeDeps: { exclude: ['existing-dep'] }
+  })
+  const noChunkExcludes = noChunkConfig?.optimizeDeps?.exclude
+  assert(Array.isArray(noChunkExcludes), 'chunkStrategy:none should still return optimizeDeps.exclude')
+  assert(
+    noChunkExcludes.includes('existing-dep') && noChunkExcludes.includes('@file-viewer/pptx'),
+    'chunkStrategy:none should preserve user excludes and protect PPTX worker URLs'
   )
 
   const manualOnlyPlugin = fileViewerRenderers({ preset: 'office', inject: false })
   assert(
-    manualOnlyPlugin.transformIndexHtml?.() === undefined,
+    callTransformIndexHtml(manualOnlyPlugin) === undefined,
     'inject:false should keep the virtual renderer module manual-only'
   )
 

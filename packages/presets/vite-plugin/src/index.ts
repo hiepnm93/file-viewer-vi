@@ -520,6 +520,23 @@ const presetModules: Record<FileViewerVitePreset, PresetModuleDescriptor> = {
   }
 }
 
+// Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps,
+// which breaks package-local worker URLs such as @file-viewer/pptx.
+const workerUrlSensitivePackages = [
+  '@file-viewer/pptx',
+  '@file-viewer/renderer-presentation',
+  '@file-viewer/preset-all',
+  '@file-viewer/preset-office',
+  '@file-viewer/react-full',
+  '@file-viewer/react-legacy-full',
+  '@file-viewer/vue3-full',
+  '@file-viewer/vue2.7-full',
+  '@file-viewer/vue2.6-full',
+  '@file-viewer/web-full',
+  '@file-viewer/jquery-full',
+  '@file-viewer/svelte-full'
+] as const
+
 const defaultScanRoots = ['src', 'app', 'pages', 'components']
 const defaultScanExtensions = [
   'js',
@@ -866,6 +883,13 @@ function hasManualChunks(config: UserConfig) {
     return output.some((item) => Boolean(item.manualChunks))
   }
   return Boolean(output?.manualChunks)
+}
+
+function createOptimizeDepsExclude(config: UserConfig) {
+  return unique([
+    ...(config.optimizeDeps?.exclude || []),
+    ...workerUrlSensitivePackages
+  ])
 }
 
 function createManualChunks(
@@ -1331,10 +1355,16 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     config(userConfig) {
       const projectRoot = resolve(process.cwd(), userConfig.root || '.')
       refreshSelection(projectRoot)
+      const nextConfig: UserConfig = {
+        optimizeDeps: {
+          exclude: createOptimizeDepsExclude(userConfig)
+        }
+      }
       if ((options.chunkStrategy || 'renderer') === 'none' || hasManualChunks(userConfig)) {
-        return undefined
+        return nextConfig
       }
       return {
+        ...nextConfig,
         build: {
           rollupOptions: {
             output: {
