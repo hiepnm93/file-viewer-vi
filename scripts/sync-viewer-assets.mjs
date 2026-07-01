@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import viewerPackage from '../packages/components/web/package.json' with { type: 'json' }
+import { sanitizeOfflineViewerAssetTree } from './lib/offline-asset-sanitize.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const source = resolve(
@@ -167,6 +168,7 @@ for (const target of targets) {
   await mkdir(target, { recursive: true })
   await copyDeclaredViewerAssets(target)
   await removeMacMetadata(target)
+  const sanitization = await sanitizeOfflineViewerAssetTree(target)
 
   await writeFile(
     resolve(target, 'flyfish-viewer-manifest.json'),
@@ -202,5 +204,9 @@ for (const target of targets) {
     )
   }
 
-  console.log(`已同步 viewer 资源到 ${target}`)
+  console.log(
+    `已同步 viewer 资源到 ${target}${
+      sanitization.replacementCount ? `，净化 ${sanitization.replacementCount} 个离线 fallback 引用` : ''
+    }`
+  )
 }

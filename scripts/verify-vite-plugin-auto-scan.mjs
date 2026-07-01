@@ -157,7 +157,10 @@ try {
   for (const packageName of [
     '@ljheee/xmind-parser',
     '@file-viewer/pptx',
+    '@file-viewer/renderer-pdf',
+    '@file-viewer/renderer-word',
     '@file-viewer/renderer-presentation',
+    '@file-viewer/renderer-archive',
     '@file-viewer/preset-all',
     '@file-viewer/preset-office',
     '@file-viewer/react-full',
@@ -174,6 +177,14 @@ try {
       `vite plugin optimizeDeps.exclude should include ${packageName}`
     )
   }
+  const issue71Includes = issue71Config?.optimizeDeps?.include
+  assert(Array.isArray(issue71Includes), 'vite plugin should return optimizeDeps.include')
+  for (const packageName of ['@file-viewer/docx', 'jszip']) {
+    assert(
+      issue71Includes.includes(packageName),
+      `vite plugin optimizeDeps.include should include ${packageName}`
+    )
+  }
 
   const noChunkPlugin = fileViewerRenderers({ chunkStrategy: 'none' })
   const noChunkConfig = noChunkPlugin.config?.({
@@ -185,6 +196,10 @@ try {
   assert(
     noChunkExcludes.includes('existing-dep') && noChunkExcludes.includes('@file-viewer/pptx'),
     'chunkStrategy:none should preserve user excludes and protect PPTX worker URLs'
+  )
+  assert(
+    noChunkConfig?.optimizeDeps?.include?.includes('jszip'),
+    'chunkStrategy:none should still optimize JSZip CJS interop'
   )
 
   const manualOnlyPlugin = fileViewerRenderers({ preset: 'office', inject: false })
@@ -200,26 +215,51 @@ try {
       strictRoot,
       'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf/node_modules/pdfjs-dist'
     )
+    const fakeDocxRoot = join(
+      strictRoot,
+      'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-word/node_modules/@file-viewer/docx'
+    )
+    const fakePptxRoot = join(
+      strictRoot,
+      'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-presentation/node_modules/@file-viewer/pptx'
+    )
     await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office'), { recursive: true })
     await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf'), { recursive: true })
+    await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-word'), { recursive: true })
+    await mkdir(join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-presentation'), { recursive: true })
     await mkdir(join(fakePdfRoot, 'legacy/build'), { recursive: true })
     await mkdir(join(fakePdfRoot, 'cmaps'), { recursive: true })
     await mkdir(join(fakePdfRoot, 'wasm'), { recursive: true })
     await mkdir(join(fakePdfRoot, 'standard_fonts'), { recursive: true })
+    await mkdir(join(fakeDocxRoot, 'dist'), { recursive: true })
+    await mkdir(join(fakePptxRoot, 'dist/worker'), { recursive: true })
     await writeFile(join(strictRoot, 'package.json'), '{"name":"strict-react-app","type":"module"}\n')
     await writeFile(
       join(strictRoot, 'node_modules/@file-viewer/preset-office/package.json'),
-      '{"name":"@file-viewer/preset-office","version":"0.0.0","dependencies":{"@file-viewer/renderer-pdf":"0.0.0"}}\n'
+      '{"name":"@file-viewer/preset-office","version":"0.0.0","dependencies":{"@file-viewer/renderer-pdf":"0.0.0","@file-viewer/renderer-word":"0.0.0","@file-viewer/renderer-presentation":"0.0.0"}}\n'
     )
     await writeFile(
       join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-pdf/package.json'),
       '{"name":"@file-viewer/renderer-pdf","version":"0.0.0","dependencies":{"pdfjs-dist":"0.0.0"}}\n'
     )
+    await writeFile(
+      join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-word/package.json'),
+      '{"name":"@file-viewer/renderer-word","version":"0.0.0","dependencies":{"@file-viewer/docx":"0.0.0"}}\n'
+    )
+    await writeFile(
+      join(strictRoot, 'node_modules/@file-viewer/preset-office/node_modules/@file-viewer/renderer-presentation/package.json'),
+      '{"name":"@file-viewer/renderer-presentation","version":"0.0.0","dependencies":{"@file-viewer/pptx":"0.0.0"}}\n'
+    )
     await writeFile(join(fakePdfRoot, 'package.json'), '{"name":"pdfjs-dist","version":"0.0.0"}\n')
+    await writeFile(join(fakeDocxRoot, 'package.json'), '{"name":"@file-viewer/docx","version":"0.0.0"}\n')
+    await writeFile(join(fakePptxRoot, 'package.json'), '{"name":"@file-viewer/pptx","version":"0.0.0"}\n')
     await writeFile(join(fakePdfRoot, 'legacy/build/pdf.worker.mjs'), 'export default null\n')
     await writeFile(join(fakePdfRoot, 'cmaps/LICENSE'), 'fake cmap\n')
     await writeFile(join(fakePdfRoot, 'wasm/pdf.wasm'), 'fake wasm\n')
     await writeFile(join(fakePdfRoot, 'standard_fonts/LICENSE'), 'fake font\n')
+    await writeFile(join(fakeDocxRoot, 'dist/docx-preview.worker.js'), 'self.onmessage = () => {}\n')
+    await writeFile(join(fakeDocxRoot, 'dist/jszip.min.js'), 'self.JSZip = {}\n')
+    await writeFile(join(fakePptxRoot, 'dist/worker/pptx.worker.js'), 'self.onmessage = () => {}\n')
 
     process.chdir(strictRoot)
     const strictPlugin = fileViewerRenderers({
@@ -238,7 +278,10 @@ try {
       'vendor/pdf/pdf.worker.mjs',
       'vendor/pdf/cmaps/LICENSE',
       'vendor/pdf/wasm/pdf.wasm',
-      'vendor/pdf/standard_fonts/LICENSE'
+      'vendor/pdf/standard_fonts/LICENSE',
+      'vendor/docx/docx.worker.js',
+      'vendor/docx/jszip.min.js',
+      'vendor/pptx/pptx.worker.js'
     ]) {
       assert(
         existsSync(join(strictRoot, 'public', assetPath)),

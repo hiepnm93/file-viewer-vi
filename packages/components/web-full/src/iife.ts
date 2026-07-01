@@ -141,6 +141,9 @@ function createFullAssetOptions(assetBaseUrl?: string | URL | null): ViewerOptio
       wasmUrl: `${baseUrl}vendor/pdf/wasm/`,
       standardFontDataUrl: `${baseUrl}vendor/pdf/standard_fonts/`
     },
+    presentation: {
+      workerUrl: `${baseUrl}vendor/pptx/pptx.worker.js`
+    },
     spreadsheet: {
       workerUrl: `${baseUrl}vendor/xlsx/sheet.worker.js`
     },
@@ -325,6 +328,7 @@ export function withFullViewerOptions(
     docx: mergeNestedOptions(assetOptions.docx, rest.docx),
     drawing: mergeNestedOptions(assetOptions.drawing, rest.drawing),
     pdf: mergeNestedOptions(assetOptions.pdf, rest.pdf),
+    presentation: mergeNestedOptions(assetOptions.presentation, rest.presentation),
     spreadsheet: mergeNestedOptions(assetOptions.spreadsheet, rest.spreadsheet),
     typst: mergeNestedOptions(assetOptions.typst, rest.typst)
   }

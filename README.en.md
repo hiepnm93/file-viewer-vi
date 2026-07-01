@@ -299,7 +299,7 @@ Preset selection:
 | `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA |
 | `@file-viewer/preset-all` | The complete official demo matrix |
 
-Internationalization, theme, watermark, toolbar, search, print, export, lifecycle hooks, and before-operation guards are controlled by the same `options` object. See the [official options guide](https://doc.file-viewer.app/guide/options) for the full API.
+Internationalization, theme, watermark, toolbar, search, print, export, lifecycle hooks, and before-operation guards are controlled by the same `options` object. See the [official usage guide](https://doc.file-viewer.app/guide/usage) for the full API.
 
 ## Current npm Ecosystem
 

@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const require = createRequire(import.meta.url)
 const wordRendererRequire = createRequire(resolve(root, 'packages/renderers/word/package.json'))
+const pptxRendererRequire = createRequire(resolve(root, 'packages/renderers/pptx/package.json'))
 const resolveViteEntrypoint = () => {
   try {
     return require.resolve('vite')
@@ -44,6 +45,15 @@ await copyFile(
   resolve(docxVendorDir, 'jszip.min.js')
 )
 console.log(`[file-viewer] Copied @file-viewer/docx worker assets to ${docxVendorDir}`)
+
+const pptxVendorDir = resolve(outputDir, 'vendor/pptx')
+const pptxPackageDir = dirname(pptxRendererRequire.resolve('@file-viewer/pptx/package.json'))
+await mkdir(pptxVendorDir, { recursive: true })
+await copyFile(
+  resolve(pptxPackageDir, 'dist/worker/pptx.worker.js'),
+  resolve(pptxVendorDir, 'pptx.worker.js')
+)
+console.log(`[file-viewer] Copied @file-viewer/pptx worker asset to ${pptxVendorDir}`)
 
 const workerBuilds = [
   {

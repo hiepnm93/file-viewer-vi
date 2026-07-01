@@ -7,7 +7,7 @@ const WEB_MERCATOR_LIMIT = 20037508.342789244;
 const DEFAULT_FIT_PADDING = 44;
 const MIN_MAP_ZOOM = 0;
 const MAX_MAP_ZOOM = 22;
-const OPENFREEMAP_STYLE_BASE = 'https://tiles.openfreemap.org/styles/';
+const OPENFREEMAP_TILE_ORIGIN = 'https://tiles.openfreemap.org';
 const OSM_RASTER_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; OpenStreetMap contributors';
 const OPENFREEMAP_STYLE_PRESETS = {
@@ -718,7 +718,7 @@ export const resolveFileViewerGeoBasemapConfig = (options, t) => {
             return {
                 kind: 'vector-style',
                 label: openFreeMapPreset.label,
-                style: `${OPENFREEMAP_STYLE_BASE}${openFreeMapPreset.style}`,
+                style: `${OPENFREEMAP_TILE_ORIGIN}/styles/${openFreeMapPreset.style}`,
                 attributionControl: true,
             };
         }

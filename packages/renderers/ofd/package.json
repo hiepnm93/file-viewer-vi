@@ -23,12 +23,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-ofd.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
     "directory": "packages/renderers/ofd"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-ofd/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "funding": {
     "type": "individual",

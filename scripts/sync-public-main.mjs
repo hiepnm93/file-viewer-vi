@@ -606,6 +606,18 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
       role: 'release-status-schema',
       required: true,
       description: 'JSON Schema for release-status.json.'
+    },
+    {
+      name: 'release-matrix.json',
+      role: 'release-matrix',
+      required: true,
+      description: 'Standardized ecosystem release matrix generated from wrapper, renderer and smoke manifests.'
+    },
+    {
+      name: 'release-matrix.schema.json',
+      role: 'release-matrix-schema',
+      required: true,
+      description: 'JSON Schema for release-matrix.json.'
     }
   ]
   const staticArtifacts = [
@@ -798,6 +810,16 @@ await copyFileIfChanged(
   join(sourceRoot, 'ecosystem', 'release-status.schema.json'),
   join(artifactsDir, 'release-status.schema.json'),
   'release-status.schema.json'
+)
+await copyFileIfChanged(
+  join(sourceRoot, 'ecosystem', 'release-matrix.json'),
+  join(artifactsDir, 'release-matrix.json'),
+  'release-matrix.json'
+)
+await copyFileIfChanged(
+  join(sourceRoot, 'ecosystem', 'release-matrix.schema.json'),
+  join(artifactsDir, 'release-matrix.schema.json'),
+  'release-matrix.schema.json'
 )
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
 run('node', ['scripts/write-release-status-report.mjs', '--public-repo-dir', publicRepoDir, '--fast'])

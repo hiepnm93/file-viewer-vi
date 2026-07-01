@@ -384,13 +384,15 @@ const presetModules = {
         chunkName: 'file-viewer-preset-engineering'
     }
 };
-// Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps,
-// which breaks package-local worker URLs such as @file-viewer/pptx.
-const workerUrlSensitivePackages = [
+// Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps
+// and can trigger full-preset dev-server re-optimization reloads. Keep File
+// Viewer packages out of dep optimization while still optimizing their
+// CommonJS/UMD helper dependencies below.
+const fileViewerOptimizationExcludedPackages = [
+    '@file-viewer/core',
     '@file-viewer/pptx',
-    '@file-viewer/renderer-presentation',
-    '@file-viewer/preset-all',
-    '@file-viewer/preset-office',
+    ...rendererModules.map((descriptor) => descriptor.packageName),
+    ...Object.values(presetModules).map((preset) => preset.packageName),
     '@file-viewer/react-full',
     '@file-viewer/react-legacy-full',
     '@file-viewer/vue3-full',
@@ -399,6 +401,10 @@ const workerUrlSensitivePackages = [
     '@file-viewer/web-full',
     '@file-viewer/jquery-full',
     '@file-viewer/svelte-full'
+];
+const cjsInteropPackages = [
+    '@file-viewer/docx',
+    'jszip'
 ];
 const defaultScanRoots = ['src', 'app', 'pages', 'components'];
 const defaultScanExtensions = [
@@ -688,7 +694,14 @@ function hasManualChunks(config) {
 function createOptimizeDepsExclude(config) {
     return unique([
         ...(config.optimizeDeps?.exclude || []),
-        ...workerUrlSensitivePackages
+        ...fileViewerOptimizationExcludedPackages
+    ]);
+}
+function createOptimizeDepsInclude(config, exclude, anchorPackages) {
+    const excluded = new Set(exclude);
+    return unique([
+        ...(config.optimizeDeps?.include || []),
+        ...cjsInteropPackages.filter((packageName) => !excluded.has(packageName) && Boolean(resolvePackageJson(packageName, anchorPackages)))
     ]);
 }
 function createManualChunks(selection, autoPresetIds = []) {
@@ -783,10 +796,14 @@ function collectWorkspacePackageJsons(root) {
     return packageJsons;
 }
 function resolveWorkspacePackageJson(packageName) {
-    if (!workspacePackageJsonCache) {
-        workspacePackageJsonCache = collectWorkspacePackageJsons(process.cwd());
+    const root = process.cwd();
+    if (!workspacePackageJsonCache || workspacePackageJsonCache.root !== root) {
+        workspacePackageJsonCache = {
+            root,
+            packages: collectWorkspacePackageJsons(root)
+        };
     }
-    return workspacePackageJsonCache.get(packageName) || null;
+    return workspacePackageJsonCache.packages.get(packageName) || null;
 }
 function resolvePackageJson(packageName, anchorPackages = []) {
     const requireFns = [projectRequire(), pluginRequire];
@@ -800,7 +817,8 @@ function resolvePackageJson(packageName, anchorPackages = []) {
         discoveredAnchor = false;
         for (const anchorPackage of effectiveAnchorPackages) {
             for (const requireFn of [...requireFns]) {
-                const anchorPackageJson = tryResolvePackageJson(anchorPackage, requireFn);
+                const anchorPackageJson = tryResolvePackageJson(anchorPackage, requireFn) ||
+                    resolveWorkspacePackageJson(anchorPackage);
                 if (anchorPackageJson && !anchorPackageJsons.has(anchorPackageJson)) {
                     anchorPackageJsons.add(anchorPackageJson);
                     requireFns.push(createRequire(anchorPackageJson));
@@ -850,9 +868,121 @@ function collectSelectedPackages(selection, autoPresetIds = []) {
         ...selection.descriptors.map((descriptor) => descriptor.packageName)
     ]);
 }
+function collectDependencyAnchorPackages(selection, autoPresetIds = []) {
+    const presetIds = unique([
+        ...(selection.preset ? [selection.preset] : []),
+        ...autoPresetIds
+    ]);
+    return unique([
+        ...collectSelectedPackages(selection, autoPresetIds),
+        ...presetIds.flatMap((presetId) => presetModules[presetId].rendererIds
+            .map((rendererId) => descriptorsById.get(rendererId)?.packageName)
+            .filter((packageName) => Boolean(packageName))),
+        ...selection.descriptors.map((descriptor) => descriptor.packageName)
+    ]);
+}
 function resolvePackageRoot(packageName, anchorPackages = []) {
     const packageJson = resolvePackageJson(packageName, anchorPackages);
     return packageJson ? dirname(packageJson) : null;
+}
+function resolvePackageEntry(packageName, anchorPackages = []) {
+    const packageJsonPath = resolvePackageJson(packageName, anchorPackages);
+    if (!packageJsonPath) {
+        return null;
+    }
+    const packageRoot = dirname(packageJsonPath);
+    try {
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+        const candidates = unique([
+            packageJson.module,
+            packageJson.main,
+            'index.js'
+        ].filter((value) => Boolean(value)));
+        for (const candidate of candidates) {
+            const entry = resolve(packageRoot, candidate);
+            if (existsSync(entry) && statSync(entry).isFile()) {
+                return entry;
+            }
+        }
+    }
+    catch {
+        // Fall back to Node resolution below.
+    }
+    const anchorPackageJson = anchorPackages
+        .map((anchorPackage) => resolvePackageJson(anchorPackage))
+        .find(Boolean);
+    const requireFns = [
+        projectRequire(),
+        pluginRequire,
+        ...(anchorPackageJson ? [createRequire(anchorPackageJson)] : [])
+    ];
+    for (const requireFn of requireFns) {
+        try {
+            return requireFn.resolve(packageName);
+        }
+        catch {
+            // Continue probing alternate anchors.
+        }
+    }
+    return null;
+}
+function readPackageExportEntry(value) {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+    const record = value;
+    return readPackageExportEntry(record.import) ||
+        readPackageExportEntry(record.default) ||
+        readPackageExportEntry(record.require);
+}
+function resolvePackageExportEntry(packageName, exportPath, anchorPackages = []) {
+    const packageJsonPath = resolvePackageJson(packageName, anchorPackages);
+    if (!packageJsonPath) {
+        return null;
+    }
+    try {
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+        const exportEntry = readPackageExportEntry(packageJson.exports?.[exportPath]);
+        if (!exportEntry) {
+            return null;
+        }
+        const entry = resolve(dirname(packageJsonPath), exportEntry);
+        return existsSync(entry) && statSync(entry).isFile() ? entry : null;
+    }
+    catch {
+        return null;
+    }
+}
+function normalizeViteAlias(alias) {
+    if (!alias) {
+        return [];
+    }
+    if (Array.isArray(alias)) {
+        return [...alias];
+    }
+    return Object.entries(alias).map(([find, replacement]) => ({ find, replacement }));
+}
+function createFileViewerResolveAliases(anchorPackages) {
+    const packageNames = unique([
+        '@file-viewer/core',
+        ...anchorPackages,
+        ...cjsInteropPackages
+    ]);
+    const aliases = [];
+    const coreAssetsEntry = resolvePackageExportEntry('@file-viewer/core', './assets', anchorPackages);
+    if (coreAssetsEntry) {
+        aliases.push({ find: '@file-viewer/core/assets', replacement: coreAssetsEntry });
+    }
+    aliases.push(...packageNames
+        .map((packageName) => {
+        const entry = resolvePackageEntry(packageName, anchorPackages);
+        return entry ? { find: packageName, replacement: entry } : null;
+    })
+        .filter((alias) => Boolean(alias)));
+    return aliases;
 }
 async function copyFileIfPresent(from, to) {
     if (!from || !existsSync(from)) {
@@ -900,6 +1030,11 @@ async function copyKnownRendererAssets(targetRoot, rendererIds) {
     await push('pdf', 'pdf-cmaps', join(targetRoot, 'vendor/pdf/cmaps'), () => copyDirectoryIfPresent(pdfRoot ? join(pdfRoot, 'cmaps') : null, join(targetRoot, 'vendor/pdf/cmaps')));
     await push('pdf', 'pdf-wasm', join(targetRoot, 'vendor/pdf/wasm'), () => copyDirectoryIfPresent(pdfRoot ? join(pdfRoot, 'wasm') : null, join(targetRoot, 'vendor/pdf/wasm')));
     await push('pdf', 'pdf-standard-fonts', join(targetRoot, 'vendor/pdf/standard_fonts'), () => copyDirectoryIfPresent(pdfRoot ? join(pdfRoot, 'standard_fonts') : null, join(targetRoot, 'vendor/pdf/standard_fonts')));
+    const pptxRoot = resolvePackageRoot('@file-viewer/pptx', ['@file-viewer/renderer-presentation']);
+    await push('office-presentation', 'pptx-worker', join(targetRoot, 'vendor/pptx/pptx.worker.js'), () => copyFileIfPresent(pptxRoot ? join(pptxRoot, 'dist/worker/pptx.worker.js') : null, join(targetRoot, 'vendor/pptx/pptx.worker.js')));
+    const docxRoot = resolvePackageRoot('@file-viewer/docx', ['@file-viewer/renderer-word']);
+    await push('office-word-openxml', 'docx-worker', join(targetRoot, 'vendor/docx/docx.worker.js'), () => copyFileIfPresent(docxRoot ? join(docxRoot, 'dist/docx-preview.worker.js') : null, join(targetRoot, 'vendor/docx/docx.worker.js')));
+    await push('office-word-openxml', 'docx-worker-jszip', join(targetRoot, 'vendor/docx/jszip.min.js'), () => copyFileIfPresent(docxRoot ? join(docxRoot, 'dist/jszip.min.js') : null, join(targetRoot, 'vendor/docx/jszip.min.js')));
     const cadRoot = resolvePackageRoot('@flyfish-dev/cad-viewer', ['@file-viewer/renderer-cad']);
     await push('cad', 'cad-wasm-directory', join(targetRoot, 'wasm/cad'), () => copyDirectoryIfPresent(cadRoot ? join(cadRoot, 'dist/wasm') : null, join(targetRoot, 'wasm/cad')));
     const typstCompilerRoot = resolvePackageRoot('@myriaddreamin/typst-ts-web-compiler', [
@@ -947,7 +1082,14 @@ function collectAssetRendererIds(selection, autoPresetIds = []) {
     ]);
 }
 function reportAssetCopy(results, targetRoot, mode) {
-    const failedRequired = results.filter((result) => !result.copied && ['pdf', 'cad', 'typst'].includes(result.rendererId));
+    const failedRequired = results.filter((result) => !result.copied && [
+        'pdf',
+        'office-word-openxml',
+        'office-presentation',
+        'archive',
+        'cad',
+        'typst'
+    ].includes(result.rendererId));
     if (!results.length) {
         return;
     }
@@ -999,9 +1141,19 @@ export function fileViewerRenderers(options = {}) {
         config(userConfig) {
             const projectRoot = resolve(process.cwd(), userConfig.root || '.');
             refreshSelection(projectRoot);
+            const selectedPackages = collectSelectedPackages(selection, autoPresetIds);
+            const dependencyAnchorPackages = collectDependencyAnchorPackages(selection, autoPresetIds);
+            const optimizeDepsExclude = createOptimizeDepsExclude(userConfig);
             const nextConfig = {
                 optimizeDeps: {
-                    exclude: createOptimizeDepsExclude(userConfig)
+                    exclude: optimizeDepsExclude,
+                    include: createOptimizeDepsInclude(userConfig, optimizeDepsExclude, dependencyAnchorPackages)
+                },
+                resolve: {
+                    alias: [
+                        ...normalizeViteAlias(userConfig.resolve?.alias),
+                        ...createFileViewerResolveAliases(dependencyAnchorPackages)
+                    ]
                 }
             };
             if ((options.chunkStrategy || 'renderer') === 'none' || hasManualChunks(userConfig)) {

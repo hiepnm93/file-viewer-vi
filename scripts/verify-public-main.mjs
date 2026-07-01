@@ -42,6 +42,14 @@ const requiredMetadataAssets = [
   {
     name: 'release-status.schema.json',
     role: 'release-status-schema'
+  },
+  {
+    name: 'release-matrix.json',
+    role: 'release-matrix'
+  },
+  {
+    name: 'release-matrix.schema.json',
+    role: 'release-matrix-schema'
   }
 ]
 
@@ -264,6 +272,38 @@ async function assertReleaseStatus(repoDir) {
   }
 }
 
+async function assertReleaseMatrix(repoDir) {
+  const sourceMatrixPath = join(sourceRoot, 'ecosystem', 'release-matrix.json')
+  const sourceSchemaPath = join(sourceRoot, 'ecosystem', 'release-matrix.schema.json')
+  const publicMatrixPath = join(repoDir, 'artifacts', 'release-matrix.json')
+  const publicSchemaPath = join(repoDir, 'artifacts', 'release-matrix.schema.json')
+  await assertFile(publicMatrixPath, 'artifacts/release-matrix.json')
+  await assertFile(publicSchemaPath, 'artifacts/release-matrix.schema.json')
+
+  const [sourceMatrix, sourceSchema, publicMatrix, publicSchema] = await Promise.all([
+    readJson(sourceMatrixPath),
+    readJson(sourceSchemaPath),
+    readJson(publicMatrixPath),
+    readJson(publicSchemaPath)
+  ])
+  assert(
+    JSON.stringify(publicMatrix) === JSON.stringify(sourceMatrix),
+    'Open-source main release matrix drifted from ecosystem/release-matrix.json'
+  )
+  assert(
+    JSON.stringify(publicSchema) === JSON.stringify(sourceSchema),
+    'Open-source main release matrix schema drifted from ecosystem/release-matrix.schema.json'
+  )
+
+  const schemaFailures = validateJsonSchema(publicMatrix, publicSchema)
+  assert(!schemaFailures.length, `Release matrix schema validation failed:\n${schemaFailures.join('\n')}`)
+  assert(publicMatrix.schemaVersion === 1, 'Release matrix schemaVersion drifted')
+  assert(publicMatrix.version === version, `Release matrix version ${publicMatrix.version} !== ${version}`)
+  assert(publicMatrix.counts?.packages === ecosystemPackageEntries.length, 'Release matrix package count drifted')
+  assert(publicMatrix.releasePolicy?.nonBlockingChannels?.length === 1, 'Release matrix non-blocking channel policy drifted')
+  assert(publicMatrix.releasePolicy.nonBlockingChannels[0] === 'gitee-mirror', 'Only Gitee may be non-blocking in release matrix')
+}
+
 async function assertReadmes(repoDir) {
   const readme = await readText(join(repoDir, 'README.md'))
   const readmeEn = await readText(join(repoDir, 'README.en.md'))
@@ -310,6 +350,7 @@ await assertFile(join(publicRepoDir, 'pnpm-workspace.yaml'), 'pnpm-workspace.yam
 
 const manifest = await assertReleaseManifest(publicRepoDir)
 await assertReleaseStatus(publicRepoDir)
+await assertReleaseMatrix(publicRepoDir)
 await assertOpenSourceMainRepoLayout(publicRepoDir, { allowedRoots: manifest.allowedRoots })
 await assertReadmes(publicRepoDir)
 

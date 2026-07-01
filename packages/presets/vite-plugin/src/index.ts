@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { copyFile, cp, mkdir, rm, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, extname, isAbsolute, join, resolve } from 'node:path'
-import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
+import type { Alias, AliasOptions, Plugin, ResolvedConfig, UserConfig } from 'vite'
 
 export type FileViewerVitePreset = 'all' | 'lite' | 'office' | 'engineering'
 export type FileViewerVitePresetMode = FileViewerVitePreset | 'auto'
@@ -136,7 +136,7 @@ interface AssetCopyResult {
 const virtualModuleId = 'virtual:file-viewer-renderers'
 const resolvedVirtualModuleId = `\0${virtualModuleId}`
 const pluginRequire = createRequire(import.meta.url)
-let workspacePackageJsonCache: Map<string, string> | null = null
+let workspacePackageJsonCache: { root: string; packages: Map<string, string> } | null = null
 
 const rendererModules: readonly RendererModuleDescriptor[] = [
   {
@@ -520,13 +520,15 @@ const presetModules: Record<FileViewerVitePreset, PresetModuleDescriptor> = {
   }
 }
 
-// Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps,
-// which breaks package-local worker URLs such as @file-viewer/pptx.
-const workerUrlSensitivePackages = [
+// Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps
+// and can trigger full-preset dev-server re-optimization reloads. Keep File
+// Viewer packages out of dep optimization while still optimizing their
+// CommonJS/UMD helper dependencies below.
+const fileViewerOptimizationExcludedPackages = [
+  '@file-viewer/core',
   '@file-viewer/pptx',
-  '@file-viewer/renderer-presentation',
-  '@file-viewer/preset-all',
-  '@file-viewer/preset-office',
+  ...rendererModules.map((descriptor) => descriptor.packageName),
+  ...Object.values(presetModules).map((preset) => preset.packageName),
   '@file-viewer/react-full',
   '@file-viewer/react-legacy-full',
   '@file-viewer/vue3-full',
@@ -535,6 +537,11 @@ const workerUrlSensitivePackages = [
   '@file-viewer/web-full',
   '@file-viewer/jquery-full',
   '@file-viewer/svelte-full'
+] as const
+
+const cjsInteropPackages = [
+  '@file-viewer/docx',
+  'jszip'
 ] as const
 
 const defaultScanRoots = ['src', 'app', 'pages', 'components']
@@ -888,7 +895,21 @@ function hasManualChunks(config: UserConfig) {
 function createOptimizeDepsExclude(config: UserConfig) {
   return unique([
     ...(config.optimizeDeps?.exclude || []),
-    ...workerUrlSensitivePackages
+    ...fileViewerOptimizationExcludedPackages
+  ])
+}
+
+function createOptimizeDepsInclude(
+  config: UserConfig,
+  exclude: readonly string[],
+  anchorPackages: readonly string[]
+) {
+  const excluded = new Set(exclude)
+  return unique([
+    ...(config.optimizeDeps?.include || []),
+    ...cjsInteropPackages.filter((packageName) =>
+      !excluded.has(packageName) && Boolean(resolvePackageJson(packageName, anchorPackages))
+    )
   ])
 }
 
@@ -996,10 +1017,14 @@ function collectWorkspacePackageJsons(root: string) {
 }
 
 function resolveWorkspacePackageJson(packageName: string) {
-  if (!workspacePackageJsonCache) {
-    workspacePackageJsonCache = collectWorkspacePackageJsons(process.cwd())
+  const root = process.cwd()
+  if (!workspacePackageJsonCache || workspacePackageJsonCache.root !== root) {
+    workspacePackageJsonCache = {
+      root,
+      packages: collectWorkspacePackageJsons(root)
+    }
   }
-  return workspacePackageJsonCache.get(packageName) || null
+  return workspacePackageJsonCache.packages.get(packageName) || null
 }
 
 function resolvePackageJson(packageName: string, anchorPackages: readonly string[] = []) {
@@ -1015,7 +1040,9 @@ function resolvePackageJson(packageName: string, anchorPackages: readonly string
     discoveredAnchor = false
     for (const anchorPackage of effectiveAnchorPackages) {
       for (const requireFn of [...requireFns]) {
-        const anchorPackageJson = tryResolvePackageJson(anchorPackage, requireFn)
+        const anchorPackageJson =
+          tryResolvePackageJson(anchorPackage, requireFn) ||
+          resolveWorkspacePackageJson(anchorPackage)
         if (anchorPackageJson && !anchorPackageJsons.has(anchorPackageJson)) {
           anchorPackageJsons.add(anchorPackageJson)
           requireFns.push(createRequire(anchorPackageJson))
@@ -1078,9 +1105,139 @@ function collectSelectedPackages(
   ])
 }
 
+function collectDependencyAnchorPackages(
+  selection: RendererSelection,
+  autoPresetIds: readonly FileViewerVitePreset[] = []
+) {
+  const presetIds = unique([
+    ...(selection.preset ? [selection.preset] : []),
+    ...autoPresetIds
+  ])
+  return unique([
+    ...collectSelectedPackages(selection, autoPresetIds),
+    ...presetIds.flatMap((presetId) =>
+      presetModules[presetId].rendererIds
+        .map((rendererId) => descriptorsById.get(rendererId)?.packageName)
+        .filter((packageName): packageName is string => Boolean(packageName))
+    ),
+    ...selection.descriptors.map((descriptor) => descriptor.packageName)
+  ])
+}
+
 function resolvePackageRoot(packageName: string, anchorPackages: readonly string[] = []) {
   const packageJson = resolvePackageJson(packageName, anchorPackages)
   return packageJson ? dirname(packageJson) : null
+}
+
+function resolvePackageEntry(packageName: string, anchorPackages: readonly string[] = []) {
+  const packageJsonPath = resolvePackageJson(packageName, anchorPackages)
+  if (!packageJsonPath) {
+    return null
+  }
+  const packageRoot = dirname(packageJsonPath)
+  try {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+      main?: string
+      module?: string
+    }
+    const candidates = unique([
+      packageJson.module,
+      packageJson.main,
+      'index.js'
+    ].filter((value): value is string => Boolean(value)))
+    for (const candidate of candidates) {
+      const entry = resolve(packageRoot, candidate)
+      if (existsSync(entry) && statSync(entry).isFile()) {
+        return entry
+      }
+    }
+  } catch {
+    // Fall back to Node resolution below.
+  }
+
+  const anchorPackageJson = anchorPackages
+    .map((anchorPackage) => resolvePackageJson(anchorPackage))
+    .find(Boolean)
+  const requireFns = [
+    projectRequire(),
+    pluginRequire,
+    ...(anchorPackageJson ? [createRequire(anchorPackageJson)] : [])
+  ]
+  for (const requireFn of requireFns) {
+    try {
+      return requireFn.resolve(packageName)
+    } catch {
+      // Continue probing alternate anchors.
+    }
+  }
+  return null
+}
+
+function readPackageExportEntry(value: unknown): string | null {
+  if (typeof value === 'string') {
+    return value
+  }
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+  const record = value as Record<string, unknown>
+  return readPackageExportEntry(record.import) ||
+    readPackageExportEntry(record.default) ||
+    readPackageExportEntry(record.require)
+}
+
+function resolvePackageExportEntry(
+  packageName: string,
+  exportPath: string,
+  anchorPackages: readonly string[] = []
+) {
+  const packageJsonPath = resolvePackageJson(packageName, anchorPackages)
+  if (!packageJsonPath) {
+    return null
+  }
+  try {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+      exports?: Record<string, unknown>
+    }
+    const exportEntry = readPackageExportEntry(packageJson.exports?.[exportPath])
+    if (!exportEntry) {
+      return null
+    }
+    const entry = resolve(dirname(packageJsonPath), exportEntry)
+    return existsSync(entry) && statSync(entry).isFile() ? entry : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeViteAlias(alias: AliasOptions | undefined): Alias[] {
+  if (!alias) {
+    return []
+  }
+  if (Array.isArray(alias)) {
+    return [...alias]
+  }
+  return Object.entries(alias).map(([find, replacement]) => ({ find, replacement }))
+}
+
+function createFileViewerResolveAliases(anchorPackages: readonly string[]) {
+  const packageNames = unique([
+    '@file-viewer/core',
+    ...anchorPackages,
+    ...cjsInteropPackages
+  ])
+  const aliases: Alias[] = []
+  const coreAssetsEntry = resolvePackageExportEntry('@file-viewer/core', './assets', anchorPackages)
+  if (coreAssetsEntry) {
+    aliases.push({ find: '@file-viewer/core/assets', replacement: coreAssetsEntry })
+  }
+  aliases.push(...packageNames
+    .map((packageName) => {
+      const entry = resolvePackageEntry(packageName, anchorPackages)
+      return entry ? { find: packageName, replacement: entry } : null
+    })
+    .filter((alias): alias is { find: string; replacement: string } => Boolean(alias)))
+  return aliases
 }
 
 async function copyFileIfPresent(
@@ -1163,6 +1320,40 @@ async function copyKnownRendererAssets(targetRoot: string, rendererIds: readonly
       pdfRoot ? join(pdfRoot, 'standard_fonts') : null,
       join(targetRoot, 'vendor/pdf/standard_fonts')
     )
+  )
+
+  const pptxRoot = resolvePackageRoot('@file-viewer/pptx', ['@file-viewer/renderer-presentation'])
+  await push(
+    'office-presentation',
+    'pptx-worker',
+    join(targetRoot, 'vendor/pptx/pptx.worker.js'),
+    () =>
+      copyFileIfPresent(
+        pptxRoot ? join(pptxRoot, 'dist/worker/pptx.worker.js') : null,
+        join(targetRoot, 'vendor/pptx/pptx.worker.js')
+      )
+  )
+
+  const docxRoot = resolvePackageRoot('@file-viewer/docx', ['@file-viewer/renderer-word'])
+  await push(
+    'office-word-openxml',
+    'docx-worker',
+    join(targetRoot, 'vendor/docx/docx.worker.js'),
+    () =>
+      copyFileIfPresent(
+        docxRoot ? join(docxRoot, 'dist/docx-preview.worker.js') : null,
+        join(targetRoot, 'vendor/docx/docx.worker.js')
+      )
+  )
+  await push(
+    'office-word-openxml',
+    'docx-worker-jszip',
+    join(targetRoot, 'vendor/docx/jszip.min.js'),
+    () =>
+      copyFileIfPresent(
+        docxRoot ? join(docxRoot, 'dist/jszip.min.js') : null,
+        join(targetRoot, 'vendor/docx/jszip.min.js')
+      )
   )
 
   const cadRoot = resolvePackageRoot('@flyfish-dev/cad-viewer', ['@file-viewer/renderer-cad'])
@@ -1299,7 +1490,14 @@ function reportAssetCopy(
   mode: FileViewerMissingRendererMode
 ) {
   const failedRequired = results.filter(
-    (result) => !result.copied && ['pdf', 'cad', 'typst'].includes(result.rendererId)
+    (result) => !result.copied && [
+      'pdf',
+      'office-word-openxml',
+      'office-presentation',
+      'archive',
+      'cad',
+      'typst'
+    ].includes(result.rendererId)
   )
   if (!results.length) {
     return
@@ -1355,9 +1553,19 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     config(userConfig) {
       const projectRoot = resolve(process.cwd(), userConfig.root || '.')
       refreshSelection(projectRoot)
+      const selectedPackages = collectSelectedPackages(selection, autoPresetIds)
+      const dependencyAnchorPackages = collectDependencyAnchorPackages(selection, autoPresetIds)
+      const optimizeDepsExclude = createOptimizeDepsExclude(userConfig)
       const nextConfig: UserConfig = {
         optimizeDeps: {
-          exclude: createOptimizeDepsExclude(userConfig)
+          exclude: optimizeDepsExclude,
+          include: createOptimizeDepsInclude(userConfig, optimizeDepsExclude, dependencyAnchorPackages)
+        },
+        resolve: {
+          alias: [
+            ...normalizeViteAlias(userConfig.resolve?.alias),
+            ...createFileViewerResolveAliases(dependencyAnchorPackages)
+          ]
         }
       }
       if ((options.chunkStrategy || 'renderer') === 'none' || hasManualChunks(userConfig)) {

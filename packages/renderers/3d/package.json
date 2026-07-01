@@ -28,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-3d.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
     "directory": "packages/renderers/3d"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-3d/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "funding": {
     "type": "individual",

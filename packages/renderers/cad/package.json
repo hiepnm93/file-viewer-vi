@@ -27,12 +27,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-cad.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
     "directory": "packages/renderers/cad"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-cad/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "funding": {
     "type": "individual",

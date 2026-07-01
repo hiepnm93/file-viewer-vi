@@ -1,13 +1,19 @@
 import type { PptxWorkerFactoryOptions } from './types';
 
-const defaultPptxWorkerUrl = new URL('./worker/pptx.worker.js', import.meta.url);
-const viteDevPptxWorkerUrl = new URL(
-  '/node_modules/@file-viewer/pptx/dist/worker/pptx.worker.js',
-  defaultPptxWorkerUrl
-);
 const viteOptimizedWorkerPath = '/node_modules/.vite/deps/worker/pptx.worker.js';
 const viteOptimizedPptxSourcePattern =
   /\/\/\s+(node_modules\/(?:\.pnpm\/[^\n]+?\/node_modules\/)?@file-viewer\/pptx\/dist\/worker\.js)\b/;
+
+const resolveBundledPptxWorkerUrl = () => new URL('./worker/pptx.worker.js', import.meta.url);
+
+const canResolveAbsolutePathFrom = (url: URL) => url.protocol !== 'data:' && url.protocol !== 'blob:';
+
+const resolveViteDevPptxWorkerUrl = (baseUrl: URL) => new URL(
+  '/node_modules/@file-viewer/pptx/dist/worker/pptx.worker.js',
+  canResolveAbsolutePathFrom(baseUrl)
+    ? baseUrl
+    : new URL(typeof location !== 'undefined' ? location.href : 'http://localhost/')
+);
 
 const resolveViteOptimizedPptxWorkerUrl = () => {
   if (typeof XMLHttpRequest === 'undefined') {
@@ -31,6 +37,7 @@ const resolveViteOptimizedPptxWorkerUrl = () => {
     }
 
     const workerPath = match[1].replace(/dist\/worker\.js$/, 'dist/worker/pptx.worker.js');
+    const defaultPptxWorkerUrl = resolveBundledPptxWorkerUrl();
     const origin = typeof location !== 'undefined' && location.origin
       ? location.origin
       : defaultPptxWorkerUrl.origin;
@@ -41,9 +48,13 @@ const resolveViteOptimizedPptxWorkerUrl = () => {
 };
 
 const resolveDefaultPptxWorkerUrl = () => {
+  const defaultPptxWorkerUrl = resolveBundledPptxWorkerUrl();
+  if (!canResolveAbsolutePathFrom(defaultPptxWorkerUrl)) {
+    return defaultPptxWorkerUrl;
+  }
   // Vite dep optimization rewrites import.meta.url into .vite/deps, away from this package's worker file.
   if (defaultPptxWorkerUrl.pathname.includes(viteOptimizedWorkerPath)) {
-    return resolveViteOptimizedPptxWorkerUrl() || viteDevPptxWorkerUrl;
+    return resolveViteOptimizedPptxWorkerUrl() || resolveViteDevPptxWorkerUrl(defaultPptxWorkerUrl);
   }
   return defaultPptxWorkerUrl;
 };

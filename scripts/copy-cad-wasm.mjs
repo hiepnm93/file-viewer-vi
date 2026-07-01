@@ -3,6 +3,7 @@ import { copyFile, cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import { sanitizeOfflineViewerAssetTree } from './lib/offline-asset-sanitize.mjs'
 
 const require = createRequire(import.meta.url)
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -160,10 +161,16 @@ for (const targetRoot of drawioTargetRoots) {
   await copyDirectoryChecked(drawioSourceRoot, targetRoot)
 }
 
+const sanitizationResults = await Promise.all(
+  baseTargetRoots.map(root => sanitizeOfflineViewerAssetTree(root))
+)
+const sanitizedReplacementCount = sanitizationResults
+  .reduce((count, result) => count + result.replacementCount, 0)
+
 console.log(
   `[file-viewer] Viewer WASM assets copied to ${
     [...cadTargetRoots, ...typstTargetRoots, ...dataTargetRoots, ...pdfTargetRoots, ...drawioTargetRoots]
       .map(root => root.replace(`${projectRoot}/`, ''))
       .join(', ')
-  }`
+  }${sanitizedReplacementCount ? `; sanitized ${sanitizedReplacementCount} offline fallback references` : ''}`
 )

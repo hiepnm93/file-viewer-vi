@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/eda-layout.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
     "directory": "packages/renderers/eda-layout"
   },
   "homepage": "https://doc.file-viewer.app/guide/format-fidelity",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/eda-layout/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
   "funding": {
     "type": "individual",

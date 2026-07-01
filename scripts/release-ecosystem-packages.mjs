@@ -1,5 +1,6 @@
+import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, rm, stat, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -123,6 +124,30 @@ async function assertFile(path, label = path) {
   }
 }
 
+async function sha256(path) {
+  return createHash('sha256').update(await readFile(path)).digest('hex')
+}
+
+async function tarballStats(entry) {
+  const tarballPath = join(packDir, entry.tarballName)
+  const info = await stat(tarballPath)
+  const listing = capture('tar', ['-tzf', tarballPath])
+  if (!listing.ok) {
+    throw new Error(`Could not list ${entry.tarballName}\n${listing.stderr || listing.stdout}`)
+  }
+  const files = listing.stdout
+    .split('\n')
+    .filter(Boolean)
+    .map(file => file.replace(/^package\//, ''))
+  return {
+    tarballSize: info.size,
+    sha256: await sha256(tarballPath),
+    entrypointCount: collectPackageEntrypoints(entry.packageJson).length,
+    assetCount: files.filter(file => /^(?:dist|viewer|wasm|vendor)\//.test(file)).length,
+    fileCount: files.length
+  }
+}
+
 async function verifyPackageEntrypoints(entry, { requireFiles }) {
   for (const field of ['main', 'module', 'types']) {
     if (!entry.packageJson[field]) {
@@ -192,11 +217,18 @@ if (mode === 'pack') {
     run('pnpm', ['-C', entry.packageDir, 'pack', '--pack-destination', packDir])
     await assertFile(join(packDir, entry.tarballName), `${entry.packageName} tarball`)
   }
+  const packageRecords = []
+  for (const entry of entries) {
+    packageRecords.push({
+      ...ecosystemPackageManifestEntry(entry),
+      ...(await tarballStats(entry))
+    })
+  }
   const manifest = {
     version: rootPackage.version,
     generatedAt: new Date().toISOString(),
     packageCount: entries.length,
-    packages: entries.map(ecosystemPackageManifestEntry)
+    packages: packageRecords
   }
   await writeFile(
     join(packDir, 'npm-release-manifest.json'),

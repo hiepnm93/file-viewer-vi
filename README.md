@@ -299,7 +299,7 @@ Preset 选择:
 | `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA |
 | `@file-viewer/preset-all` | 官方 Demo 完整格式矩阵 |
 
-国际化、主题、水印、工具栏、搜索、打印、导出、生命周期和前置权限校验都通过同一套 `options` 配置。完整 API 见 [官方文档](https://doc.file-viewer.app/guide/options)。
+国际化、主题、水印、工具栏、搜索、打印、导出、生命周期和前置权限校验都通过同一套 `options` 配置。完整 API 见 [官方文档](https://doc.file-viewer.app/guide/usage)。
 
 ## 当前 npm 生态
 
