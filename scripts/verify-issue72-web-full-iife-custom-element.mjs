@@ -11,7 +11,7 @@ const root = resolve(new URL('..', import.meta.url).pathname)
 const timeout = Number(process.env.ISSUE72_WEB_FULL_TIMEOUT || 45000)
 const keepTemp = process.env.ISSUE72_WEB_FULL_KEEP === '1'
 const sourceMode = process.env.ISSUE72_WEB_FULL_SOURCE || 'local'
-const packageVersion = process.env.ISSUE72_WEB_FULL_VERSION || '2.1.15'
+const packageVersion = process.env.ISSUE72_WEB_FULL_VERSION || '2.1.16'
 const localWebFullDist = resolve(root, 'packages/components/web-full/dist')
 const tarballPath = resolve(root, process.env.ISSUE72_WEB_FULL_TARBALL || `.release/file-viewer-v2-${packageVersion}/ecosystem/file-viewer-web-full-${packageVersion}.tgz`)
 const pptxSample = resolve(root, 'apps/viewer-demo/public/example/ppt.pptx')

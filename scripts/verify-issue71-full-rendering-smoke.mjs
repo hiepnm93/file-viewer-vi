@@ -10,7 +10,7 @@ const root = resolve(new URL('..', import.meta.url).pathname)
 const timeout = Number(process.env.ISSUE71_FULL_RENDERING_TIMEOUT || 60000)
 const keepTemp = process.env.ISSUE71_FULL_RENDERING_KEEP === '1'
 const sourceMode = process.env.ISSUE71_FULL_RENDERING_SOURCE || 'local'
-const packageVersion = process.env.ISSUE71_FULL_RENDERING_VERSION || '2.1.15'
+const packageVersion = process.env.ISSUE71_FULL_RENDERING_VERSION || '2.1.16'
 const ignoreVirtualModuleErrors = process.env.ISSUE71_FULL_RENDERING_IGNORE_VIRTUAL_ERRORS === '1'
 const selectedFormats = new Set(
   (process.env.ISSUE71_FULL_RENDERING_FORMATS || '')
