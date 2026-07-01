@@ -18,6 +18,7 @@ interface PsdLayerItem {
   height: number
   hidden: boolean
   canvas?: HTMLCanvasElement
+  children: PsdLayerItem[]
 }
 
 const psdStyle = `
@@ -113,7 +114,7 @@ const toCanvas = (documentRef: Document, source: unknown): HTMLCanvasElement | u
   return undefined
 }
 
-const flattenLayers = (
+const buildLayerTree = (
   documentRef: Document,
   layers: any[] | undefined,
   depth = 0,
@@ -122,11 +123,11 @@ const flattenLayers = (
   if (!Array.isArray(layers)) {
     return []
   }
-  return layers.flatMap((layer, index) => {
+  return layers.map((layer, index) => {
     const name = String(layer.name || `Layer ${index + 1}`)
     const id = `${path}${index}`
     const canvas = toCanvas(documentRef, layer.canvas || layer.imageData)
-    const item: PsdLayerItem = {
+    return {
       id,
       name,
       depth,
@@ -135,10 +136,18 @@ const flattenLayers = (
       width: Math.max(0, Number(layer.right || 0) - Number(layer.left || 0)),
       height: Math.max(0, Number(layer.bottom || 0) - Number(layer.top || 0)),
       hidden: Boolean(layer.hidden),
-      canvas
+      canvas,
+      children: buildLayerTree(documentRef, layer.children, depth + 1, `${id}.`)
     }
-    return [item, ...flattenLayers(documentRef, layer.children, depth + 1, `${id}.`)]
   })
+}
+
+const flattenLayerTreeForDrawing = (layers: PsdLayerItem[]): PsdLayerItem[] => {
+  return layers.flatMap(layer => [layer, ...flattenLayerTreeForDrawing(layer.children)])
+}
+
+const flattenLayerTreeForPanel = (layers: PsdLayerItem[]): PsdLayerItem[] => {
+  return layers.slice().reverse().flatMap(layer => [layer, ...flattenLayerTreeForPanel(layer.children)])
 }
 
 const clampZoom = (value: number) => {
@@ -155,7 +164,9 @@ export default async function renderPsdAsset(
   const { readPsd } = await import('ag-psd')
   const psd = readPsd(buffer, { useImageData: true })
   const compositeCanvas = toCanvas(documentRef, (psd as any).canvas || (psd as any).imageData)
-  const layers = flattenLayers(documentRef, (psd as any).children)
+  const layerTree = buildLayerTree(documentRef, (psd as any).children)
+  const layers = flattenLayerTreeForDrawing(layerTree)
+  const panelLayers = flattenLayerTreeForPanel(layerTree)
   const drawableLayers = layers.filter(layer => layer.canvas)
   const selected = new Set(drawableLayers.filter(layer => !layer.hidden).map(layer => layer.id))
   let zoom = 1
@@ -216,7 +227,7 @@ export default async function renderPsdAsset(
       context.drawImage(compositeCanvas, 0, 0)
       return
     }
-    visibleLayerCanvases.slice().reverse().forEach(layer => {
+    visibleLayerCanvases.forEach(layer => {
       if (layer.canvas) {
         context.drawImage(layer.canvas, layer.left, layer.top)
       }
@@ -227,8 +238,10 @@ export default async function renderPsdAsset(
     list.appendChild(createElement(documentRef, 'li', 'psd-empty', t('psd.layers.empty')))
   }
 
-  layers.forEach(layer => {
+  panelLayers.forEach(layer => {
     const item = createElement(documentRef, 'li', 'psd-layer')
+    item.dataset.layerId = layer.id
+    item.dataset.layerName = layer.name
     item.style.paddingLeft = `${8 + layer.depth * 14}px`
     const checkbox = createElement(documentRef, 'input') as HTMLInputElement
     checkbox.type = 'checkbox'
