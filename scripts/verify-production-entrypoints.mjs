@@ -55,7 +55,11 @@ function normalizeEntrypoint(entrypoint) {
 
 function isImportableEntrypoint(entrypoint) {
   const normalized = normalizeEntrypoint(entrypoint)
-  return importableExtensions.has(extname(normalized)) && !normalized.includes('*')
+  return (
+    importableExtensions.has(extname(normalized)) &&
+    !normalized.includes('*') &&
+    !/(^|\/)[^/]+\.worker\.m?js$/.test(normalized)
+  )
 }
 
 function collectProductionImportEntrypoints(packageJson) {
