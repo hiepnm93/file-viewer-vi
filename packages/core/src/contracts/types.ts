@@ -7,7 +7,7 @@ export type FileViewerSourceKind = 'file' | 'url' | 'buffer' | 'empty';
 
 export type FileViewerThemeMode = 'light' | 'dark' | 'system';
 
-export type FileViewerLocale = 'auto' | 'zh-CN' | 'en-US' | (string & {});
+export type FileViewerLocale = 'auto' | 'vi-VN' | 'zh-CN' | 'en-US' | (string & {});
 
 export type FileViewerMessageKey =
   | 'toolbar.zoomGroup'
@@ -815,8 +815,9 @@ export interface FileViewerAiOptions {
 export interface FileViewerOptions {
   theme?: FileViewerThemeMode;
   /**
-   * Viewer UI language. `auto` follows the browser language, Chinese browsers
-   * resolve to `zh-CN`, and all other languages currently resolve to `en-US`.
+   * Viewer UI language. Defaults to `vi-VN`. `auto` follows the browser
+   * language: Vietnamese browsers resolve to `vi-VN`, Chinese browsers to
+   * `zh-CN`, and all other languages currently resolve to `en-US`.
    */
   locale?: FileViewerLocale;
   /**
